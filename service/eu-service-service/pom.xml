@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.mkl.eu.service</groupId>
+        <artifactId>service</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <groupId>com.mkl.eu.service</groupId>
+    <artifactId>eu-service-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>eu-service-service</name>
+    <url>http://maven.apache.org</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+
+        <!-- EU -->
+        <dependency>
+            <groupId>com.mkl.eu.client</groupId>
+            <artifactId>eu-client-service</artifactId>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.mkl.eu.client</groupId>
+            <artifactId>eu-client-habilitations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mkl.eu.service</groupId>
+            <artifactId>eu-service-habilitations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jadira.usertype</groupId>
+            <artifactId>usertype.core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+        </dependency>
+		
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>
+    </dependencies>
+</project>

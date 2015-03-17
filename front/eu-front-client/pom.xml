@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.mkl.eu.front</groupId>
+        <artifactId>front</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <groupId>com.mkl.eu.front</groupId>
+    <artifactId>eu-front-ext</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>eu-front-ext</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cmd.dir>${project.build.directory}/ext/cmd</cmd.dir>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+    </properties>
+
+    <build>
+        <finalName>eu</finalName>
+        <sourceDirectory>src/main/webapp</sourceDirectory>
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.mkl.eu.client</groupId>
+            <artifactId>eu-client-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mkl.eu.client</groupId>
+            <artifactId>eu-client-habilitations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time-jsptags</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+        </dependency>
+    </dependencies>
+</project>
