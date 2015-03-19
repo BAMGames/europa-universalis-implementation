@@ -40,7 +40,7 @@ public class Mine extends PApplet {
         List<Feature> countries = GeoJSONReader.loadData(this, "data/map/v2/countries.geo.json");
 //        for (Iterator<Feature> country = countries.iterator(); country.hasNext(); ) {
 //            Feature c = country.next();
-//            if (!StringUtils.equals("Norvege", c.getId())) {
+//            if (!StringUtils.equals("Highlands", c.getId())) {
 //                country.remove();
 //            }
 //        }
