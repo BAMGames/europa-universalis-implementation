@@ -1,0 +1,5 @@
+{"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Zoom"},"geometry":{"type":"Polygon","coordinates":[[[1.204,7.957],[1.204,10.066],[3.036,10.066],[3.036,7.957], [1.204, 7.957]]]},"id":"Z"},
+    {"type":"Feature","properties":{"name":"Golfe de Cadix"},"geometry":{"type":"Polygon","coordinates":[[[1.204,1.750],[1.204,3.998],[5,3.998],[5,1.750], [1.204, 1.750]]]},"id":"GC"},
+    {"type":"Feature","properties":{"name":"Golfe de Gascogne"},"geometry":{"type":"Polygon","coordinates":[[[1.204, 3.998],[1.204, 5.715],[1.5, 5.715],[1.5, 3.998], [1.204, 3.998]]]},"id":"GK"}
+]}

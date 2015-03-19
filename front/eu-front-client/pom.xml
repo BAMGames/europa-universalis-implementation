@@ -6,11 +6,11 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <groupId>com.mkl.eu.front</groupId>
-    <artifactId>eu-front-ext</artifactId>
+    <artifactId>eu-front-client</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>eu-front-ext</name>
+    <name>eu-front-client</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -19,11 +19,6 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
     </properties>
-
-    <build>
-        <finalName>eu</finalName>
-        <sourceDirectory>src/main/webapp</sourceDirectory>
-    </build>
 
     <dependencies>
 
@@ -35,6 +30,32 @@
         <dependency>
             <groupId>com.mkl.eu.client</groupId>
             <artifactId>eu-client-habilitations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all-main</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt-main</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.fhpotsdam.unfolding</groupId>
+            <artifactId>unfolding</artifactId>
+            <version>0.9.6</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/unfolding.0.9.6.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.processing.core</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/core.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -76,6 +97,11 @@
         <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
         </dependency>
     </dependencies>
 </project>
