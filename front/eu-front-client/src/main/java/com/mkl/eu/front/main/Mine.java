@@ -6,10 +6,8 @@ import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.GeoJSONReader;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import processing.core.PApplet;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,21 +38,21 @@ public class Mine extends PApplet {
 
         // Load country polygons and adds them as markers
         List<Feature> countries = GeoJSONReader.loadData(this, "data/map/v2/countries.geo.json");
-        for (Iterator<Feature> country = countries.iterator(); country.hasNext(); ) {
-            Feature c = country.next();
-            if (!StringUtils.equals("Norvege", c.getId())) {
-                country.remove();
-            }
-        }
+//        for (Iterator<Feature> country = countries.iterator(); country.hasNext(); ) {
+//            Feature c = country.next();
+//            if (!StringUtils.equals("Norvege", c.getId())) {
+//                country.remove();
+//            }
+//        }
         List<Marker> countryMarkers = MapUtils.createSimpleMarkers(countries);
         mapDetail.addMarkers(countryMarkers);
 
         for (Marker marker : countryMarkers) {
 
             // Encode value as brightness (values range: 0-1000)
-            float transparency = map(0f, 0, 700, 10, 255);
-//                    marker.setColor(color((int)(255 * Math.random()), (int)(255 * Math.random()), (int)(255 * Math.random()), transparency));
-            marker.setColor(color(0, 0, 0, transparency));
+            float transparency = map(500f, 0, 700, 10, 255);
+                    marker.setColor(color((int)(255 * Math.random()), (int)(255 * Math.random()), (int)(255 * Math.random()), transparency));
+//            marker.setColor(color(0, 0, 0, transparency));
         }
     }
 
