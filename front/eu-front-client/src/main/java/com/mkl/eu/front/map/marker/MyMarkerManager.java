@@ -1,4 +1,4 @@
-package com.mkl.eu.front.main;
+package com.mkl.eu.front.map.marker;
 
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;

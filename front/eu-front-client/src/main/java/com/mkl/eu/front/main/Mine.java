@@ -1,13 +1,22 @@
 package com.mkl.eu.front.main;
 
+import com.mkl.eu.front.map.handler.MapKeyboardHandler;
+import com.mkl.eu.front.map.marker.MyMarkerManager;
+import com.mkl.eu.front.map.marker.ProvinceMarker;
 import com.mkl.eu.front.provider.EUProvider;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.GeoJSONReader;
+import de.fhpotsdam.unfolding.data.MultiFeature;
+import de.fhpotsdam.unfolding.data.ShapeFeature;
+import de.fhpotsdam.unfolding.events.EventDispatcher;
+import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
 import de.fhpotsdam.unfolding.marker.Marker;
+import de.fhpotsdam.unfolding.marker.MultiMarker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import processing.core.PApplet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,6 +27,8 @@ import java.util.List;
 public class Mine extends PApplet {
     /** Interactive map. */
     private UnfoldingMap mapDetail;
+    /** Color mode. */
+    private static boolean withColor = false;
 
     static public void main(String args[]) {
         PApplet.main(new String[]{"com.mkl.eu.front.main.Mine"});
@@ -32,9 +43,11 @@ public class Mine extends PApplet {
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
         mapDetail.panTo(1000, -300);
-        MapUtils.createDefaultEventDispatcher(this, mapDetail);
+        EventDispatcher eventDispatcher = MapUtils.createMouseEventDispatcher(this, mapDetail);
+        KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
+        eventDispatcher.addBroadcaster(keyboardHandler);
 
-        mapDetail.addMarkerManager(new MyMarkerManager());
+       mapDetail.addMarkerManager(new MyMarkerManager());
 
         // Load country polygons and adds them as markers
         List<Feature> countries = GeoJSONReader.loadData(this, "data/map/v2/countries.geo.json");
@@ -44,7 +57,7 @@ public class Mine extends PApplet {
 //                country.remove();
 //            }
 //        }
-        List<Marker> countryMarkers = MapUtils.createSimpleMarkers(countries);
+        List<Marker> countryMarkers = createSimpleMarkers(countries);
         mapDetail.addMarkers(countryMarkers);
 
         for (Marker marker : countryMarkers) {
@@ -63,5 +76,40 @@ public class Mine extends PApplet {
         background(0);
 
         mapDetail.draw();
+    }
+
+    private List<Marker> createSimpleMarkers(List<Feature> countries) {
+        List<Marker> markers = new ArrayList<>();
+
+        for (Feature feature: countries) {
+            if (feature instanceof ShapeFeature) {
+                Marker province = new ProvinceMarker(((ShapeFeature) feature).getLocations(), feature.getProperties(), feature.getId());
+                markers.add(province);
+            } else if (feature instanceof MultiFeature) {
+                MultiMarker multiMarker = new MultiMarker();
+                multiMarker.setProperties(feature.getProperties());
+
+                for (Feature feat : ((MultiFeature)feature).getFeatures()) {
+                    Marker province = new ProvinceMarker(((ShapeFeature) feat).getLocations(), feat.getProperties(), feature.getId());
+                    multiMarker.addMarkers(province);
+                }
+
+                markers.add(multiMarker);
+            }
+        }
+
+        return markers;
+    }
+
+    /** Switch the color mode. */
+    public static void switchColor() {
+        withColor = ! withColor;
+    }
+
+    /**
+     * @return the withColor.
+     */
+    public static boolean isWithColor() {
+        return withColor;
     }
 }
