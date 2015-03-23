@@ -8,12 +8,14 @@ import com.mkl.eu.front.provider.EUProvider;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.GeoJSONReader;
+import de.fhpotsdam.unfolding.data.MarkerFactory;
 import de.fhpotsdam.unfolding.data.MultiFeature;
 import de.fhpotsdam.unfolding.data.ShapeFeature;
 import de.fhpotsdam.unfolding.events.EventDispatcher;
 import de.fhpotsdam.unfolding.events.PanMapEvent;
 import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
+import de.fhpotsdam.unfolding.marker.AbstractMarker;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MultiMarker;
 import processing.core.PApplet;
@@ -75,14 +77,31 @@ public class Mine extends PApplet {
 //                country.remove();
 //            }
 //        }
-        List<Marker> countryMarkers = createSimpleMarkers(countries);
+        MarkerFactory markerFactory = new MarkerFactory();
+        markerFactory.setPolygonClass(ProvinceMarker.class);
+        List<Marker> countryMarkers = markerFactory.createMarkers(countries);
         mapDetail.addMarkers(countryMarkers);
 
         for (Marker marker : countryMarkers) {
 
             // Encode value as brightness (values range: 0-1000)
             float transparency = map(500f, 0, 700, 10, 255);
-            marker.setColor(color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random()), transparency));
+            int red = (int) (255 * Math.random());
+            int green = (int) (255 * Math.random());
+            int blue = (int) (255 * Math.random());
+            marker.setColor(color(red, green, blue, transparency));
+            if (marker instanceof AbstractMarker) {
+                int highlight = 25;
+                ((AbstractMarker)marker).setHighlightColor(color(Math.min(255, red + highlight), Math.min(255, green + highlight), Math.min(255, blue + highlight), transparency));
+            } else if (marker instanceof MultiMarker) {
+                for (Marker subMarker: ((MultiMarker) marker).getMarkers()) {
+                    if (subMarker instanceof AbstractMarker) {
+                        int highlight = 25;
+                        ((AbstractMarker)subMarker).setHighlightColor(color(Math.min(255, red + highlight), Math.min(255, green + highlight), Math.min(255, blue + highlight), transparency));
+                    }
+                }
+            }
+
 //            marker.setColor(color(0, 0, 0, transparency));
         }
     }
@@ -99,14 +118,14 @@ public class Mine extends PApplet {
 
         for (Feature feature : countries) {
             if (feature instanceof ShapeFeature) {
-                Marker province = new ProvinceMarker(((ShapeFeature) feature).getLocations(), feature.getProperties(), feature.getId());
+                Marker province = new ProvinceMarker(((ShapeFeature) feature).getLocations(), feature.getProperties());
                 markers.add(province);
             } else if (feature instanceof MultiFeature) {
                 MultiMarker multiMarker = new MultiMarker();
                 multiMarker.setProperties(feature.getProperties());
 
                 for (Feature feat : ((MultiFeature) feature).getFeatures()) {
-                    Marker province = new ProvinceMarker(((ShapeFeature) feat).getLocations(), feat.getProperties(), feature.getId());
+                    Marker province = new ProvinceMarker(((ShapeFeature) feat).getLocations(), feat.getProperties());
                     multiMarker.addMarkers(province);
                 }
 

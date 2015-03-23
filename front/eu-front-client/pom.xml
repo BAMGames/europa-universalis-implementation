@@ -47,7 +47,7 @@
             <artifactId>unfolding</artifactId>
             <version>0.9.6</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/unfolding.0.9.6.jar</systemPath>
+            <systemPath>${project.basedir}/lib/unfolding.0.9.7beta.jar</systemPath>
         </dependency>
 
         <dependency>

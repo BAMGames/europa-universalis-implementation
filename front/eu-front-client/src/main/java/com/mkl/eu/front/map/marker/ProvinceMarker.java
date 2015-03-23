@@ -4,47 +4,44 @@ import com.mkl.eu.front.main.Mine;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.SimplePolygonMarker;
+import de.fhpotsdam.unfolding.utils.ScreenPosition;
+import processing.core.PVector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * @author MKL.
- */
+/** @author MKL. */
 public class ProvinceMarker extends SimplePolygonMarker {
     /** Lower left location of the shape. */
     private Location topLeft;
     /** Upper right location of the shape. */
     private Location bottomRight;
-    /** Id of the province. */
-    private String id;
 
     /**
      * Constructor.
+     *
      * @param locations borders of the province.
      */
-    public ProvinceMarker(List<Location> locations, String id) {
-        this(locations, null, id);
+    public ProvinceMarker(List<Location> locations) {
+        this(locations, null);
     }
 
     /**
      * Constructor.
-     * @param locations borders of the province.
+     *
+     * @param locations  borders of the province.
      * @param properties of the province.
      */
-    public ProvinceMarker(List<Location> locations, HashMap<String, Object> properties, String id) {
+    public ProvinceMarker(List<Location> locations, HashMap<String, Object> properties) {
         super(locations, properties);
-
-        this.id = id;
 
         computeExtremes();
     }
 
-    /**
-     * Calculate the lower left and upper right locations of the province.
-     */
+    /** Calculate the lower left and upper right locations of the province. */
     private void computeExtremes() {
-        for (Location location: locations) {
+        for (Location location : locations) {
             if (topLeft == null) {
                 topLeft = new Location(location);
             } else {
@@ -81,5 +78,67 @@ public class ProvinceMarker extends SimplePolygonMarker {
                 && (Mine.isWithColor() || selected)) {
             super.draw(map);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isInside(UnfoldingMap map, float checkX, float checkY) {
+        List<ScreenPosition> positions = new ArrayList<>();
+        for (Location location : locations) {
+            ScreenPosition pos = map.getScreenPosition(location);
+            positions.add(pos);
+        }
+
+        List<List<ScreenPosition>> rings = new ArrayList<>();
+        if (interiorRingLocationArray != null) {
+            for (List<Location> ring : interiorRingLocationArray) {
+                List<ScreenPosition> ringPositions = new ArrayList<>();
+
+                for (Location location : ring) {
+                    ScreenPosition pos = map.getScreenPosition(location);
+                    ringPositions.add(pos);
+                }
+
+                if (!ringPositions.isEmpty()) {
+                    rings.add(ringPositions);
+                }
+            }
+        }
+
+        return isInside(checkX, checkY, positions, rings);
+    }
+
+    /**
+     * Checks whether the position is within the border of the vectors. Uses a polygon containment algorithm.
+     * <p/>
+     * This method is used for both ScreenPosition as well as Location checks.
+     *
+     * @param checkX  The x position to check if inside.
+     * @param checkY  The y position to check if inside.
+     * @param vectors The vectors of the polygon
+     * @param vectors The vectors of the interior rings polygon
+     * @return True if inside, false otherwise.
+     */
+    protected boolean isInside(float checkX, float checkY, List<? extends PVector> vectors, List<? extends List<? extends PVector>> interiorRings) {
+        boolean inside = false;
+        for (int i = 0, j = vectors.size() - 1; i < vectors.size(); j = i++) {
+            PVector pi = vectors.get(i);
+            PVector pj = vectors.get(j);
+            if ((((pi.y <= checkY) && (checkY < pj.y)) || ((pj.y <= checkY) && (checkY < pi.y)))
+                    && (checkX < (pj.x - pi.x) * (checkY - pi.y) / (pj.y - pi.y) + pi.x)) {
+                inside = !inside;
+            }
+        }
+
+        if (inside) {
+            for (List<? extends PVector> ring : interiorRings) {
+                if (isInside(checkX, checkY, ring)) {
+                    inside = false;
+                    break;
+                }
+            }
+        }
+
+        return inside;
     }
 }
