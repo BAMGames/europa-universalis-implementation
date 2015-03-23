@@ -4,7 +4,6 @@ import com.mkl.eu.front.main.Mine;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.SimplePolygonMarker;
-import de.fhpotsdam.unfolding.utils.ScreenPosition;
 
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +78,7 @@ public class ProvinceMarker extends SimplePolygonMarker {
         // map.getBottomRightBorder and map.getTopLeftBorder have inversed locations (x and y).
         if (bottomRightBorder.getLon() > topLeft.getLon() && topLeftBorder.getLon() < bottomRight.getLon()
                 && bottomRightBorder.getLat() < topLeft.getLat() && topLeftBorder.getLat() > bottomRight.getLat()
-                && Mine.isWithColor()) {
+                && (Mine.isWithColor() || selected)) {
             super.draw(map);
         }
     }

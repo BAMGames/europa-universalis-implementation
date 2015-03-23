@@ -1,6 +1,7 @@
 package com.mkl.eu.front.main;
 
 import com.mkl.eu.front.map.handler.MapKeyboardHandler;
+import com.mkl.eu.front.map.handler.MapMouseHandler;
 import com.mkl.eu.front.map.marker.MyMarkerManager;
 import com.mkl.eu.front.map.marker.ProvinceMarker;
 import com.mkl.eu.front.provider.EUProvider;
@@ -10,10 +11,11 @@ import de.fhpotsdam.unfolding.data.GeoJSONReader;
 import de.fhpotsdam.unfolding.data.MultiFeature;
 import de.fhpotsdam.unfolding.data.ShapeFeature;
 import de.fhpotsdam.unfolding.events.EventDispatcher;
+import de.fhpotsdam.unfolding.events.PanMapEvent;
+import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MultiMarker;
-import de.fhpotsdam.unfolding.utils.MapUtils;
 import processing.core.PApplet;
 
 import java.util.ArrayList;
@@ -25,13 +27,23 @@ import java.util.List;
  * @author MKL
  */
 public class Mine extends PApplet {
-    /** Interactive map. */
-    private UnfoldingMap mapDetail;
     /** Color mode. */
     private static boolean withColor = false;
+    /** Interactive map. */
+    private UnfoldingMap mapDetail;
 
     static public void main(String args[]) {
         PApplet.main(new String[]{"com.mkl.eu.front.main.Mine"});
+    }
+
+    /** Switch the color mode. */
+    public static void switchColor() {
+        withColor = !withColor;
+    }
+
+    /** @return the withColor. */
+    public static boolean isWithColor() {
+        return withColor;
     }
 
     /** Set up the map and the markers. */
@@ -43,11 +55,17 @@ public class Mine extends PApplet {
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
         mapDetail.panTo(1000, -300);
-        EventDispatcher eventDispatcher = MapUtils.createMouseEventDispatcher(this, mapDetail);
+        EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
-        eventDispatcher.addBroadcaster(keyboardHandler);
+        MapMouseHandler mouseHandler = new MapMouseHandler(this, mapDetail);
 
-       mapDetail.addMarkerManager(new MyMarkerManager());
+        eventDispatcher.addBroadcaster(keyboardHandler);
+        eventDispatcher.addBroadcaster(mouseHandler);
+
+        eventDispatcher.register(mapDetail, PanMapEvent.TYPE_PAN, mapDetail.getId());
+        eventDispatcher.register(mapDetail, ZoomMapEvent.TYPE_ZOOM, mapDetail.getId());
+
+        mapDetail.addMarkerManager(new MyMarkerManager());
 
         // Load country polygons and adds them as markers
         List<Feature> countries = GeoJSONReader.loadData(this, "data/map/v2/countries.geo.json");
@@ -64,14 +82,12 @@ public class Mine extends PApplet {
 
             // Encode value as brightness (values range: 0-1000)
             float transparency = map(500f, 0, 700, 10, 255);
-                    marker.setColor(color((int)(255 * Math.random()), (int)(255 * Math.random()), (int)(255 * Math.random()), transparency));
+            marker.setColor(color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random()), transparency));
 //            marker.setColor(color(0, 0, 0, transparency));
         }
     }
 
-    /**
-     * Draw the PApplet.
-     */
+    /** Draw the PApplet. */
     public void draw() {
         background(0);
 
@@ -81,7 +97,7 @@ public class Mine extends PApplet {
     private List<Marker> createSimpleMarkers(List<Feature> countries) {
         List<Marker> markers = new ArrayList<>();
 
-        for (Feature feature: countries) {
+        for (Feature feature : countries) {
             if (feature instanceof ShapeFeature) {
                 Marker province = new ProvinceMarker(((ShapeFeature) feature).getLocations(), feature.getProperties(), feature.getId());
                 markers.add(province);
@@ -89,7 +105,7 @@ public class Mine extends PApplet {
                 MultiMarker multiMarker = new MultiMarker();
                 multiMarker.setProperties(feature.getProperties());
 
-                for (Feature feat : ((MultiFeature)feature).getFeatures()) {
+                for (Feature feat : ((MultiFeature) feature).getFeatures()) {
                     Marker province = new ProvinceMarker(((ShapeFeature) feat).getLocations(), feat.getProperties(), feature.getId());
                     multiMarker.addMarkers(province);
                 }
@@ -99,17 +115,5 @@ public class Mine extends PApplet {
         }
 
         return markers;
-    }
-
-    /** Switch the color mode. */
-    public static void switchColor() {
-        withColor = ! withColor;
-    }
-
-    /**
-     * @return the withColor.
-     */
-    public static boolean isWithColor() {
-        return withColor;
     }
 }
