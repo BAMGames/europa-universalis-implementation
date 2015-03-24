@@ -46,4 +46,9 @@ public class MyMarkerManager extends MarkerManager<Marker> {
 
         selectedMarkers.add(marker);
     }
+
+    /** @return the selectedMarkers. */
+    public List<Marker> getSelectedMarkers() {
+        return selectedMarkers;
+    }
 }

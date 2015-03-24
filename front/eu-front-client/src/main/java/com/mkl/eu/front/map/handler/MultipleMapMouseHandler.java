@@ -48,10 +48,10 @@ public class MultipleMapMouseHandler extends MapEventBroadcaster {
     /**
      * Creates a MouseHandler for the given maps.
      *
-     * @param p    The PApplet.
+     * @param p                 The PApplet.
      * @param mapOverviewStatic overview map.
      * @param viewportRect      Interactive finder box
-     * @param maps A list of maps.
+     * @param maps              A list of maps.
      */
     public MultipleMapMouseHandler(PApplet p, UnfoldingMap mapOverviewStatic, ViewportRect viewportRect, List<UnfoldingMap> maps) {
         super(maps);
@@ -101,9 +101,11 @@ public class MultipleMapMouseHandler extends MapEventBroadcaster {
      * @param event mouse event.
      */
     public void mouseClicked(MouseEvent event) {
-        viewportRect.moveCenter(event.getX(), event.getY());
+        if (mapOverviewStatic.isHit(event.getX(), event.getY())) {
+            viewportRect.moveCenter(event.getX(), event.getY());
 
-        panViewportOnDetailMap();
+            panViewportOnDetailMap();
+        }
     }
 
     // --------------------------------------------------------------

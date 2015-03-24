@@ -37,6 +37,8 @@ public class Mine extends PApplet {
 
     /** Interactive finder box atop the overview map. */
     private ViewportRect viewportRect;
+    /** Information panel of the selected province. */
+    private InfoView info;
 
     /**
      * Main method.
@@ -50,7 +52,7 @@ public class Mine extends PApplet {
     public void setup() {
         size(1000, 600, OPENGL);
 
-        mapDetail = new UnfoldingMap(this, "detail", new EUProvider(this));
+        mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         mapDetail.setTweening(true);
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
@@ -64,6 +66,10 @@ public class Mine extends PApplet {
 
         viewportRect = new ViewportRect(this);
 
+        MyMarkerManager markerManager = new MyMarkerManager();
+
+        info = new InfoView(this, markerManager, 805, 205, 185, 390);
+
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, mapDetail);
@@ -76,7 +82,7 @@ public class Mine extends PApplet {
         eventDispatcher.register(mapDetail, PanMapEvent.TYPE_PAN, mapDetail.getId());
         eventDispatcher.register(mapDetail, ZoomMapEvent.TYPE_ZOOM, mapDetail.getId());
 
-        mapDetail.addMarkerManager(new MyMarkerManager());
+        mapDetail.addMarkerManager(markerManager);
 
         // Load country polygons and adds them as markers
         Map<String, Marker> countryMarkers = MarkerUtils.createMarkers(this);
@@ -94,5 +100,6 @@ public class Mine extends PApplet {
         ScreenPosition br = mapOverviewStatic.getScreenPosition(mapDetail.getBottomRightBorder());
         viewportRect.setDimension(tl, br);
         viewportRect.draw();
+        info.draw();
     }
 }

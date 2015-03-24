@@ -10,6 +10,7 @@ import java.util.List;
 public interface IMapMarker {
     /**
      * Sets the highlightColor.
+     *
      * @param highlightColor the highlightColor to set.
      */
     public void setHighlightColor(int highlightColor);
@@ -19,7 +20,11 @@ public interface IMapMarker {
 
     /**
      * Add a neighbour.
+     *
      * @param neighbour the neighbour to add.
      */
     public void addNeighbours(BorderMarker neighbour);
+
+    /** @return the id; */
+    public String getId();
 }
