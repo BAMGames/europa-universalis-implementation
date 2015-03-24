@@ -71,7 +71,7 @@ public class MultipleMapMouseHandler extends MapEventBroadcaster {
         }
     }
 
-    /** Mouse event of type PRESSED. */
+    /** Mouse event of type PRESS. */
     public void mousePressed() {
         if (viewportRect.isOver(mouseX, mouseY)) {
             viewportRect.setDragged(true);
@@ -81,18 +81,29 @@ public class MultipleMapMouseHandler extends MapEventBroadcaster {
         }
     }
 
-    /** Mouse event of type RELEASED. */
+    /** Mouse event of type RELEASE. */
     public void mouseReleased() {
         viewportRect.setDragged(false);
     }
 
-    /** Mouse event of type DRAGGED. */
+    /** Mouse event of type DRAGG. */
     public void mouseDragged() {
         if (viewportRect.isDragged()) {
             viewportRect.move(mouseX - oldX, mouseY - oldY);
 
             panViewportOnDetailMap();
         }
+    }
+
+    /**
+     * Mouse event of type CLICK.
+     *
+     * @param event mouse event.
+     */
+    public void mouseClicked(MouseEvent event) {
+        viewportRect.moveCenter(event.getX(), event.getY());
+
+        panViewportOnDetailMap();
     }
 
     // --------------------------------------------------------------
@@ -114,6 +125,9 @@ public class MultipleMapMouseHandler extends MapEventBroadcaster {
         }
 
         switch (action) {
+            case MouseEvent.CLICK:
+                mouseClicked(event);
+                break;
             case MouseEvent.PRESS:
                 mousePressed();
                 break;
