@@ -2,26 +2,24 @@ package com.mkl.eu.front.main;
 
 import com.mkl.eu.front.map.handler.MapKeyboardHandler;
 import com.mkl.eu.front.map.handler.MapMouseHandler;
+import com.mkl.eu.front.map.handler.MultipleMapMouseHandler;
+import com.mkl.eu.front.map.handler.ViewportRect;
+import com.mkl.eu.front.map.marker.MarkerUtils;
 import com.mkl.eu.front.map.marker.MyMarkerManager;
-import com.mkl.eu.front.map.marker.ProvinceMarker;
 import com.mkl.eu.front.provider.EUProvider;
 import de.fhpotsdam.unfolding.UnfoldingMap;
-import de.fhpotsdam.unfolding.data.Feature;
-import de.fhpotsdam.unfolding.data.GeoJSONReader;
-import de.fhpotsdam.unfolding.data.MarkerFactory;
-import de.fhpotsdam.unfolding.data.MultiFeature;
-import de.fhpotsdam.unfolding.data.ShapeFeature;
 import de.fhpotsdam.unfolding.events.EventDispatcher;
 import de.fhpotsdam.unfolding.events.PanMapEvent;
 import de.fhpotsdam.unfolding.events.ZoomMapEvent;
+import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
-import de.fhpotsdam.unfolding.marker.AbstractMarker;
 import de.fhpotsdam.unfolding.marker.Marker;
-import de.fhpotsdam.unfolding.marker.MultiMarker;
+import de.fhpotsdam.unfolding.utils.ScreenPosition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Test PApplet to test the interactive Map.
@@ -29,40 +27,51 @@ import java.util.List;
  * @author MKL
  */
 public class Mine extends PApplet {
-    /** Color mode. */
-    private static boolean withColor = false;
+    /** Logger. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Mine.class);
     /** Interactive map. */
     private UnfoldingMap mapDetail;
 
-    static public void main(String args[]) {
+    /** Small map showing the overview, i.e. the world. */
+    private UnfoldingMap mapOverviewStatic;
+
+    /** Interactive finder box atop the overview map. */
+    private ViewportRect viewportRect;
+
+    /**
+     * Main method.
+     * @param args no args.
+     */
+    public static void main(String args[]) {
         PApplet.main(new String[]{"com.mkl.eu.front.main.Mine"});
-    }
-
-    /** Switch the color mode. */
-    public static void switchColor() {
-        withColor = !withColor;
-    }
-
-    /** @return the withColor. */
-    public static boolean isWithColor() {
-        return withColor;
     }
 
     /** Set up the map and the markers. */
     public void setup() {
-        size(800, 600, OPENGL);
+        size(1000, 600, OPENGL);
 
         mapDetail = new UnfoldingMap(this, "detail", new EUProvider(this));
         mapDetail.setTweening(true);
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
         mapDetail.panTo(1000, -300);
+
+
+        // Static overview map
+        mapOverviewStatic = new UnfoldingMap(this, "overviewStatic", 805, 10, 185, 185, true, false, new EUProvider(this), null);
+        mapOverviewStatic.zoomToLevel(4);
+        mapOverviewStatic.panTo(new Location(10, 7.5));
+
+        viewportRect = new ViewportRect(this);
+
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, mapDetail);
+        MultipleMapMouseHandler mouseHandler2 = new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
 
         eventDispatcher.addBroadcaster(keyboardHandler);
         eventDispatcher.addBroadcaster(mouseHandler);
+        eventDispatcher.addBroadcaster(mouseHandler2);
 
         eventDispatcher.register(mapDetail, PanMapEvent.TYPE_PAN, mapDetail.getId());
         eventDispatcher.register(mapDetail, ZoomMapEvent.TYPE_ZOOM, mapDetail.getId());
@@ -70,40 +79,8 @@ public class Mine extends PApplet {
         mapDetail.addMarkerManager(new MyMarkerManager());
 
         // Load country polygons and adds them as markers
-        List<Feature> countries = GeoJSONReader.loadData(this, "data/map/v2/countries.geo.json");
-//        for (Iterator<Feature> country = countries.iterator(); country.hasNext(); ) {
-//            Feature c = country.next();
-//            if (!StringUtils.equals("Highlands", c.getId())) {
-//                country.remove();
-//            }
-//        }
-        MarkerFactory markerFactory = new MarkerFactory();
-        markerFactory.setPolygonClass(ProvinceMarker.class);
-        List<Marker> countryMarkers = markerFactory.createMarkers(countries);
-        mapDetail.addMarkers(countryMarkers);
-
-        for (Marker marker : countryMarkers) {
-
-            // Encode value as brightness (values range: 0-1000)
-            float transparency = map(500f, 0, 700, 10, 255);
-            int red = (int) (255 * Math.random());
-            int green = (int) (255 * Math.random());
-            int blue = (int) (255 * Math.random());
-            marker.setColor(color(red, green, blue, transparency));
-            if (marker instanceof AbstractMarker) {
-                int highlight = 25;
-                ((AbstractMarker)marker).setHighlightColor(color(Math.min(255, red + highlight), Math.min(255, green + highlight), Math.min(255, blue + highlight), transparency));
-            } else if (marker instanceof MultiMarker) {
-                for (Marker subMarker: ((MultiMarker) marker).getMarkers()) {
-                    if (subMarker instanceof AbstractMarker) {
-                        int highlight = 25;
-                        ((AbstractMarker)subMarker).setHighlightColor(color(Math.min(255, red + highlight), Math.min(255, green + highlight), Math.min(255, blue + highlight), transparency));
-                    }
-                }
-            }
-
-//            marker.setColor(color(0, 0, 0, transparency));
-        }
+        Map<String, Marker> countryMarkers = MarkerUtils.createMarkers(this);
+        mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
     }
 
     /** Draw the PApplet. */
@@ -111,28 +88,11 @@ public class Mine extends PApplet {
         background(0);
 
         mapDetail.draw();
-    }
-
-    private List<Marker> createSimpleMarkers(List<Feature> countries) {
-        List<Marker> markers = new ArrayList<>();
-
-        for (Feature feature : countries) {
-            if (feature instanceof ShapeFeature) {
-                Marker province = new ProvinceMarker(((ShapeFeature) feature).getLocations(), feature.getProperties());
-                markers.add(province);
-            } else if (feature instanceof MultiFeature) {
-                MultiMarker multiMarker = new MultiMarker();
-                multiMarker.setProperties(feature.getProperties());
-
-                for (Feature feat : ((MultiFeature) feature).getFeatures()) {
-                    Marker province = new ProvinceMarker(((ShapeFeature) feat).getLocations(), feat.getProperties());
-                    multiMarker.addMarkers(province);
-                }
-
-                markers.add(multiMarker);
-            }
-        }
-
-        return markers;
+        mapOverviewStatic.draw();
+        // Viewport is updated by the actual area of the detail map
+        ScreenPosition tl = mapOverviewStatic.getScreenPosition(mapDetail.getTopLeftBorder());
+        ScreenPosition br = mapOverviewStatic.getScreenPosition(mapDetail.getBottomRightBorder());
+        viewportRect.setDimension(tl, br);
+        viewportRect.draw();
     }
 }

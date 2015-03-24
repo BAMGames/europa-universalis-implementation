@@ -1,6 +1,6 @@
 package com.mkl.eu.front.map.marker;
 
-import com.mkl.eu.front.main.Mine;
+import com.mkl.eu.front.map.MapConfiguration;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.SimplePolygonMarker;
@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /** @author MKL. */
-public class ProvinceMarker extends SimplePolygonMarker {
+public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
+    /** Neighbours of the province. */
+    private List<BorderMarker> neighbours = new ArrayList<>();
     /** Lower left location of the shape. */
     private Location topLeft;
     /** Upper right location of the shape. */
@@ -73,9 +75,9 @@ public class ProvinceMarker extends SimplePolygonMarker {
         Location topLeftBorder = map.getTopLeftBorder();
 
         // map.getBottomRightBorder and map.getTopLeftBorder have inversed locations (x and y).
-        if (bottomRightBorder.getLon() > topLeft.getLon() && topLeftBorder.getLon() < bottomRight.getLon()
-                && bottomRightBorder.getLat() < topLeft.getLat() && topLeftBorder.getLat() > bottomRight.getLat()
-                && (Mine.isWithColor() || selected)) {
+        if ((MapConfiguration.isWithColor() || selected) &&
+                bottomRightBorder.getLon() > topLeft.getLon() && topLeftBorder.getLon() < bottomRight.getLon()
+                && bottomRightBorder.getLat() < topLeft.getLat() && topLeftBorder.getLat() > bottomRight.getLat()) {
             super.draw(map);
         }
     }
@@ -140,5 +142,18 @@ public class ProvinceMarker extends SimplePolygonMarker {
         }
 
         return inside;
+    }
+
+    /** @return the neighbours. */
+    public List<BorderMarker> getNeighbours() {
+        return neighbours;
+    }
+
+    /**
+     * Add a neighbour.
+     * @param neighbour the neighbour to add.
+     */
+    public void addNeighbours(BorderMarker neighbour) {
+        neighbours.add(neighbour);
     }
 }

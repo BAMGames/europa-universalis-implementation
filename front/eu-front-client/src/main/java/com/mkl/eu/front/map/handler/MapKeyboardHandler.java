@@ -1,12 +1,10 @@
 package com.mkl.eu.front.map.handler;
 
 import com.mkl.eu.front.main.Mine;
+import com.mkl.eu.front.map.MapConfiguration;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
-import processing.core.PApplet;
-import processing.core.PConstants;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,7 +41,7 @@ public class MapKeyboardHandler extends KeyboardHandler {
         super.keyPressed(key, keyCode);
 
         if (keyCode == 67) {
-            Mine.switchColor();
+            MapConfiguration.switchColor();
         }
     }
 }
