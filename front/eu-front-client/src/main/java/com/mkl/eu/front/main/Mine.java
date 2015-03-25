@@ -1,5 +1,6 @@
 package com.mkl.eu.front.main;
 
+import com.mkl.eu.front.map.handler.InfowViewMouseHandler;
 import com.mkl.eu.front.map.handler.MapKeyboardHandler;
 import com.mkl.eu.front.map.handler.MapMouseHandler;
 import com.mkl.eu.front.map.handler.MultipleMapMouseHandler;
@@ -73,11 +74,11 @@ public class Mine extends PApplet {
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, mapDetail);
-        MultipleMapMouseHandler mouseHandler2 = new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
+        new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
+        new InfowViewMouseHandler(this, info, mapDetail);
 
         eventDispatcher.addBroadcaster(keyboardHandler);
         eventDispatcher.addBroadcaster(mouseHandler);
-        eventDispatcher.addBroadcaster(mouseHandler2);
 
         eventDispatcher.register(mapDetail, PanMapEvent.TYPE_PAN, mapDetail.getId());
         eventDispatcher.register(mapDetail, ZoomMapEvent.TYPE_ZOOM, mapDetail.getId());

@@ -1,6 +1,6 @@
 package com.mkl.eu.front.map.marker;
 
-import com.mkl.eu.client.service.enumeration.BorderEnum;
+import com.mkl.eu.client.service.vo.enumeration.BorderEnum;
 
 /**
  * Not a marker but Border was already used.

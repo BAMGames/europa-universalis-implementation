@@ -1,5 +1,8 @@
 package com.mkl.eu.front.map.marker;
 
+import com.mkl.eu.client.service.vo.Country;
+import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.front.map.vo.Border;
 import com.thoughtworks.xstream.XStream;
 import de.fhpotsdam.unfolding.data.Feature;
@@ -9,8 +12,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
+import processing.core.PImage;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +58,20 @@ public final class MarkerUtils {
         markerFactory.setPolygonClass(ProvinceMarker.class);
         markerFactory.setMultiPolygonClass(MultiProvinceMarker.class);
         Map<String, Marker> countryMarkers = markerFactory.createMapMarkers(countries);
+        List<Counter> counters = new ArrayList<>();
+        Counter counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setProvince("Île-de-France");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        counters.add(counter1);
+        counters.add(counter1);
+        counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setProvince("Languedoc");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        counters.add(counter1);
 
         for (Marker marker : countryMarkers.values()) {
 
@@ -81,8 +100,28 @@ public final class MarkerUtils {
                         }
                     }
                 }
+
+                for (Counter counter: counters) {
+                    if (StringUtils.equals(counter.getProvince(), marker.getId())) {
+                        ((IMapMarker) marker).addCounter(new CounterMarker(counter, getImageFromCounter(counter, pApplet)));
+                    }
+                }
             }
         }
         return countryMarkers;
+    }
+
+    /**
+     * Retrieves the image of the counter.
+     * @param counter whose we want the image.
+     * @param pApplet to load the image.
+     * @return the image of the counter.
+     */
+    private static PImage getImageFromCounter(Counter counter, PApplet pApplet) {
+        StringBuilder path = new StringBuilder("data/map/v2/counters/").append(counter.getCountry().getName())
+                .append("/").append(counter.getCountry().getName()).append("_")
+                .append(counter.getType().name()).append(".png");
+
+        return pApplet.loadImage(path.toString());
     }
 }

@@ -1,5 +1,6 @@
 package com.mkl.eu.front.map.handler;
 
+import com.mkl.eu.front.map.marker.IMapMarker;
 import com.mkl.eu.front.map.marker.MyMarkerManager;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.events.MapEventBroadcaster;
@@ -113,6 +114,14 @@ public class MapMouseHandler extends MapEventBroadcaster {
     }
 
     public void mouseMoved() {
+        for (UnfoldingMap map : maps) {
+            if (map.isHit(mouseX, mouseY)) {
+                Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(mouseX, mouseY);
+                if (marker != null && marker instanceof IMapMarker) {
+                    ((IMapMarker) marker).hover(map, mouseX, mouseY);
+                }
+            }
+        }
     }
 
     // --------------------------------------------------------------
