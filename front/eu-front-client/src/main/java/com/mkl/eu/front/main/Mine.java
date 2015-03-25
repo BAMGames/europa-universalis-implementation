@@ -60,7 +60,7 @@ public class Mine extends PApplet {
 
 
         // Static overview map
-        mapOverviewStatic = new UnfoldingMap(this, "overviewStatic", 805, 10, 185, 185, true, false, new EUProvider(this), null);
+        mapOverviewStatic = new UnfoldingMap(this, "overviewStatic", 805, 5, 185, 235, true, false, new EUProvider(this), null);
         mapOverviewStatic.zoomToLevel(4);
         mapOverviewStatic.panTo(new Location(10, 7.5));
 
@@ -68,7 +68,7 @@ public class Mine extends PApplet {
 
         MyMarkerManager markerManager = new MyMarkerManager();
 
-        info = new InfoView(this, markerManager, 805, 205, 185, 390);
+        info = new InfoView(this, markerManager, 805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);

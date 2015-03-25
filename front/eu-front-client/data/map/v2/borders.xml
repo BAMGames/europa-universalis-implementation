@@ -35,17 +35,8 @@
     <second>Astrakhan</second>
   </border>
   <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Friesland</first>
     <second>Münster</second>
-  </border>
-  <border>
-    <first>Qırım</first>
-    <second>Zaporizhzhya</second>
-    <type>river</type>
   </border>
   <border>
     <first>Friesland</first>
@@ -68,10 +59,6 @@
   <border>
     <first>Alba</first>
     <second>Moray</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
   </border>
   <border>
     <first>Armor</first>
@@ -161,24 +148,8 @@
     <second>Sibérie S</second>
   </border>
   <border>
-    <first>Livonija</first>
-    <second>Polacak</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Aral N</first>
     <second>Sibérie S</second>
-  </border>
-  <border>
-    <first>Jylland</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Cheboksary</first>
@@ -199,10 +170,6 @@
     <second>Western Approaches</second>
   </border>
   <border>
-    <first>Livonija</first>
-    <second>Polacak</second>
-  </border>
-  <border>
     <first>Skåne</first>
     <second>Småland</second>
   </border>
@@ -213,10 +180,6 @@
   <border>
     <first>Ayr</first>
     <second>Galloway</second>
-  </border>
-  <border>
-    <first>Alba</first>
-    <second>Western Approaches</second>
   </border>
   <border>
     <first>Severia</first>
@@ -240,10 +203,6 @@
     <second>Smolenską</second>
   </border>
   <border>
-    <first>Alba</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Cheboksary</first>
     <second>Mordoviya</second>
   </border>
@@ -252,16 +211,8 @@
     <second>Île de Man</second>
   </border>
   <border>
-    <first>Ayr</first>
-    <second>Île de Man</second>
-  </border>
-  <border>
     <first>Cheboksary</first>
     <second>Ryazan’</second>
-  </border>
-  <border>
-    <first>Ayr</first>
-    <second>Île de Man</second>
   </border>
   <border>
     <first>Baltique</first>
@@ -308,10 +259,6 @@
     <second>Île de Man</second>
   </border>
   <border>
-    <first>Angora</first>
-    <second>Konya</second>
-  </border>
-  <border>
     <first>Brega</first>
     <second>Île de Man</second>
   </border>
@@ -337,11 +284,6 @@
     <second>Mumhan</second>
   </border>
   <border>
-    <first>Connacht</first>
-    <second>Mumhan</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Angora</first>
     <second>Kilikya</second>
     <type>mountain_pass</type>
@@ -359,10 +301,6 @@
   <border>
     <first>Córdoba</first>
     <second>Extremadura</second>
-  </border>
-  <border>
-    <first>Sjælland</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Baltarusija</first>
@@ -388,16 +326,8 @@
     <type>river</type>
   </border>
   <border>
-    <first>Angora</first>
-    <second>Konya</second>
-  </border>
-  <border>
     <first>Slesvig</first>
     <second>Øresund</second>
-  </border>
-  <border>
-    <first>Illes Balears</first>
-    <second>Méditerrannée occidentale</second>
   </border>
   <border>
     <first>Extremadura</first>
@@ -411,14 +341,6 @@
   <border>
     <first>Baie d’Alger</first>
     <second>Saldígna</second>
-  </border>
-  <border>
-    <first>Baie d’Alger</first>
-    <second>Saldígna</second>
-  </border>
-  <border>
-    <first>Sjælland</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Hellas</first>
@@ -455,10 +377,6 @@
     <second>Granada</second>
   </border>
   <border>
-    <first>Sjælland</first>
-    <second>Øresund</second>
-  </border>
-  <border>
     <first>Memel</first>
     <second>Preußen</second>
     <type>river</type>
@@ -473,15 +391,7 @@
   </border>
   <border>
     <first>Hellas</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Hellas</first>
     <second>Mer Ionienne</second>
-  </border>
-  <border>
-    <first>Slesvig</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Algarve</first>
@@ -499,10 +409,6 @@
   <border>
     <first>Granada</first>
     <second>Murcia</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Sjælland</second>
   </border>
   <border>
     <first>Kaluga</first>
@@ -564,32 +470,8 @@
     <second>Ĥalab</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Slesvig</second>
-  </border>
-  <border>
     <first>Terra Sancta</first>
     <second>al-Ā’urdunn</second>
-  </border>
-  <border>
-    <first>Terra Sancta</first>
-    <second>al-Ā’urdunn</second>
-  </border>
-  <border>
-    <first>Sūriyah</first>
-    <second>Terra Sancta</second>
-  </border>
-  <border>
-    <first>Sjælland</first>
-    <second>Øresund</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Sjælland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Slesvig</second>
   </border>
   <border>
     <first>Méditerrannée orientale</first>
@@ -604,16 +486,8 @@
     <second>Uladh</second>
   </border>
   <border>
-    <first>Terra Sancta</first>
-    <second>al-Ā’urdunn</second>
-  </border>
-  <border>
     <first>Brega</first>
     <second>Uladh</second>
-  </border>
-  <border>
-    <first>Terra Sancta</first>
-    <second>al-Ā’urdunn</second>
   </border>
   <border>
     <first>an-Nīl</first>
@@ -630,10 +504,6 @@
   <border>
     <first>Lincolnshire</first>
     <second>Midlands</second>
-  </border>
-  <border>
-    <first>Sjælland</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Golfe de Cadix</first>
@@ -704,10 +574,6 @@
   <border>
     <first>Mer Ionienne</first>
     <second>Sicilia</second>
-  </border>
-  <border>
-    <first>Hellas</first>
-    <second>Mer Ionienne</second>
   </border>
   <border>
     <first>Kilikya</first>
@@ -820,15 +686,7 @@
     <second>Valencia</second>
   </border>
   <border>
-    <first>Mer Égée</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
     <first>Marmara</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
-    <first>Mer Égée</first>
     <second>Çanakkale Boğazı</second>
   </border>
   <border>
@@ -1214,10 +1072,6 @@
     <type>river</type>
   </border>
   <border>
-    <first>Connacht</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Lincolnshire</first>
     <second>Mer du Nord</second>
   </border>
@@ -1275,10 +1129,6 @@
     <second>Wessex</second>
   </border>
   <border>
-    <first>Connacht</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Cymru</first>
     <second>Île de Man</second>
   </border>
@@ -1296,17 +1146,8 @@
     <second>al-‛Irāq</second>
   </border>
   <border>
-    <first>Cymru</first>
-    <second>Île de Man</second>
-  </border>
-  <border>
     <first>Dijlah</first>
     <second>al-‛Irāq</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Connacht</first>
-    <second>Laighean</second>
     <type>river</type>
   </border>
   <border>
@@ -1344,29 +1185,9 @@
     <second>Kordistān</second>
   </border>
   <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Mer Égée</first>
-    <second>İzmir</second>
-  </border>
-  <border>
     <first>Hannover</first>
     <second>Holstein</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Mer Égée</first>
-    <second>İzmir</second>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
   </border>
   <border>
     <first>Hinterpommern</first>
@@ -1378,16 +1199,8 @@
     <second>Severia</second>
   </border>
   <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
     <first>Poltava</first>
     <second>Severia</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
   </border>
   <border>
     <first>Brandenburg</first>
@@ -1397,10 +1210,6 @@
     <first>Kilikya</first>
     <second>Ĥalab</second>
     <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
   </border>
   <border>
     <first>Golfe de Syrte</first>
@@ -1442,10 +1251,6 @@
     <type>straits</type>
   </border>
   <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
     <first>Mer Ionienne</first>
     <second>Mer Égée</second>
   </border>
@@ -1472,10 +1277,6 @@
   <border>
     <first>Golfe de Syrte</first>
     <second>Mer Tyrrhénienne</second>
-  </border>
-  <border>
-    <first>Mer Égée</first>
-    <second>Méditerrannée orientale</second>
   </border>
   <border>
     <first>Mer Égée</first>
@@ -1559,17 +1360,9 @@
     <second>Mer Tyrrhénienne</second>
   </border>
   <border>
-    <first>Balaton</first>
-    <second>Steiermark</second>
-  </border>
-  <border>
     <first>Marmara</first>
     <second>Mer Égée</second>
     <type>straits</type>
-  </border>
-  <border>
-    <first>Golfe du Lion</first>
-    <second>Mer Tyrrhénienne</second>
   </border>
   <border>
     <first>Baie d’Alger</first>
@@ -1584,26 +1377,8 @@
     <second>’Afrīqiyah</second>
   </border>
   <border>
-    <first>Baie d’Alger</first>
-    <second>Golfe du Lion</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Mer Ionienne</second>
-    <type>straits</type>
-  </border>
-  <border>
-    <first>Marmara</first>
-    <second>Mer Égée</second>
-    <type>straits</type>
-  </border>
-  <border>
     <first>Golfe de Cadix</first>
     <second>Golfe de Gascogne</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
   </border>
   <border>
     <first>Balaton</first>
@@ -1612,10 +1387,6 @@
   <border>
     <first>Balaton</first>
     <second>Pécs</second>
-  </border>
-  <border>
-    <first>Balaton</first>
-    <second>Steiermark</second>
   </border>
   <border>
     <first>Balaton</first>
@@ -1645,41 +1416,13 @@
     <second>Neumark</second>
   </border>
   <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
     <first>Jämtland</first>
     <second>Trøndelag</second>
     <type>mountain_pass</type>
   </border>
   <border>
-    <first>Balaton</first>
-    <second>Pécs</second>
-  </border>
-  <border>
-    <first>Bergslagen</first>
-    <second>Østlandet</second>
-  </border>
-  <border>
     <first>Manche</first>
     <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Mer Égée</first>
-    <second>İzmir</second>
   </border>
   <border>
     <first>Mer d’Irlande</first>
@@ -1688,14 +1431,6 @@
   <border>
     <first>Gästrikland</first>
     <second>Jämtland</second>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
   </border>
   <border>
     <first>Antalya</first>
@@ -1710,48 +1445,12 @@
     <second>Västergotland</second>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Mer d’Irlande</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Gästrikland</first>
-    <second>Jämtland</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
     <first>Mer Noire occidentale</first>
     <second>Mer Noire orientale</second>
   </border>
   <border>
     <first>Golfe de Gascogne</first>
     <second>Mer d’Irlande</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer d’Irlande</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer d’Irlande</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
   </border>
   <border>
     <first>Limburg</first>
@@ -1784,24 +1483,12 @@
     <second>Tavastland</second>
   </border>
   <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
     <first>Finland</first>
     <second>Nyland</second>
   </border>
   <border>
-    <first>Mer Égée</first>
-    <second>İzmir</second>
-  </border>
-  <border>
     <first>Gelderland</first>
     <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
   </border>
   <border>
     <first>Utrecht</first>
@@ -1842,24 +1529,8 @@
     <second>Overijssel</second>
   </border>
   <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Finland</first>
-    <second>Tavastland</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
     <first>Mer de Norvège</first>
     <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Baltique</second>
   </border>
   <border>
     <first>Baie de Botnie</first>
@@ -1872,14 +1543,6 @@
   <border>
     <first>Western Approaches</first>
     <second>Île de Man</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Øresund</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Baltique</first>
@@ -1899,44 +1562,20 @@
     <second>Tavastland</second>
   </border>
   <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
     <first>Karelen</first>
     <second>Tavastland</second>
-  </border>
-  <border>
-    <first>Mer Ionienne</first>
-    <second>Moreas</second>
   </border>
   <border>
     <first>’Afrīqiyah</first>
     <second>’Arīs</second>
   </border>
   <border>
-    <first>Kexholm</first>
-    <second>Tavastland</second>
-  </border>
-  <border>
     <first>Sūriyah</first>
     <second>Ĥalab</second>
   </border>
   <border>
-    <first>Mer Ionienne</first>
-    <second>Moreas</second>
-  </border>
-  <border>
-    <first>Karelen</first>
-    <second>Tavastland</second>
-  </border>
-  <border>
     <first>al-Qaba’il</first>
     <second>’Arīs</second>
-  </border>
-  <border>
-    <first>Kyklades</first>
-    <second>Mer Égée</second>
   </border>
   <border>
     <first>Wahrān</first>
@@ -1979,10 +1618,6 @@
     <type>mountain_pass</type>
   </border>
   <border>
-    <first>Golfe de Syrte</first>
-    <second>Malta</second>
-  </border>
-  <border>
     <first>Sibérie W</first>
     <second>Ural</second>
   </border>
@@ -2016,10 +1651,6 @@
     <second>Vestfold</second>
   </border>
   <border>
-    <first>Mer Égée</first>
-    <second>Rhodos</second>
-  </border>
-  <border>
     <first>Mer de Norvège</first>
     <second>Trøndelag</second>
   </border>
@@ -2048,16 +1679,8 @@
     <second>Mer Égée</second>
   </border>
   <border>
-    <first>Mer Égée</first>
-    <second>Rhodos</second>
-  </border>
-  <border>
     <first>Vestfold</first>
     <second>Østlandet</second>
-  </border>
-  <border>
-    <first>Méditerrannée orientale</first>
-    <second>Rhodos</second>
   </border>
   <border>
     <first>Trøndelag</first>
@@ -2078,14 +1701,6 @@
     <second>Pārs</second>
   </border>
   <border>
-    <first>Méditerrannée orientale</first>
-    <second>Rhodos</second>
-  </border>
-  <border>
-    <first>Gästrikland</first>
-    <second>Jämtland</second>
-  </border>
-  <border>
     <first>Kreta</first>
     <second>Mer Ionienne</second>
   </border>
@@ -2104,18 +1719,6 @@
   <border>
     <first>Vyatka</first>
     <second>Yaroslavl’</second>
-  </border>
-  <border>
-    <first>Golfe de Syrte</first>
-    <second>’Afrīqiyah</second>
-  </border>
-  <border>
-    <first>Golfe de Syrte</first>
-    <second>’Afrīqiyah</second>
-  </border>
-  <border>
-    <first>Golfe de Syrte</first>
-    <second>Mer Ionienne</second>
   </border>
   <border>
     <first>Golfe de Cadix</first>
@@ -2153,10 +1756,6 @@
     <type>river</type>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
     <first>Banc d’Arguin</first>
     <second>Golfe de Cadix</second>
   </border>
@@ -2170,22 +1769,6 @@
     <type>river</type>
   </border>
   <border>
-    <first>Mer Égée</first>
-    <second>Méditerrannée orientale</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
     <first>Lubnān</first>
     <second>Terra Sancta</second>
   </border>
@@ -2196,10 +1779,6 @@
   <border>
     <first>Sūriyah</first>
     <second>al-Ā’urdunn</second>
-  </border>
-  <border>
-    <first>Golfe de Syrte</first>
-    <second>’Afrīqiyah</second>
   </border>
   <border>
     <first>Méditerrannée orientale</first>
@@ -2228,10 +1807,6 @@
     <second>Jämtland</second>
   </border>
   <border>
-    <first>Mer de Norvège</first>
-    <second>Trøndelag</second>
-  </border>
-  <border>
     <first>Ladoga</first>
     <second>Onega</second>
   </border>
@@ -2239,27 +1814,6 @@
     <first>Ladoga</first>
     <second>Yaroslavl’</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Ladoga</first>
-    <second>Yaroslavl’</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Bergslagen</first>
-    <second>Jämtland</second>
-  </border>
-  <border>
-    <first>Karelen</first>
-    <second>Kexholm</second>
-  </border>
-  <border>
-    <first>Karelen</first>
-    <second>Kexholm</second>
-  </border>
-  <border>
-    <first>Karelen</first>
-    <second>Kexholm</second>
   </border>
   <border>
     <first>Trøndelag</first>
@@ -2345,10 +1899,6 @@
     <first>Magyarország</first>
     <second>Pécs</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Mer d’Irlande</first>
-    <second>Morbihan</second>
   </border>
   <border>
     <first>Kärnten</first>
@@ -2498,10 +2048,6 @@
     <second>Salzburg</second>
   </border>
   <border>
-    <first>Mer d’Irlande</first>
-    <second>Vendée</second>
-  </border>
-  <border>
     <first>Erdély</first>
     <second>Marosz</second>
   </border>
@@ -2520,14 +2066,6 @@
   <border>
     <first>Aral E</first>
     <second>Mer d’Aral</second>
-  </border>
-  <border>
-    <first>Aral E</first>
-    <second>Mer d’Aral</second>
-  </border>
-  <border>
-    <first>Golfe de Gascogne</first>
-    <second>Vendée</second>
   </border>
   <border>
     <first>Azov</first>
@@ -2555,10 +2093,6 @@
     <second>Tirol</second>
   </border>
   <border>
-    <first>Aral W</first>
-    <second>Mer Caspienne</second>
-  </border>
-  <border>
     <first>Bresse</first>
     <second>Franche-Comté</second>
   </border>
@@ -2567,29 +2101,9 @@
     <second>Kärnten</second>
   </border>
   <border>
-    <first>Astrakhan</first>
-    <second>Mer Caspienne</second>
-  </border>
-  <border>
-    <first>Astrakhan</first>
-    <second>Mer Caspienne</second>
-  </border>
-  <border>
-    <first>Balaton</first>
-    <second>Pécs</second>
-  </border>
-  <border>
     <first>Friuli</first>
     <second>Tirol</second>
     <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Aral W</first>
-    <second>Mer d’Aral</second>
-  </border>
-  <border>
-    <first>Golfe de Gascogne</first>
-    <second>Poitou</second>
   </border>
   <border>
     <first>Mer Noire occidentale</first>
@@ -2598,10 +2112,6 @@
   <border>
     <first>Lombardia</first>
     <second>Trentino</second>
-  </border>
-  <border>
-    <first>Astrakhan</first>
-    <second>Mer Caspienne</second>
   </border>
   <border>
     <first>Mer Noire orientale</first>
@@ -2625,10 +2135,6 @@
     <second>Qırım</second>
   </border>
   <border>
-    <first>Mantova</first>
-    <second>Trentino</second>
-  </border>
-  <border>
     <first>Lancashire</first>
     <second>Yorkshire</second>
   </border>
@@ -2637,33 +2143,13 @@
     <second>Lietuvą</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Slesvig</second>
-  </border>
-  <border>
     <first>Lancashire</first>
     <second>Île de Man</second>
-  </border>
-  <border>
-    <first>Astrakhan</first>
-    <second>Mer Caspienne</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Slesvig</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Vorpommern</second>
   </border>
   <border>
     <first>Bresse</first>
     <second>Savoia</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Bresse</first>
-    <second>Savoia</second>
   </border>
   <border>
     <first>Adriatique</first>
@@ -2721,17 +2207,7 @@
   </border>
   <border>
     <first>Brega</first>
-    <second>Connacht</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Brega</first>
     <second>Laighean</second>
-  </border>
-  <border>
-    <first>Brega</first>
-    <second>Connacht</second>
-    <type>river</type>
   </border>
   <border>
     <first>Adriatique</first>
@@ -2740,10 +2216,6 @@
   <border>
     <first>Cymru</first>
     <second>Lancashire</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Slesvig</second>
   </border>
   <border>
     <first>Berg</first>
@@ -2783,28 +2255,12 @@
     <second>Zeeland</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Ṭarablūs</first>
     <second>’Afrīqiyah</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Berg</first>
     <second>Gelderland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Jebel Tubqāl</first>
@@ -2888,16 +2344,8 @@
     <second>Luxembourg</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Mişr</first>
     <second>al-Nūbah</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Brabant</first>
@@ -2912,10 +2360,6 @@
     <second>Liège</second>
   </border>
   <border>
-    <first>Deltā</first>
-    <second>Sīnā’</second>
-  </border>
-  <border>
     <first>Nefud</first>
     <second>an-Nafūd</second>
   </border>
@@ -2926,10 +2370,6 @@
   <border>
     <first>Manche</first>
     <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Deltā</first>
-    <second>Mişr</second>
   </border>
   <border>
     <first>Deltā</first>
@@ -2979,36 +2419,8 @@
     <second>Silésie</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mişr</first>
-    <second>Sīnā’</second>
-  </border>
-  <border>
-    <first>Golfe Persique</first>
-    <second>al-Başrah</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Golfe Persique</first>
-    <second>al-Başrah</second>
-  </border>
-  <border>
     <first>Limburg</first>
     <second>Luxembourg</second>
-  </border>
-  <border>
-    <first>Golfe Persique</first>
-    <second>al-Başrah</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Sīnā’</first>
@@ -3023,16 +2435,8 @@
     <second>al-Nūbah</second>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Kent</first>
     <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Mer Rouge</first>
@@ -3047,14 +2451,6 @@
     <second>as-Sūs</second>
   </border>
   <border>
-    <first>Bergslagen</first>
-    <second>Jämtland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Kent</first>
     <second>Manche</second>
   </border>
@@ -3063,29 +2459,12 @@
     <second>Ṭarablūs</second>
   </border>
   <border>
-    <first>Karelen</first>
-    <second>Tavastland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mişr</first>
-    <second>al-Nūbah</second>
-  </border>
-  <border>
     <first>Franken</first>
     <second>Nassau</second>
   </border>
   <border>
     <first>Mer Rouge</first>
     <second>al-’arabiyah</second>
-  </border>
-  <border>
-    <first>Eesti</first>
-    <second>Neva</second>
-    <type>river</type>
   </border>
   <border>
     <first>Eesti</first>
@@ -3102,10 +2481,6 @@
     <type>mountain_pass</type>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Hessen</first>
     <second>Nassau</second>
   </border>
@@ -3114,16 +2489,8 @@
     <second>Neva</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
     <first>al-Başrah</first>
     <second>an-Nafūd</second>
-  </border>
-  <border>
-    <first>Mer de Norvège</first>
-    <second>Vestfold</second>
   </border>
   <border>
     <first>Nefud</first>
@@ -3155,56 +2522,12 @@
     <second>Golfe Persique</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Gästrikland</second>
-  </border>
-  <border>
-    <first>Bam</first>
-    <second>Golfe Persique</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Bam</first>
-    <second>Golfe Persique</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Bam</first>
-    <second>Golfe Persique</second>
-  </border>
-  <border>
     <first>Golfe Persique</first>
     <second>Oman E</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Karelen</second>
-  </border>
-  <border>
-    <first>Mer Rouge</first>
-    <second>al-’arabiyah</second>
-  </border>
-  <border>
     <first>Berg</first>
     <second>Nassau</second>
-  </border>
-  <border>
-    <first>Mer Rouge</first>
-    <second>al-’arabiyah</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Karelen</second>
   </border>
   <border>
     <first>Nedj E</first>
@@ -3215,56 +2538,12 @@
     <second>Limburg</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
     <first>Golfe Persique</first>
     <second>Isfahan</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Golfe Persique</first>
-    <second>Oman E</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Nyland</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Mer de Norvège</first>
-    <second>Vestfold</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
     <first>Ladoga</first>
     <second>Novgorod</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Mer de Norvège</first>
-    <second>Vestfold</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Finland</second>
   </border>
   <border>
     <first>Karelen</first>
@@ -3280,20 +2559,12 @@
     <second>Osnabrück</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Nyland</second>
-  </border>
-  <border>
     <first>Neva</first>
     <second>Novgorod</second>
   </border>
   <border>
     <first>Baie de Botnie</first>
     <second>Eesti</second>
-  </border>
-  <border>
-    <first>Friesland</first>
-    <second>Overijssel</second>
   </border>
   <border>
     <first>Mer du Nord</first>
@@ -3317,74 +2588,20 @@
     <type>mountain_pass</type>
   </border>
   <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Mer de Norvège</second>
-  </border>
-  <border>
-    <first>Friesland</first>
-    <second>Oldenburg</second>
-  </border>
-  <border>
     <first>Øresund</first>
     <second>Østlandet</second>
-  </border>
-  <border>
-    <first>Friesland</first>
-    <second>Münster</second>
   </border>
   <border>
     <first>Baie de Botnie</first>
     <second>Svealand</second>
   </border>
   <border>
-    <first>Holland</first>
-    <second>Utrecht</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Münster</first>
-    <second>Oldenburg</second>
-  </border>
-  <border>
     <first>Baie de Botnie</first>
     <second>Småland</second>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
   </border>
   <border>
     <first>Baie de Botnie</first>
     <second>Bergslagen</second>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Småland</second>
-  </border>
-  <border>
-    <first>Limburg</first>
-    <second>Utrecht</second>
-  </border>
-  <border>
-    <first>Gelderland</first>
-    <second>Utrecht</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Skåne</first>
-    <second>Småland</second>
   </border>
   <border>
     <first>Daġestān</first>
@@ -3393,40 +2610,7 @@
   </border>
   <border>
     <first>Gelderland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Holland</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Skåne</first>
-    <second>Västergotland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Utrecht</second>
-  </border>
-  <border>
-    <first>Skåne</first>
-    <second>Småland</second>
-  </border>
-  <border>
-    <first>Utrecht</first>
-    <second>Vlaanderen</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Skåne</first>
-    <second>Västergotland</second>
-  </border>
-  <border>
-    <first>Gelderland</first>
     <second>Holland</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Mer de Norvège</second>
   </border>
   <border>
     <first>Kosovo</first>
@@ -3440,10 +2624,6 @@
     <first>Bulgaristan</first>
     <second>Serbia</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Mer de Norvège</second>
   </border>
   <border>
     <first>Daġestān</first>
@@ -3460,10 +2640,6 @@
   <border>
     <first>Daġestān</first>
     <second>Mer Caspienne</second>
-  </border>
-  <border>
-    <first>Gelderland</first>
-    <second>Overijssel</second>
   </border>
   <border>
     <first>Baltique</first>
@@ -3484,28 +2660,12 @@
     <type>river</type>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
-  </border>
-  <border>
     <first>Alentejo</first>
     <second>Cáceres</second>
   </border>
   <border>
-    <first>Gelderland</first>
-    <second>Münster</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
-  </border>
-  <border>
     <first>Alentejo</first>
     <second>Golfe de Cadix</second>
-  </border>
-  <border>
-    <first>Brabant</first>
-    <second>Utrecht</second>
   </border>
   <border>
     <first>Golfe de Gascogne</first>
@@ -3516,59 +2676,16 @@
     <second>Västergotland</second>
   </border>
   <border>
-    <first>Berg</first>
-    <second>Gelderland</second>
-  </border>
-  <border>
     <first>Golfe de Cadix</first>
     <second>Tejo</second>
   </border>
   <border>
-    <first>Svealand</first>
-    <second>Västergotland</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Gelderland</first>
-    <second>Limburg</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Bergslagen</first>
     <second>Svealand</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Bergslagen</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Beira</first>
     <second>Salamanca</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Berg</first>
-    <second>Limburg</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Vestfold</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Beira</first>
@@ -3579,19 +2696,6 @@
     <first>Alentejo</first>
     <second>Beira</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Svealand</first>
-    <second>Västergotland</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Beira</first>
@@ -3606,10 +2710,6 @@
     <second>Golfe de Gascogne</second>
   </border>
   <border>
-    <first>Bergslagen</first>
-    <second>Västergotland</second>
-  </border>
-  <border>
     <first>Golfe de Gascogne</first>
     <second>Trás-os-Montes</second>
   </border>
@@ -3619,29 +2719,9 @@
     <type>river</type>
   </border>
   <border>
-    <first>Münster</first>
-    <second>Nassau</second>
-  </border>
-  <border>
-    <first>Bergslagen</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Berg</first>
-    <second>Münster</second>
-  </border>
-  <border>
     <first>Aragón</first>
     <second>Vizcaya</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Mer de Norvège</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Vestfold</second>
   </border>
   <border>
     <first>Castilla La Vieja</first>
@@ -3666,21 +2746,12 @@
     <second>Mer Tyrrhénienne</second>
   </border>
   <border>
-    <first>Øresund</first>
-    <second>Østlandet</second>
-  </border>
-  <border>
     <first>Lucca</first>
     <second>Toscana</second>
   </border>
   <border>
     <first>Lucca</first>
     <second>Modena</second>
-  </border>
-  <border>
-    <first>Eesti</first>
-    <second>Neva</second>
-    <type>river</type>
   </border>
   <border>
     <first>Navarra</first>
@@ -3699,28 +2770,8 @@
     <second>Aral W</second>
   </border>
   <border>
-    <first>Bergslagen</first>
-    <second>Västergotland</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
-  </border>
-  <border>
     <first>Béarn</first>
     <second>Guyenne</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Mer de Norvège</second>
   </border>
   <border>
     <first>Modena</first>
@@ -3739,25 +2790,13 @@
     <second>Romagna</second>
   </border>
   <border>
-    <first>Alba</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Golfe de Gascogne</first>
     <second>Vizcaya</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
   </border>
   <border>
     <first>Highlands</first>
     <second>Moray</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
   </border>
   <border>
     <first>Alba</first>
@@ -3771,18 +2810,6 @@
   <border>
     <first>Golfe du Lion</first>
     <second>Nice</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Mer de Norvège</second>
-  </border>
-  <border>
-    <first>Øresund</first>
-    <second>Østlandet</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Vestfold</second>
   </border>
   <border>
     <first>Cumberland</first>
@@ -3831,10 +2858,6 @@
   <border>
     <first>Cumberland</first>
     <second>Yorkshire</second>
-  </border>
-  <border>
-    <first>Alabania</first>
-    <second>Makedonya</second>
   </border>
   <border>
     <first>Castilla La Vieja</first>
@@ -3903,20 +2926,12 @@
     <second>Castilla La Vieja</second>
   </border>
   <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
-  </border>
-  <border>
     <first>Catalunya</first>
     <second>Pirineos</second>
   </border>
   <border>
     <first>Navarra</first>
     <second>Pirineos</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
   </border>
   <border>
     <first>Corsica</first>
@@ -3929,10 +2944,6 @@
   <border>
     <first>Golfe du Lion</first>
     <second>Rosseló</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
   </border>
   <border>
     <first>Galiza</first>
@@ -3968,10 +2979,6 @@
     <second>Quercy</second>
   </border>
   <border>
-    <first>Golfe de Gascogne</first>
-    <second>Poitou</second>
-  </border>
-  <border>
     <first>Dalmacija</first>
     <second>Hrvatska</second>
   </border>
@@ -3988,16 +2995,8 @@
     <second>Kranj</second>
   </border>
   <border>
-    <first>Astrakhan</first>
-    <second>Mer Caspienne</second>
-  </border>
-  <border>
     <first>Limousin</first>
     <second>Quercy</second>
-  </border>
-  <border>
-    <first>Mantova</first>
-    <second>Trentino</second>
   </border>
   <border>
     <first>Hrvatska</first>
@@ -4035,21 +3034,9 @@
     <second>Poitou</second>
   </border>
   <border>
-    <first>Antalya</first>
-    <second>İzmir</second>
-  </border>
-  <border>
-    <first>Mer Égée</first>
-    <second>İzmir</second>
-  </border>
-  <border>
     <first>Bursa</first>
     <second>İzmir</second>
     <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Antalya</first>
-    <second>İzmir</second>
   </border>
   <border>
     <first>Adriatique</first>
@@ -4084,16 +3071,6 @@
   <border>
     <first>Mer Noire occidentale</first>
     <second>Sinop</second>
-  </border>
-  <border>
-    <first>Bursa</first>
-    <second>İzmir</second>
-    <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Bursa</first>
-    <second>İzmir</second>
-    <type>mountain_pass</type>
   </border>
   <border>
     <first>Kuban</first>
@@ -4257,18 +3234,6 @@
     <second>Gloucester</second>
   </border>
   <border>
-    <first>Adriatique</first>
-    <second>Kapela</second>
-  </border>
-  <border>
-    <first>Münster</first>
-    <second>Overijssel</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Kapela</second>
-  </border>
-  <border>
     <first>Liguria</first>
     <second>Monferrato</second>
   </border>
@@ -4301,10 +3266,6 @@
   </border>
   <border>
     <first>Adriatique</first>
-    <second>Kapela</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
     <second>Romagna</second>
   </border>
   <border>
@@ -4320,14 +3281,6 @@
     <first>Lublin</first>
     <second>Wielkopolska</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Kapela</second>
-  </border>
-  <border>
-    <first>Daġestān</first>
-    <second>Mer Caspienne</second>
   </border>
   <border>
     <first>Małopolska</first>
@@ -4370,14 +3323,6 @@
     <second>Morava</second>
   </border>
   <border>
-    <first>Adriatique</first>
-    <second>Kapela</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Overijssel</second>
-  </border>
-  <border>
     <first>Mazowia</first>
     <second>West Preußen</second>
     <type>river</type>
@@ -4416,21 +3361,8 @@
     <type>river</type>
   </border>
   <border>
-    <first>Don</first>
-    <second>Samara</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Astrakhan</first>
     <second>Samara</second>
-  </border>
-  <border>
-    <first>Caffa</first>
-    <second>Mer Noire orientale</second>
-  </border>
-  <border>
-    <first>Caffa</first>
-    <second>Qırım</second>
   </border>
   <border>
     <first>Gloucester</first>
@@ -4439,10 +3371,6 @@
   <border>
     <first>Bashkiria</first>
     <second>Step’</second>
-  </border>
-  <border>
-    <first>Caffa</first>
-    <second>Qırım</second>
   </border>
   <border>
     <first>Lublin</first>
@@ -4454,25 +3382,13 @@
     <type>river</type>
   </border>
   <border>
-    <first>Gelderland</first>
-    <second>Holland</second>
-  </border>
-  <border>
     <first>Lublin</first>
     <second>Prypeć</second>
     <type>river</type>
   </border>
   <border>
-    <first>Mer Noire orientale</first>
-    <second>Qırım</second>
-  </border>
-  <border>
     <first>Astrakhan</first>
     <second>Step’</second>
-  </border>
-  <border>
-    <first>Hainaut</first>
-    <second>Liège</second>
   </border>
   <border>
     <first>Aral W</first>
@@ -4487,21 +3403,9 @@
     <second>Mešhed</second>
   </border>
   <border>
-    <first>Köln</first>
-    <second>Limburg</second>
-  </border>
-  <border>
     <first>Poltava</first>
     <second>Zaporizhzhya</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Franken</first>
@@ -4513,39 +3417,6 @@
     <type>river</type>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Poltava</first>
-    <second>Zaporizhzhya</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Limburg</first>
-    <second>Luxembourg</second>
-  </border>
-  <border>
-    <first>Brabant</first>
-    <second>Liège</second>
-  </border>
-  <border>
-    <first>Limburg</first>
-    <second>Liège</second>
-  </border>
-  <border>
     <first>Poltava</first>
     <second>Qırım</second>
   </border>
@@ -4553,14 +3424,6 @@
     <first>Nassau</first>
     <second>Pfalz</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Kent</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Mainz</first>
@@ -4576,24 +3439,12 @@
     <second>Hainaut</second>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Bohème</first>
     <second>Österreich</second>
   </border>
   <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Morava</first>
     <second>Österreich</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Mainz</first>
@@ -4604,32 +3455,12 @@
     <second>OberPfalz</second>
   </border>
   <border>
-    <first>Kent</first>
-    <second>Manche</second>
-  </border>
-  <border>
     <first>Champagne</first>
     <second>Hainaut</second>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
     <first>Morava</first>
     <second>Szlovákia</second>
-  </border>
-  <border>
-    <first>Brabant</first>
-    <second>Limburg</second>
-  </border>
-  <border>
-    <first>Berg</first>
-    <second>Nassau</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
   </border>
   <border>
     <first>Picardie</first>
@@ -4657,10 +3488,6 @@
     <second>OberPfalz</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
-  </border>
-  <border>
     <first>Artois</first>
     <second>Île-de-France</second>
   </border>
@@ -4679,16 +3506,8 @@
     <type>river</type>
   </border>
   <border>
-    <first>Manche</first>
-    <second>Mer d’Irlande</second>
-  </border>
-  <border>
     <first>Mer du Nord</first>
     <second>Vlaanderen</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Eesti</second>
   </border>
   <border>
     <first>Champagne</first>
@@ -4703,10 +3522,6 @@
     <second>Morava</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Eesti</second>
-  </border>
-  <border>
     <first>Flandre</first>
     <second>Manche</second>
   </border>
@@ -4715,34 +3530,12 @@
     <second>Picardie</second>
   </border>
   <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Svealand</first>
-    <second>Västergotland</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Svealand</first>
-    <second>Västergotland</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Flandre</first>
     <second>Vlaanderen</second>
   </border>
   <border>
     <first>Brabant</first>
     <second>Hainaut</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Svealand</second>
   </border>
   <border>
     <first>Brabant</first>
@@ -4802,24 +3595,12 @@
     <type>river</type>
   </border>
   <border>
-    <first>Artois</first>
-    <second>Hainaut</second>
-  </border>
-  <border>
     <first>Savoia</first>
     <second>Schweiz</second>
   </border>
   <border>
-    <first>Luxembourg</first>
-    <second>Trier</second>
-  </border>
-  <border>
     <first>Småland</first>
     <second>Svealand</second>
-  </border>
-  <border>
-    <first>Svealand</first>
-    <second>Västergotland</second>
   </border>
   <border>
     <first>Bresse</first>
@@ -4832,68 +3613,6 @@
   <border>
     <first>Köln</first>
     <second>Luxembourg</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Bresse</first>
-    <second>Schweiz</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Eesti</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Champagne</first>
-    <second>Île-de-France</second>
-  </border>
-  <border>
-    <first>Svealand</first>
-    <second>Västergotland</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Picardie</first>
-    <second>Île-de-France</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Champagne</first>
-    <second>Lorraine</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Lorraine</first>
-    <second>Pfalz</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Svealand</second>
-  </border>
-  <border>
-    <first>Baie de Botnie</first>
-    <second>Eesti</second>
   </border>
   <border>
     <first>Sibérie NW</first>
@@ -4921,10 +3640,6 @@
     <type>river</type>
   </border>
   <border>
-    <first>Västergotland</first>
-    <second>Øresund</second>
-  </border>
-  <border>
     <first>Kazan’</first>
     <second>Tatarstan</second>
     <type>river</type>
@@ -4937,10 +3652,6 @@
   <border>
     <first>Baie de Botnie</first>
     <second>Livonija</second>
-  </border>
-  <border>
-    <first>Kexholm</first>
-    <second>Tavastland</second>
   </border>
   <border>
     <first>Baltique</first>
@@ -5003,10 +3714,6 @@
     <second>Montenegro</second>
   </border>
   <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Mer Tyrrhénienne</first>
     <second>Siena</second>
   </border>
@@ -5025,14 +3732,6 @@
   <border>
     <first>Abruzzo</first>
     <second>Umbria</second>
-  </border>
-  <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Västergotland</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Aragón</first>
@@ -5075,10 +3774,6 @@
     <type>river</type>
   </border>
   <border>
-    <first>Highlands</first>
-    <second>Western Approaches</second>
-  </border>
-  <border>
     <first>Novgorod</first>
     <second>Pskov</second>
   </border>
@@ -5109,10 +3804,6 @@
     <second>Golfe de Gascogne</second>
   </border>
   <border>
-    <first>Baie de Botnie</first>
-    <second>Gotland</second>
-  </border>
-  <border>
     <first>Kocaeli</first>
     <second>Mer Noire occidentale</second>
   </border>
@@ -5123,18 +3814,6 @@
   <border>
     <first>Pskov</first>
     <second>Smolenską</second>
-  </border>
-  <border>
-    <first>Bursa</first>
-    <second>Kocaeli</second>
-  </border>
-  <border>
-    <first>Småland</first>
-    <second>Västergotland</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Slesvig</second>
   </border>
   <border>
     <first>Castilla La Nueva</first>
@@ -5148,10 +3827,6 @@
   <border>
     <first>Mer Tyrrhénienne</first>
     <second>Saldígna</second>
-  </border>
-  <border>
-    <first>Jylland</first>
-    <second>Øresund</second>
   </border>
   <border>
     <first>Jylland</first>
@@ -5190,27 +3865,11 @@
     <type>mountain_pass</type>
   </border>
   <border>
-    <first>Lübeck</first>
-    <second>Øresund</second>
-  </border>
-  <border>
     <first>Golfe du Lion</first>
     <second>Saldígna</second>
   </border>
   <border>
-    <first>Baie d’Alger</first>
-    <second>Saldígna</second>
-  </border>
-  <border>
     <first>Golfe de Syrte</first>
-    <second>Saldígna</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Vorpommern</second>
-  </border>
-  <border>
-    <first>Mer Tyrrhénienne</first>
     <second>Saldígna</second>
   </border>
   <border>
@@ -5239,14 +3898,6 @@
     <second>Mer Tyrrhénienne</second>
   </border>
   <border>
-    <first>Mer de Norvège</first>
-    <second>Mer du Nord</second>
-  </border>
-  <border>
-    <first>Mer Tyrrhénienne</first>
-    <second>Saldígna</second>
-  </border>
-  <border>
     <first>Hinterpommern</first>
     <second>West Preußen</second>
   </border>
@@ -5261,10 +3912,6 @@
   <border>
     <first>Oldenburg</first>
     <second>Western Approaches</second>
-  </border>
-  <border>
-    <first>Golfe du Lion</first>
-    <second>Saldígna</second>
   </border>
   <border>
     <first>Anhalt</first>
@@ -5295,14 +3942,6 @@
     <second>Sachsen</second>
   </border>
   <border>
-    <first>Alabania</first>
-    <second>Makedonya</second>
-  </border>
-  <border>
-    <first>Golfe du Lion</first>
-    <second>Saldígna</second>
-  </border>
-  <border>
     <first>Baltique</first>
     <second>Hinterpommern</second>
   </border>
@@ -5314,10 +3953,6 @@
   <border>
     <first>Anadolu</first>
     <second>Kilikya</second>
-  </border>
-  <border>
-    <first>Münster</first>
-    <second>Osnabrück</second>
   </border>
   <border>
     <first>Oldenburg</first>
@@ -5340,16 +3975,8 @@
     <second>Osnabrück</second>
   </border>
   <border>
-    <first>Alabania</first>
-    <second>Makedonya</second>
-  </border>
-  <border>
     <first>Azarbāyadjān</first>
     <second>Wān</second>
-  </border>
-  <border>
-    <first>Friesland</first>
-    <second>Mer du Nord</second>
   </border>
   <border>
     <first>Kordistān</first>
@@ -5364,10 +3991,6 @@
     <first>Wān</first>
     <second>Ĥalab</second>
     <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Oldenburg</second>
   </border>
   <border>
     <first>Anadolu</first>
@@ -5431,14 +4054,6 @@
     <second>Arménie</second>
   </border>
   <border>
-    <first>Alabania</first>
-    <second>Makedonya</second>
-  </border>
-  <border>
-    <first>Marmara</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
     <first>Cáceres</first>
     <second>Salamanca</second>
     <type>river</type>
@@ -5466,14 +4081,6 @@
     <second>Çanakkale Boğazı</second>
   </border>
   <border>
-    <first>Mer Égée</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
-    <first>Campania</first>
-    <second>Mer Tyrrhénienne</second>
-  </border>
-  <border>
     <first>Makedonya</first>
     <second>Mer Égée</second>
   </border>
@@ -5488,10 +4095,6 @@
   <border>
     <first>Basilicata</first>
     <second>Mer Ionienne</second>
-  </border>
-  <border>
-    <first>Bursa</first>
-    <second>Kocaeli</second>
   </border>
   <border>
     <first>Alentejo</first>
@@ -5511,48 +4114,16 @@
     <second>Azarbāyadjān</second>
   </border>
   <border>
-    <first>Marmara</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
     <first>Castilla La Nueva</first>
     <second>Valencia</second>
   </border>
   <border>
-    <first>Marmara</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
-    <first>Illes Balears</first>
-    <second>Méditerrannée occidentale</second>
-  </border>
-  <border>
     <first>Baie d’Alger</first>
     <second>Illes Balears</second>
   </border>
   <border>
     <first>Golfe du Lion</first>
     <second>Illes Balears</second>
-  </border>
-  <border>
-    <first>Makedonya</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Hellas</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Golfe du Lion</first>
-    <second>Illes Balears</second>
-  </border>
-  <border>
-    <first>Baie d’Alger</first>
-    <second>Illes Balears</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Montenegro</second>
   </border>
   <border>
     <first>Adriatique</first>
@@ -5562,14 +4133,6 @@
     <first>Alabania</first>
     <second>Mer Ionienne</second>
     <type>straits</type>
-  </border>
-  <border>
-    <first>Hellas</first>
-    <second>Mer Ionienne</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Montenegro</second>
   </border>
   <border>
     <first>Aragón</first>
@@ -5584,33 +4147,9 @@
     <second>Moreas</second>
   </border>
   <border>
-    <first>Mer Ionienne</first>
-    <second>Moreas</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Dalmacija</second>
-  </border>
-  <border>
     <first>Hellas</first>
     <second>Makedonya</second>
     <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Makedonya</first>
-    <second>Mer Égée</second>
-  </border>
-  <border>
-    <first>Mer Égée</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
-    <first>Marmara</first>
-    <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
-    <first>Mer Tyrrhénienne</first>
-    <second>Siena</second>
   </border>
   <border>
     <first>Aragón</first>
@@ -5624,10 +4163,6 @@
   <border>
     <first>Mer Noire occidentale</first>
     <second>Trakya</second>
-  </border>
-  <border>
-    <first>Mer Tyrrhénienne</first>
-    <second>Toscana</second>
   </border>
   <border>
     <first>Catalunya</first>
@@ -5646,16 +4181,8 @@
     <second>Montenegro</second>
   </border>
   <border>
-    <first>Adriatique</first>
-    <second>Montenegro</second>
-  </border>
-  <border>
     <first>Trakya</first>
     <second>Çanakkale Boğazı</second>
-  </border>
-  <border>
-    <first>Adriatique</first>
-    <second>Montenegro</second>
   </border>
   <border>
     <first>León</first>
@@ -5700,60 +4227,6 @@
     <second>Thüringen</second>
   </border>
   <border>
-    <first>Flandre</first>
-    <second>Picardie</second>
-  </border>
-  <border>
-    <first>Flandre</first>
-    <second>Manche</second>
-  </border>
-  <border>
-    <first>Artois</first>
-    <second>Picardie</second>
-  </border>
-  <border>
-    <first>Brabant</first>
-    <second>Vlaanderen</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Brabant</first>
-    <second>Hainaut</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Vlaanderen</second>
-  </border>
-  <border>
-    <first>Mer du Nord</first>
-    <second>Vlaanderen</second>
-  </border>
-  <border>
-    <first>Artois</first>
-    <second>Champagne</second>
-  </border>
-  <border>
-    <first>Artois</first>
-    <second>Île-de-France</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Zeeland</second>
-  </border>
-  <border>
-    <first>Champagne</first>
-    <second>Hainaut</second>
-  </border>
-  <border>
-    <first>Flandre</first>
-    <second>Vlaanderen</second>
-  </border>
-  <border>
-    <first>Hainaut</first>
-    <second>Vlaanderen</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Donets</first>
     <second>Poltava</second>
     <type>river</type>
@@ -5762,10 +4235,6 @@
     <first>Donets</first>
     <second>Qırım</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Wessex</second>
   </border>
   <border>
     <first>OberPfalz</first>
@@ -5789,21 +4258,12 @@
     <type>mountain_pass</type>
   </border>
   <border>
-    <first>Flandre</first>
-    <second>Hainaut</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Manche</first>
     <second>Normandie</second>
   </border>
   <border>
     <first>Armor</first>
     <second>Normandie</second>
-  </border>
-  <border>
-    <first>Manche</first>
-    <second>Picardie</second>
   </border>
   <border>
     <first>Caux</first>
@@ -5831,10 +4291,6 @@
     <first>Bohème</first>
     <second>Sachsen</second>
     <type>mountain_pass</type>
-  </border>
-  <border>
-    <first>Artois</first>
-    <second>Flandre</second>
   </border>
   <border>
     <first>Berry</first>
@@ -5873,14 +4329,6 @@
     <second>Terek</second>
   </border>
   <border>
-    <first>Köln</first>
-    <second>Luxembourg</second>
-  </border>
-  <border>
-    <first>Köln</first>
-    <second>Trier</second>
-  </border>
-  <border>
     <first>Berry</first>
     <second>Maine</second>
     <type>river</type>
@@ -5900,16 +4348,6 @@
     <second>Terek</second>
   </border>
   <border>
-    <first>Luxembourg</first>
-    <second>Pfalz</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Pfalz</first>
-    <second>Trier</second>
-    <type>river</type>
-  </border>
-  <border>
     <first>Arménie</first>
     <second>Šīrwān</second>
   </border>
@@ -5918,39 +4356,13 @@
     <second>Géorgie</second>
   </border>
   <border>
-    <first>Berg</first>
-    <second>Trier</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Berg</first>
-    <second>Köln</second>
-    <type>river</type>
-  </border>
-  <border>
-    <first>Liège</first>
-    <second>Luxembourg</second>
-  </border>
-  <border>
     <first>Mer Caspienne</first>
     <second>Pārs</second>
-  </border>
-  <border>
-    <first>Hainaut</first>
-    <second>Luxembourg</second>
-  </border>
-  <border>
-    <first>Champagne</first>
-    <second>Luxembourg</second>
   </border>
   <border>
     <first>Azarbāyadjān</first>
     <second>Šīrwān</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Lorraine</first>
-    <second>Luxembourg</second>
   </border>
   <border>
     <first>Azarbāyadjān</first>
