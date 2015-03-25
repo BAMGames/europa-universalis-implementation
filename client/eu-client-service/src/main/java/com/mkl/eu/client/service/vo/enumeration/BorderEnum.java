@@ -13,19 +13,19 @@ import java.util.Map;
  * @author MKL
  */
 public enum BorderEnum {
+    /** River. */
     RIVER,
+    /** Mountain pass. */
     MOUNTAIN_PASS,
+    /** Straits. */
     STRAITS;
-
-
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BorderEnum.class);
-
     /** Type de roles par code. */
     private static Map<String, BorderEnum> bordersByCode = new HashMap<>();
 
     static {
-            bordersByCode.put("river", RIVER);
+        bordersByCode.put("river", RIVER);
         bordersByCode.put("mountain_pass", MOUNTAIN_PASS);
         bordersByCode.put("straits", STRAITS);
     }
