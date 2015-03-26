@@ -1,5 +1,7 @@
 package com.mkl.eu.client.service.vo.board;
 
+import com.mkl.eu.client.service.vo.EuObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class Stack {
+public class Stack extends EuObject {
     /** Province where the stack is located (String or Province ?). */
     private String province;
     /** Counters of the stack. */
