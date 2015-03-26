@@ -30,6 +30,18 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
+    public void draw(UnfoldingMap map, StackMarker stackToIgnore) {
+        for (Marker marker : markers) {
+            if (marker instanceof IMapMarker) {
+                ((IMapMarker) marker).draw(map, stackToIgnore);
+            } else {
+                marker.draw(map);
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setHighlightColor(int highlightColor) {
         for (Marker subMarker : getMarkers()) {
             if (subMarker instanceof AbstractMarker) {
@@ -38,9 +50,7 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
         }
     }
 
-    /**
-     * @return the first IMapMarker of the markers.
-     */
+    /** @return the first IMapMarker of the markers. */
     private IMapMarker getFirstMapMarker() {
         IMapMarker mapMarker = null;
 
@@ -86,6 +96,12 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
     @Override
     public void addStack(StackMarker stack) {
         getFirstMapMarker().addStack(stack);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StackMarker getStack(UnfoldingMap map, int x, int y) {
+        return getFirstMapMarker().getStack(map, x, y);
     }
 
     /** {@inheritDoc} */

@@ -21,10 +21,9 @@ public class InfowViewMouseHandler extends MapEventBroadcaster {
     /**
      * Creates a MouseHandler for the given maps.
      *
-     * @param p                 The PApplet.
-     * @param mapOverviewStatic overview map.
-     * @param viewportRect      Interactive finder box
-     * @param maps              One or more maps.
+     * @param p        The PApplet.
+     * @param infoView informative panel.
+     * @param maps     One or more maps.
      */
     public InfowViewMouseHandler(PApplet p, InfoView infoView, UnfoldingMap... maps) {
         this(p, infoView, Arrays.asList(maps));
@@ -33,10 +32,9 @@ public class InfowViewMouseHandler extends MapEventBroadcaster {
     /**
      * Creates a MouseHandler for the given maps.
      *
-     * @param p                 The PApplet.
-     * @param mapOverviewStatic overview map.
-     * @param viewportRect      Interactive finder box
-     * @param maps              A list of maps.
+     * @param p        The PApplet.
+     * @param infoView informative panel.
+     * @param maps     A list of maps.
      */
     public InfowViewMouseHandler(PApplet p, InfoView infoView, List<UnfoldingMap> maps) {
         super(maps);

@@ -80,7 +80,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
-    public void draw(UnfoldingMap map) {
+    public void draw(UnfoldingMap map, StackMarker stackToIgnore) {
         Location bottomRightBorder = map.getBottomRightBorder();
 
         Location topLeftBorder = map.getTopLeftBorder();
@@ -100,6 +100,10 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             float[] xy = map.mapDisplay.getObjectFromLocation(center);
             float size = 0.08f * map.getZoom();
             for (int i = 0; i < stacks.size(); i++) {
+                // The stack being dragged is drawn by the MarkerManager.
+                if (stacks.get(i) == stackToIgnore) {
+                    continue;
+                }
                 for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
                     CounterMarker counter = stacks.get(i).getCounters().get(j);
                     float x0 = xy[0] - size * (stacks.size() - 1) / 2;
@@ -246,14 +250,23 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     /** {@inheritDoc} */
     @Override
     public void hover(UnfoldingMap map, int x, int y) {
+        hovered = getStack(map, x, y);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StackMarker getStack(UnfoldingMap map, int x, int y) {
+        StackMarker stack = null;
+
         float[] xy = map.mapDisplay.getObjectFromLocation(center);
         float size = 0.08f * map.getZoom();
         float x0 = xy[0] - size * (stacks.size() - 1) / 2;
-        hovered = null;
 
         if (x >= x0 && x <= x0 + stacks.size() * size && y >= xy[1] && y <= xy[1] + size) {
             int index = (int) ((x - x0) / size);
-            hovered = stacks.get(index);
+            stack = stacks.get(index);
         }
+
+        return stack;
     }
 }

@@ -15,44 +15,54 @@ public interface IMapMarker {
      *
      * @param highlightColor the highlightColor to set.
      */
-    public void setHighlightColor(int highlightColor);
+    void setHighlightColor(int highlightColor);
 
     /** @return the neighbours. */
-    public List<BorderMarker> getNeighbours();
+    List<BorderMarker> getNeighbours();
 
     /**
      * Add a neighbour.
      *
      * @param neighbour the neighbour to add.
      */
-    public void addNeighbours(BorderMarker neighbour);
+    void addNeighbours(BorderMarker neighbour);
 
     /** @return the id; */
-    public String getId();
+    String getId();
 
     /** @return the stacks. */
-    public List<StackMarker> getStacks();
+    List<StackMarker> getStacks();
 
     /**
      * Sets the stacks to the marker.
      *
      * @param stacks the stacks to set.
      */
-    public void setStacks(List<StackMarker> stacks);
+    void setStacks(List<StackMarker> stacks);
 
     /**
      * Add a stack to the marker.
      *
      * @param stack the stack to add.
      */
-    public void addStack(StackMarker stack);
+    void addStack(StackMarker stack);
 
     /**
      * Remove a stack to the marker.
      *
      * @param stack the stack to remove.
      */
-    public void removeStack(StackMarker stack);
+    void removeStack(StackMarker stack);
+
+    /**
+     * Returns the stack at the x/y coordinates, <code>null</code> if none.
+     *
+     * @param map the map.
+     * @param x   X coordinate.
+     * @param y   Y coordinate.
+     * @return the stack at the x/y coordinates, <code>null</code> if none.
+     */
+    StackMarker getStack(UnfoldingMap map, int x, int y);
 
     /**
      * Method called when the marker is hovered.
@@ -62,4 +72,12 @@ public interface IMapMarker {
      * @param y   Y coordinate.
      */
     void hover(UnfoldingMap map, int x, int y);
+
+    /**
+     * Draws this marker.
+     *
+     * @param map           The map to draw on.
+     * @param stackToIgnore stack not to draw.
+     */
+    void draw(UnfoldingMap map, StackMarker stackToIgnore);
 }
