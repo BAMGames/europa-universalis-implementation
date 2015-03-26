@@ -12,8 +12,8 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 public class Counter extends EuObject {
     /** Owner of the counter. */
     private Country country;
-    /** Province where the counter is located (String or Province ?). */
-    private String province;
+    /** Stack owning the counter. */
+    private Stack owner;
     /** Type of the counter. */
     private CounterTypeEnum type;
 
@@ -34,14 +34,14 @@ public class Counter extends EuObject {
         this.country = country;
     }
 
-    /** @return the province. */
-    public String getProvince() {
-        return province;
+    /** @return the owner. */
+    public Stack getOwner() {
+        return owner;
     }
 
-    /** @param province the province to set. */
-    public void setProvince(String province) {
-        this.province = province;
+    /** @param owner the owner to set. */
+    public void setOwner(Stack owner) {
+        this.owner = owner;
     }
 
     /** @return the type. */
