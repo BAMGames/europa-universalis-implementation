@@ -13,6 +13,8 @@ public class CounterMarker {
     private Counter counter;
     /** Image of the counter. */
     private PImage image;
+    /** Stack owning the counter. */
+    private StackMarker owner;
 
     /**
      * Constructor.
@@ -32,5 +34,15 @@ public class CounterMarker {
     /** @return the image. */
     public PImage getImage() {
         return image;
+    }
+
+    /** @return the owner. */
+    public StackMarker getOwner() {
+        return owner;
+    }
+
+    /** @param owner the owner to set. */
+    public void setOwner(StackMarker owner) {
+        this.owner = owner;
     }
 }

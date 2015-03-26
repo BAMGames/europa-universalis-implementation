@@ -30,43 +30,29 @@ public interface IMapMarker {
     /** @return the id; */
     public String getId();
 
-    /** @return the counters. */
-    public List<CounterMarker> getCounters();
+    /** @return the stacks. */
+    public List<StackMarker> getStacks();
 
     /**
-     * Sets the counters to the marker.
+     * Sets the stacks to the marker.
      *
-     * @param counters the counters to set.
+     * @param stacks the stacks to set.
      */
-    public void setCounters(List<CounterMarker> counters);
+    public void setStacks(List<StackMarker> stacks);
 
     /**
-     * Add a counter to the marker.
+     * Add a stack to the marker.
      *
-     * @param counter the counter to add.
+     * @param stack the stack to add.
      */
-    public void addCounter(CounterMarker counter);
+    public void addStack(StackMarker stack);
 
     /**
-     * Add counters to the marker.
+     * Remove a stack to the marker.
      *
-     * @param counters the counters to add.
+     * @param stack the stack to remove.
      */
-    public void addCounters(List<CounterMarker> counters);
-
-    /**
-     * Remove a counter to the marker.
-     *
-     * @param counter the counter to remove.
-     */
-    public void removeCounter(CounterMarker counter);
-
-    /**
-     * Remove counters to the marker.
-     *
-     * @param counters the counters to remove.
-     */
-    public void removeCounters(List<CounterMarker> counters);
+    public void removeStack(StackMarker stack);
 
     /**
      * Method called when the marker is hovered.

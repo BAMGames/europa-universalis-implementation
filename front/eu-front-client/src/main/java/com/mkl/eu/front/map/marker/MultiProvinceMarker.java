@@ -72,38 +72,26 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
-    public List<CounterMarker> getCounters() {
-        return getFirstMapMarker().getCounters();
+    public List<StackMarker> getStacks() {
+        return getFirstMapMarker().getStacks();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setCounters(List<CounterMarker> counters) {
-        getFirstMapMarker().setCounters(counters);
+    public void setStacks(List<StackMarker> stacks) {
+        getFirstMapMarker().setStacks(stacks);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addCounter(CounterMarker counter) {
-        getFirstMapMarker().addCounter(counter);
+    public void addStack(StackMarker stack) {
+        getFirstMapMarker().addStack(stack);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addCounters(List<CounterMarker> counters) {
-        getFirstMapMarker().addCounters(counters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void removeCounter(CounterMarker counter) {
-        getFirstMapMarker().removeCounter(counter);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void removeCounters(List<CounterMarker> counters) {
-        getFirstMapMarker().removeCounters(counters);
+    public void removeStack(StackMarker stack) {
+        getFirstMapMarker().removeStack(stack);
     }
 
     /** {@inheritDoc} */

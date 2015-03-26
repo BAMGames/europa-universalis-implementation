@@ -2,6 +2,7 @@ package com.mkl.eu.front.map.marker;
 
 import com.mkl.eu.client.service.vo.Country;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.front.map.vo.Border;
 import com.thoughtworks.xstream.XStream;
@@ -58,20 +59,58 @@ public final class MarkerUtils {
         markerFactory.setPolygonClass(ProvinceMarker.class);
         markerFactory.setMultiPolygonClass(MultiProvinceMarker.class);
         Map<String, Marker> countryMarkers = markerFactory.createMapMarkers(countries);
-        List<Counter> counters = new ArrayList<>();
+        List<Stack> stacks = new ArrayList<>();
+        Stack stack1 = new Stack();
+        stack1.setProvince("Prypeć");
         Counter counter1 = new Counter();
         counter1.setCountry(new Country());
         counter1.getCountry().setName("FRA");
-        counter1.setProvince("Île-de-France");
         counter1.setType(CounterTypeEnum.ARMY_PLUS);
-        counters.add(counter1);
-        counters.add(counter1);
+        stack1.getCounters().add(counter1);
+        stack1.getCounters().add(counter1);
+        stacks.add(stack1);
+
+        stack1 = new Stack();
+        stack1.setProvince("Prypeć");
         counter1 = new Counter();
         counter1.setCountry(new Country());
         counter1.getCountry().setName("FRA");
-        counter1.setProvince("Languedoc");
         counter1.setType(CounterTypeEnum.ARMY_PLUS);
-        counters.add(counter1);
+        stack1.getCounters().add(counter1);
+        Counter counter2 = new Counter();
+        counter2.setCountry(new Country());
+        counter2.getCountry().setName("FRA");
+        counter2.setType(CounterTypeEnum.ARMY_MINUS);
+        stack1.getCounters().add(counter2);
+        stacks.add(stack1);
+
+        stack1 = new Stack();
+        stack1.setProvince("Prypeć");
+        counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        stack1.getCounters().add(counter1);
+        counter2 = new Counter();
+        counter2.setCountry(new Country());
+        counter2.getCountry().setName("FRA");
+        counter2.setType(CounterTypeEnum.ARMY_MINUS);
+        stack1.getCounters().add(counter2);
+        Counter counter3 = new Counter();
+        counter3.setCountry(new Country());
+        counter3.getCountry().setName("FRA");
+        counter3.setType(CounterTypeEnum.LAND_DETACHMENT);
+        stack1.getCounters().add(counter3);
+        stacks.add(stack1);
+
+        stack1 = new Stack();
+        stack1.setProvince("Languedoc");
+        counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        stack1.getCounters().add(counter1);
+        stacks.add(stack1);
 
         for (Marker marker : countryMarkers.values()) {
 
@@ -82,8 +121,9 @@ public final class MarkerUtils {
             int blue = (int) (255 * Math.random());
             marker.setColor(pApplet.color(red, green, blue, transparency));
             if (marker instanceof IMapMarker) {
+                IMapMarker mapMarker = (IMapMarker) marker;
                 int highlight = 25;
-                ((IMapMarker)marker).setHighlightColor(pApplet.color(Math.min(255, red + highlight), Math.min(255, green + highlight), Math.min(255, blue + highlight), transparency));
+                mapMarker.setHighlightColor(pApplet.color(Math.min(255, red + highlight), Math.min(255, green + highlight), Math.min(255, blue + highlight), transparency));
                 for (Border border: borders) {
                     if (StringUtils.equals(border.getFirst(), marker.getId()) || StringUtils.equals(border.getSecond(), marker.getId())) {
                         String nameToSeek = border.getFirst();
@@ -94,16 +134,20 @@ public final class MarkerUtils {
                         Marker provinceToSeek = countryMarkers.get(nameToSeek);
 
                         if (provinceToSeek instanceof IMapMarker) {
-                            ((IMapMarker) marker).addNeighbours(new BorderMarker((IMapMarker) provinceToSeek, border.getType()));
+                            mapMarker.addNeighbours(new BorderMarker((IMapMarker) provinceToSeek, border.getType()));
                         } else {
                             LOGGER.error("Can't find province {}.", nameToSeek);
                         }
                     }
                 }
 
-                for (Counter counter: counters) {
-                    if (StringUtils.equals(counter.getProvince(), marker.getId())) {
-                        ((IMapMarker) marker).addCounter(new CounterMarker(counter, getImageFromCounter(counter, pApplet)));
+                for (Stack stack: stacks) {
+                    if (StringUtils.equals(stack.getProvince(), marker.getId())) {
+                        StackMarker stackMarker = new StackMarker(stack, mapMarker);
+                        for (Counter counter: stack.getCounters()) {
+                            stackMarker.addCounter(new CounterMarker(counter, getImageFromCounter(counter, pApplet)));
+                        }
+                        mapMarker.addStack(stackMarker);
                     }
                 }
             }

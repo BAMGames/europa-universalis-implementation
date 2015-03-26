@@ -100,7 +100,7 @@ public class InfoView {
      * @param x the vertical position.
      * @param y the horizontal position.
      */
-    public void trigger(int x, int y) {
+    public synchronized void trigger(int x, int y) {
         float y0 = this.y + V_PADDING;
         int i = (int)(((y + V_SPACE) - y0) / V_SPACE);
 
@@ -115,8 +115,9 @@ public class InfoView {
                     i -= mapMarker.getNeighbours().size();
                 } else if (i >= 0) {
                     BorderMarker destination = mapMarker.getNeighbours().get(i);
-                    destination.getProvince().addCounters(mapMarker.getCounters());
-                    mapMarker.removeCounters(mapMarker.getCounters());
+                    for (int j = mapMarker.getStacks().size() - 1; j >= 0; j--) {
+                        destination.getProvince().addStack(mapMarker.getStacks().get(j));
+                    }
                 }
             }
         }
