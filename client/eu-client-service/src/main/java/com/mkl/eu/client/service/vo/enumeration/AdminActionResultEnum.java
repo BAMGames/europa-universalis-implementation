@@ -1,5 +1,7 @@
 package com.mkl.eu.client.service.vo.enumeration;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Enumeration of the administrative actions.
  *
@@ -7,15 +9,49 @@ package com.mkl.eu.client.service.vo.enumeration;
  */
 public enum AdminActionResultEnum {
     /** Fumble (big failaure). */
-    FUMBLE,
+    FUMBLE("F*"),
     /** Failed. */
-    FAILED,
+    FAILED("F"),
     /** Half success. */
-    AVERAGE,
+    AVERAGE("1/2"),
     /** Half success with honors. */
-    AVERAGE_PLUS,
+    AVERAGE_PLUS("1/2*"),
     /** Success. */
-    SUCCESS,
+    SUCCESS("S"),
     /** Exceptional success. */
-    CRITICAL_HIT
+    CRITICAL_HIT("S*");
+
+    /** Code of the enum. */
+    private String code;
+
+    /**
+     * Constructor.
+     * @param code the code to set.
+     */
+    private AdminActionResultEnum(String code) {
+        this.code = code;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * Retrieve a border by its code.
+     *
+     * @param code of the adminActionResult.
+     * @return the adminActionResult.
+     */
+    public static AdminActionResultEnum getByCode(String code) {
+        AdminActionResultEnum adminActionResult = null;
+        for (AdminActionResultEnum e: values()) {
+            if (StringUtils.equals(code, e.getCode())) {
+                adminActionResult = e;
+                break;
+            }
+        }
+
+        return adminActionResult;
+    }
 }

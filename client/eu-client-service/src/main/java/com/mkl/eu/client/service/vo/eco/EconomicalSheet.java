@@ -1,6 +1,7 @@
 package com.mkl.eu.client.service.vo.eco;
 
-import com.mkl.eu.client.service.vo.Country;
+import com.mkl.eu.client.service.vo.EuObject;
+import com.mkl.eu.client.service.vo.country.Country;
 import org.apache.commons.lang3.math.Fraction;
 
 /**
@@ -8,13 +9,97 @@ import org.apache.commons.lang3.math.Fraction;
  *
  * @author MKL
  */
-public class EconomicalSheet {
+public class EconomicalSheet extends EuObject {
     /** Owner of the sheet. */
     private Country owner;
     /** Turn of the sheet. */
     private Integer turn;
 
+    /*********************************************************************************************************
+     *                           Economic record sheet A - Royal Treasure                                    *
+     *********************************************************************************************************/
+    /** Royal treasure at start of turn. Line 1 of sheet A. */
+    private Integer rtStart;
+    /** Royal treasure after events. Line 2 of sheet A. */
+    private Integer rtEvents;
+    /** Gifts and loans between players. Line 3 of sheet A. */
+    private Integer loans;
+    /** Wood and slaves (negative if bought, positive if sold). Line 4 of sheet A. */
+    private Integer woodSlaves;
+    /** Diplomatic actions. Line 5 of sheet A. */
+    private Integer diploActions;
+    /** Diplomatic reactions. Line 6 of sheet A. */
+    private Integer diploReactions;
+    /** Subsidies and dowries. Line 7 of sheet A. */
+    private Integer subsidies;
+    /** Royal treasure after diplomacy. Line 8 of sheet A. */
+    private Integer roDiplo;
+    /** Pilages and privateers. Line 9 of sheet A. */
+    private Integer pillages;
+    /** Gold from ROTW and convoys. Line 10 of sheet A. */
+    private Integer goldRotw;
+    /** Exceptionl taxes. Line 12 of sheet A. */
+    private Integer excTaxes;
+    /** Royal treasure before Exchequer. Line 13 of sheet A. */
+    private Integer rtBefExch;
+    /** Regular income. Line 15 of sheet A. */
+    private Integer regularIncome;
+    /** Prestige income. Line 16 of sheet A. */
+    private Integer prestigeIncome;
+    /** Maximum national loan. Line 17 of sheet A. */
+    private Integer maxNatLoan;
+    /** Maximum international loan. Line 18 of sheet A. */
+    private Integer maxInterLoan;
+    /** Remaining expenses. Line 20 of sheet A. */
+    private Integer remainingExpenses;
+    /** Prestige spent on expenses. Line 21 of sheet A. */
+    private Integer prestigeSpent;
+    /** National loan spent on expenses. Line 22 of sheet A. */
+    private Integer natLoan;
+    /** International loan spent on expenses. Line 23 of sheet A. */
+    private Integer interLoan;
+    /** Royal treasure balance. Line 24 of sheet A. */
+    private Integer rtBalance;
+    /** Royal treasure after Exchequer test. Line 25 of sheet A. */
+    private Integer rtAftExch;
+    /** Prestige spent in victory points. Line 26 of sheet A. */
+    private Integer prestigeVP;
+    /** Wealth. Line 27 of sheet A. */
+    private Integer wealth;
+    /** Period wealth. Line 28 of sheet A. */
+    private Integer periodWealth;
+    /** Stability improvement expense. Line 29 of sheet A. */
+    private Integer stab;
+    /** Ransom, peace treaties (negative if expense, positive if income). */
+    private Integer peace;
+    /** Royal treasure after peace. */
+    private Integer rtPeace;
+    /** Inflation. X% of |RT|, minimum X. Line 32 of sheet A. */
+    private Integer inflation;
+    /** Royal treasure at the end of the turn. Line 33 of sheet A. */
+    private Integer rtEnd;
 
+    /*********************************************************************************************************
+     *                           Economic record sheet C - Loans                                             *
+     *********************************************************************************************************/
+
+    // TODO International loans.
+    /** National loans at start of turn. Line 5 of sheet C. */
+    private Integer natLoanStart;
+    /** National loans interests. Line 6 of sheet C. */
+    private Integer natLoanInterest;
+    /** National loans bankruptcy. Line 7 of sheet C. */
+    private Integer natLoanBankrupt;
+    /** National loans refunds. Line 8 of sheet C. */
+    private Integer natLoanRefund;
+    /** New national loans. Line 9 of sheet C. */
+    private Integer natLoanNew;
+    /** National loans at end of turn. Line 10 of sheet C. */
+    private Integer natLoanEnd;
+
+    /*********************************************************************************************************
+     *                           Economic record sheet B - Income                                            *
+     *********************************************************************************************************/
 
     /*********************************************************************************************************
      *                                            Income                                                     *

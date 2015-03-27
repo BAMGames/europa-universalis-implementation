@@ -1,6 +1,6 @@
 package com.mkl.eu.client.service.vo.eco;
 
-import com.mkl.eu.client.service.vo.Country;
+import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;

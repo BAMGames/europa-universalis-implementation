@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class description.
+ * Stack of counters (regroupment).
  *
  * @author MKL
  */
