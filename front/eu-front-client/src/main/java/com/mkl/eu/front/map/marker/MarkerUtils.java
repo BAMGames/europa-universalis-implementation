@@ -1,6 +1,6 @@
 package com.mkl.eu.front.map.marker;
 
-import com.mkl.eu.client.service.vo.Country;
+import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
