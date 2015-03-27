@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.vo;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.country.Relation;
+import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 
 import java.util.List;
