@@ -15,6 +15,7 @@
     <url>http://maven.apache.org</url>
 
     <modules>
+        <module>eu-client-common</module>
         <module>eu-client-habilitations</module>
         <module>eu-client-service</module>
     </modules>

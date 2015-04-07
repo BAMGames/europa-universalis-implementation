@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.vo.board;
 
 import com.mkl.eu.client.service.vo.EuObject;
 
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,30 +11,24 @@ import java.util.List;
  *
  * @author MKL
  */
-public class Stack extends EuObject {
-    /** Province where the stack is located (String or Province ?). */
-    private String province;
+public class Stack extends EuObject<Long> {
+    /** Province where the stack is located. */
+    private AbstractProvince province;
     /** Counters of the stack. */
     private List<Counter> counters = new ArrayList<>();
 
-    /**
-     * Constructor.
-     */
-    public Stack() {
-
-    }
-
     /** @return the province. */
-    public String getProvince() {
+    public AbstractProvince getProvince() {
         return province;
     }
 
     /** @param province the province to set. */
-    public void setProvince(String province) {
+    public void setProvince(AbstractProvince province) {
         this.province = province;
     }
 
     /** @return the counters. */
+    @XmlTransient
     public List<Counter> getCounters() {
         return counters;
     }
@@ -41,5 +36,13 @@ public class Stack extends EuObject {
     /** @param counters the counters to set. */
     public void setCounters(List<Counter> counters) {
         this.counters = counters;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void afterUnmarshal(Object target, Object parent) {
+        if (this.province != null) {
+            this.province.getStacks().add(this);
+        }
     }
 }

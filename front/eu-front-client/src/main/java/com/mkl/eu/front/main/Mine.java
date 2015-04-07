@@ -1,10 +1,6 @@
 package com.mkl.eu.front.main;
 
-import com.mkl.eu.front.map.handler.InfowViewMouseHandler;
-import com.mkl.eu.front.map.handler.MapKeyboardHandler;
-import com.mkl.eu.front.map.handler.MapMouseHandler;
-import com.mkl.eu.front.map.handler.MultipleMapMouseHandler;
-import com.mkl.eu.front.map.handler.ViewportRect;
+import com.mkl.eu.front.map.handler.*;
 import com.mkl.eu.front.map.marker.MarkerUtils;
 import com.mkl.eu.front.map.marker.MyMarkerManager;
 import com.mkl.eu.front.provider.EUProvider;

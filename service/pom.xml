@@ -17,5 +17,6 @@
     <modules>
         <module>eu-service-service</module>
         <module>eu-service-habilitations</module>
+        <module>eu-service-webapp</module>
     </modules>
 </project>

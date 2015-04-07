@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+    <!-- Import des conf spring de l'application -->
+    <import resource="classpath:/com/mkl/eu/service/webapp/datasource.xml"/>
+    <import resource="classpath:/com/mkl/eu/service/webapp/flyway.xml"/>
+    <import resource="classpath:/com/mkl/eu/service/service/eu-service-service-applicationContext.xml"/>
+
+    <bean id="placeholderProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:/com/mkl/eu/service/webapp/spring.properties</value>
+
+            </list>
+        </property>
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="ignoreUnresolvablePlaceholders" value="false"/>
+        <property name="order" value="1"/>
+    </bean>
+</beans>

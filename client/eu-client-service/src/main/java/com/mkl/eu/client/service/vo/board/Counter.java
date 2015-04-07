@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.vo.board;
 
-import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.EuObject;
+import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 
 /**
@@ -9,20 +9,13 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
  *
  * @author MKL
  */
-public class Counter extends EuObject {
+public class Counter extends EuObject<Long> {
     /** Owner of the counter. */
     private Country country;
     /** Stack owning the counter. */
     private Stack owner;
     /** Type of the counter. */
     private CounterTypeEnum type;
-
-    /**
-     * Constructor.
-     */
-    public Counter() {
-
-    }
 
     /** @return the country. */
     public Country getCountry() {
@@ -52,5 +45,16 @@ public class Counter extends EuObject {
     /** @param type the type to set. */
     public void setType(CounterTypeEnum type) {
         this.type = type;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void afterUnmarshal(Object target, Object parent) {
+        if (this.owner != null) {
+            this.owner.getCounters().add(this);
+        }
+        if (this.country != null) {
+            this.country.getCounters().add(this);
+        }
     }
 }

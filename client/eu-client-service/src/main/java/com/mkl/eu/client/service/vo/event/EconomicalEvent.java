@@ -7,7 +7,7 @@ import com.mkl.eu.client.service.vo.EuObject;
  *
  * @author MKL
  */
-public class EconomicalEvent extends EuObject {
+public class EconomicalEvent extends EuObject<Long> {
     /** Turn when the event occured. */
     private Integer turn;
 }

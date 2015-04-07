@@ -1,8 +1,9 @@
 package com.mkl.eu.front.map.marker;
 
-import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.EuropeanProvince;
 import com.mkl.eu.client.service.vo.board.Stack;
+import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.front.map.vo.Border;
 import com.thoughtworks.xstream.XStream;
@@ -61,7 +62,8 @@ public final class MarkerUtils {
         Map<String, Marker> countryMarkers = markerFactory.createMapMarkers(countries);
         List<Stack> stacks = new ArrayList<>();
         Stack stack1 = new Stack();
-        stack1.setProvince("Prypeć");
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Prypeć");
         Counter counter1 = new Counter();
         counter1.setCountry(new Country());
         counter1.getCountry().setName("FRA");
@@ -71,7 +73,8 @@ public final class MarkerUtils {
         stacks.add(stack1);
 
         stack1 = new Stack();
-        stack1.setProvince("Prypeć");
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Prypeć");
         counter1 = new Counter();
         counter1.setCountry(new Country());
         counter1.getCountry().setName("FRA");
@@ -85,7 +88,8 @@ public final class MarkerUtils {
         stacks.add(stack1);
 
         stack1 = new Stack();
-        stack1.setProvince("Prypeć");
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Prypeć");
         counter1 = new Counter();
         counter1.setCountry(new Country());
         counter1.getCountry().setName("FRA");
@@ -104,7 +108,8 @@ public final class MarkerUtils {
         stacks.add(stack1);
 
         stack1 = new Stack();
-        stack1.setProvince("Languedoc");
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Languedoc");
         counter1 = new Counter();
         counter1.setCountry(new Country());
         counter1.getCountry().setName("FRA");
@@ -142,7 +147,7 @@ public final class MarkerUtils {
                 }
 
                 for (Stack stack: stacks) {
-                    if (StringUtils.equals(stack.getProvince(), marker.getId())) {
+                    if (StringUtils.equals(stack.getProvince().getName(), marker.getId())) {
                         StackMarker stackMarker = new StackMarker(stack, mapMarker);
                         for (Counter counter: stack.getCounters()) {
                             stackMarker.addCounter(new CounterMarker(counter, getImageFromCounter(counter, pApplet)));

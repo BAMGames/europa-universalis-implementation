@@ -6,4 +6,8 @@ package com.mkl.eu.client.service.vo.enumeration;
  * @author MKL
  */
 public enum GameStatusEnum {
+    ECONOMICAL_EVENT,
+    POLITICAL_EVENT,
+    MILITARY_PHASE;
+
 }

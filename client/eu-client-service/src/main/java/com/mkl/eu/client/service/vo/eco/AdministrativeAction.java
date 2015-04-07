@@ -1,6 +1,5 @@
 package com.mkl.eu.client.service.vo.eco;
 
-import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
@@ -11,9 +10,7 @@ import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
  *
  * @author MKL
  */
-public class AdministrativeAction extends EuObject {
-    /** Owner of the administrative action. */
-    private Country owner;
+public class AdministrativeAction extends EuObject<Long> {
     /** Turn of the administrative action. */
     private Integer turn;
     /** Type of the administrative action (ie MNU, DTI, COL, Exc Levies,...). */
@@ -26,16 +23,6 @@ public class AdministrativeAction extends EuObject {
     private Integer die;
     /** Result of the administrative action. */
     private AdminActionResultEnum result;
-
-    /** @return the owner. */
-    public Country getOwner() {
-        return owner;
-    }
-
-    /** @param owner the owner to set. */
-    public void setOwner(Country owner) {
-        this.owner = owner;
-    }
 
     /** @return the turn. */
     public Integer getTurn() {

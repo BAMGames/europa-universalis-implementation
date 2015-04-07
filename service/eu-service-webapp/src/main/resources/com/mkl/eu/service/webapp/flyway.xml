@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="flywayParent" class="org.flywaydb.core.Flyway" init-method="migrate" abstract="true">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="baselineOnMigrate" value="true"/>
+        <property name="baselineVersion" value="#{T(org.flywaydb.core.api.MigrationVersion).fromVersion('0')}"/>
+        <property name="sqlMigrationPrefix" value=""/>
+        <property name="validateOnMigrate" value="false"/>
+    </bean>
+
+    <bean id="flywayService" parent="flywayParent">
+        <property name="locations" value="classpath:/migrations/service"/>
+        <property name="table" value="FW_SERVICE"/>
+    </bean>
+</beans>

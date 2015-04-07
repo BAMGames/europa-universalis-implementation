@@ -8,7 +8,7 @@ import com.mkl.eu.client.service.vo.board.Stack;
  *
  * @author MKL
  */
-public class Discovery extends EuObject {
+public class Discovery extends EuObject<Long> {
     /** Country the discovery belongs to. */
     private Country country;
     /** Province of the discovery. */
@@ -17,4 +17,60 @@ public class Discovery extends EuObject {
     private Stack owner;
     /** Turn it was rappatried in a national province (<code>null</code> if on going). */
     private Integer turn;
+
+    /**
+     * @return the country.
+     */
+    public Country getCountry() {
+        return country;
+    }
+
+    /**
+     * @param country the country to set.
+     */
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
+    /**
+     * @return the province.
+     */
+    public String getProvince() {
+        return province;
+    }
+
+    /**
+     * @param province the province to set.
+     */
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    /**
+     * @return the owner.
+     */
+    public Stack getOwner() {
+        return owner;
+    }
+
+    /**
+     * @param owner the owner to set.
+     */
+    public void setOwner(Stack owner) {
+        this.owner = owner;
+    }
+
+    /**
+     * @return the turn.
+     */
+    public Integer getTurn() {
+        return turn;
+    }
+
+    /**
+     * @param turn the turn to set.
+     */
+    public void setTurn(Integer turn) {
+        this.turn = turn;
+    }
 }

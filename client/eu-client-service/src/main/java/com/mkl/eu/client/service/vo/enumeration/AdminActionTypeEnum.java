@@ -28,4 +28,5 @@ public enum AdminActionTypeEnum {
     ELT,
     /** Enhance Naval Technology. */
     ENT
+    // TODO add land, naval and fortress purchases/disband.
 }
