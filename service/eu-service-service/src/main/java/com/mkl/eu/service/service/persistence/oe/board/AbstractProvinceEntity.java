@@ -24,6 +24,8 @@ public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     private List<StackEntity> stacks;
     /** Terrain of the province. */
     private TerrainEnum terrain;
+    /** List of borders of the province. */
+    private List<BorderEntity> borders;
 
     /** @return the id. */
     @Id
@@ -71,5 +73,16 @@ public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     /** @param terrain the terrain to set. */
     public void setTerrain(TerrainEnum terrain) {
         this.terrain = terrain;
+    }
+
+    /** @return the borders. */
+    @OneToMany(mappedBy = "provinceFrom", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<BorderEntity> getBorders() {
+        return borders;
+    }
+
+    /** @param borders the borders to set. */
+    public void setBorders(List<BorderEntity> borders) {
+        this.borders = borders;
     }
 }
