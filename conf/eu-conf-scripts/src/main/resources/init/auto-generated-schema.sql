@@ -4,6 +4,10 @@ FOREIGN KEY FK_j5iy3i8e1081cpv4ghxfsejok;
 
 ALTER TABLE border
 DROP
+FOREIGN KEY FK_j5iy3i8e1081cpv4ghxfsejok;
+
+ALTER TABLE border
+DROP
 FOREIGN KEY FK_oq34c68ex4pt6oi87ehykv2dp;
 
 ALTER TABLE counter
@@ -148,6 +152,9 @@ CREATE TABLE stack (
     id_province BIGINT,
     PRIMARY KEY (id)
 );
+
+ALTER TABLE province
+ADD CONSTRAINT UK_ixpn85566lwxgajun8msnplik UNIQUE (name);
 
 ALTER TABLE border
 ADD INDEX FK_j5iy3i8e1081cpv4ghxfsejok (id_province_from),

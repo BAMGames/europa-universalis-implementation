@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "PROVINCE")
+@Table(name = "PROVINCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"NAME"})})
 public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
