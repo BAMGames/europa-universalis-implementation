@@ -28,6 +28,8 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     private Location center;
     /** Stack being hovered. */
     private StackMarker hovered = null;
+    /** Parent. */
+    private IMapMarker parent;
 
     /**
      * Constructor.
@@ -123,6 +125,18 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IMapMarker getParent() {
+        return parent;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setParent(IMapMarker parent) {
+        this.parent = parent;
+    }
+
     /**
      * Draw the borders of a rectangle.
      *
@@ -171,7 +185,6 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
     /**
      * Checks whether the position is within the border of the vectors. Uses a polygon containment algorithm.
-     * <p/>
      * This method is used for both ScreenPosition as well as Location checks.
      *
      * @param checkX        The x position to check if inside.
@@ -237,7 +250,8 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             stack.getProvince().removeStack(stack);
         }
         stacks.add(stack);
-        stack.setProvince(this);
+
+        stack.setProvince(getRealStackOwner());
     }
 
     /** {@inheritDoc} */
@@ -268,5 +282,15 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         }
 
         return stack;
+    }
+
+    /** @return the real stack owner (the MultiProvinceMarker if it is the case). */
+    private IMapMarker getRealStackOwner() {
+        IMapMarker province = this;
+        if (parent != null) {
+            province = parent;
+        }
+
+        return province;
     }
 }

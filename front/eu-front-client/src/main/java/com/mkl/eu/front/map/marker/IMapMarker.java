@@ -80,4 +80,10 @@ public interface IMapMarker {
      * @param stackToIgnore stack not to draw.
      */
     void draw(UnfoldingMap map, StackMarker stackToIgnore);
+
+    /** @return In case of Provinces in various pieces, returns the MultiProvinceMarker parent of all. */
+    IMapMarker getParent();
+
+    /** @param parent the parent to set.. */
+    void setParent(IMapMarker parent);
 }

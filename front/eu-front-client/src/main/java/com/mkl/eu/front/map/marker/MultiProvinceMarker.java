@@ -16,8 +16,8 @@ import java.util.List;
 public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
     /** Neighbours of the province. */
     private List<BorderMarker> neighbours = new ArrayList<>();
-    /** Counters of the province. */
-    private List<CounterMarker> counters = new ArrayList<>();
+    /** Parent. */
+    private IMapMarker parent;
 
     /**
      * Constructor.
@@ -26,6 +26,13 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
      */
     public MultiProvinceMarker(List<Marker> markers) {
         this.markers = markers;
+        if (markers != null) {
+            for (Marker marker : markers) {
+                if (marker instanceof IMapMarker) {
+                    ((IMapMarker) marker).setParent(this);
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -38,6 +45,18 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
                 marker.draw(map);
             }
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IMapMarker getParent() {
+        return parent;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setParent(IMapMarker parent) {
+        this.parent = parent;
     }
 
     /** {@inheritDoc} */
