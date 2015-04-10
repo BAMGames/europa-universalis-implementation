@@ -26,23 +26,25 @@ import java.util.Map;
  *
  * @author MKL
  */
-public final class MarkerUtils {
+public class MarkerUtils {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MarkerUtils.class);
+    /** PApplet. */
+    private PApplet pApplet;
 
     /**
-     * No instance of this class.
+     * Constructor.
+     * @param pApplet pApplet.
      */
-    private MarkerUtils() {
-
+    public MarkerUtils(PApplet pApplet) {
+        this.pApplet = pApplet;
     }
 
     /**
      * Create the Markers from various sources.
-     * @param pApplet to compute some colors.
      * @return the markers to add to the maps.
      */
-    public static Map<String, Marker> createMarkers(PApplet pApplet) {
+    public Map<String, Marker> createMarkers() {
         List<Feature> countries = GeoJSONReader.loadData(pApplet, "data/map/v2/countries.geo.json");
 
         XStream xstream = new XStream();
@@ -150,7 +152,7 @@ public final class MarkerUtils {
                     if (StringUtils.equals(stack.getProvince().getName(), marker.getId())) {
                         StackMarker stackMarker = new StackMarker(stack, mapMarker);
                         for (Counter counter: stack.getCounters()) {
-                            stackMarker.addCounter(new CounterMarker(counter, getImageFromCounter(counter, pApplet)));
+                            stackMarker.addCounter(new CounterMarker(counter, getImageFromCounter(counter)));
                         }
                         mapMarker.addStack(stackMarker);
                     }
@@ -166,7 +168,7 @@ public final class MarkerUtils {
      * @param pApplet to load the image.
      * @return the image of the counter.
      */
-    private static PImage getImageFromCounter(Counter counter, PApplet pApplet) {
+    public PImage getImageFromCounter(Counter counter) {
         StringBuilder path = new StringBuilder("data/map/v2/counters/").append(counter.getCountry().getName())
                 .append("/").append(counter.getCountry().getName()).append("_")
                 .append(counter.getType().name()).append(".png");

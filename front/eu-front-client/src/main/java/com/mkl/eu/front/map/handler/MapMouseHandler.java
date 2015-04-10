@@ -89,9 +89,16 @@ public class MapMouseHandler extends MapEventBroadcaster {
     public void mouseClicked() {
         for (UnfoldingMap map : maps) {
             if (map.isHit(mouseX, mouseY)) {
-                Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(mouseX, mouseY);
-                if (marker != null && map.getDefaultMarkerManager() instanceof MyMarkerManager) {
-                    ((MyMarkerManager) map.getDefaultMarkerManager()).select(marker);
+                if (mouseButton == PConstants.LEFT) {
+                    if (map.getDefaultMarkerManager() instanceof MyMarkerManager) {
+                        if (!((MyMarkerManager) map.getDefaultMarkerManager()).hit(mouseX, mouseY)) {
+                            ((MyMarkerManager) map.getDefaultMarkerManager()).resetContextualMenu();
+                            Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(mouseX, mouseY);
+                            if (marker != null) {
+                                ((MyMarkerManager) map.getDefaultMarkerManager()).select(marker);
+                            }
+                        }
+                    }
                 }
                 if (mouseButton == PConstants.LEFT && mouseEvent.getCount() == 2) {
 
@@ -104,6 +111,13 @@ public class MapMouseHandler extends MapEventBroadcaster {
                     ZoomMapEvent zoomMapEvent = new ZoomMapEvent(this, map.getId(), ZoomMapEvent.ZOOM_BY_LEVEL, 1);
                     zoomMapEvent.setTransformationCenterLocation(location);
                     eventDispatcher.fireMapEvent(zoomMapEvent);
+                }
+                if (mouseButton == PConstants.RIGHT) {
+                    Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(mouseX, mouseY);
+                    if (marker instanceof IMapMarker && map.getDefaultMarkerManager() instanceof MyMarkerManager) {
+                        Location location = map.getLocation(mouseX, mouseY);
+                        ((MyMarkerManager) map.getDefaultMarkerManager()).contextualMenu((IMapMarker) marker, location);
+                    }
                 }
             }
         }

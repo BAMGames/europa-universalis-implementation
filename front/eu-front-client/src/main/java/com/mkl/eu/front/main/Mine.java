@@ -63,7 +63,9 @@ public class Mine extends PApplet {
 
         viewportRect = new ViewportRect(this);
 
-        MyMarkerManager markerManager = new MyMarkerManager();
+        MarkerUtils markerUtils = new MarkerUtils(this);
+
+        MyMarkerManager markerManager = new MyMarkerManager(markerUtils);
 
         info = new InfoView(this, markerManager, 805, 245, 185, 350);
 
@@ -82,7 +84,7 @@ public class Mine extends PApplet {
         mapDetail.addMarkerManager(markerManager);
 
         // Load country polygons and adds them as markers
-        Map<String, Marker> countryMarkers = MarkerUtils.createMarkers(this);
+        Map<String, Marker> countryMarkers = markerUtils.createMarkers();
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
     }
 
