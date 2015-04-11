@@ -4,6 +4,8 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.front.map.handler.mouse.IContextualMenuAware;
+import com.mkl.eu.front.map.handler.mouse.IDragAndDropAware;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
@@ -15,11 +17,11 @@ import processing.core.PGraphics;
  *
  * @author MKL
  */
-public class MyMarkerManager extends MarkerManager<Marker> {
+public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<IMapMarker> {
     /** Width of the contextual menu. */
     private static final int MENU_WIDTH = 50;
     /** Height of the contextual menu. */
-    private static final int MENU_HEIGTH = 75;
+    private static final int MENU_HEIGHT = 75;
     /** Padding in the contextual menu. */
     private static final int PADDING = 5;
     /** Vertical space used by each item in the contextual menu. */
@@ -79,25 +81,20 @@ public class MyMarkerManager extends MarkerManager<Marker> {
         if (contextualized != null && menuLocation != null) {
             pg.pushStyle();
 
-            pg.fill(255, 255, 255);
+            pg.fill(255, 255, 255, 255);
             float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
-            pg.rect(xy[0], xy[1], MENU_WIDTH, -MENU_HEIGTH);
+            pg.rect(xy[0], xy[1], MENU_WIDTH, -MENU_HEIGHT);
 
             pg.fill(0, 0, 0);
-            pg.text("New", xy[0] + PADDING, xy[1] - (MENU_HEIGTH - PADDING - V_SPACE));
+            pg.text("New", xy[0] + PADDING, xy[1] - (MENU_HEIGHT - PADDING - V_SPACE));
 
             pg.popStyle();
 
         }
     }
 
-    /**
-     * Method called when a hit action is performed at the x/y coordinates.
-     *
-     * @param x coordinate.
-     * @param y coordinate.
-     * @return <code>true</code> if something related to the MarkerManager occured, so it does not try to trigger anything else, <code>false</code> otherwise.
-     */
+    /** {@inheritDoc} */
+    @Override
     public boolean hit(int x, int y) {
         if (menuLocation == null || contextualized == null) {
             return false;
@@ -107,10 +104,10 @@ public class MyMarkerManager extends MarkerManager<Marker> {
         float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
 
         if (x >= xy[0] && x <= xy[0] + MENU_WIDTH
-                && y <= xy[1] && y >= xy[1] - MENU_HEIGTH) {
+                && y <= xy[1] && y >= xy[1] - MENU_HEIGHT) {
             hit = true;
 
-            if (y <= xy[1] - (MENU_HEIGTH - PADDING - V_SPACE) && y >= xy[1] - (MENU_HEIGTH - PADDING)) {
+            if (y <= xy[1] - (MENU_HEIGHT - PADDING - V_SPACE) && y >= xy[1] - (MENU_HEIGHT - PADDING)) {
                 Stack stack = new Stack();
                 Counter counter = new Counter();
                 counter.setCountry(new Country());
@@ -128,7 +125,7 @@ public class MyMarkerManager extends MarkerManager<Marker> {
     }
 
     /**
-     * Select a marker and unselect the previous one.
+     * Select a marker and deselect the previous one.
      *
      * @param marker to be selected.
      */
@@ -142,24 +139,30 @@ public class MyMarkerManager extends MarkerManager<Marker> {
         selectedMarker.setSelected(true);
     }
 
-    /**
-     * Trigger the contextual menu on a marker and at a given location.
-     *
-     * @param marker       item to be contextualized.
-     * @param menuLocation location of the menu.
-     */
-    public void contextualMenu(IMapMarker marker, Location menuLocation) {
-        if (marker == contextualized) {
+    /** {@inheritDoc} */
+    @Override
+    public IMapMarker getContextualizedItem(int x, int y) {
+        IMapMarker item = null;
+        Marker marker = getFirstHitMarker(x, y);
+        if (marker instanceof IMapMarker) {
+            item = (IMapMarker) marker;
+        }
+        return item;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void contextualMenu(IMapMarker item, Location menuLocation) {
+        if (item == contextualized) {
             resetContextualMenu();
         } else {
-            this.contextualized = marker;
-            this.menuLocation = menuLocation;
+            this.contextualized = item;
+            this.menuLocation = map.mapDisplay.getLocation(menuLocation.getLat(), menuLocation.getLon());
         }
     }
 
-    /**
-     * Reset all the informations related to the contextual menu.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void resetContextualMenu() {
         this.contextualized = null;
         this.menuLocation = null;
@@ -170,23 +173,61 @@ public class MyMarkerManager extends MarkerManager<Marker> {
         return selectedMarker;
     }
 
-    /** @return the dragged. */
+    /** {@inheritDoc} */
+    @Override
     public StackMarker getDragged() {
         return dragged;
     }
 
-    /** @param dragged the dragged to set. */
+    /** {@inheritDoc} */
+    @Override
+    public boolean isHit(int checkX, int checkY) {
+        return map.isHit(checkX, checkY);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StackMarker getDrag(int x, int y) {
+        StackMarker stack = null;
+        Marker marker = getFirstHitMarker(x, y);
+        if (marker instanceof IMapMarker) {
+            stack = ((IMapMarker) marker).getStack(map, x, y);
+        }
+
+        return stack;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setDragged(StackMarker dragged) {
         this.dragged = dragged;
     }
 
-    /** @return the dragLocation. */
+    /** {@inheritDoc} */
+    @Override
     public Location getDragLocation() {
         return dragLocation;
     }
 
-    /** @param dragLocation the dragLocation to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setDragLocation(Location dragLocation) {
-        this.dragLocation = dragLocation;
+        if (dragLocation != null) {
+            this.dragLocation = map.getLocation(dragLocation.getLat(), dragLocation.getLon());
+        } else {
+            this.dragLocation = null;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IMapMarker getDrop(int x, int y) {
+        IMapMarker drop = null;
+        Marker marker = getFirstHitMarker(x, y);
+        if (marker instanceof IMapMarker) {
+            drop = (IMapMarker) marker;
+        }
+
+        return drop;
     }
 }

@@ -1,6 +1,9 @@
 package com.mkl.eu.front.main;
 
-import com.mkl.eu.front.map.handler.*;
+import com.mkl.eu.front.map.handler.keyboard.MapKeyboardHandler;
+import com.mkl.eu.front.map.handler.mouse.InfowViewMouseHandler;
+import com.mkl.eu.front.map.handler.mouse.MapMouseHandler;
+import com.mkl.eu.front.map.handler.mouse.MultipleMapMouseHandler;
 import com.mkl.eu.front.map.marker.MarkerUtils;
 import com.mkl.eu.front.map.marker.MyMarkerManager;
 import com.mkl.eu.front.provider.EUProvider;
@@ -71,7 +74,7 @@ public class Mine extends PApplet {
 
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
-        MapMouseHandler mouseHandler = new MapMouseHandler(this, mapDetail);
+        MapMouseHandler mouseHandler = new MapMouseHandler(this, markerManager, mapDetail);
         new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
         new InfowViewMouseHandler(this, info, mapDetail);
 

@@ -101,24 +101,36 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             pg.imageMode(PConstants.CORNER);
             float[] xy = map.mapDisplay.getObjectFromLocation(center);
             float size = 0.08f * map.getZoom();
+            int indexHovered = -1;
             for (int i = 0; i < stacks.size(); i++) {
                 // The stack being dragged is drawn by the MarkerManager.
                 if (stacks.get(i) == stackToIgnore) {
                     continue;
                 }
+                // The hovered stack is drawn afterward so that it is in first plan.
+                if (hovered == stacks.get(i)) {
+                    indexHovered = i;
+                    continue;
+                }
                 for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
                     CounterMarker counter = stacks.get(i).getCounters().get(j);
                     float x0 = xy[0] - size * (stacks.size() - 1) / 2;
-                    if (hovered == stacks.get(i)) {
-                        pg.image(counter.getImage(), x0 + size * j * 2 + size * i
-                                , xy[1] + size, size, size);
-                        pg.stroke(255, 255, 0);
-                        drawRectBorder(pg, x0 + size * j * 2 + size * i
-                                , xy[1] + size, size, size, 2.5f);
-                    } else {
-                        pg.image(counter.getImage(), x0 + size * j / 10 + size * i
-                                , xy[1] + size * j / 10, size, size);
-                    }
+
+                    pg.image(counter.getImage(), x0 + size * j / 10 + size * i
+                            , xy[1] + size * j / 10, size, size);
+                }
+            }
+            // The hovered stack is drawn afterward so that it is in first plan.
+            if (hovered != null && indexHovered != -1) {
+                for (int j = 0; j < hovered.getCounters().size(); j++) {
+                    CounterMarker counter = hovered.getCounters().get(j);
+                    float x0 = xy[0] - size * (stacks.size() - 1) / 2;
+
+                    pg.image(counter.getImage(), x0 + size * j * 2 + size * indexHovered
+                            , xy[1] + size, size, size);
+                    pg.stroke(255, 255, 0);
+                    drawRectBorder(pg, x0 + size * j * 2 + size * indexHovered
+                            , xy[1] + size, size, size, 2.5f);
                 }
             }
             pg.popStyle();

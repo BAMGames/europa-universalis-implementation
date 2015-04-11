@@ -1,5 +1,7 @@
 package com.mkl.eu.front.main;
 
+import com.mkl.eu.front.map.handler.mouse.IContextualMenuAware;
+import com.mkl.eu.front.map.handler.mouse.IDragAndDropAware;
 import com.mkl.eu.front.map.marker.CounterMarker;
 import com.mkl.eu.front.map.marker.IMapMarker;
 import com.mkl.eu.front.map.marker.MyMarkerManager;
@@ -14,7 +16,7 @@ import processing.core.PConstants;
  *
  * @author MKL
  */
-public class InfoView {
+public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<CounterMarker> {
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -25,6 +27,14 @@ public class InfoView {
     private static final float SPACE = 10;
     /** Size of a counter. */
     private static final float SIZE = 30;
+    /** Width of the contextual menu. */
+    private static final int MENU_WIDTH = 50;
+    /** Height of the contextual menu. */
+    private static final int MENU_HEIGHT = 75;
+    /** Padding in the contextual menu. */
+    private static final int PADDING = 5;
+    /** Vertical space used by each item in the contextual menu. */
+    private static final int V_SPACE = 20;
     /** PApplet for drawing purpose. */
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
@@ -41,6 +51,10 @@ public class InfoView {
     private float w;
     /** Height. */
     private float h;
+    /** Counter being contextualized. */
+    private CounterMarker contextualized;
+    /** Location of the contextual menu. */
+    private Location menuLocation;
 
     /**
      * Constructor.
@@ -97,36 +111,48 @@ public class InfoView {
                     SIZE, SIZE);
         }
 
+        if (contextualized != null && menuLocation != null) {
+            pApplet.pushStyle();
+
+            pApplet.fill(255, 255, 255, 255);
+            pApplet.rect(menuLocation.getLat(), menuLocation.getLon(), MENU_WIDTH, -MENU_HEIGHT);
+
+            pApplet.fill(0, 0, 0);
+            pApplet.text("Disband", menuLocation.getLat() + PADDING, menuLocation.getLon() - (MENU_HEIGHT - PADDING - V_SPACE));
+
+            pApplet.popStyle();
+
+        }
+
         pApplet.popStyle();
     }
 
-    /**
-     * Checks whether the given screen coordinates are on this View.
-     *
-     * @param checkX The vertical position to check.
-     * @param checkY The horizontal position to check.
-     * @return True if screen is hit, false otherwise.
-     */
-    public boolean isHit(float checkX, float checkY) {
+    /** {@inheritDoc} */
+    @Override
+    public boolean isHit(int checkX, int checkY) {
         return checkX > x && checkX < x + w && checkY > y && checkY < y + h;
     }
 
-    /** @return the dragged. */
+    /** {@inheritDoc} */
+    @Override
     public CounterMarker getDragged() {
         return dragged;
     }
 
-    /** @param dragged the dragged to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setDragged(CounterMarker dragged) {
         this.dragged = dragged;
     }
 
-    /** @return the dragLocation. */
+    /** {@inheritDoc} */
+    @Override
     public Location getDragLocation() {
         return dragLocation;
     }
 
-    /** @param dragLocation the dragLocation to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setDragLocation(Location dragLocation) {
         this.dragLocation = dragLocation;
     }
@@ -136,17 +162,12 @@ public class InfoView {
         return markerManager.getSelectedMarker();
     }
 
-    /**
-     * Returns the counter, if it exists, at the coordinates.
-     *
-     * @param x X coordinate.
-     * @param y Y coordinate.
-     * @return the counter, if it exists, at the coordinates.
-     */
-    public CounterMarker getCounter(int x, int y) {
+    /** {@inheritDoc} */
+    @Override
+    public CounterMarker getDrag(int x, int y) {
         CounterMarker counter = null;
 
-        StackMarker stack = getStack(x, y);
+        StackMarker stack = getDrop(x, y);
 
         if (stack != null) {
             float newX = this.x + H_PADDING;
@@ -159,14 +180,9 @@ public class InfoView {
         return counter;
     }
 
-    /**
-     * Returns the stack, if it exists, at the coordinates.
-     *
-     * @param x X coordinate.
-     * @param y Y coordinate.
-     * @return the stack, if it exists, at the coordinates.
-     */
-    public StackMarker getStack(int x, int y) {
+    /** {@inheritDoc} */
+    @Override
+    public StackMarker getDrop(int x, int y) {
         StackMarker stack = null;
         float newY = this.y + V_PADDING + 2 * V_TEXT;
 
@@ -177,5 +193,55 @@ public class InfoView {
         }
 
         return stack;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CounterMarker getContextualizedItem(int x, int y) {
+        return getDrag(x, y);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void contextualMenu(CounterMarker item, Location menuLocation) {
+        if (item == contextualized) {
+            resetContextualMenu();
+        } else {
+            this.contextualized = item;
+            this.menuLocation = menuLocation;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void resetContextualMenu() {
+        this.contextualized = null;
+        this.menuLocation = null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hit(int x, int y) {
+        if (menuLocation == null || contextualized == null) {
+            return false;
+        }
+
+        boolean hit = false;
+
+        if (x >= menuLocation.getLat() && x <= menuLocation.getLat() + MENU_WIDTH
+                && y <= menuLocation.getLon() && y >= menuLocation.getLon() - MENU_HEIGHT) {
+            hit = true;
+
+            if (y <= menuLocation.getLon() - (MENU_HEIGHT - PADDING - V_SPACE) && y >= menuLocation.getLon() - (MENU_HEIGHT - PADDING)) {
+                StackMarker stack = contextualized.getOwner();
+                stack.removeCounter(contextualized);
+
+                if (stack.getCounters().isEmpty()) {
+                    ((IMapMarker) getSelected()).removeStack(stack);
+                }
+            }
+        }
+
+        return hit;
     }
 }

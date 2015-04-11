@@ -1,4 +1,4 @@
-package com.mkl.eu.front.map.vo;
+package com.mkl.eu.front.vo;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.lang3.StringUtils;

@@ -1,4 +1,4 @@
-package com.mkl.eu.front.map.handler;
+package com.mkl.eu.front.main;
 
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import processing.core.PApplet;

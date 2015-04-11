@@ -5,7 +5,7 @@ import com.mkl.eu.client.service.vo.board.EuropeanProvince;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
-import com.mkl.eu.front.map.vo.Border;
+import com.mkl.eu.front.vo.Border;
 import com.thoughtworks.xstream.XStream;
 import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.GeoJSONReader;

@@ -1,4 +1,4 @@
-package com.mkl.eu.front.map.handler;
+package com.mkl.eu.front.map.handler.keyboard;
 
 import com.mkl.eu.front.main.Mine;
 import com.mkl.eu.front.map.MapConfiguration;
