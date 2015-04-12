@@ -218,7 +218,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
      * @return a Contextual Menu for a Counter.
      */
     private ContextualMenu createMenu() {
-        ContextualMenu menu = new ContextualMenu();
+        ContextualMenu menu = new ContextualMenu("Counter");
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Disband", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -228,6 +228,8 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                 if (stack.getCounters().isEmpty()) {
                     ((IMapMarker) getSelected()).removeStack(stack);
                 }
+
+                resetContextualMenu();
             }
         }));
 

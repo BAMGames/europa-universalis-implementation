@@ -16,6 +16,8 @@ public class ContextualMenuItem {
     private ContextualMenuItemTypeEnum type;
     /** Callback on click. */
     private EventHandler<ActionEvent> handler;
+    /** Parent of the item. */
+    private ContextualMenu parent;
 
     /**
      * Constructor.
@@ -60,6 +62,15 @@ public class ContextualMenuItem {
         return new ContextualMenuItem(null, ContextualMenuItemTypeEnum.SEPARATOR, null);
     }
 
+    /**
+     * Factory method for a separator menu item.
+     *
+     * @return the item created.
+     */
+    public static ContextualMenu createMenuSubMenu(String text) {
+        return new ContextualMenu(text);
+    }
+
     /** @return the text. */
     public String getText() {
         return text;
@@ -73,5 +84,15 @@ public class ContextualMenuItem {
     /** @return the handler. */
     public EventHandler<ActionEvent> getHandler() {
         return handler;
+    }
+
+    /** @return the parent. */
+    public ContextualMenu getParent() {
+        return parent;
+    }
+
+    /** @param parent the parent to set. */
+    public void setParent(ContextualMenu parent) {
+        this.parent = parent;
     }
 }

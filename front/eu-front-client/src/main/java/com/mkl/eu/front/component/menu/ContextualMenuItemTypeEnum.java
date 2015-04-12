@@ -8,5 +8,6 @@ package com.mkl.eu.front.component.menu;
 public enum ContextualMenuItemTypeEnum {
     TEXT,
     ITEM,
+    SUB_MENU,
     SEPARATOR;
 }

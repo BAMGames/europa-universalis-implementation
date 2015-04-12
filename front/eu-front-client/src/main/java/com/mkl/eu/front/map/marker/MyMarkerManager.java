@@ -26,14 +26,6 @@ import processing.core.PGraphics;
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<IMapMarker> {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
-    /** Width of the contextual menu. */
-    private static final int MENU_WIDTH = 50;
-    /** Height of the contextual menu. */
-    private static final int MENU_HEIGHT = 75;
-    /** Padding in the contextual menu. */
-    private static final int PADDING = 5;
-    /** Vertical space used by each item in the contextual menu. */
-    private static final int V_SPACE = 20;
     /** Utility to draw counters. */
     private MarkerUtils markerUtils;
     /** Selected marker. */
@@ -160,7 +152,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @return a Contextual Menu for a Province.
      */
     private ContextualMenu createMenu() {
-        ContextualMenu menu = new ContextualMenu();
+        ContextualMenu menu = new ContextualMenu("Province");
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(contextualized.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", new EventHandler<ActionEvent>() {
@@ -181,6 +173,20 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                 createStack(CounterTypeEnum.LAND_DETACHMENT, contextualized);
             }
         }));
+        ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
+        ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
+        subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
+        subMenu2.addMenuItem(ContextualMenuItem.createMenuLabel("text"));
+        subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("reaction", null));
+        subMenu1.addMenuItem(subMenu2);
+        subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Amen", null));
+        subMenu1.addMenuItem(ContextualMenuItem.createMenuLabel("Upide"));
+        ContextualMenu subMenu3 = ContextualMenuItem.createMenuSubMenu("Un autre");
+        subMenu3.addMenuItem(ContextualMenuItem.createMenuLabel("OK"));
+        subMenu3.addMenuItem(ContextualMenuItem.createMenuItem("Ou pas", null));
+        subMenu1.addMenuItem(subMenu3);
+        subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Icule", null));
+        menu.addMenuItem(subMenu1);
 
         return menu;
     }
