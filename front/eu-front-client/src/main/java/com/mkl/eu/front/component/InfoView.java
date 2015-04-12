@@ -1,5 +1,7 @@
-package com.mkl.eu.front.main;
+package com.mkl.eu.front.component;
 
+import com.mkl.eu.front.component.menu.ContextualMenu;
+import com.mkl.eu.front.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.map.handler.mouse.IDragAndDropAware;
 import com.mkl.eu.front.map.marker.CounterMarker;
@@ -8,8 +10,11 @@ import com.mkl.eu.front.map.marker.MyMarkerManager;
 import com.mkl.eu.front.map.marker.StackMarker;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 
 /**
  * Information panel.
@@ -27,14 +32,6 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     private static final float SPACE = 10;
     /** Size of a counter. */
     private static final float SIZE = 30;
-    /** Width of the contextual menu. */
-    private static final int MENU_WIDTH = 50;
-    /** Height of the contextual menu. */
-    private static final int MENU_HEIGHT = 75;
-    /** Padding in the contextual menu. */
-    private static final int PADDING = 5;
-    /** Vertical space used by each item in the contextual menu. */
-    private static final int V_SPACE = 20;
     /** PApplet for drawing purpose. */
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
@@ -53,8 +50,8 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     private float h;
     /** Counter being contextualized. */
     private CounterMarker contextualized;
-    /** Location of the contextual menu. */
-    private Location menuLocation;
+    /** Contextual menu. */
+    private ContextualMenu menu;
 
     /**
      * Constructor.
@@ -76,29 +73,33 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
 
     /** Draw the viewport. */
     public void draw() {
-        pApplet.pushStyle();
-        pApplet.fill(255, 255, 255);
-        pApplet.rect(x, y, w, h);
-        pApplet.fill(0, 0, 0);
+        PGraphics pg = pApplet.recorder;
+        if (pg == null) {
+            pg = pApplet.g;
+        }
+        pg.pushStyle();
+        pg.fill(255, 255, 255);
+        pg.rect(x, y, w, h);
+        pg.fill(0, 0, 0);
 
         float newX = x + H_PADDING;
         float newY = y + V_PADDING;
 
         Marker marker = markerManager.getSelectedMarker();
         if (marker != null) {
-            pApplet.text(marker.getId(), newX, newY);
+            pg.text(marker.getId(), newX, newY);
             newY += V_TEXT;
             if (marker instanceof IMapMarker) {
                 IMapMarker mapMarker = (IMapMarker) marker;
 
-                pApplet.text("Stacks:", newX, newY);
+                pg.text("Stacks:", newX, newY);
                 newY += V_TEXT;
-                pApplet.imageMode(PConstants.CORNER);
+                pg.imageMode(PConstants.CORNER);
                 for (int i = 0; i < mapMarker.getStacks().size(); i++) {
                     for (int j = 0; j < mapMarker.getStacks().get(i).getCounters().size(); j++) {
                         CounterMarker counter = mapMarker.getStacks().get(i).getCounters().get(j);
                         if (counter != dragged) {
-                            pApplet.image(counter.getImage(), newX + (SIZE + SPACE) * j
+                            pg.image(counter.getImage(), newX + (SIZE + SPACE) * j
                                     , newY + (SIZE + SPACE) * i, SIZE, SIZE);
                         }
                     }
@@ -107,24 +108,15 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         }
 
         if (dragged != null && dragLocation != null) {
-            pApplet.image(dragged.getImage(), dragLocation.getLat(), dragLocation.getLon(),
+            pg.image(dragged.getImage(), dragLocation.getLat(), dragLocation.getLon(),
                     SIZE, SIZE);
         }
 
-        if (contextualized != null && menuLocation != null) {
-            pApplet.pushStyle();
-
-            pApplet.fill(255, 255, 255, 255);
-            pApplet.rect(menuLocation.getLat(), menuLocation.getLon(), MENU_WIDTH, -MENU_HEIGHT);
-
-            pApplet.fill(0, 0, 0);
-            pApplet.text("Disband", menuLocation.getLat() + PADDING, menuLocation.getLon() - (MENU_HEIGHT - PADDING - V_SPACE));
-
-            pApplet.popStyle();
-
+        if (contextualized != null && menu != null) {
+            menu.draw(pg);
         }
 
-        pApplet.popStyle();
+        pg.popStyle();
     }
 
     /** {@inheritDoc} */
@@ -208,7 +200,8 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
             resetContextualMenu();
         } else {
             this.contextualized = item;
-            this.menuLocation = menuLocation;
+            this.menu = createMenu();
+            this.menu.setLocation(menuLocation);
         }
     }
 
@@ -216,23 +209,19 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     @Override
     public void resetContextualMenu() {
         this.contextualized = null;
-        this.menuLocation = null;
+        this.menu = null;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean hit(int x, int y) {
-        if (menuLocation == null || contextualized == null) {
-            return false;
-        }
-
-        boolean hit = false;
-
-        if (x >= menuLocation.getLat() && x <= menuLocation.getLat() + MENU_WIDTH
-                && y <= menuLocation.getLon() && y >= menuLocation.getLon() - MENU_HEIGHT) {
-            hit = true;
-
-            if (y <= menuLocation.getLon() - (MENU_HEIGHT - PADDING - V_SPACE) && y >= menuLocation.getLon() - (MENU_HEIGHT - PADDING)) {
+    /**
+     * Create a Contextual Menu for a Counter.
+     *
+     * @return a Contextual Menu for a Counter.
+     */
+    private ContextualMenu createMenu() {
+        ContextualMenu menu = new ContextualMenu();
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Disband", new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
                 StackMarker stack = contextualized.getOwner();
                 stack.removeCounter(contextualized);
 
@@ -240,8 +229,35 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                     ((IMapMarker) getSelected()).removeStack(stack);
                 }
             }
+        }));
+
+        return menu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hit(int x, int y) {
+        if (menu == null || contextualized == null) {
+            return false;
         }
 
-        return hit;
+        return menu.hit(x, y);
+    }
+
+    /**
+     * Hover the given location.
+     *
+     * @param x coordinate.
+     * @param y coordinate.
+     * @return <code>true</code> if something was hovered, <ocde>false</ocde> otherwise.
+     */
+    public boolean hover(int x, int y) {
+        boolean hover = false;
+
+        if (menu != null) {
+            hover = menu.hover(x, y);
+        }
+
+        return hover;
     }
 }

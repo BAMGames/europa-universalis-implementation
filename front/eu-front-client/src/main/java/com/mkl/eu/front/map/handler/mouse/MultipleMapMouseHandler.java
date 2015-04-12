@@ -1,6 +1,6 @@
 package com.mkl.eu.front.map.handler.mouse;
 
-import com.mkl.eu.front.main.ViewportRect;
+import com.mkl.eu.front.component.ViewportRect;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import processing.core.PApplet;

@@ -1,7 +1,7 @@
 package com.mkl.eu.front.map.handler.mouse;
 
 import com.mkl.eu.client.service.vo.board.Stack;
-import com.mkl.eu.front.main.InfoView;
+import com.mkl.eu.front.component.InfoView;
 import com.mkl.eu.front.map.marker.CounterMarker;
 import com.mkl.eu.front.map.marker.IMapMarker;
 import com.mkl.eu.front.map.marker.StackMarker;
@@ -37,6 +37,18 @@ public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<Coun
      */
     public InfowViewMouseHandler(PApplet p, InfoView infoView, List<UnfoldingMap> maps) {
         super(p, infoView, maps);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean mouseMoved() {
+        boolean stop = super.mouseMoved();
+
+        if (!stop) {
+            stop = getComponent().hover(getMouseX(), getMouseY());
+        }
+
+        return stop;
     }
 
     /** {@inheritDoc} */

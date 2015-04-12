@@ -4,11 +4,17 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.front.component.menu.ContextualMenu;
+import com.mkl.eu.front.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.map.handler.mouse.IDragAndDropAware;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
@@ -18,6 +24,8 @@ import processing.core.PGraphics;
  * @author MKL
  */
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<IMapMarker> {
+    /** Logger. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Width of the contextual menu. */
     private static final int MENU_WIDTH = 50;
     /** Height of the contextual menu. */
@@ -36,8 +44,10 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private Location dragLocation;
     /** Marker being contextualized. */
     private IMapMarker contextualized;
-    /** Location of the contextual menu. */
+    /** Location of the contextual menu in the map frame. */
     private Location menuLocation;
+    /** Contextual menu. */
+    private ContextualMenu menu;
 
 
     /**
@@ -78,50 +88,24 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             pg.popStyle();
         }
 
-        if (contextualized != null && menuLocation != null) {
-            pg.pushStyle();
-
-            pg.fill(255, 255, 255, 255);
+        if (contextualized != null && menuLocation != null && menu != null) {
             float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
-            pg.rect(xy[0], xy[1], MENU_WIDTH, -MENU_HEIGHT);
-
-            pg.fill(0, 0, 0);
-            pg.text("New", xy[0] + PADDING, xy[1] - (MENU_HEIGHT - PADDING - V_SPACE));
-
-            pg.popStyle();
-
+            menu.setLocation(new Location(xy[0], xy[1]));
+            menu.draw(pg);
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean hit(int x, int y) {
-        if (menuLocation == null || contextualized == null) {
+        if (menuLocation == null || contextualized == null || menu == null) {
             return false;
         }
 
-        boolean hit = false;
+
         float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
-
-        if (x >= xy[0] && x <= xy[0] + MENU_WIDTH
-                && y <= xy[1] && y >= xy[1] - MENU_HEIGHT) {
-            hit = true;
-
-            if (y <= xy[1] - (MENU_HEIGHT - PADDING - V_SPACE) && y >= xy[1] - (MENU_HEIGHT - PADDING)) {
-                Stack stack = new Stack();
-                Counter counter = new Counter();
-                counter.setCountry(new Country());
-                counter.getCountry().setName("FRA");
-                counter.setOwner(stack);
-                counter.setType(CounterTypeEnum.ARMY_PLUS);
-                stack.getCounters().add(counter);
-                StackMarker stackMarker = new StackMarker(stack, contextualized);
-                stackMarker.addCounter(new CounterMarker(counter, markerUtils.getImageFromCounter(counter)));
-                contextualized.addStack(stackMarker);
-            }
-        }
-
-        return hit;
+        menu.setLocation(new Location(xy[0], xy[1]));
+        return menu.hit(x, y);
     }
 
     /**
@@ -158,6 +142,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         } else {
             this.contextualized = item;
             this.menuLocation = map.mapDisplay.getLocation(menuLocation.getLat(), menuLocation.getLon());
+            this.menu = createMenu();
         }
     }
 
@@ -166,6 +151,58 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     public void resetContextualMenu() {
         this.contextualized = null;
         this.menuLocation = null;
+        this.menu = null;
+    }
+
+    /**
+     * Create a Contextual Menu for a Province.
+     *
+     * @return a Contextual Menu for a Province.
+     */
+    private ContextualMenu createMenu() {
+        ContextualMenu menu = new ContextualMenu();
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                createStack(CounterTypeEnum.ARMY_PLUS, contextualized);
+            }
+        }));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                createStack(CounterTypeEnum.ARMY_MINUS, contextualized);
+            }
+        }));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                createStack(CounterTypeEnum.LAND_DETACHMENT, contextualized);
+            }
+        }));
+
+        return menu;
+    }
+
+    /**
+     * Creates a French stack of one counter on the province.
+     *
+     * @param type     of the counter to create.
+     * @param province where the stack should be created.
+     * @return the stack created.
+     */
+    private StackMarker createStack(CounterTypeEnum type, IMapMarker province) {
+        Stack stack = new Stack();
+        Counter counter = new Counter();
+        counter.setCountry(new Country());
+        counter.getCountry().setName("FRA");
+        counter.setOwner(stack);
+        counter.setType(type);
+        stack.getCounters().add(counter);
+        StackMarker stackMarker = new StackMarker(stack, province);
+        stackMarker.addCounter(new CounterMarker(counter, markerUtils.getImageFromCounter(counter)));
+        province.addStack(stackMarker);
+
+        return stackMarker;
     }
 
     /** @return the selectedMarker. */
@@ -229,5 +266,22 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         }
 
         return drop;
+    }
+
+    /**
+     * Hover the given location.
+     *
+     * @param x coordinate.
+     * @param y coordinate.
+     * @return <code>true</code> if something was hovered, <ocde>false</ocde> otherwise.
+     */
+    public boolean hover(int x, int y) {
+        boolean hover = false;
+
+        if (menu != null) {
+            hover = menu.hover(x, y);
+        }
+
+        return hover;
     }
 }

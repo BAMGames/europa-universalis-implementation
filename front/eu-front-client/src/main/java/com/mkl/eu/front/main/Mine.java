@@ -1,5 +1,7 @@
 package com.mkl.eu.front.main;
 
+import com.mkl.eu.front.component.InfoView;
+import com.mkl.eu.front.component.ViewportRect;
 import com.mkl.eu.front.map.handler.keyboard.MapKeyboardHandler;
 import com.mkl.eu.front.map.handler.mouse.InfowViewMouseHandler;
 import com.mkl.eu.front.map.handler.mouse.MapMouseHandler;

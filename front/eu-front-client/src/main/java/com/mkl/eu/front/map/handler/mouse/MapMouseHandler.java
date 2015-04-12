@@ -154,12 +154,15 @@ public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarke
     public boolean mouseMoved() {
         boolean stop = super.mouseMoved();
         if (!stop) {
-            for (UnfoldingMap map : maps) {
-                if (map.isHit(getMouseX(), getMouseY())) {
-                    Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(getMouseX(), getMouseY());
-                    if (marker != null && marker instanceof IMapMarker) {
-                        ((IMapMarker) marker).hover(map, getMouseX(), getMouseY());
-                        stop = true;
+            stop = getComponent().hover(getMouseX(), getMouseY());
+            if (!stop) {
+                for (UnfoldingMap map : maps) {
+                    if (map.isHit(getMouseX(), getMouseY())) {
+                        Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(getMouseX(), getMouseY());
+                        if (marker != null && marker instanceof IMapMarker) {
+                            ((IMapMarker) marker).hover(map, getMouseX(), getMouseY());
+                            stop = true;
+                        }
                     }
                 }
             }
