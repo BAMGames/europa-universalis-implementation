@@ -14,14 +14,18 @@ import java.util.List;
  * @author MKL.
  */
 public class ContextualMenu {
-    /** Width of the contextual menu. */
-    private static final int MENU_WIDTH = 50;
-    /** Height of the contextual menu. */
-    private static final int MENU_HEIGHT = 75;
     /** Padding in the contextual menu. */
     private static final int PADDING = 5;
-    /** Vertical space used by each item in the contextual menu. */
-    private static final int V_SPACE = 20;
+    /** Inner padding in the contextual menu. */
+    private static final int INNER_PADDING = 5;
+    /** Vertical space used by each separator item in the contextual menu. */
+    private static final int V_SEPARATOR = 10;
+    /** Width of the contextual menu. */
+    private float width;
+    /** Height of the contextual menu. */
+    private float height;
+    /** Vertical space used by each text item in the contextual menu. */
+    private float textHeight;
     /** Location of the contextual menu. */
     private Location location;
     /** Items of the menu. */
@@ -39,40 +43,87 @@ public class ContextualMenu {
     }
 
     /**
-     * Draw the component.
+     * Initialize the settings of the menu.
      *
      * @param pg graphics.
      */
-    public void draw(PGraphics pg) {
-        pg.pushStyle();
+    public void init(PGraphics pg) {
+        width = 0;
+        height = 2 * PADDING;
+        textHeight = pg.textSize;
+        boolean first = true;
 
-        pg.fill(255, 255, 255, 255);
-        pg.rect(location.getLat(), location.getLon(), MENU_WIDTH, -MENU_HEIGHT);
-
-        pg.fill(0, 0, 0);
-        float y0 = location.getLon() - (MENU_HEIGHT - PADDING);
         for (ContextualMenuItem item : items) {
 
             switch (item.getType()) {
                 case ITEM:
                 case TEXT:
+                    height += textHeight;
+                    width = Math.max(width, pg.textWidth(item.getText()));
+                    if (first) {
+                        first = false;
+                    } else {
+                        height += INNER_PADDING;
+                    }
+                    break;
+                case SEPARATOR:
+                    height += V_SEPARATOR;
+                    if (first) {
+                        first = false;
+                    } else {
+                        height += INNER_PADDING;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        width += 2 * PADDING;
+    }
+
+    /**
+     * Draw the component.
+     *
+     * @param pg graphics.
+     */
+    public void draw(PGraphics pg) {
+        init(pg);
+        pg.pushStyle();
+
+        pg.fill(255, 255, 255, 255);
+        pg.rect(location.getLat(), location.getLon(), width, -height);
+
+        pg.fill(0, 0, 0);
+        float y0 = location.getLon() - (height - PADDING);
+        boolean first = true;
+        for (ContextualMenuItem item : items) {
+            if (first) {
+                first = false;
+            } else {
+                y0 += INNER_PADDING;
+            }
+
+            switch (item.getType()) {
+                case ITEM:
                     if (item == hovered) {
                         pg.fill(125, 125, 255, 255);
-                        pg.rect(location.getLat() + PADDING, y0 + V_SPACE / 4, MENU_WIDTH - 2 * PADDING, V_SPACE);
+                        pg.rect(location.getLat() + PADDING, y0 - INNER_PADDING / 2, width - 2 * PADDING, textHeight + INNER_PADDING);
                         pg.fill(0, 0, 0);
                     }
-                    y0 += V_SPACE;
+                case TEXT:
+                    y0 += textHeight;
                     pg.text(item.getText(), location.getLat() + PADDING, y0);
                     break;
                 case SEPARATOR:
-                    if (item == hovered) {
-                        pg.fill(125, 125, 255, 255);
-                        pg.rect(location.getLat() + PADDING, y0 + V_SPACE / 4, MENU_WIDTH - 2 * PADDING, V_SPACE);
-                        pg.fill(0, 0, 0);
-                    }
-                    y0 += V_SPACE / 2;
-                    pg.line(location.getLat() + PADDING, y0, location.getLat() + MENU_WIDTH - PADDING, y0);
-                    y0 += V_SPACE / 2;
+//                    if (item == hovered) {
+//                        pg.fill(125, 125, 255, 255);
+//                        pg.rect(location.getLat() + PADDING, y0 - INNER_PADDING / 2, width - 2 * PADDING, V_SEPARATOR + INNER_PADDING);
+//                        pg.fill(0, 0, 0);
+//                    }
+                    y0 += V_SEPARATOR / 2;
+                    pg.line(location.getLat() + PADDING, y0, location.getLat() + width - PADDING, y0);
+                    y0 += V_SEPARATOR / 2;
                     break;
                 default:
                     break;
@@ -93,8 +144,8 @@ public class ContextualMenu {
     public boolean hit(int x, int y) {
         boolean hit = false;
 
-        if (x >= location.getLat() && x <= location.getLat() + MENU_WIDTH
-                && y <= location.getLon() && y >= location.getLon() - MENU_HEIGHT) {
+        if (x >= location.getLat() && x <= location.getLat() + width
+                && y <= location.getLon() && y >= location.getLon() - height) {
             hit = true;
 
             ContextualMenuItem item = getItemAtLocation(x, y);
@@ -116,8 +167,8 @@ public class ContextualMenu {
     public boolean hover(int x, int y) {
         boolean hover = false;
 
-        if (x >= location.getLat() && x <= location.getLat() + MENU_WIDTH
-                && y <= location.getLon() && y >= location.getLon() - MENU_HEIGHT) {
+        if (x >= location.getLat() && x <= location.getLat() + width
+                && y <= location.getLon() && y >= location.getLon() - height) {
             hover = true;
 
             hovered = getItemAtLocation(x, y);
@@ -137,14 +188,26 @@ public class ContextualMenu {
         ContextualMenuItem hit = null;
 
 
-        float y0 = location.getLon() - (MENU_HEIGHT - PADDING);
+        float y0 = location.getLon() - (height - PADDING);
         float y1;
+        boolean first = true;
         for (ContextualMenuItem item : items) {
+            if (first) {
+                first = false;
+            } else {
+                y0 += INNER_PADDING;
+            }
             switch (item.getType()) {
                 case ITEM:
                 case TEXT:
+                    y1 = y0 + textHeight;
+                    if (y >= y0 && y <= y1) {
+                        hit = item;
+                    }
+                    y0 = y1;
+                    break;
                 case SEPARATOR:
-                    y1 = y0 + V_SPACE;
+                    y1 = y0 + V_SEPARATOR;
                     if (y >= y0 && y <= y1) {
                         hit = item;
                     }

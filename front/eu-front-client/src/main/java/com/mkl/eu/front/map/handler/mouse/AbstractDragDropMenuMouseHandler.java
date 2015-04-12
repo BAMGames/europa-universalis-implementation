@@ -39,7 +39,9 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
         boolean stop = super.mouseClicked();
         if (getMouseButton() == PConstants.LEFT) {
             stop = component.hit(getMouseX(), getMouseY());
-            component.resetContextualMenu();
+            if (!stop) {
+                component.resetContextualMenu();
+            }
         }
         if (getMouseButton() == PConstants.RIGHT) {
             S item = component.getContextualizedItem(getMouseX(), getMouseY());

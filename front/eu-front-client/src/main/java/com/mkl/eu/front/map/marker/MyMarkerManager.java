@@ -161,6 +161,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      */
     private ContextualMenu createMenu() {
         ContextualMenu menu = new ContextualMenu();
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(contextualized.getId()));
+        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
