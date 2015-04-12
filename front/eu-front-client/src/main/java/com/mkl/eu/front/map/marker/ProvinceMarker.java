@@ -114,23 +114,23 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 }
                 for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
                     CounterMarker counter = stacks.get(i).getCounters().get(j);
-                    float x0 = xy[0] - size * (stacks.size() - 1) / 2;
+                    float x0 = xy[0] - size * (stacks.size()) / 2;
 
                     pg.image(counter.getImage(), x0 + size * j / 10 + size * i
-                            , xy[1] + size * j / 10, size, size);
+                            , xy[1] + size * (j - 5) / 10, size, size);
                 }
             }
             // The hovered stack is drawn afterward so that it is in first plan.
             if (hovered != null && indexHovered != -1) {
                 for (int j = 0; j < hovered.getCounters().size(); j++) {
                     CounterMarker counter = hovered.getCounters().get(j);
-                    float x0 = xy[0] - size * (stacks.size() - 1) / 2;
+                    float x0 = xy[0] - size * (stacks.size()) / 2;
 
                     pg.image(counter.getImage(), x0 + size * j * 2 + size * indexHovered
-                            , xy[1] + size, size, size);
+                            , xy[1] + size / 2, size, size);
                     pg.stroke(255, 255, 0);
                     drawRectBorder(pg, x0 + size * j * 2 + size * indexHovered
-                            , xy[1] + size, size, size, 2.5f);
+                            , xy[1] + size / 2, size, size, 2.5f);
                 }
             }
             pg.popStyle();
