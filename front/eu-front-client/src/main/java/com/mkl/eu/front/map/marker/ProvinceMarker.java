@@ -16,6 +16,8 @@ import java.util.List;
 
 /** @author MKL. */
 public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
+    /** Size of a counter in the Map frame. */
+    private static final float COUNTER_SIZE = 0.1725f;
     /** Neighbours of the province. */
     private List<BorderMarker> neighbours = new ArrayList<>();
     /** Counters of the province. */
@@ -100,7 +102,8 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             pg.pushStyle();
             pg.imageMode(PConstants.CORNER);
             float[] xy = map.mapDisplay.getObjectFromLocation(center);
-            float size = 0.08f * map.getZoom();
+            float relativeSize = Math.abs(xy[0] - map.mapDisplay.getObjectFromLocation(new Location(center.getLat()
+                    + COUNTER_SIZE, center.getLon() + COUNTER_SIZE))[0]);
             int indexHovered = -1;
             for (int i = 0; i < stacks.size(); i++) {
                 // The stack being dragged is drawn by the MarkerManager.
@@ -114,23 +117,23 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 }
                 for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
                     CounterMarker counter = stacks.get(i).getCounters().get(j);
-                    float x0 = xy[0] - size * (stacks.size()) / 2;
+                    float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
-                    pg.image(counter.getImage(), x0 + size * j / 10 + size * i
-                            , xy[1] + size * (j - 5) / 10, size, size);
+                    pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
+                            , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
                 }
             }
             // The hovered stack is drawn afterward so that it is in first plan.
             if (hovered != null && indexHovered != -1) {
                 for (int j = 0; j < hovered.getCounters().size(); j++) {
                     CounterMarker counter = hovered.getCounters().get(j);
-                    float x0 = xy[0] - size * (stacks.size()) / 2;
+                    float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
-                    pg.image(counter.getImage(), x0 + size * j * 2 + size * indexHovered
-                            , xy[1] + size / 2, size, size);
+                    pg.image(counter.getImage(), x0 + relativeSize * j * 2 + relativeSize * indexHovered
+                            , xy[1] + relativeSize / 2, relativeSize, relativeSize);
                     pg.stroke(255, 255, 0);
-                    drawRectBorder(pg, x0 + size * j * 2 + size * indexHovered
-                            , xy[1] + size / 2, size, size, 2.5f);
+                    drawRectBorder(pg, x0 + relativeSize * j * 2 + relativeSize * indexHovered
+                            , xy[1] + relativeSize / 2, relativeSize, relativeSize, 2.5f);
                 }
             }
             pg.popStyle();
@@ -285,11 +288,12 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         StackMarker stack = null;
 
         float[] xy = map.mapDisplay.getObjectFromLocation(center);
-        float size = 0.08f * map.getZoom();
-        float x0 = xy[0] - size * (stacks.size() - 1) / 2;
+        float relativeSize = Math.abs(xy[0] - map.mapDisplay.getObjectFromLocation(new Location(center.getLat()
+                + COUNTER_SIZE, center.getLon() + COUNTER_SIZE))[0]);
+        float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
-        if (x >= x0 && x <= x0 + stacks.size() * size && y >= xy[1] && y <= xy[1] + size) {
-            int index = (int) ((x - x0) / size);
+        if (x >= x0 && x <= x0 + stacks.size() * relativeSize && y >= xy[1] - relativeSize / 2 && y <= xy[1] + relativeSize / 2) {
+            int index = (int) ((x - x0) / relativeSize);
             stack = stacks.get(index);
         }
 
