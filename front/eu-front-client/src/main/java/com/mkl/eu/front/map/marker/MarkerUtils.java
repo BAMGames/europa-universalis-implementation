@@ -165,7 +165,6 @@ public class MarkerUtils {
     /**
      * Retrieves the image of the counter.
      * @param counter whose we want the image.
-     * @param pApplet to load the image.
      * @return the image of the counter.
      */
     public PImage getImageFromCounter(Counter counter) {

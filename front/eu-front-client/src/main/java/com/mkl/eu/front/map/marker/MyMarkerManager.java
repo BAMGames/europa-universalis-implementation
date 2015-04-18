@@ -224,6 +224,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      */
     private ContextualMenu createMenuStack(final StackMarker stack) {
         ContextualMenu menu = new ContextualMenu("Stack");
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel("Stack"));
+        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         ContextualMenu move = ContextualMenuItem.createMenuSubMenu("Move");
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
             StringBuilder label = new StringBuilder(border.getProvince().getId());

@@ -4,10 +4,7 @@ import com.mkl.eu.front.component.menu.ContextualMenu;
 import com.mkl.eu.front.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.map.handler.mouse.IDragAndDropAware;
-import com.mkl.eu.front.map.marker.CounterMarker;
-import com.mkl.eu.front.map.marker.IMapMarker;
-import com.mkl.eu.front.map.marker.MyMarkerManager;
-import com.mkl.eu.front.map.marker.StackMarker;
+import com.mkl.eu.front.map.marker.*;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import javafx.event.ActionEvent;
@@ -21,7 +18,7 @@ import processing.core.PGraphics;
  *
  * @author MKL
  */
-public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<CounterMarker> {
+public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object> {
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -49,7 +46,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** Height. */
     private float h;
     /** Counter being contextualized. */
-    private CounterMarker contextualized;
+    private Object contextualized;
     /** Contextual menu. */
     private ContextualMenu menu;
 
@@ -164,7 +161,8 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         if (stack != null) {
             float newX = this.x + H_PADDING;
             int counterNumber = (int) ((x - newX) / (SIZE + SPACE));
-            if (counterNumber >= 0 && counterNumber < stack.getCounters().size()) {
+            float x0 = newX + counterNumber * (SIZE + SPACE);
+            if (x >= x0 && x <= x0 + SIZE && counterNumber >= 0 && counterNumber < stack.getCounters().size()) {
                 counter = stack.getCounters().get(counterNumber);
             }
         }
@@ -189,13 +187,18 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
 
     /** {@inheritDoc} */
     @Override
-    public CounterMarker getContextualizedItem(int x, int y) {
-        return getDrag(x, y);
+    public Object getContextualizedItem(int x, int y) {
+        Object item = getDrag(x, y);
+        if (item == null) {
+            item = getDrop(x, y);
+        }
+
+        return item;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void contextualMenu(CounterMarker item, Location menuLocation) {
+    public void contextualMenu(Object item, Location menuLocation) {
         if (item == contextualized) {
             resetContextualMenu();
         } else {
@@ -213,17 +216,36 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     }
 
     /**
-     * Create a Contextual Menu for a Counter.
+     * Create a Contextual Menu given the contextualized object.
      *
-     * @return a Contextual Menu for a Counter.
+     * @return a Contextual Menu given the contextualized object.
      */
     private ContextualMenu createMenu() {
+        ContextualMenu menu = null;
+        if (contextualized instanceof CounterMarker) {
+            menu = createMenuCounter((CounterMarker) contextualized);
+        } else if (contextualized instanceof StackMarker) {
+            menu = createMenuStack((StackMarker) contextualized);
+        }
+
+        return menu;
+    }
+
+    /**
+     * Create a Contextual Menu for a Counter.
+     *
+     * @param counter where the contextual menu is.
+     * @return a Contextual Menu for a Counter.
+     */
+    private ContextualMenu createMenuCounter(final CounterMarker counter) {
         ContextualMenu menu = new ContextualMenu("Counter");
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel("Counter"));
+        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Disband", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                StackMarker stack = contextualized.getOwner();
-                stack.removeCounter(contextualized);
+                StackMarker stack = counter.getOwner();
+                stack.removeCounter(counter);
 
                 if (stack.getCounters().isEmpty()) {
                     ((IMapMarker) getSelected()).removeStack(stack);
@@ -236,14 +258,39 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         return menu;
     }
 
+    /**
+     * Create a Contextual Menu for a Stack.
+     *
+     * @param stack where the contextual menu is.
+     * @return a Contextual Menu for a Stack.
+     */
+    private ContextualMenu createMenuStack(final StackMarker stack) {
+        ContextualMenu menu = new ContextualMenu("Stack");
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel("Stack"));
+        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu("Move");
+        for (final BorderMarker border : stack.getProvince().getNeighbours()) {
+            StringBuilder label = new StringBuilder(border.getProvince().getId());
+            if (border.getType() != null) {
+                label.append(" (").append(border.getType()).append(")");
+            }
+            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    border.getProvince().addStack(stack);
+                    resetContextualMenu();
+                }
+            }));
+        }
+        menu.addMenuItem(move);
+
+        return menu;
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean hit(int x, int y) {
-        if (menu == null || contextualized == null) {
-            return false;
-        }
-
-        return menu.hit(x, y);
+        return !(menu == null || contextualized == null) && menu.hit(x, y);
     }
 
     /**

@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<CounterMarker, StackMarker, CounterMarker, InfoView> {
+public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<CounterMarker, StackMarker, Object, InfoView> {
     /**
      * Creates a MouseHandler for the given maps.
      *
@@ -54,6 +54,10 @@ public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<Coun
     /** {@inheritDoc} */
     @Override
     protected void doAfterRelease(CounterMarker dragged, StackMarker drop) {
+        if (drop == dragged.getOwner()) {
+            return;
+        }
+
         if (drop == null) {
             drop = new StackMarker(new Stack(), (IMapMarker) getComponent().getSelected());
             ((IMapMarker) getComponent().getSelected()).addStack(drop);
