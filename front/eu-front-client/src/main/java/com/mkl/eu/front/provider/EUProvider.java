@@ -40,13 +40,13 @@ public class EUProvider extends AbstractMapProvider {
         int zoom = (int) coordinate.zoom;
 
         int z = zoom - 4;
-        if (z < 0) return "blank";
+        if (z < 0) return "blank/256x256";
         int numTiles = 1 << z;
         int newx = x - (1 << (zoom - 1));
         int newy = -y - 1 + (1 << (zoom - 1));
-        if (newx < 0 || newx >= numTiles) return "bkgnd";
-        if (newy < 0 || newy >= numTiles) return "bkgnd";
-        return "carte/tile_" +
+        if (newx < 0 || newx >= numTiles) return "blank/bkgnd";
+        if (newy < 0 || newy >= numTiles) return "blank/bkgnd";
+        return "tile_" +
                 z + "/" + newx + "_" + (newy);
     }
 
@@ -75,7 +75,7 @@ public class EUProvider extends AbstractMapProvider {
      * @return the path the portion of the map will be stored on disk.
      */
     private String getImagePath(String subPath) {
-        return "data/map/v2/" + subPath + ".png";
+        return "data/map/v2/carte/" + subPath + ".png";
     }
 
     /** {@inheritDoc} */
@@ -85,7 +85,7 @@ public class EUProvider extends AbstractMapProvider {
 
         String subPath = getZoomString(coordinate);
 
-        String url = "http://www-lipn.univ-paris13.fr/~dubacq/europa/" + subPath + ".png";
+        String url = "http://old-lipn.univ-paris13.fr/~dubacq/europa/carte/0.6/" + subPath + ".png";
 
 
         String[] urls = new String[]{url};
