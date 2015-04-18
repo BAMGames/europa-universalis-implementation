@@ -1,11 +1,13 @@
 package com.mkl.eu.front.map.marker;
 
+import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.map.MapConfiguration;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.SimplePolygonMarker;
 import de.fhpotsdam.unfolding.utils.GeoUtils;
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
+import org.apache.commons.lang3.StringUtils;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -308,5 +310,23 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         }
 
         return province;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setProperties(HashMap<String, Object> props) {
+        HashMap<String, Object> properties = null;
+        if (props != null) {
+            properties = new HashMap<>();
+            for (String key : props.keySet()) {
+                Object value = props.get(key);
+
+                if (StringUtils.equals(PROP_TERRAIN, key)) {
+                    value = TerrainEnum.valueOf((String) value);
+                }
+                properties.put(key, value);
+            }
+        }
+        super.setProperties(properties);
     }
 }

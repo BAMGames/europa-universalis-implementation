@@ -41,6 +41,8 @@ public class ContextualMenu extends ContextualMenuItem {
 
     /**
      * Constructor.
+     *
+     * @param label    of the Menu.
      */
     public ContextualMenu(String label) {
         super(label, ContextualMenuItemTypeEnum.SUB_MENU, null);
@@ -242,8 +244,10 @@ public class ContextualMenu extends ContextualMenuItem {
      * @return the item at the given location.
      */
     private ContextualMenuItem getItemAtLocation(int x, int y) {
+        if (location == null) {
+            return null;
+        }
         ContextualMenuItem hit = null;
-
 
         float y0 = location.getLon() - (height - PADDING);
         float y1;

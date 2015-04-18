@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.component.menu.ContextualMenu;
 import com.mkl.eu.front.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.map.handler.mouse.IContextualMenuAware;
@@ -17,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+
+import java.util.List;
 
 /**
  * Marker Manager to enable debugging.
@@ -135,6 +138,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             this.contextualized = item;
             this.menuLocation = map.mapDisplay.getLocation(menuLocation.getLat(), menuLocation.getLon());
             this.menu = createMenu();
+            float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
+            menu.setLocation(new Location(xy[0], xy[1]));
         }
     }
 
@@ -291,5 +296,22 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         }
 
         return hover;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Marker getFirstHitMarker(float checkX, float checkY) {
+        List<Marker> markers = getHitMarkers(checkX, checkY);
+        Marker firstMarker = null;
+
+        if (markers != null) {
+            for (Marker marker : markers) {
+                if (firstMarker == null || TerrainEnum.SEA == firstMarker.getProperties().get(IMapMarker.PROP_TERRAIN)) {
+                    firstMarker = marker;
+                }
+            }
+        }
+
+        return firstMarker;
     }
 }

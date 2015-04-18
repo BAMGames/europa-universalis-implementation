@@ -26,8 +26,8 @@ public enum BorderEnum {
 
     static {
         bordersByCode.put("river", RIVER);
-        bordersByCode.put("mountain_pass", MOUNTAIN_PASS);
-        bordersByCode.put("straits", STRAITS);
+        bordersByCode.put("pass", MOUNTAIN_PASS);
+        bordersByCode.put("strait", STRAITS);
     }
 
     /**

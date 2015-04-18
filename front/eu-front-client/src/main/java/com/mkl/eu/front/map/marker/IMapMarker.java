@@ -10,6 +10,8 @@ import java.util.List;
  * @author MKL
  */
 public interface IMapMarker {
+    /** Name of the marker property for the terrain. */
+    String PROP_TERRAIN = "terrain";
     /**
      * Sets the highlightColor.
      *

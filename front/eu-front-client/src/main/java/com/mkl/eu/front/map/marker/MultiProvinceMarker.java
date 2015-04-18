@@ -1,11 +1,14 @@
 package com.mkl.eu.front.map.marker;
 
+import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.marker.AbstractMarker;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MultiMarker;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -133,5 +136,23 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
     @Override
     public void hover(UnfoldingMap map, int x, int y) {
         getFirstMapMarker().hover(map, x, y);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setProperties(HashMap<String, Object> props) {
+        HashMap<String, Object> properties = null;
+        if (props != null) {
+            properties = new HashMap<>();
+            for (String key : props.keySet()) {
+                Object value = props.get(key);
+
+                if (StringUtils.equals(PROP_TERRAIN, key)) {
+                    value = TerrainEnum.valueOf((String) value);
+                }
+                properties.put(key, value);
+            }
+        }
+        super.setProperties(properties);
     }
 }
