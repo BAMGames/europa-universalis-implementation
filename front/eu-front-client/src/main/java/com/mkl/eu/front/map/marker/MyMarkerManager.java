@@ -1,7 +1,6 @@
 package com.mkl.eu.front.map.marker;
 
 import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
@@ -262,15 +261,12 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @return the stack created.
      */
     private StackMarker createStack(CounterTypeEnum type, IMapMarker province) {
-        Stack stack = new Stack();
         Counter counter = new Counter();
         counter.setCountry(new Country());
         counter.getCountry().setName("FRA");
-        counter.setOwner(stack);
         counter.setType(type);
-        stack.getCounters().add(counter);
-        StackMarker stackMarker = new StackMarker(stack, province);
-        stackMarker.addCounter(new CounterMarker(counter, markerUtils.getImageFromCounter(counter)));
+        StackMarker stackMarker = new StackMarker(province);
+        stackMarker.addCounter(new CounterMarker(markerUtils.getImageFromCounter(counter)));
         province.addStack(stackMarker);
 
         return stackMarker;

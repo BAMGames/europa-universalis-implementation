@@ -1,6 +1,5 @@
 package com.mkl.eu.front.map.handler.mouse;
 
-import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.front.component.InfoView;
 import com.mkl.eu.front.map.marker.CounterMarker;
 import com.mkl.eu.front.map.marker.IMapMarker;
@@ -59,7 +58,7 @@ public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<Coun
         }
 
         if (drop == null) {
-            drop = new StackMarker(new Stack(), (IMapMarker) getComponent().getSelected());
+            drop = new StackMarker((IMapMarker) getComponent().getSelected());
             ((IMapMarker) getComponent().getSelected()).addStack(drop);
         }
         StackMarker oldStack = dragged.getOwner();

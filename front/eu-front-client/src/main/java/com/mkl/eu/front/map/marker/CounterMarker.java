@@ -1,6 +1,5 @@
 package com.mkl.eu.front.map.marker;
 
-import com.mkl.eu.client.service.vo.board.Counter;
 import processing.core.PImage;
 
 /**
@@ -9,8 +8,6 @@ import processing.core.PImage;
  * @author MKL
  */
 public class CounterMarker {
-    /** The counter it is created from. */
-    private Counter counter;
     /** Image of the counter. */
     private PImage image;
     /** Stack owning the counter. */
@@ -18,17 +15,10 @@ public class CounterMarker {
 
     /**
      * Constructor.
-     * @param counter the counter.
      * @param image the image.
      */
-    public CounterMarker(Counter counter, PImage image) {
-        this.counter = counter;
+    public CounterMarker(PImage image) {
         this.image = image;
-    }
-
-    /** @return the counter. */
-    public Counter getCounter() {
-        return counter;
     }
 
     /** @return the image. */

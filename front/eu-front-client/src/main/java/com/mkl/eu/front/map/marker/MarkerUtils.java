@@ -150,9 +150,9 @@ public class MarkerUtils {
 
                 for (Stack stack: stacks) {
                     if (StringUtils.equals(stack.getProvince().getName(), marker.getId())) {
-                        StackMarker stackMarker = new StackMarker(stack, mapMarker);
+                        StackMarker stackMarker = new StackMarker(mapMarker);
                         for (Counter counter: stack.getCounters()) {
-                            stackMarker.addCounter(new CounterMarker(counter, getImageFromCounter(counter)));
+                            stackMarker.addCounter(new CounterMarker(getImageFromCounter(counter)));
                         }
                         mapMarker.addStack(stackMarker);
                     }
