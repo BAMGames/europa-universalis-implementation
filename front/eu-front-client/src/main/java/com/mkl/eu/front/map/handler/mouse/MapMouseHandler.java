@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarker, IMapMarker, IMapMarker, MyMarkerManager> {
+public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarker, IMapMarker, Object, MyMarkerManager> {
 
     /**
      * Creates a MouseHandler for the given maps.

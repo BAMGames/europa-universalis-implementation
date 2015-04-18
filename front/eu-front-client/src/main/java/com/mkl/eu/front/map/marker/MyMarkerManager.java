@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<IMapMarker> {
+public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object> {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Utility to draw counters. */
@@ -38,7 +38,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** The new location of the dragged object. */
     private Location dragLocation;
     /** Marker being contextualized. */
-    private IMapMarker contextualized;
+    private Object contextualized;
     /** Location of the contextual menu in the map frame. */
     private Location menuLocation;
     /** Contextual menu. */
@@ -120,18 +120,21 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
 
     /** {@inheritDoc} */
     @Override
-    public IMapMarker getContextualizedItem(int x, int y) {
-        IMapMarker item = null;
+    public Object getContextualizedItem(int x, int y) {
+        Object item = null;
         Marker marker = getFirstHitMarker(x, y);
         if (marker instanceof IMapMarker) {
-            item = (IMapMarker) marker;
+            item = ((IMapMarker) marker).getStack(map, x, y);
+            if (item == null) {
+                item = (IMapMarker) marker;
+            }
         }
         return item;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void contextualMenu(IMapMarker item, Location menuLocation) {
+    public void contextualMenu(Object item, Location menuLocation) {
         if (item == contextualized) {
             resetContextualMenu();
         } else {
@@ -152,30 +155,47 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     }
 
     /**
-     * Create a Contextual Menu for a Province.
+     * Create a Contextual Menu given the contextualized object.
      *
-     * @return a Contextual Menu for a Province.
+     * @return a Contextual Menu given the contextualized object.
      */
     private ContextualMenu createMenu() {
+        ContextualMenu menu = null;
+        if (contextualized instanceof IMapMarker) {
+            menu = createMenuProvince((IMapMarker) contextualized);
+        } else if (contextualized instanceof StackMarker) {
+            menu = createMenuStack((StackMarker) contextualized);
+        }
+
+        return menu;
+    }
+
+    /**
+     * Create a Contextual Menu for a Province.
+     *
+     * @param province where the contextual menu is.
+     * @return a Contextual Menu for a Province.
+     */
+    private ContextualMenu createMenuProvince(final IMapMarker province) {
         ContextualMenu menu = new ContextualMenu("Province");
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(contextualized.getId()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                createStack(CounterTypeEnum.ARMY_PLUS, contextualized);
+                createStack(CounterTypeEnum.ARMY_PLUS, province);
             }
         }));
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                createStack(CounterTypeEnum.ARMY_MINUS, contextualized);
+                createStack(CounterTypeEnum.ARMY_MINUS, province);
             }
         }));
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                createStack(CounterTypeEnum.LAND_DETACHMENT, contextualized);
+                createStack(CounterTypeEnum.LAND_DETACHMENT, province);
             }
         }));
         ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
@@ -192,6 +212,33 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         subMenu1.addMenuItem(subMenu3);
         subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Icule", null));
         menu.addMenuItem(subMenu1);
+
+        return menu;
+    }
+
+    /**
+     * Create a Contextual Menu for a Stack.
+     *
+     * @param stack where the contextual menu is.
+     * @return a Contextual Menu for a Stack.
+     */
+    private ContextualMenu createMenuStack(final StackMarker stack) {
+        ContextualMenu menu = new ContextualMenu("Stack");
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu("Move");
+        for (final BorderMarker border : stack.getProvince().getNeighbours()) {
+            StringBuilder label = new StringBuilder(border.getProvince().getId());
+            if (border.getType() != null) {
+                label.append(" (").append(border.getType()).append(")");
+            }
+            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    border.getProvince().addStack(stack);
+                    resetContextualMenu();
+                }
+            }));
+        }
+        menu.addMenuItem(move);
 
         return menu;
     }
