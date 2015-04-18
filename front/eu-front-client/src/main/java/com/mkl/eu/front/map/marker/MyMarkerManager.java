@@ -180,6 +180,15 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         ContextualMenu menu = new ContextualMenu("Province");
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
+        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu("Neighbours");
+        for (final BorderMarker border : province.getNeighbours()) {
+            StringBuilder label = new StringBuilder(border.getProvince().getId());
+            if (border.getType() != null) {
+                label.append(" (").append(border.getType()).append(")");
+            }
+            neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
+        }
+        menu.addMenuItem(neighbours);
         menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
