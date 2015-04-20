@@ -2,7 +2,6 @@ package com.mkl.eu.client.service.vo.board;
 
 import com.mkl.eu.client.service.vo.EuObject;
 
-import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,6 @@ public class Stack extends EuObject<Long> {
     }
 
     /** @return the counters. */
-    @XmlTransient
     public List<Counter> getCounters() {
         return counters;
     }
@@ -43,6 +41,11 @@ public class Stack extends EuObject<Long> {
     public void afterUnmarshal(Object target, Object parent) {
         if (this.province != null) {
             this.province.getStacks().add(this);
+        }
+        if (this.counters != null) {
+            for (Counter counter : counters) {
+                counter.setOwner(this);
+            }
         }
     }
 }

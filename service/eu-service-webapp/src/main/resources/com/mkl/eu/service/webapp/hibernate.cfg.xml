@@ -10,7 +10,7 @@
         <property name="hibernate.format_sql">false</property>
         <property name="hibernate.jdbc.fetch_size">100</property>
         <property name="hibernate.jdbc.batch_size">30</property>
-        <property name="hbm2ddl.auto">create</property>
+        <property name="hbm2ddl.auto">validate</property>
 
         <!-- Configuration TimeZones joda-time -->
         <property name="jadira.usertype.autoRegisterUserTypes">true</property>

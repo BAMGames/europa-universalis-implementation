@@ -4,6 +4,8 @@ import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 /**
  * Counter (A+, MNU, fortress,...).
  *
@@ -28,6 +30,7 @@ public class Counter extends EuObject<Long> {
     }
 
     /** @return the owner. */
+    @XmlTransient
     public Stack getOwner() {
         return owner;
     }
@@ -50,9 +53,6 @@ public class Counter extends EuObject<Long> {
     /** {@inheritDoc} */
     @Override
     public void afterUnmarshal(Object target, Object parent) {
-        if (this.owner != null) {
-            this.owner.getCounters().add(this);
-        }
         if (this.country != null) {
             this.country.getCounters().add(this);
         }

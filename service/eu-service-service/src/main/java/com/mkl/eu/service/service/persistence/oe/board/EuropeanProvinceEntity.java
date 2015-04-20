@@ -18,9 +18,9 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     /** Owner of the province if no owner counter is present. */
     private CountryEntity defaultOwner;
     /** Flag saying that the province contains a port. */
-    private boolean port;
+    private Boolean port;
     /** Flag saying that the province port can be praesidiable. */
-    private boolean praesidiable;
+    private Boolean praesidiable;
 
     /** @return the income. */
     @Column(name = "INCOME")
@@ -46,24 +46,24 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     }
 
     /** @return the port. */
-    @Column(name = "PORT")
-    public boolean isPort() {
+    @Column(name = "PORT", columnDefinition = "BIT")
+    public Boolean isPort() {
         return port;
     }
 
     /** @param port the port to set. */
-    public void setPort(boolean port) {
+    public void setPort(Boolean port) {
         this.port = port;
     }
 
     /** @return the praesidiable. */
-    @Column(name = "PRAESIDIABLE")
-    public boolean isPraesidiable() {
+    @Column(name = "PRAESIDIABLE", columnDefinition = "BIT")
+    public Boolean isPraesidiable() {
         return praesidiable;
     }
 
     /** @param praesidiable the praesidiable to set. */
-    public void setPraesidiable(boolean praesidiable) {
+    public void setPraesidiable(Boolean praesidiable) {
         this.praesidiable = praesidiable;
     }
 }
