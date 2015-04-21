@@ -1,4 +1,4 @@
-package com.mkl.eu.front.component.menu;
+package com.mkl.eu.front.client.map.component.menu;
 
 import de.fhpotsdam.unfolding.geo.Location;
 import javafx.event.ActionEvent;

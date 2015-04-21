@@ -1,4 +1,4 @@
-package com.mkl.eu.front.provider;
+package com.mkl.eu.front.client.map.provider;
 
 import de.fhpotsdam.unfolding.core.Coordinate;
 import de.fhpotsdam.unfolding.geo.MercatorProjection;

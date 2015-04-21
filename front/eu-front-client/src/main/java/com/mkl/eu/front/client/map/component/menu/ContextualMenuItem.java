@@ -1,4 +1,4 @@
-package com.mkl.eu.front.component.menu;
+package com.mkl.eu.front.client.map.component.menu;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
