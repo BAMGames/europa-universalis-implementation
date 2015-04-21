@@ -77,7 +77,7 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
     @Override
     public boolean mouseDragged() {
         boolean stop = false;
-        if (component.isHit(getMouseX(), getMouseY())) {
+        if (!stop && component.isHit(getMouseX(), getMouseY())) {
             if (getMouseButton() == PConstants.LEFT) {
                 if (component.getDragged() != null) {
                     DragEvent event = new DragEvent(component, component.getId(), DragEvent.DRAG_TO);

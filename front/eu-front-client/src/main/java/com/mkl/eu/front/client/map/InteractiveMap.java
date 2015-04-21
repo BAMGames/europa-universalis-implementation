@@ -3,6 +3,7 @@ package com.mkl.eu.front.client.map;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
+import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.keyboard.MapKeyboardHandler;
 import com.mkl.eu.front.client.map.handler.mouse.InfowViewMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MapMouseHandler;
@@ -114,6 +115,7 @@ public class InteractiveMap extends PApplet implements MapEventListener {
         eventDispatcher.register(this, PanMapEvent.TYPE_PAN, getId(), mapDetail.getId());
         eventDispatcher.register(this, ZoomMapEvent.TYPE_ZOOM, getId(), mapDetail.getId());
         eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
+        eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId());
 
         // Load country polygons and adds them as markers
         Map<String, Marker> countryMarkers = markerUtils.createMarkers();

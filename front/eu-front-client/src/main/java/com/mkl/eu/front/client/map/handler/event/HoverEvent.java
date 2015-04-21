@@ -4,19 +4,13 @@ import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.events.MapEvent;
 
 /**
- * Map event of type Drag and drop.
+ * Map event of type hover.
  *
  * @author MKL.
  */
-public class DragEvent extends MapEvent {
+public class HoverEvent extends MapEvent {
     /** Type of the drag event. */
-    public static final String TYPE_DRAG = "drag";
-    /** Subtype of drag first step: take. */
-    public static final String DRAG_TAKE = "dragTake";
-    /** Subtype of drag middle step: travel. */
-    public static final String DRAG_TO = "dragTo";
-    /** Subtype of drag final step: drop. */
-    public static final String DRAG_DROP = "dragDrop";
+    public static final String TYPE_HOVER = "hover";
     /** Coordinate x where it is dragged. */
     private int x;
     /** Coordinate y where it is dragged. */
@@ -25,13 +19,11 @@ public class DragEvent extends MapEvent {
     /**
      * Constructor.
      *
-     * @param source  of the drag event.
-     * @param mapId   id of the map where the drag occured.
-     * @param subType of the event.
+     * @param source of the drag event.
+     * @param mapId  id of the map where the drag occured.
      */
-    public DragEvent(Object source, String mapId, String subType) {
-        super(source, TYPE_DRAG, mapId);
-        setSubType(subType);
+    public HoverEvent(Object source, String mapId) {
+        super(source, TYPE_HOVER, mapId);
     }
 
     /** @return the y. */
