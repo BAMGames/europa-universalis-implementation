@@ -2,13 +2,17 @@ package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
+import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
 import com.mkl.eu.front.client.map.marker.*;
+import de.fhpotsdam.unfolding.events.MapEvent;
+import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import org.apache.commons.lang3.StringUtils;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -18,7 +22,7 @@ import processing.core.PGraphics;
  *
  * @author MKL
  */
-public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object> {
+public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -308,5 +312,50 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         }
 
         return hover;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getId() {
+        return "infoView";
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onManipulation(MapEvent event) {
+        if (StringUtils.equals(DragEvent.TYPE_DRAG, event.getType()) && event instanceof DragEvent) {
+            DragEvent dragEvent = (DragEvent) event;
+            switch (event.getSubType()) {
+                case DragEvent.DRAG_TAKE:
+                    CounterMarker marker = getDrag(dragEvent.getX(), dragEvent.getY());
+                    setDragged(marker);
+                    break;
+                case DragEvent.DRAG_TO:
+                    setDragLocation(new Location(dragEvent.getX(), dragEvent.getY()));
+                    break;
+                case DragEvent.DRAG_DROP:
+                    StackMarker drop = getDrop(dragEvent.getX(), dragEvent.getY());
+
+
+                    if (drop != dragged.getOwner()) {
+                        if (drop == null) {
+                            drop = new StackMarker((IMapMarker) getSelected());
+                            ((IMapMarker) getSelected()).addStack(drop);
+                        }
+                        StackMarker oldStack = dragged.getOwner();
+                        drop.addCounter(dragged);
+
+                        if (oldStack.getCounters().isEmpty()) {
+                            ((IMapMarker) getSelected()).removeStack(oldStack);
+                        }
+                    }
+
+                    setDragged(null);
+                    setDragLocation(null);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

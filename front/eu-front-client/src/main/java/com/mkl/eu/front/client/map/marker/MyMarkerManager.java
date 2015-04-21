@@ -6,13 +6,17 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
+import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
+import de.fhpotsdam.unfolding.events.MapEvent;
+import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
@@ -25,7 +29,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object> {
+public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Utility to draw counters. */
@@ -367,5 +371,64 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         }
 
         return firstMarker;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getId() {
+        return "markerManager" + map.getId();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onManipulation(MapEvent event) {
+        if (StringUtils.equals(DragEvent.TYPE_DRAG, event.getType()) && event instanceof DragEvent) {
+            DragEvent dragEvent = (DragEvent) event;
+            switch (event.getSubType()) {
+                case DragEvent.DRAG_TAKE:
+                    StackMarker marker = getDrag(dragEvent.getX(), dragEvent.getY());
+                    setDragged(marker);
+                    break;
+                case DragEvent.DRAG_TO:
+                    setDragLocation(new Location(dragEvent.getX(), dragEvent.getY()));
+                    break;
+                case DragEvent.DRAG_DROP:
+                    IMapMarker drop = getDrop(dragEvent.getX(), dragEvent.getY());
+
+                    if (isNeighbour(dragged.getProvince(), drop)) {
+                        drop.addStack(dragged);
+                    }
+
+                    setDragged(null);
+                    setDragLocation(null);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Returns <code>true</code> if the provinces are neighbours.
+     *
+     * @param provinceA the first province.
+     * @param provinceB the second province.
+     * @return <code>true</code> if the provinces are neighbours.
+     */
+    private boolean isNeighbour(IMapMarker provinceA, IMapMarker provinceB) {
+        boolean isNeighbour = false;
+
+        if (provinceA != null && provinceB != null) {
+            if (provinceA.getNeighbours() != null) {
+                for (BorderMarker neighbour : provinceA.getNeighbours()) {
+                    if (neighbour.getProvince() == provinceB) {
+                        isNeighbour = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return isNeighbour;
     }
 }

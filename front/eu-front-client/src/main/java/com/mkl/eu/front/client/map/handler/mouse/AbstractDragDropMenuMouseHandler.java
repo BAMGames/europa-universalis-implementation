@@ -1,6 +1,8 @@
 package com.mkl.eu.front.client.map.handler.mouse;
 
+import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import de.fhpotsdam.unfolding.UnfoldingMap;
+import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -16,7 +18,7 @@ import java.util.List;
  * @param <S> type of the object being contextualized.
  * @author MKL
  */
-public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragAndDropAware<T, U> & IContextualMenuAware<S>> extends AbstractMouseHandler {
+public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragAndDropAware<T, U> & IContextualMenuAware<S> & MapEventListener> extends AbstractMouseHandler {
     /** Component responsible for the behavior of drag&drop and contextual menu. */
     private V component;
 
@@ -47,7 +49,7 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
             S item = component.getContextualizedItem(getMouseX(), getMouseY());
             if (item != null) {
                 component.contextualMenu(item, new Location(getMouseX(), getMouseY()));
-                stop = item != null;
+                stop = true;
             }
         }
 
@@ -59,8 +61,12 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
     public boolean mousePressed() {
         boolean stop = super.mousePressed();
         if (!stop && component.isHit(getMouseX(), getMouseY())) {
-            T marker = component.getDrag(getMouseX(), getMouseY());
-            component.setDragged(marker);
+
+            DragEvent event = new DragEvent(component, component.getId(), DragEvent.DRAG_TAKE);
+            event.setX(getMouseX());
+            event.setY(getMouseY());
+            eventDispatcher.fireMapEvent(event);
+
             stop = true;
         }
 
@@ -73,9 +79,12 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
         boolean stop = false;
         if (component.isHit(getMouseX(), getMouseY())) {
             if (getMouseButton() == PConstants.LEFT) {
-                Location newLocation = new Location(getMouseX(), getMouseY());
                 if (component.getDragged() != null) {
-                    component.setDragLocation(newLocation);
+                    DragEvent event = new DragEvent(component, component.getId(), DragEvent.DRAG_TO);
+                    event.setX(getMouseX());
+                    event.setY(getMouseY());
+                    eventDispatcher.fireMapEvent(event);
+
                     stop = true;
                 }
             }
@@ -89,25 +98,16 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
     public boolean mouseReleased() {
         boolean stop = super.mouseReleased();
         if (!stop && component.getDragged() != null) {
-            U drop = component.getDrop(getMouseX(), getMouseY());
-            doAfterRelease(component.getDragged(), drop);
-
-            component.setDragged(null);
-            component.setDragLocation(null);
+            DragEvent event = new DragEvent(component, component.getId(), DragEvent.DRAG_DROP);
+            event.setX(getMouseX());
+            event.setY(getMouseY());
+            eventDispatcher.fireMapEvent(event);
 
             stop = true;
         }
 
         return stop;
     }
-
-    /**
-     * Do the process after the release is done.
-     *
-     * @param dragged the object being dragged.
-     * @param drop    the object where the drag is dropped.
-     */
-    protected abstract void doAfterRelease(T dragged, U drop);
 
     /** @return the component. */
     public V getComponent() {

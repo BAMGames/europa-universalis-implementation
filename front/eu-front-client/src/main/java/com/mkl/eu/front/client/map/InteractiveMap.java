@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map;
 
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
+import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.keyboard.MapKeyboardHandler;
 import com.mkl.eu.front.client.map.handler.mouse.InfowViewMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MapMouseHandler;
@@ -10,9 +11,7 @@ import com.mkl.eu.front.client.map.marker.MarkerUtils;
 import com.mkl.eu.front.client.map.marker.MyMarkerManager;
 import com.mkl.eu.front.client.map.provider.EUProvider;
 import de.fhpotsdam.unfolding.UnfoldingMap;
-import de.fhpotsdam.unfolding.events.EventDispatcher;
-import de.fhpotsdam.unfolding.events.PanMapEvent;
-import de.fhpotsdam.unfolding.events.ZoomMapEvent;
+import de.fhpotsdam.unfolding.events.*;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
 import de.fhpotsdam.unfolding.marker.Marker;
@@ -30,7 +29,7 @@ import java.util.Map;
  *
  * @author MKL
  */
-public class InteractiveMap extends PApplet {
+public class InteractiveMap extends PApplet implements MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
     /** Interactive map. */
@@ -74,7 +73,8 @@ public class InteractiveMap extends PApplet {
         }
 
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
-        mapDetail.setTweening(true);
+        // Too many inaccessible field to enable tween and no loop.
+        mapDetail.setTweening(false);
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
         mapDetail.panTo(1300, -300);
@@ -91,25 +91,36 @@ public class InteractiveMap extends PApplet {
 
         MyMarkerManager markerManager = new MyMarkerManager(markerUtils);
 
+        mapDetail.addMarkerManager(markerManager);
+
         info = new InfoView(this, markerManager, 805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, markerManager, mapDetail);
         new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
-        new InfowViewMouseHandler(this, info, mapDetail);
+        InfowViewMouseHandler infoHandler = new InfowViewMouseHandler(this, info, mapDetail);
 
         eventDispatcher.addBroadcaster(keyboardHandler);
         eventDispatcher.addBroadcaster(mouseHandler);
+        eventDispatcher.addBroadcaster(infoHandler);
 
         eventDispatcher.register(mapDetail, PanMapEvent.TYPE_PAN, mapDetail.getId());
         eventDispatcher.register(mapDetail, ZoomMapEvent.TYPE_ZOOM, mapDetail.getId());
 
-        mapDetail.addMarkerManager(markerManager);
+        eventDispatcher.register(markerManager, DragEvent.TYPE_DRAG, markerManager.getId());
+        eventDispatcher.register(info, DragEvent.TYPE_DRAG, info.getId());
+
+        eventDispatcher.register(this, PanMapEvent.TYPE_PAN, getId(), mapDetail.getId());
+        eventDispatcher.register(this, ZoomMapEvent.TYPE_ZOOM, getId(), mapDetail.getId());
+        eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
 
         // Load country polygons and adds them as markers
         Map<String, Marker> countryMarkers = markerUtils.createMarkers();
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
+
+        // Disable the auto-draw feature. Manual redraw on change.
+        noLoop();
     }
 
     /** Draw the PApplet. */
@@ -124,5 +135,17 @@ public class InteractiveMap extends PApplet {
         viewportRect.setDimension(tl, br);
         viewportRect.draw();
         info.draw();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getId() {
+        return "map";
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onManipulation(MapEvent event) {
+        redraw();
     }
 }

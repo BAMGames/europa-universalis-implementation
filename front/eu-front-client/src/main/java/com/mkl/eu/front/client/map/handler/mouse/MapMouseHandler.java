@@ -1,6 +1,5 @@
 package com.mkl.eu.front.client.map.handler.mouse;
 
-import com.mkl.eu.front.client.map.marker.BorderMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.MyMarkerManager;
 import com.mkl.eu.front.client.map.marker.StackMarker;
@@ -169,37 +168,5 @@ public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarke
         }
 
         return stop;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void doAfterRelease(StackMarker dragged, IMapMarker drop) {
-        if (isNeighbour(dragged.getProvince(), drop)) {
-            drop.addStack(dragged);
-        }
-    }
-
-    /**
-     * Returns <code>true</code> if the provinces are neighbours.
-     *
-     * @param provinceA the first province.
-     * @param provinceB the second province.
-     * @return <code>true</code> if the provinces are neighbours.
-     */
-    private boolean isNeighbour(IMapMarker provinceA, IMapMarker provinceB) {
-        boolean isNeighbour = false;
-
-        if (provinceA != null && provinceB != null) {
-            if (provinceA.getNeighbours() != null) {
-                for (BorderMarker neighbour : provinceA.getNeighbours()) {
-                    if (neighbour.getProvince() == provinceB) {
-                        isNeighbour = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return isNeighbour;
     }
 }
