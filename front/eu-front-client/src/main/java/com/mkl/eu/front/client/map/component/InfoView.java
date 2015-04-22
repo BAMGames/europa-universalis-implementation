@@ -297,13 +297,8 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         return !(menu == null || contextualized == null) && menu.hit(x, y);
     }
 
-    /**
-     * Hover the given location.
-     *
-     * @param x coordinate.
-     * @param y coordinate.
-     * @return <code>true</code> if something was hovered, <ocde>false</ocde> otherwise.
-     */
+    /** {@inheritDoc} */
+    @Override
     public boolean hover(int x, int y) {
         boolean hover = false;
 

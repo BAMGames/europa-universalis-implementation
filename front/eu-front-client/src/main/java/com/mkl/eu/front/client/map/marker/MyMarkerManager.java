@@ -339,13 +339,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         return drop;
     }
 
-    /**
-     * Hover the given location.
-     *
-     * @param x coordinate.
-     * @param y coordinate.
-     * @return <code>true</code> if something was hovered, <ocde>false</ocde> otherwise.
-     */
+    /** {@inheritDoc} */
+    @Override
     public boolean hover(int x, int y) {
         boolean hover = false;
 

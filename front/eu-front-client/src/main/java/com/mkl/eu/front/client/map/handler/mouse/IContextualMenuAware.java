@@ -39,4 +39,13 @@ public interface IContextualMenuAware<T> {
      * @return <code>true</code> if something related to the contextual menu occurred, so it does not try to trigger anything else, <code>false</code> otherwise.
      */
     boolean hit(int x, int y);
+
+    /**
+     * Hover the given location.
+     *
+     * @param x coordinate.
+     * @param y coordinate.
+     * @return <code>true</code> if something was hovered, <ocde>false</ocde> otherwise.
+     */
+    public boolean hover(int x, int y);
 }

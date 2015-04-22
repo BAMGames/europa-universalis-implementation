@@ -36,16 +36,4 @@ public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<Coun
     public InfowViewMouseHandler(PApplet p, InfoView infoView, List<UnfoldingMap> maps) {
         super(p, infoView, maps);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean mouseMoved() {
-        boolean stop = super.mouseMoved();
-
-        if (!stop) {
-            stop = getComponent().hover(getMouseX(), getMouseY());
-        }
-
-        return stop;
-    }
 }

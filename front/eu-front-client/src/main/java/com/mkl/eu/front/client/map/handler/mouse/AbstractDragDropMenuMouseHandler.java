@@ -1,6 +1,8 @@
 package com.mkl.eu.front.client.map.handler.mouse;
 
+import com.mkl.eu.front.client.map.handler.event.ClickEvent;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
+import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -43,6 +45,11 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
             stop = component.hit(getMouseX(), getMouseY());
             if (!stop) {
                 component.resetContextualMenu();
+
+                ClickEvent event = new ClickEvent(component, component.getId(), ClickEvent.CLICK_LEFT);
+                event.setX(getMouseX());
+                event.setY(getMouseY());
+                eventDispatcher.fireMapEvent(event);
             }
         }
         if (getMouseButton() == PConstants.RIGHT) {
@@ -50,6 +57,11 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
             if (item != null) {
                 component.contextualMenu(item, new Location(getMouseX(), getMouseY()));
                 stop = true;
+
+                ClickEvent event = new ClickEvent(component, component.getId(), ClickEvent.CLICK_RIGHT);
+                event.setX(getMouseX());
+                event.setY(getMouseY());
+                eventDispatcher.fireMapEvent(event);
             }
         }
 
@@ -104,6 +116,23 @@ public abstract class AbstractDragDropMenuMouseHandler<T, U, S, V extends IDragA
             eventDispatcher.fireMapEvent(event);
 
             stop = true;
+        }
+
+        return stop;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean mouseMoved() {
+        boolean stop = super.mouseMoved();
+
+        if (!stop) {
+            stop = getComponent().hover(getMouseX(), getMouseY());
+
+            HoverEvent event = new HoverEvent(component, component.getId());
+            event.setX(getMouseX());
+            event.setY(getMouseY());
+            eventDispatcher.fireMapEvent(event);
         }
 
         return stop;
