@@ -31,7 +31,7 @@ public abstract class EuObject implements Serializable {
      */
     @XmlID
     public String getIdForJaxb() {
-        return getClass().toString() + "_" + getId();
+        return getClass().getSimpleName() + "_" + getId();
     }
 
     /**
