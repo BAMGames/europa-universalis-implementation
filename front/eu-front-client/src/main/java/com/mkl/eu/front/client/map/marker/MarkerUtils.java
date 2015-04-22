@@ -1,10 +1,8 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.board.EuropeanProvince;
 import com.mkl.eu.client.service.vo.board.Stack;
-import com.mkl.eu.client.service.vo.country.Country;
-import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.front.client.vo.Border;
 import com.thoughtworks.xstream.XStream;
 import de.fhpotsdam.unfolding.data.Feature;
@@ -17,7 +15,6 @@ import processing.core.PApplet;
 import processing.core.PImage;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +43,7 @@ public class MarkerUtils {
      *
      * @return the markers to add to the maps.
      */
-    public Map<String, Marker> createMarkers() {
+    public Map<String, Marker> createMarkers(Game game) {
         List<Feature> countries = GeoJSONReader.loadData(pApplet, "data/map/v2/countries.geo.json");
 
         XStream xstream = new XStream();
@@ -64,62 +61,6 @@ public class MarkerUtils {
         markerFactory.setPolygonClass(ProvinceMarker.class);
         markerFactory.setMultiPolygonClass(MultiProvinceMarker.class);
         Map<String, Marker> countryMarkers = markerFactory.createMapMarkers(countries);
-        List<Stack> stacks = new ArrayList<>();
-        Stack stack1 = new Stack();
-        stack1.setProvince(new EuropeanProvince());
-        stack1.getProvince().setName("Prypeć");
-        Counter counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
-        counter1.setType(CounterTypeEnum.ARMY_PLUS);
-        stack1.getCounters().add(counter1);
-        stack1.getCounters().add(counter1);
-        stacks.add(stack1);
-
-        stack1 = new Stack();
-        stack1.setProvince(new EuropeanProvince());
-        stack1.getProvince().setName("Prypeć");
-        counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
-        counter1.setType(CounterTypeEnum.ARMY_PLUS);
-        stack1.getCounters().add(counter1);
-        Counter counter2 = new Counter();
-        counter2.setCountry(new Country());
-        counter2.getCountry().setName("FRA");
-        counter2.setType(CounterTypeEnum.ARMY_MINUS);
-        stack1.getCounters().add(counter2);
-        stacks.add(stack1);
-
-        stack1 = new Stack();
-        stack1.setProvince(new EuropeanProvince());
-        stack1.getProvince().setName("Prypeć");
-        counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
-        counter1.setType(CounterTypeEnum.ARMY_PLUS);
-        stack1.getCounters().add(counter1);
-        counter2 = new Counter();
-        counter2.setCountry(new Country());
-        counter2.getCountry().setName("FRA");
-        counter2.setType(CounterTypeEnum.ARMY_MINUS);
-        stack1.getCounters().add(counter2);
-        Counter counter3 = new Counter();
-        counter3.setCountry(new Country());
-        counter3.getCountry().setName("FRA");
-        counter3.setType(CounterTypeEnum.LAND_DETACHMENT);
-        stack1.getCounters().add(counter3);
-        stacks.add(stack1);
-
-        stack1 = new Stack();
-        stack1.setProvince(new EuropeanProvince());
-        stack1.getProvince().setName("Languedoc");
-        counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
-        counter1.setType(CounterTypeEnum.ARMY_PLUS);
-        stack1.getCounters().add(counter1);
-        stacks.add(stack1);
 
         for (Marker marker : countryMarkers.values()) {
 
@@ -150,7 +91,7 @@ public class MarkerUtils {
                     }
                 }
 
-                for (Stack stack : stacks) {
+                for (Stack stack : game.getStacks()) {
                     if (StringUtils.equals(stack.getProvince().getName(), marker.getId())) {
                         StackMarker stackMarker = new StackMarker(mapMarker);
                         for (Counter counter : stack.getCounters()) {

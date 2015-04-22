@@ -1,5 +1,12 @@
 package com.mkl.eu.front.client.map;
 
+import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.EuropeanProvince;
+import com.mkl.eu.client.service.vo.board.Stack;
+import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -19,10 +26,11 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import processing.core.PApplet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,6 +41,9 @@ import java.util.Map;
 public class InteractiveMap extends PApplet implements MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
+    /** Game service. */
+    @Autowired
+    private IGameService gameService;
     /** Interactive map. */
     private UnfoldingMap mapDetail;
 
@@ -51,8 +62,6 @@ public class InteractiveMap extends PApplet implements MapEventListener {
      */
     public static void main(String args[]) {
         PApplet.main(new String[]{"com.mkl.eu.front.client.map.InteractiveMap"});
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/mkl/eu/front/client/eu-front-client-applicationContext.xml");
-        InteractiveMap mine = (InteractiveMap) context.getBean("mine");
     }
 
     /**
@@ -118,7 +127,9 @@ public class InteractiveMap extends PApplet implements MapEventListener {
         eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
 
         // Load country polygons and adds them as markers
-        Map<String, Marker> countryMarkers = markerUtils.createMarkers();
+        Game game = mockGame();
+//        Game game = gameService.loadGame(1L);
+        Map<String, Marker> countryMarkers = markerUtils.createMarkers(game);
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
 
         // Disable the auto-draw feature. Manual redraw on change.
@@ -149,5 +160,73 @@ public class InteractiveMap extends PApplet implements MapEventListener {
     @Override
     public void onManipulation(MapEvent event) {
         redraw();
+    }
+
+    /**
+     * @return a mocked game.
+     */
+    private Game mockGame() {
+        Game game = new Game();
+
+        List<Stack> stacks = new ArrayList<>();
+        Stack stack1 = new Stack();
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Prypeć");
+        Counter counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        stack1.getCounters().add(counter1);
+        stack1.getCounters().add(counter1);
+        stacks.add(stack1);
+
+        stack1 = new Stack();
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Prypeć");
+        counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        stack1.getCounters().add(counter1);
+        Counter counter2 = new Counter();
+        counter2.setCountry(new Country());
+        counter2.getCountry().setName("FRA");
+        counter2.setType(CounterTypeEnum.ARMY_MINUS);
+        stack1.getCounters().add(counter2);
+        stacks.add(stack1);
+
+        stack1 = new Stack();
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Prypeć");
+        counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        stack1.getCounters().add(counter1);
+        counter2 = new Counter();
+        counter2.setCountry(new Country());
+        counter2.getCountry().setName("FRA");
+        counter2.setType(CounterTypeEnum.ARMY_MINUS);
+        stack1.getCounters().add(counter2);
+        Counter counter3 = new Counter();
+        counter3.setCountry(new Country());
+        counter3.getCountry().setName("FRA");
+        counter3.setType(CounterTypeEnum.LAND_DETACHMENT);
+        stack1.getCounters().add(counter3);
+        stacks.add(stack1);
+
+        stack1 = new Stack();
+        stack1.setProvince(new EuropeanProvince());
+        stack1.getProvince().setName("Languedoc");
+        counter1 = new Counter();
+        counter1.setCountry(new Country());
+        counter1.getCountry().setName("FRA");
+        counter1.setType(CounterTypeEnum.ARMY_PLUS);
+        stack1.getCounters().add(counter1);
+        stacks.add(stack1);
+
+        game.setStacks(stacks);
+
+        return game;
     }
 }

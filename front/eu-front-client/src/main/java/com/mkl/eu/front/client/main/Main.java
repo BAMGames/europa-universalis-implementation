@@ -1,7 +1,11 @@
 package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.front.client.map.InteractiveMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import javax.annotation.PostConstruct;
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,23 +14,23 @@ import java.awt.*;
  *
  * @author MKL.
  */
+@org.springframework.stereotype.Component
 public class Main extends JFrame {
+    /** PApplet for the intercative map. */
+    @Autowired
+    private InteractiveMap map;
 
     /**
-     * Constructor.
+     * Initialize the component.
      */
-    public Main() {
+    @PostConstruct
+    public void init() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
-        InteractiveMap map = InteractiveMap.createInstance();
         add(map, BorderLayout.CENTER);
         setPreferredSize(new Dimension(1000, 650));
         setBounds(0, 0, 1000, 600);
-
-        centerFrame(this);
-        pack();
-        setVisible(true);
     }
 
     /**
@@ -48,6 +52,11 @@ public class Main extends JFrame {
      * @param args no args.
      */
     public static void main(String[] args) {
-        new Main();
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/mkl/eu/front/client/eu-front-client-applicationContext.xml");
+        Main main = context.getBean(Main.class);
+
+        centerFrame(main);
+        main.pack();
+        main.setVisible(true);
     }
 }
