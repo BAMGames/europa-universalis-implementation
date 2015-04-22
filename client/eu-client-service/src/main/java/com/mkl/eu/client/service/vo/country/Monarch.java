@@ -8,7 +8,7 @@ import com.mkl.eu.client.service.vo.board.Leader;
  *
  * @author MKL
  */
-public class Monarch extends EuObject<Long> {
+public class Monarch extends EuObject {
     /** Country the monarch rules. */
     private Country country;
     /** Turn when the leader comes to play. */

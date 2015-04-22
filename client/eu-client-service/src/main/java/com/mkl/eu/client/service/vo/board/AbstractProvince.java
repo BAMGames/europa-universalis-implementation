@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author MKL.
  */
-public abstract class AbstractProvince extends EuObject<Long> {
+public abstract class AbstractProvince extends EuObject {
     /** Name of the province. Must match the one in the geo.json file. */
     private String name;
     /** Stacks of counters in the province. */

@@ -10,7 +10,7 @@ import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
  *
  * @author MKL
  */
-public class AdministrativeAction extends EuObject<Long> {
+public class AdministrativeAction extends EuObject {
     /** Turn of the administrative action. */
     private Integer turn;
     /** Type of the administrative action (ie MNU, DTI, COL, Exc Levies,...). */

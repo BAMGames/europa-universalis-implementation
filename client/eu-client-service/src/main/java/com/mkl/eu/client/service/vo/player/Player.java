@@ -8,7 +8,7 @@ import com.mkl.eu.client.service.vo.country.Country;
  *
  * @author MKL.
  */
-public class Player extends EuObject<Long> {
+public class Player extends EuObject {
     /** The country being managed by the player. */
     private Country country;
 

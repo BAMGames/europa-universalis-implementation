@@ -1,25 +1,31 @@
 package com.mkl.eu.client.service.vo;
 
-import javax.xml.bind.Unmarshaller;
+import com.mkl.eu.client.common.adapter.JaxbLongAdapter;
+
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 
 /**
  * Mother class of all VOs.
  *
- * @param <T> Type of the id. Long by default.
  * @author MKL
  */
-public abstract class EuObject<T> extends Unmarshaller.Listener implements Serializable {
+public abstract class EuObject implements Serializable {
     /** Id of the object. */
-    private T id;
+    private Long id;
 
     /** @return the id. */
-    public T getId() {
+    @XmlID
+    @XmlJavaTypeAdapter(JaxbLongAdapter.class)
+    @XmlSchemaType(name = "long")
+    public Long getId() {
         return id;
     }
 
     /** @param id the id to set. */
-    public void setId(T id) {
+    public void setId(Long id) {
         this.id = id;
     }
 }

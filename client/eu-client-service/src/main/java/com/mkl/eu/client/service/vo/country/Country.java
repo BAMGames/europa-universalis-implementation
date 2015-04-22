@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * @author MKL
  */
-public class Country extends EuObject<Long> {
+public class Country extends EuObject {
     /**
      * Constant for Neutral country.
      */

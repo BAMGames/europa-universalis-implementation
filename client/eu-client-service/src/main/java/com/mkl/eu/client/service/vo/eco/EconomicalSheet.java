@@ -7,7 +7,7 @@ import com.mkl.eu.client.service.vo.EuObject;
  *
  * @author MKL
  */
-public class EconomicalSheet extends EuObject<Long> {
+public class EconomicalSheet extends EuObject {
     /** Turn of the sheet. */
     private Integer turn;
 

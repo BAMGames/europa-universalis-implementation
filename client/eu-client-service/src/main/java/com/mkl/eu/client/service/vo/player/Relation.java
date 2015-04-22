@@ -8,7 +8,7 @@ import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
  *
  * @author MKL
  */
-public class Relation extends EuObject<Long> {
+public class Relation extends EuObject {
     /** Owner of the relation (the one who responsible of it). */
     private Player first;
     /** The other player of the relation (may be multiple ?). */

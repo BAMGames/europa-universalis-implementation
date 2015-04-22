@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.vo.board;
 
 import com.mkl.eu.client.service.vo.EuObject;
 
+import javax.xml.bind.Unmarshaller;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class Stack extends EuObject<Long> {
+public class Stack extends EuObject {
     /** Province where the stack is located. */
     private AbstractProvince province;
     /** Counters of the stack. */
@@ -36,9 +37,14 @@ public class Stack extends EuObject<Long> {
         this.counters = counters;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void afterUnmarshal(Object target, Object parent) {
+    /**
+     * This method is called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     *
+     * @param unmarshaller the unmarshaller.
+     * @param parent       the parent object.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         if (this.province != null) {
             this.province.getStacks().add(this);
         }

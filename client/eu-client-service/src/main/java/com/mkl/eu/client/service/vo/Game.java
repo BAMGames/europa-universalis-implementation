@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class Game extends EuObject<Long> {
+public class Game extends EuObject {
     /** Players of the game. */
     private List<Player> players = new ArrayList<>();
     /** Relations between the countries. */

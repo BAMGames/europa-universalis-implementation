@@ -8,7 +8,7 @@ import com.mkl.eu.client.service.vo.board.Stack;
  *
  * @author MKL
  */
-public class Discovery extends EuObject<Long> {
+public class Discovery extends EuObject {
     /** Country the discovery belongs to. */
     private Country country;
     /** Province of the discovery. */
