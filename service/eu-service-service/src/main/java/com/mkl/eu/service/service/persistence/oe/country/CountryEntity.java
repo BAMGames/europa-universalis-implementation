@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.country;
 
+import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 
@@ -26,6 +27,8 @@ public class CountryEntity implements IEntity, Serializable {
      * Counters of the country.
      */
     private List<CounterEntity> counters = new ArrayList<>();
+    /** Game of the entity. */
+    private GameEntity game;
 
     /** @return the id. */
     @Id
@@ -69,5 +72,17 @@ public class CountryEntity implements IEntity, Serializable {
      */
     public void setCounters(List<CounterEntity> counters) {
         this.counters = counters;
+    }
+
+    /** @return the game. */
+    @ManyToOne
+    @JoinColumn(name = "ID_GAME")
+    public GameEntity getGame() {
+        return game;
+    }
+
+    /** @param game the game to set. */
+    public void setGame(GameEntity game) {
+        this.game = game;
     }
 }

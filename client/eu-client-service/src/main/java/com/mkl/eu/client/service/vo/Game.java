@@ -1,6 +1,7 @@
 package com.mkl.eu.client.service.vo;
 
 import com.mkl.eu.client.service.vo.board.Stack;
+import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 import com.mkl.eu.client.service.vo.player.Player;
@@ -17,6 +18,8 @@ import java.util.List;
 public class Game extends EuObject {
     /** Players of the game. */
     private List<Player> players = new ArrayList<>();
+    /** Stacks of countries of the game. */
+    private List<Country> countries = new ArrayList<>();
     /** Relations between the countries. */
     private List<Relation> relations = new ArrayList<>();
     /** Events that have occured in the game. */
@@ -36,6 +39,16 @@ public class Game extends EuObject {
     /** @param players the players to set. */
     public void setPlayers(List<Player> players) {
         this.players = players;
+    }
+
+    /** @return the countries. */
+    public List<Country> getCountries() {
+        return countries;
+    }
+
+    /** @param countries the countries to set. */
+    public void setCountries(List<Country> countries) {
+        this.countries = countries;
     }
 
     /** @return the relations. */

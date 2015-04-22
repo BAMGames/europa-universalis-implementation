@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.service.service.mapping.board.StackMapping;
+import com.mkl.eu.service.service.mapping.country.CountryMapping;
 import com.mkl.eu.service.service.mapping.event.PoliticalEventMapping;
 import com.mkl.eu.service.service.mapping.player.PlayerMapping;
 import com.mkl.eu.service.service.mapping.player.RelationMapping;
@@ -19,6 +20,9 @@ import java.util.Map;
  */
 @Component
 public class GameMapping {
+    /** Mapping for a country. */
+    @Autowired
+    private CountryMapping countryMapping;
     /** Mapping for political events. */
     @Autowired
     private PoliticalEventMapping politicalEventMapping;
@@ -50,6 +54,8 @@ public class GameMapping {
         target.setTurn(source.getTurn());
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+
+        target.setCountries(countryMapping.oesToVos(source.getCountries(), objectsCreated));
 
         target.setEvents(politicalEventMapping.oesToVos(source.getEvents(), objectsCreated));
 

@@ -14,6 +14,10 @@ ALTER TABLE counter
 DROP
 FOREIGN KEY FK_smkonbprv4ndcbcfxkwyo6eux;
 
+ALTER TABLE country
+DROP
+FOREIGN KEY FK_8ls5po6k1qkhcmiyx0sndk270;
+
 ALTER TABLE event_political
 DROP
 FOREIGN KEY FK_alogdp3y04u87cs425huk8vuw;
@@ -91,8 +95,9 @@ CREATE TABLE counter (
 );
 
 CREATE TABLE country (
-    id   BIGINT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(255),
+    id      BIGINT NOT NULL AUTO_INCREMENT,
+    name    VARCHAR(255),
+    id_game BIGINT,
     PRIMARY KEY (id)
 );
 
@@ -126,8 +131,8 @@ CREATE TABLE province (
 
 CREATE TABLE province_eu (
     income       INTEGER,
-    port         BOOLEAN,
-    praesidiable BOOLEAN,
+    port         BIT,
+    praesidiable BIT,
     id           BIGINT NOT NULL,
     id_country   BIGINT,
     PRIMARY KEY (id)
@@ -175,6 +180,12 @@ ADD INDEX FK_smkonbprv4ndcbcfxkwyo6eux (id_stack),
 ADD CONSTRAINT FK_smkonbprv4ndcbcfxkwyo6eux
 FOREIGN KEY (id_stack)
 REFERENCES stack (id);
+
+ALTER TABLE country
+ADD INDEX FK_8ls5po6k1qkhcmiyx0sndk270 (id_game),
+ADD CONSTRAINT FK_8ls5po6k1qkhcmiyx0sndk270
+FOREIGN KEY (id_game)
+REFERENCES game (id);
 
 ALTER TABLE event_political
 ADD INDEX FK_alogdp3y04u87cs425huk8vuw (id_game),
