@@ -6,7 +6,6 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
@@ -24,7 +23,6 @@ public class Counter extends EuObject {
 
     /** @return the country. */
     @XmlIDREF
-    @XmlSchemaType(name = "long")
     public Country getCountry() {
         return country;
     }
