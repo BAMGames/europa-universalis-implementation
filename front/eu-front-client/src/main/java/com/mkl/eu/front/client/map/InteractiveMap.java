@@ -127,8 +127,8 @@ public class InteractiveMap extends PApplet implements MapEventListener {
         eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
 
         // Load country polygons and adds them as markers
-        Game game = mockGame();
-//        Game game = gameService.loadGame(1L);
+//        Game game = mockGame();
+        Game game = gameService.loadGame(1L);
         Map<String, Marker> countryMarkers = markerUtils.createMarkers(game);
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
 
