@@ -20,8 +20,6 @@ public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     private Long id;
     /** Name of the province. Must match the one in the geo.json file. */
     private String name;
-    /** Stacks of counters in the province. */
-    private List<StackEntity> stacks;
     /** Terrain of the province. */
     private TerrainEnum terrain;
     /** List of borders of the province. */
@@ -50,17 +48,6 @@ public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     /** @param name the name to set. */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /** @return the stacks. */
-    @OneToMany(mappedBy = "province", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<StackEntity> getStacks() {
-        return stacks;
-    }
-
-    /** @param stacks the stacks to set. */
-    public void setStacks(List<StackEntity> stacks) {
-        this.stacks = stacks;
     }
 
     /** @return the terrain. */
