@@ -3,7 +3,9 @@ package com.mkl.eu.client.service.vo.board;
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,11 +13,13 @@ import java.util.List;
  *
  * @author MKL.
  */
+@XmlTransient
+@XmlSeeAlso({EuropeanProvince.class})
 public abstract class AbstractProvince extends EuObject {
     /** Name of the province. Must match the one in the geo.json file. */
     private String name;
     /** Stacks of counters in the province. */
-    private List<Stack> stacks;
+    private List<Stack> stacks = new ArrayList<>();
     /** Terrain of the province. */
     private TerrainEnum terrain;
 
