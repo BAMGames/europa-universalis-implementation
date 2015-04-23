@@ -31,13 +31,7 @@ public class PoliticalEventMapping extends AbstractMapping {
         List<PoliticalEvent> targets = new ArrayList<>();
 
         for (PoliticalEventEntity source : sources) {
-            PoliticalEvent target = storeVo(PoliticalEvent.class, source, objectsCreated, new ITransformation<PoliticalEventEntity, PoliticalEvent>() {
-                /** {@inheritDoc} */
-                @Override
-                public PoliticalEvent transform(PoliticalEventEntity source) {
-                    return oeToVo(source);
-                }
-            });
+            PoliticalEvent target = storeVo(PoliticalEvent.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }

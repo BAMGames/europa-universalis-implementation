@@ -3,7 +3,6 @@ package com.mkl.eu.service.service.mapping.board;
 import com.mkl.eu.client.service.vo.board.AbstractProvince;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
-import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -41,13 +40,7 @@ public class StackMapping extends AbstractMapping {
         List<Stack> targets = new ArrayList<>();
 
         for (StackEntity source : sources) {
-            Stack target = storeVo(Stack.class, source, objectsCreated, new ITransformation<StackEntity, Stack>() {
-                /** {@inheritDoc} */
-                @Override
-                public Stack transform(StackEntity source) {
-                    return oeToVo(source, objectsCreated);
-                }
-            });
+            Stack target = storeVo(Stack.class, source, objectsCreated, source1 -> oeToVo(source1, objectsCreated));
             if (target != null) {
                 targets.add(target);
             }
@@ -71,13 +64,7 @@ public class StackMapping extends AbstractMapping {
         Stack target = new Stack();
 
         target.setId(source.getId());
-        target.setProvince(storeVo(AbstractProvince.class, source.getProvince(), objectsCreated, new ITransformation<AbstractProvinceEntity, AbstractProvince>() {
-            /** {@inheritDoc} */
-            @Override
-            public AbstractProvince transform(AbstractProvinceEntity source) {
-                return provinceMapping.oeToVo(source, objectsCreated);
-            }
-        }));
+        target.setProvince(storeVo(AbstractProvince.class, source.getProvince(), objectsCreated, source1 -> provinceMapping.oeToVo(source1, objectsCreated)));
         target.setCounters(counterMapping.oesToVos(source.getCounters(), target, objectsCreated));
 
         return target;

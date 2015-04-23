@@ -4,7 +4,6 @@ import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.player.Player;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.country.CountryMapping;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.player.PlayerEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,13 +38,7 @@ public class PlayerMapping extends AbstractMapping {
         List<Player> targets = new ArrayList<>();
 
         for (PlayerEntity source : sources) {
-            Player target = storeVo(Player.class, source, objectsCreated, new ITransformation<PlayerEntity, Player>() {
-                /** {@inheritDoc} */
-                @Override
-                public Player transform(PlayerEntity source) {
-                    return oeToVo(source, objectsCreated);
-                }
-            });
+            Player target = storeVo(Player.class, source, objectsCreated, source1 -> oeToVo(source1, objectsCreated));
             if (target != null) {
                 targets.add(target);
             }
@@ -69,13 +62,7 @@ public class PlayerMapping extends AbstractMapping {
         Player target = new Player();
 
         target.setId(source.getId());
-        target.setCountry(storeVo(Country.class, source.getCountry(), objectsCreated, new ITransformation<CountryEntity, Country>() {
-            /** {@inheritDoc} */
-            @Override
-            public Country transform(CountryEntity source) {
-                return countryMapping.oeToVo(source);
-            }
-        }));
+        target.setCountry(storeVo(Country.class, source.getCountry(), objectsCreated, countryMapping::oeToVo));
 
         return target;
     }

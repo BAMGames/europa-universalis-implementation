@@ -7,7 +7,6 @@ import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.country.CountryMapping;
 import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.board.EuropeanProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,13 +46,7 @@ public class ProvinceMapping extends AbstractMapping {
             if (province.getPraesidiable() != null) {
                 ((EuropeanProvince) target).setPraesidiable(province.getPraesidiable());
             }
-            ((EuropeanProvince) target).setDefaultOwner(storeVo(Country.class, province.getDefaultOwner(), objectsCreated, new ITransformation<CountryEntity, Country>() {
-                /** {@inheritDoc} */
-                @Override
-                public Country transform(CountryEntity source) {
-                    return countryMapping.oeToVo(source);
-                }
-            }));
+            ((EuropeanProvince) target).setDefaultOwner(storeVo(Country.class, province.getDefaultOwner(), objectsCreated, countryMapping::oeToVo));
         } else {
             return null;
         }

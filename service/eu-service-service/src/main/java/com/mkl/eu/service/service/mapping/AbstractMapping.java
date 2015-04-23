@@ -34,7 +34,7 @@ public abstract class AbstractMapping {
             target = function.transform(source);
             if (target != null && source != null) {
                 if (!objectsCreated.containsKey(classKey)) {
-                    objectsCreated.put(classKey, new HashMap<Long, Object>());
+                    objectsCreated.put(classKey, new HashMap<>());
                 }
                 objectsCreated.get(classKey).put(source.getId(), target);
             }

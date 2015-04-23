@@ -6,7 +6,6 @@ import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.country.CountryMapping;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,13 +40,7 @@ public class CounterMapping extends AbstractMapping {
         List<Counter> targets = new ArrayList<>();
 
         for (CounterEntity source : sources) {
-            Counter target = storeVo(Counter.class, source, objectsCreated, new ITransformation<CounterEntity, Counter>() {
-                /** {@inheritDoc} */
-                @Override
-                public Counter transform(CounterEntity source) {
-                    return oeToVo(source, parent, objectsCreated);
-                }
-            });
+            Counter target = storeVo(Counter.class, source, objectsCreated, source1 -> oeToVo(source1, parent, objectsCreated));
             if (target != null) {
                 targets.add(target);
             }
@@ -74,13 +67,7 @@ public class CounterMapping extends AbstractMapping {
         target.setId(source.getId());
         target.setType(source.getType());
         target.setOwner(parent);
-        target.setCountry(storeVo(Country.class, source.getCountry(), objectsCreated, new ITransformation<CountryEntity, Country>() {
-            /** {@inheritDoc} */
-            @Override
-            public Country transform(CountryEntity source) {
-                return countryMapping.oeToVo(source);
-            }
-        }));
+        target.setCountry(storeVo(Country.class, source.getCountry(), objectsCreated, countryMapping::oeToVo));
 
         return target;
     }

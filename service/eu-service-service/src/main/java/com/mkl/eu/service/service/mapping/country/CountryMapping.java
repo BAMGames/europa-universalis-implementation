@@ -32,13 +32,7 @@ public class CountryMapping extends AbstractMapping {
         List<Country> targets = new ArrayList<>();
 
         for (CountryEntity source : sources) {
-            Country target = storeVo(Country.class, source, objectsCreated, new AbstractMapping.ITransformation<CountryEntity, Country>() {
-                /** {@inheritDoc} */
-                @Override
-                public Country transform(CountryEntity source) {
-                    return oeToVo(source);
-                }
-            });
+            Country target = storeVo(Country.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }
