@@ -47,7 +47,7 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
 
     /** @return the port. */
     @Column(name = "PORT", columnDefinition = "BIT")
-    public Boolean isPort() {
+    public Boolean getPort() {
         return port;
     }
 
@@ -58,7 +58,7 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
 
     /** @return the praesidiable. */
     @Column(name = "PRAESIDIABLE", columnDefinition = "BIT")
-    public Boolean isPraesidiable() {
+    public Boolean getPraesidiable() {
         return praesidiable;
     }
 
