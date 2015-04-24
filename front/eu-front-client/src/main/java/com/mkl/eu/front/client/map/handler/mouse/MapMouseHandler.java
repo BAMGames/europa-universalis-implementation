@@ -98,8 +98,6 @@ public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarke
         if (!stop) {
             for (UnfoldingMap map : maps) {
                 if (map.isHit(getMouseX(), getMouseY())) {
-                    // log.debug("mouse: fire zoomBy for " + map.getId());
-
                     ZoomMapEvent zoomMapEvent = new ZoomMapEvent(this, map.getId(), ZoomMapEvent.ZOOM_BY_LEVEL);
 
                     // Use location as zoom center, so listening maps can zoom correctly
@@ -131,8 +129,6 @@ public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarke
             for (UnfoldingMap map : maps) {
                 if (map.isHit(getMouseX(), getMouseY())) {
                     if (getMouseButton() == PConstants.LEFT) {
-                        // log.debug("mouse: fire panTo for " + map.getId());
-
                         // Pan between two locations, so other listening maps can pan correctly
 
                         Location oldLocation = map.getLocation(getPmouseX(), getPmouseY());

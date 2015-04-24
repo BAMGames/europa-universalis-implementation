@@ -44,6 +44,12 @@ public class InteractiveMap extends PApplet implements MapEventListener {
     /** Game service. */
     @Autowired
     private IGameService gameService;
+    /** Utility for markers. */
+    @Autowired
+    private MarkerUtils markerUtils;
+    /** Marker manager. */
+    @Autowired
+    private MyMarkerManager markerManager;
     /** Interactive map. */
     private UnfoldingMap mapDetail;
 
@@ -53,6 +59,7 @@ public class InteractiveMap extends PApplet implements MapEventListener {
     /** Interactive finder box atop the overview map. */
     private ViewportRect viewportRect;
     /** Information panel of the selected province. */
+    @Autowired
     private InfoView info;
 
     /**
@@ -97,13 +104,9 @@ public class InteractiveMap extends PApplet implements MapEventListener {
 
         viewportRect = new ViewportRect(this);
 
-        MarkerUtils markerUtils = new MarkerUtils(this);
-
-        MyMarkerManager markerManager = new MyMarkerManager(markerUtils);
-
         mapDetail.addMarkerManager(markerManager);
 
-        info = new InfoView(this, markerManager, 805, 245, 185, 350);
+        info.init(805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);

@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.map.component;
 
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -10,9 +11,10 @@ import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -22,6 +24,7 @@ import processing.core.PGraphics;
  *
  * @author MKL
  */
+@Component
 public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
@@ -34,9 +37,17 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** Size of a counter. */
     private static final float SIZE = 30;
     /** PApplet for drawing purpose. */
+    @Autowired
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
+    @Autowired
     private MyMarkerManager markerManager;
+    /** Internationalisation. */
+    @Autowired
+    private MessageSource message;
+    /** Configuration of the application. */
+    @Autowired
+    private GlobalConfiguration globalConfiguration;
     /** The counter being dragged. */
     private CounterMarker dragged;
     /** The new location of the dragged object. */
@@ -57,15 +68,12 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /**
      * Constructor.
      *
-     * @param pApplet the pApplet.
      * @param x       X coordinate.
      * @param y       Y coordinate.
      * @param w       Width.
      * @param h       Height.
      */
-    public InfoView(PApplet pApplet, MyMarkerManager markerManager, float x, float y, float w, float h) {
-        this.pApplet = pApplet;
-        this.markerManager = markerManager;
+    public void init(float x, float y, float w, float h) {
         this.x = x;
         this.y = y;
         this.w = w;
@@ -93,7 +101,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
             if (marker instanceof IMapMarker) {
                 IMapMarker mapMarker = (IMapMarker) marker;
 
-                pg.text("Stacks:", newX, newY);
+                pg.text(message.getMessage("map.infoview.stacks", null, globalConfiguration.getLocale()), newX, newY);
                 newY += V_TEXT;
                 pg.imageMode(PConstants.CORNER);
                 for (int i = 0; i < mapMarker.getStacks().size(); i++) {
@@ -242,21 +250,19 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
      * @return a Contextual Menu for a Counter.
      */
     private ContextualMenu createMenuCounter(final CounterMarker counter) {
-        ContextualMenu menu = new ContextualMenu("Counter");
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel("Counter"));
+        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Disband", new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                StackMarker stack = counter.getOwner();
-                stack.removeCounter(counter);
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.disband", null, globalConfiguration.getLocale()), event -> {
+            // TODO service
+            StackMarker stack = counter.getOwner();
+            stack.removeCounter(counter);
 
-                if (stack.getCounters().isEmpty()) {
-                    ((IMapMarker) getSelected()).removeStack(stack);
-                }
-
-                resetContextualMenu();
+            if (stack.getCounters().isEmpty()) {
+                ((IMapMarker) getSelected()).removeStack(stack);
             }
+
+            resetContextualMenu();
         }));
 
         return menu;
@@ -269,21 +275,19 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
      * @return a Contextual Menu for a Stack.
      */
     private ContextualMenu createMenuStack(final StackMarker stack) {
-        ContextualMenu menu = new ContextualMenu("Stack");
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel("Stack"));
+        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu("Move");
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.move", null, globalConfiguration.getLocale()));
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
-            StringBuilder label = new StringBuilder(border.getProvince().getId());
+            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(border.getType()).append(")");
+                label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
             }
-            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    border.getProvince().addStack(stack);
-                    resetContextualMenu();
-                }
+            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
+                // TODO service
+                border.getProvince().addStack(stack);
+                resetContextualMenu();
             }));
         }
         menu.addMenuItem(move);

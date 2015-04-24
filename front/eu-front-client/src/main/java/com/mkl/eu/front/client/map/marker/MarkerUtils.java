@@ -11,6 +11,8 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -23,20 +25,13 @@ import java.util.Map;
  *
  * @author MKL
  */
+@Component
 public class MarkerUtils {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MarkerUtils.class);
     /** PApplet. */
+    @Autowired
     private PApplet pApplet;
-
-    /**
-     * Constructor.
-     *
-     * @param pApplet pApplet.
-     */
-    public MarkerUtils(PApplet pApplet) {
-        this.pApplet = pApplet;
-    }
 
     /**
      * Create the Markers from various sources.
@@ -44,19 +39,14 @@ public class MarkerUtils {
      * @return the markers to add to the maps.
      */
     public Map<String, Marker> createMarkers(Game game) {
+        // TODO configure
         List<Feature> countries = GeoJSONReader.loadData(pApplet, "data/map/v2/countries.geo.json");
 
         XStream xstream = new XStream();
         xstream.processAnnotations(Border.class);
 
+        // TODO configure
         List<Border> borders = (List<Border>) xstream.fromXML(new File("data/map/v2/borders.xml"));
-
-//        for (Iterator<Feature> country = countries.iterator(); country.hasNext(); ) {
-//            Feature c = country.next();
-//            if (!StringUtils.equals("Highlands", c.getId())) {
-//                country.remove();
-//            }
-//        }
         MarkerFactory markerFactory = new MarkerFactory();
         markerFactory.setPolygonClass(ProvinceMarker.class);
         markerFactory.setMultiPolygonClass(MultiProvinceMarker.class);
@@ -112,6 +102,7 @@ public class MarkerUtils {
      * @return the image of the counter.
      */
     public PImage getImageFromCounter(Counter counter) {
+        // TODO configure
         StringBuilder path = new StringBuilder("data/map/v2/counters/").append(counter.getCountry().getName())
                 .append("/").append(counter.getCountry().getName()).append("_")
                 .append(counter.getType().name()).append(".png");

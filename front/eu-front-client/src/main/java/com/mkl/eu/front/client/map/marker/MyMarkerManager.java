@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -14,11 +15,12 @@ import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
@@ -29,11 +31,19 @@ import java.util.List;
  *
  * @author MKL
  */
+@Component
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Utility to draw counters. */
+    @Autowired
     private MarkerUtils markerUtils;
+    /** Internationalisation. */
+    @Autowired
+    private MessageSource message;
+    /** Configuration of the application. */
+    @Autowired
+    private GlobalConfiguration globalConfiguration;
     /** Selected marker. */
     private Marker selectedMarker;
     /** The stack being dragged. */
@@ -46,16 +56,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private Location menuLocation;
     /** Contextual menu. */
     private ContextualMenu menu;
-
-
-    /**
-     * Constructor.
-     *
-     * @param markerUtils markerUtils.
-     */
-    public MyMarkerManager(MarkerUtils markerUtils) {
-        this.markerUtils = markerUtils;
-    }
 
     /** {@inheritDoc} */
     public void draw() {
@@ -100,7 +100,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             return false;
         }
 
-
         float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
         menu.setLocation(new Location(xy[0], xy[1]));
         return menu.hit(x, y);
@@ -129,7 +128,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         if (marker instanceof IMapMarker) {
             item = ((IMapMarker) marker).getStack(map, x, y);
             if (item == null) {
-                item = (IMapMarker) marker;
+                item = marker;
             }
         }
         return item;
@@ -180,36 +179,21 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @return a Contextual Menu for a Province.
      */
     private ContextualMenu createMenuProvince(final IMapMarker province) {
-        ContextualMenu menu = new ContextualMenu("Province");
+        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.province", null, globalConfiguration.getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu("Neighbours");
+        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.neighbors", null, globalConfiguration.getLocale()));
         for (final BorderMarker border : province.getNeighbours()) {
-            StringBuilder label = new StringBuilder(border.getProvince().getId());
+            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(border.getType()).append(")");
+                label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
             }
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                createStack(CounterTypeEnum.ARMY_PLUS, province);
-            }
-        }));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                createStack(CounterTypeEnum.ARMY_MINUS, province);
-            }
-        }));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                createStack(CounterTypeEnum.LAND_DETACHMENT, province);
-            }
-        }));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterTypeEnum.ARMY_PLUS, province)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterTypeEnum.ARMY_MINUS, province)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterTypeEnum.LAND_DETACHMENT, province)));
         ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
         ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
         subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
@@ -235,21 +219,19 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @return a Contextual Menu for a Stack.
      */
     private ContextualMenu createMenuStack(final StackMarker stack) {
-        ContextualMenu menu = new ContextualMenu("Stack");
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel("Stack"));
+        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu("Move");
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.move", null, globalConfiguration.getLocale()));
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
-            StringBuilder label = new StringBuilder(border.getProvince().getId());
+            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(border.getType()).append(")");
+                label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
             }
-            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    border.getProvince().addStack(stack);
-                    resetContextualMenu();
-                }
+            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
+                // TODO service
+                border.getProvince().addStack(stack);
+                resetContextualMenu();
             }));
         }
         menu.addMenuItem(move);
@@ -265,6 +247,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @return the stack created.
      */
     private StackMarker createStack(CounterTypeEnum type, IMapMarker province) {
+        // TODO service
         Counter counter = new Counter();
         counter.setCountry(new Country());
         counter.getCountry().setName("FRA");

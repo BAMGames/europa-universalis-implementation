@@ -4,6 +4,8 @@ import de.fhpotsdam.unfolding.core.Coordinate;
 import de.fhpotsdam.unfolding.geo.MercatorProjection;
 import de.fhpotsdam.unfolding.geo.Transformation;
 import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -15,6 +17,8 @@ import processing.core.PImage;
  * @author MKL
  */
 public class EUProvider extends AbstractMapProvider {
+    /** Logger. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(EUProvider.class);
     /** The parent applet. */
     protected PApplet applet;
 
@@ -75,16 +79,18 @@ public class EUProvider extends AbstractMapProvider {
      * @return the path the portion of the map will be stored on disk.
      */
     private String getImagePath(String subPath) {
+        // TODO configure
         return "data/map/v2/carte/" + subPath + ".png";
     }
 
     /** {@inheritDoc} */
     @Override
     public String[] getTileUrls(Coordinate coordinate) {
-        System.out.println("Demande de " + coordinate.zoom + " / " + coordinate.column + " / " + coordinate.row);
+        LOGGER.debug("Demande de {} / {} / {}", coordinate.zoom, coordinate.column, coordinate.row);
 
         String subPath = getZoomString(coordinate);
 
+        // TODO configure
         String url = "http://old-lipn.univ-paris13.fr/~dubacq/europa/carte/0.6/" + subPath + ".png";
 
 
