@@ -65,6 +65,7 @@ public class ContextualMenuItem {
     /**
      * Factory method for a separator menu item.
      *
+     * @param text Title of the subMenu.
      * @return the item created.
      */
     public static ContextualMenu createMenuSubMenu(String text) {

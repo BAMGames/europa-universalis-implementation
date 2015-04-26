@@ -49,6 +49,12 @@ public abstract class AbstractMapping {
      * @param <U> Type of the target class.
      */
     public interface ITransformation<T, U> {
+        /**
+         * Transform a class to another.
+         *
+         * @param source source.
+         * @return target.
+         */
         U transform(T source);
     }
 }

@@ -36,6 +36,8 @@ public abstract class EuObject implements Serializable {
 
     /**
      * So that jaxb works...
+     *
+     * @param id this is not the id you are looking for.
      */
     public void setIdForJaxb(String id) {
 

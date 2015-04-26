@@ -126,7 +126,7 @@ public class EconomicalSheet extends EuObject {
      *                                        Domestic income                                                *
      *********************************************************************************************************/
     /** Manufactures income. Line 6 of sheet B. */
-    private Integer MnuIncome;
+    private Integer mnuIncome;
     /** European gold mines income. Line 7 of sheet B. */
     private Integer goldIncome;
     /** Industrial income. Summary of the manufactures and european gold mines income. Line 8 of sheet B. */
@@ -697,14 +697,14 @@ public class EconomicalSheet extends EuObject {
         this.landIncome = landIncome;
     }
 
-    /** @return the MnuIncome. */
+    /** @return the mnuIncome. */
     public Integer getMnuIncome() {
-        return MnuIncome;
+        return mnuIncome;
     }
 
-    /** @param MnuIncome the MnuIncome to set. */
+    /** @param mnuIncome the mnuIncome to set. */
     public void setMnuIncome(Integer mnuIncome) {
-        MnuIncome = mnuIncome;
+        this.mnuIncome = mnuIncome;
     }
 
     /** @return the goldIncome. */

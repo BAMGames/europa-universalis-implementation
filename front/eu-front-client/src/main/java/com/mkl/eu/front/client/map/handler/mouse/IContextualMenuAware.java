@@ -47,5 +47,5 @@ public interface IContextualMenuAware<T> {
      * @param y coordinate.
      * @return <code>true</code> if something was hovered, <ocde>false</ocde> otherwise.
      */
-    public boolean hover(int x, int y);
+    boolean hover(int x, int y);
 }

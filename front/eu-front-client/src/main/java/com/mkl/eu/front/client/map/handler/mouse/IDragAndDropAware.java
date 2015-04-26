@@ -2,9 +2,12 @@ package com.mkl.eu.front.client.map.handler.mouse;
 
 import de.fhpotsdam.unfolding.geo.Location;
 
+
 /**
- * Description of file.
+ * Interface for components that can handle drag and drop.
  *
+ * @param <T> type of the dragged object.
+ * @param <U> type of the dropable object.
  * @author MKL.
  */
 public interface IDragAndDropAware<T, U> {

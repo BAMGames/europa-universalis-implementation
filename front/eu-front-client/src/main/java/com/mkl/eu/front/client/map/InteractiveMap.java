@@ -10,7 +10,6 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
-import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.keyboard.MapKeyboardHandler;
 import com.mkl.eu.front.client.map.handler.mouse.InfowViewMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MapMouseHandler;
@@ -91,7 +90,7 @@ public class InteractiveMap extends PApplet implements MapEventListener {
 
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         // Too many inaccessible field to enable tween and no loop.
-        mapDetail.setTweening(false);
+        mapDetail.setTweening(true);
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
         mapDetail.panTo(1300, -300);
@@ -124,10 +123,10 @@ public class InteractiveMap extends PApplet implements MapEventListener {
         eventDispatcher.register(markerManager, DragEvent.TYPE_DRAG, markerManager.getId());
         eventDispatcher.register(info, DragEvent.TYPE_DRAG, info.getId());
 
-        eventDispatcher.register(this, PanMapEvent.TYPE_PAN, getId(), mapDetail.getId());
-        eventDispatcher.register(this, ZoomMapEvent.TYPE_ZOOM, getId(), mapDetail.getId());
-        eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
-        eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
+//        eventDispatcher.register(this, PanMapEvent.TYPE_PAN, getId(), mapDetail.getId());
+//        eventDispatcher.register(this, ZoomMapEvent.TYPE_ZOOM, getId(), mapDetail.getId());
+//        eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
+//        eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
 
         // Load country polygons and adds them as markers
 //        Game game = mockGame();
@@ -136,7 +135,7 @@ public class InteractiveMap extends PApplet implements MapEventListener {
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
 
         // Disable the auto-draw feature. Manual redraw on change.
-        noLoop();
+//        noLoop();
     }
 
     /** Draw the PApplet. */
