@@ -11,7 +11,7 @@ import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.keyboard.MapKeyboardHandler;
-import com.mkl.eu.front.client.map.handler.mouse.InfowViewMouseHandler;
+import com.mkl.eu.front.client.map.handler.mouse.InfoViewMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MapMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MultipleMapMouseHandler;
 import com.mkl.eu.front.client.map.marker.MarkerUtils;
@@ -111,7 +111,7 @@ public class InteractiveMap extends PApplet implements MapEventListener {
         KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, markerManager, mapDetail);
         new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
-        InfowViewMouseHandler infoHandler = new InfowViewMouseHandler(this, info, mapDetail);
+        InfoViewMouseHandler infoHandler = new InfoViewMouseHandler(this, info, mapDetail);
 
         eventDispatcher.addBroadcaster(keyboardHandler);
         eventDispatcher.addBroadcaster(mouseHandler);

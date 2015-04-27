@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<CounterMarker, StackMarker, Object, InfoView> {
+public class InfoViewMouseHandler extends AbstractDragDropMenuMouseHandler<CounterMarker, StackMarker, Object, InfoView> {
     /**
      * Creates a MouseHandler for the given maps.
      *
@@ -22,7 +22,7 @@ public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<Coun
      * @param infoView informative panel.
      * @param maps     One or more maps.
      */
-    public InfowViewMouseHandler(PApplet p, InfoView infoView, UnfoldingMap... maps) {
+    public InfoViewMouseHandler(PApplet p, InfoView infoView, UnfoldingMap... maps) {
         this(p, infoView, Arrays.asList(maps));
     }
 
@@ -33,7 +33,7 @@ public class InfowViewMouseHandler extends AbstractDragDropMenuMouseHandler<Coun
      * @param infoView informative panel.
      * @param maps     A list of maps.
      */
-    public InfowViewMouseHandler(PApplet p, InfoView infoView, List<UnfoldingMap> maps) {
+    public InfoViewMouseHandler(PApplet p, InfoView infoView, List<UnfoldingMap> maps) {
         super(p, infoView, maps);
     }
 }
