@@ -2,7 +2,7 @@ package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
-import com.mkl.eu.client.common.exception.TechniqueException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -33,7 +33,7 @@ import java.util.List;
  * @author MKL.
  */
 @Service
-@Transactional(rollbackFor = {TechniqueException.class, FunctionalException.class})
+@Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class GameAdminServiceImpl extends AbstractService implements IGameAdminService {
     /** Game DAO. */
     @Autowired

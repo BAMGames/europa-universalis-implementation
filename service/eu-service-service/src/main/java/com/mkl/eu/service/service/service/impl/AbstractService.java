@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.service.impl;
 
-import com.mkl.eu.client.common.exception.TechniqueException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public abstract class AbstractService {
     public static final String MSG_NOT_NEIGHBOR = "{1}: {0} {2} is not a neighbor of {3}.";
 
     /**
-     * Will throw a TechniqueException if the test is <code>null</code>.
+     * Will throw a TechnicalException if the test is <code>null</code>.
      */
     protected void failIfNull(CheckForThrow check) {
         if (check.getTest() == null) {
@@ -34,7 +34,7 @@ public abstract class AbstractService {
     }
 
     /**
-     * Will throw a TechniqueException if the test is <code>null</code> or empty.
+     * Will throw a TechnicalException if the test is <code>null</code> or empty.
      */
     protected void failIfEmpty(CheckForThrow<String> check) {
         if (StringUtils.isEmpty(check.getTest())) {
@@ -43,7 +43,7 @@ public abstract class AbstractService {
     }
 
     /**
-     * Will throw a TechniqueException if the test is <code>null</code>.
+     * Will throw a TechnicalException if the test is <code>null</code>.
      */
     protected void failIfFalse(CheckForThrow<Boolean> check) {
         if (check.getTest() == null || !check.getTest()) {
@@ -65,7 +65,7 @@ public abstract class AbstractService {
         args[0] = check.getName();
         String msg = MessageFormat.format(check.getMsgFormat(), args);
         LOGGER.error(msg);
-        throw new TechniqueException(check.getCodeError(), msg, null, check.getName());
+        throw new TechnicalException(check.getCodeError(), msg, null, check.getName());
     }
 
     /**

@@ -10,7 +10,7 @@ package com.mkl.eu.client.common.exception;
  *
  * @author MKL
  */
-public class TechniqueException extends RuntimeException {
+public class TechnicalException extends RuntimeException {
 
     /** Serial. */
     private static final long serialVersionUID = 5388200281041712167L;
@@ -29,7 +29,7 @@ public class TechniqueException extends RuntimeException {
      * @param cause   exception that causes this one. Used for the stack logging. Can be <code>null</code>.
      * @param params  context of te exception. Used with code to display a suitable message to the user. Can be <code>null</code>.
      */
-    public TechniqueException(String code, String message, Throwable cause, Object... params) {
+    public TechnicalException(String code, String message, Throwable cause, Object... params) {
         super(message, cause);
         this.code = code;
         this.params = params;

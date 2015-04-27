@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.ws.impl;
 
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -23,19 +24,19 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
 
     /** {@inheritDoc} */
     @Override
-    public Game loadGame(Long idGame) {
+    public Game loadGame(Long idGame) throws TechnicalException {
         return gameService.loadGame(idGame);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Long idGame, Long versionGame) {
+    public DiffResponse updateGame(Long idGame, Long versionGame) throws TechnicalException {
         return gameService.updateGame(idGame, versionGame);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) {
+    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) throws TechnicalException {
         return gameService.moveStack(idGame, versionGame, idStack, provinceTo);
     }
 }
