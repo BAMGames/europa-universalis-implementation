@@ -17,14 +17,10 @@ import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,9 +31,7 @@ import java.util.Optional;
  */
 @Service
 @Transactional(rollbackFor = {TechniqueException.class, FunctionalException.class})
-public class GameAdminServiceImpl implements IGameAdminService {
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GameAdminServiceImpl.class);
+public class GameAdminServiceImpl extends AbstractService implements IGameAdminService {
     /** Game DAO. */
     @Autowired
     private IGameDao gameDao;
@@ -54,68 +48,41 @@ public class GameAdminServiceImpl implements IGameAdminService {
     /** {@inheritDoc} */
     @Override
     public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) {
-        if (idGame == null) {
-            String msg = "moveStack: idGame missing.";
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.NULL_PARAMETER, msg, null, "idGame");
-        }
-        if (versionGame == null) {
-            String msg = "moveStack: versionGame missing.";
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.NULL_PARAMETER, msg, null, "versionGame");
-        }
-        if (idStack == null) {
-            String msg = "moveStack: idStack missing.";
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.NULL_PARAMETER, msg, null, "idStack");
-        }
-        if (StringUtils.isEmpty(provinceTo)) {
-            String msg = "moveStack: provinceTo missing.";
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.NULL_PARAMETER, msg, null, "provinceTo");
-        }
+        failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK));
+        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK));
+        failIfNull(new CheckForThrow<>().setTest(idStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK));
+        failIfEmpty(new CheckForThrow<String>().setTest(provinceTo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK));
 
         GameEntity game = gameDao.lock(idGame);
 
-        if (game == null) {
-            String msg = MessageFormat.format("moveStack: idGame {0} does not exist.", idGame);
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.INVALID_PARAMETER, msg, null, "idGame");
-        }
-
-        if (versionGame >= game.getVersion()) {
-            String msg = MessageFormat.format("moveStack: versionGame {0} is greater than actual ({1}).", versionGame, game.getVersion());
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.INVALID_PARAMETER, msg, null, "versionGame");
-        }
+        failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK, idGame));
+        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK, versionGame, game.getVersion()));
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
         Optional<StackEntity> stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
 
-        if (!stackOpt.isPresent()) {
-            String msg = MessageFormat.format("moveStack: idStack {0} does not exist.", idStack);
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.INVALID_PARAMETER, msg, null, "idStack");
-        }
+        failIfFalse(new CheckForThrow<Boolean>().setTest(stackOpt.isPresent()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK, idStack));
 
         StackEntity stack = stackOpt.get();
 
         AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
 
-        if (province == null) {
-            String msg = MessageFormat.format("moveStack: provinceTo {0} does not exist.", provinceTo);
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.INVALID_PARAMETER, msg, null, "provinceTo");
-        }
+        failIfNull(new CheckForThrow<>().setTest(province).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo));
 
         boolean isNear = stack.getProvince().getBorders().stream().filter(x -> province.getId().equals(x.getProvinceTo().getId())).findFirst().isPresent();
 
-        if (!isNear) {
-            String msg = MessageFormat.format("moveStack: provinceTo {0} is not a border or former stack location ({1}).", provinceTo, stack.getProvince().getName());
-            LOGGER.error(msg);
-            throw new TechniqueException(IConstantsCommonException.INVALID_PARAMETER, msg, null, "provinceTo");
-        }
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(isNear).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_NOT_NEIGHBOR).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince().getName()));
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());

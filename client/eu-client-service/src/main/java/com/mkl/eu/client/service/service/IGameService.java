@@ -13,15 +13,15 @@ import javax.jws.WebService;
  * @author MKL.
  */
 @WebService
-public interface IGameService {
+public interface IGameService extends INameConstants {
     /**
      * Load a game given its id.
      *
-     * @param id of the game too load.
+     * @param idGame of the game too load.
      * @return the game.
      */
-    @WebResult(name = "game")
-    Game loadGame(@WebParam(name = "id") Long id);
+    @WebResult(name = RESPONSE_GAME)
+    Game loadGame(@WebParam(name = PARAMETER_ID_GAME) Long idGame);
 
     /**
      * Get all diffs since last client version of the game.
@@ -29,10 +29,10 @@ public interface IGameService {
      * The service will return all the diffs concernend by this game and whose
      * version is greater than (not equal) the given version.
      *
-     * @param id      of the game too update.
-     * @param version previous version of the game.
+     * @param idGame      of the game too update.
+     * @param versionGame previous version of the game.
      * @return the diffs.
      */
-    @WebResult(name = "response")
-    DiffResponse updateGame(@WebParam(name = "id") Long id, @WebParam(name = "version") Long version);
+    @WebResult(name = RESPONSE)
+    DiffResponse updateGame(@WebParam(name = PARAMETER_ID_GAME) Long idGame, @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame);
 }

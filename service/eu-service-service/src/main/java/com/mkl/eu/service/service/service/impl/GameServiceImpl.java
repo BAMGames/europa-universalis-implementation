@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechniqueException;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
@@ -25,7 +26,7 @@ import java.util.List;
  */
 @Service
 @Transactional(rollbackFor = {TechniqueException.class, FunctionalException.class})
-public class GameServiceImpl implements IGameService {
+public class GameServiceImpl extends AbstractService implements IGameService {
     /** Game DAO. */
     @Autowired
     private IGameDao gameDao;
@@ -48,8 +49,13 @@ public class GameServiceImpl implements IGameService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Long id, Long version) {
-        List<DiffEntity> diffs = diffDao.getDiffsSince(id, version);
+    public DiffResponse updateGame(Long idGame, Long versionGame) {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK));
+        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK));
+
+        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
         List<Diff> diffVos = diffMapping.oesToVos(diffs);
 
         DiffResponse response = new DiffResponse();

@@ -23,13 +23,13 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
 
     /** {@inheritDoc} */
     @Override
-    public Game loadGame(Long id) {
-        return gameService.loadGame(id);
+    public Game loadGame(Long idGame) {
+        return gameService.loadGame(idGame);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Long id, Long version) {
-        return gameService.updateGame(id, version);
+    public DiffResponse updateGame(Long idGame, Long versionGame) {
+        return gameService.updateGame(idGame, versionGame);
     }
 }

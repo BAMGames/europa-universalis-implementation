@@ -12,7 +12,7 @@ import javax.jws.WebService;
  * @author MKL.
  */
 @WebService
-public interface IGameAdminService {
+public interface IGameAdminService extends INameConstants {
     /**
      * Move a stack on the board.
      *
@@ -22,9 +22,9 @@ public interface IGameAdminService {
      * @param provinceTo  province where the stack should move.
      * @return the diffs involved by this service.
      */
-    @WebResult(name = "response")
-    DiffResponse moveStack(@WebParam(name = "idGame") Long idGame,
-                           @WebParam(name = "versionGame") Long versionGame,
-                           @WebParam(name = "idStack") Long idStack,
-                           @WebParam(name = "provinceTo") String provinceTo);
+    @WebResult(name = RESPONSE)
+    DiffResponse moveStack(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
+                           @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
+                           @WebParam(name = PARAMETER_ID_STACK) Long idStack,
+                           @WebParam(name = PARAMETER_PROVINCE_TO) String provinceTo);
 }
