@@ -105,6 +105,16 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         diffAttributes.setValue(province);
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.TYPE);
+        diffAttributes.setValue(counter.getType().name());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.COUNTRY);
+        diffAttributes.setValue(country.getName());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
 
         diffDao.create(diff);
 

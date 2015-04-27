@@ -16,6 +16,8 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#PROVINCE</li>
+     * <li>DiffAttributeTypeEnum#TYPE for the type of the counter</li>
+     * <li>DiffAttributeTypeEnum#COUNTRY for the name of the country of the counter</li>
      * </ul>
      * </li>
      * </ul>
