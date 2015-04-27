@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.ws.impl;
 
 import com.mkl.eu.client.service.service.IGameAdminService;
+import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,5 +25,11 @@ public class GameAdminWsServiceImpl extends SpringBeanAutowiringSupport implemen
     @Override
     public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) {
         return gameAdminService.moveStack(idGame, versionGame, idStack, provinceTo);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse createCounter(Long idGame, Long versionGame, Counter counter, String province) {
+        return gameAdminService.createCounter(idGame, versionGame, counter, province);
     }
 }

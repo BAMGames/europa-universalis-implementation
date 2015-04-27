@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Country (can be minor or major).
@@ -45,15 +44,15 @@ public class Country extends EuObject {
     /**
      * Economical sheet by turn of the country.
      */
-    private Map<Integer, EconomicalSheet> economicalSheets;
+    private List<EconomicalSheet> economicalSheets;
     /**
      * Administrative actions by turn of the country.
      */
-    private Map<Integer, AdministrativeAction> administrativeActions;
+    private List<AdministrativeAction> administrativeActions;
     /**
      * Economical events by turn of the country.
      */
-    private Map<Integer, EconomicalEvent> economicalEvents;
+    private List<EconomicalEvent> economicalEvents;
 
     static {
         NEUTRAL_COUNTRY = new Country();
@@ -127,42 +126,42 @@ public class Country extends EuObject {
     /**
      * @return the economicalSheets.
      */
-    public Map<Integer, EconomicalSheet> getEconomicalSheets() {
+    public List<EconomicalSheet> getEconomicalSheets() {
         return economicalSheets;
     }
 
     /**
      * @param economicalSheets the economicalSheets to set.
      */
-    public void setEconomicalSheets(Map<Integer, EconomicalSheet> economicalSheets) {
+    public void setEconomicalSheets(List<EconomicalSheet> economicalSheets) {
         this.economicalSheets = economicalSheets;
     }
 
     /**
      * @return the administrativeActions.
      */
-    public Map<Integer, AdministrativeAction> getAdministrativeActions() {
+    public List<AdministrativeAction> getAdministrativeActions() {
         return administrativeActions;
     }
 
     /**
      * @param administrativeActions the administrativeActions to set.
      */
-    public void setAdministrativeActions(Map<Integer, AdministrativeAction> administrativeActions) {
+    public void setAdministrativeActions(List<AdministrativeAction> administrativeActions) {
         this.administrativeActions = administrativeActions;
     }
 
     /**
      * @return the economicalEvents.
      */
-    public Map<Integer, EconomicalEvent> getEconomicalEvents() {
+    public List<EconomicalEvent> getEconomicalEvents() {
         return economicalEvents;
     }
 
     /**
      * @param economicalEvents the economicalEvents to set.
      */
-    public void setEconomicalEvents(Map<Integer, EconomicalEvent> economicalEvents) {
+    public void setEconomicalEvents(List<EconomicalEvent> economicalEvents) {
         this.economicalEvents = economicalEvents;
     }
 }

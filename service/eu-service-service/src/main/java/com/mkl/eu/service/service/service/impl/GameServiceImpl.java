@@ -51,9 +51,9 @@ public class GameServiceImpl extends AbstractService implements IGameService {
     @Override
     public DiffResponse updateGame(Long idGame, Long versionGame) {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_UPDATE_GAME));
         failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_UPDATE_GAME));
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
         List<Diff> diffVos = diffMapping.oesToVos(diffs);

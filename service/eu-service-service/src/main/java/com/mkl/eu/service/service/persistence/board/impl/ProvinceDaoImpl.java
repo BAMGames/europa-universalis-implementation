@@ -1,6 +1,6 @@
-package com.mkl.eu.service.service.persistence.diff.board.impl;
+package com.mkl.eu.service.service.persistence.board.impl;
 
-import com.mkl.eu.service.service.persistence.diff.board.IProvinceDao;
+import com.mkl.eu.service.service.persistence.board.IProvinceDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
 import org.hibernate.Criteria;
@@ -8,7 +8,7 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
 /**
- * Implementation of the Game DAO.
+ * Implementation of the Province DAO.
  *
  * @author MKL.
  */
