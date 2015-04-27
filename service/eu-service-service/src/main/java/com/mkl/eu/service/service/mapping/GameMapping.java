@@ -52,6 +52,7 @@ public class GameMapping {
         target.setId(source.getId());
         target.setStatus(source.getStatus());
         target.setTurn(source.getTurn());
+        target.setVersion(source.getVersion());
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
 

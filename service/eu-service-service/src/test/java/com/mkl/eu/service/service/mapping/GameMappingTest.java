@@ -153,6 +153,7 @@ public class GameMappingTest {
         object.setId(12L);
         object.setStatus(GameStatusEnum.ECONOMICAL_EVENT);
         object.setTurn(1);
+        object.setVersion(15L);
 
         object.getCountries().add(FRA_VO);
         object.getCountries().add(PRU_VO);
@@ -270,6 +271,7 @@ public class GameMappingTest {
         object.setId(12L);
         object.setStatus(GameStatusEnum.ECONOMICAL_EVENT);
         object.setTurn(1);
+        object.setVersion(15L);
 
         object.getCountries().add(FRA_OE);
         object.getCountries().add(PRU_OE);
