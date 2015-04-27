@@ -23,12 +23,6 @@ public class GameAdminWsServiceImpl extends SpringBeanAutowiringSupport implemen
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) {
-        return gameAdminService.moveStack(idGame, versionGame, idStack, provinceTo);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public DiffResponse createCounter(Long idGame, Long versionGame, Counter counter, String province) {
         return gameAdminService.createCounter(idGame, versionGame, counter, province);
     }

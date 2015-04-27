@@ -14,20 +14,6 @@ import javax.jws.WebService;
  */
 @WebService
 public interface IGameAdminService extends INameConstants {
-    /**
-     * Move a stack on the board.
-     *
-     * @param idGame      id of the game.
-     * @param versionGame version of the game.
-     * @param idStack     id of the stack to move.
-     * @param provinceTo  province where the stack should move.
-     * @return the diffs involved by this service.
-     */
-    @WebResult(name = RESPONSE)
-    DiffResponse moveStack(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
-                           @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
-                           @WebParam(name = PARAMETER_ID_STACK) Long idStack,
-                           @WebParam(name = PARAMETER_PROVINCE_TO) String provinceTo);
 
     /**
      * Add a counter on the board.

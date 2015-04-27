@@ -32,4 +32,10 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
     public DiffResponse updateGame(Long idGame, Long versionGame) {
         return gameService.updateGame(idGame, versionGame);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) {
+        return gameService.moveStack(idGame, versionGame, idStack, provinceTo);
+    }
 }
