@@ -37,7 +37,7 @@ public class RelationMapping extends AbstractMapping {
         List<Relation> targets = new ArrayList<>();
 
         for (RelationEntity source : sources) {
-            Relation target = storeVo(Relation.class, source, objectsCreated, source1 -> oeToVo(source1, objectsCreated));
+            Relation target = storeVo(Relation.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }
@@ -62,8 +62,8 @@ public class RelationMapping extends AbstractMapping {
 
         target.setId(source.getId());
         target.setType(source.getType());
-        target.setFirst(storeVo(Player.class, source.getFirst(), objectsCreated, source1 -> playerMapping.oeToVo(source1, objectsCreated)));
-        target.setSecond(storeVo(Player.class, source.getSecond(), objectsCreated, source1 -> playerMapping.oeToVo(source1, objectsCreated)));
+        target.setFirst(storeVo(Player.class, source.getFirst(), objectsCreated, playerMapping::oeToVo));
+        target.setSecond(storeVo(Player.class, source.getSecond(), objectsCreated, playerMapping::oeToVo));
 
         return target;
     }

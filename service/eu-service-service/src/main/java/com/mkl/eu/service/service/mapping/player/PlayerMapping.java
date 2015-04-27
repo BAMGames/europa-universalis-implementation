@@ -38,7 +38,7 @@ public class PlayerMapping extends AbstractMapping {
         List<Player> targets = new ArrayList<>();
 
         for (PlayerEntity source : sources) {
-            Player target = storeVo(Player.class, source, objectsCreated, source1 -> oeToVo(source1, objectsCreated));
+            Player target = storeVo(Player.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }

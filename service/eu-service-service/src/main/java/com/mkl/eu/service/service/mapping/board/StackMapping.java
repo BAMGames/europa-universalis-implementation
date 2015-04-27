@@ -40,7 +40,7 @@ public class StackMapping extends AbstractMapping {
         List<Stack> targets = new ArrayList<>();
 
         for (StackEntity source : sources) {
-            Stack target = storeVo(Stack.class, source, objectsCreated, source1 -> oeToVo(source1, objectsCreated));
+            Stack target = storeVo(Stack.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }
@@ -64,7 +64,7 @@ public class StackMapping extends AbstractMapping {
         Stack target = new Stack();
 
         target.setId(source.getId());
-        target.setProvince(storeVo(AbstractProvince.class, source.getProvince(), objectsCreated, source1 -> provinceMapping.oeToVo(source1, objectsCreated)));
+        target.setProvince(storeVo(AbstractProvince.class, source.getProvince(), objectsCreated, provinceMapping::oeToVo));
         target.setCounters(counterMapping.oesToVos(source.getCounters(), target, objectsCreated));
 
         return target;
