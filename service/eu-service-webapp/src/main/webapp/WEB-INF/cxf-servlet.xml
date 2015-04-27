@@ -6,4 +6,7 @@
     <jaxws:endpoint id="gameService"
                     implementor="com.mkl.eu.service.service.ws.impl.GameWsServiceImpl"
                     address="/GameService"/>
+    <jaxws:endpoint id="gameAdminService"
+                    implementor="com.mkl.eu.service.service.ws.impl.GameAdminWsServiceImpl"
+                    address="/GameAdminService"/>
 </beans>

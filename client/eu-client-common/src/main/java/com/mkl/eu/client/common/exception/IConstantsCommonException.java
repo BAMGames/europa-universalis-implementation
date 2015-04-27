@@ -52,7 +52,7 @@ public interface IConstantsCommonException {
      * <p>
      * Parameters:
      * <ul>
-     * <li>0: Pk id de l'objet désiré.</li>
+     * <li>0: Pk id of object in error.</li>
      * </ul>
      * </p>
      */
@@ -80,7 +80,6 @@ public interface IConstantsCommonException {
      * <p>
      * Parameters:
      * <ul>
-     * <li>0: invoked class/method.</li>
      * <li>1: name of <code>null</code> parameter.</li>
      * </ul>
      * </p>
@@ -94,12 +93,11 @@ public interface IConstantsCommonException {
      * <p>
      * Parameters:
      * <ul>
-     * <li>0: invoked class/method.</li>
      * <li>1: name of invalid parameter.</li>
      * </ul>
      * </p>
      */
-    String INVALID_PARAMETER = "exception.eu.common.null_parameter";
+    String INVALID_PARAMETER = "exception.eu.common.invalid_parameter";
 
     /**
      * <p>

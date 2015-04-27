@@ -5,6 +5,7 @@ import com.mkl.eu.service.service.persistence.oe.IEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     /** Terrain of the province. */
     private TerrainEnum terrain;
     /** List of borders of the province. */
-    private List<BorderEntity> borders;
+    private List<BorderEntity> borders = new ArrayList<>();
 
     /** @return the id. */
     @Id

@@ -36,6 +36,8 @@ public class GameEntity implements IEntity, Serializable {
     private Integer turn;
     /** Status of the game. */
     private GameStatusEnum status;
+    /** Version of the game (technical field). */
+    private long version;
 
     /** @return the id. */
     @Id
@@ -127,5 +129,16 @@ public class GameEntity implements IEntity, Serializable {
     /** @param status the status to set. */
     public void setStatus(GameStatusEnum status) {
         this.status = status;
+    }
+
+    /** @return the version. */
+    @Version
+    public long getVersion() {
+        return version;
+    }
+
+    /** @param version the version to set. */
+    public void setVersion(long version) {
+        this.version = version;
     }
 }
