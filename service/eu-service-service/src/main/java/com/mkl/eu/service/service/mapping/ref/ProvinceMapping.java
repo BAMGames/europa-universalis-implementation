@@ -1,7 +1,7 @@
 package com.mkl.eu.service.service.mapping.ref;
 
-import com.mkl.eu.client.service.vo.board.AbstractProvince;
-import com.mkl.eu.client.service.vo.board.EuropeanProvince;
+import com.mkl.eu.client.service.vo.ref.AbstractProvince;
+import com.mkl.eu.client.service.vo.ref.EuropeanProvince;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.persistence.oe.ref.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.EuropeanProvinceEntity;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Mapping between VO and OE for a Counter.
+ * TODO check if still used later.
  *
  * @author MKL.
  */

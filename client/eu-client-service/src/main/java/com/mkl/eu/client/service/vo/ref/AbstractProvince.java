@@ -1,6 +1,7 @@
-package com.mkl.eu.client.service.vo.board;
+package com.mkl.eu.client.service.vo.ref;
 
 import com.mkl.eu.client.service.vo.EuObject;
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -10,6 +11,7 @@ import java.util.List;
 
 /**
  * Province. A tile on the board that can contains counters.
+ * TODO check if still used later.
  *
  * @author MKL.
  */

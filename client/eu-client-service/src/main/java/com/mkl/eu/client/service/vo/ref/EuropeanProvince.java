@@ -1,7 +1,8 @@
-package com.mkl.eu.client.service.vo.board;
+package com.mkl.eu.client.service.vo.ref;
 
 /**
  * European province. A tile on the european board that can contains counters.
+ * TODO check if still used later.
  *
  * @author MKL.
  */
