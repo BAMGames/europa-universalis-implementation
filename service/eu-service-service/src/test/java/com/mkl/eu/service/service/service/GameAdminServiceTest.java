@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.IProvinceDao;
+import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.country.ICountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -52,6 +53,9 @@ public class GameAdminServiceTest {
 
     @Mock
     private ICountryDao countryDao;
+
+    @Mock
+    private IStackDao stackDao;
 
     @Mock
     private IDiffDao diffDao;

@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.IProvinceDao;
+import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.country.ICountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -45,6 +46,9 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
     /** Country DAO. */
     @Autowired
     private ICountryDao countryDao;
+    /** Stack DAO. */
+    @Autowired
+    private IStackDao stackDao;
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
@@ -106,6 +110,14 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         counterEntity.setOwner(stack);
 
         stack.getCounters().add(counterEntity);
+
+        /*
+         Thanks Hibernate to have 7 years old bugs.
+         https://hibernate.atlassian.net/browse/HHH-6776
+         https://hibernate.atlassian.net/browse/HHH-7404
+          */
+
+        stackDao.create(stack);
 
         game.getStacks().add(stack);
 

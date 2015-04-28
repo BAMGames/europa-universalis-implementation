@@ -264,6 +264,12 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
         return query.list();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void flush() {
+        getSession().flush();
+    }
+
     /**
      * Retourne la session JPA.
      *

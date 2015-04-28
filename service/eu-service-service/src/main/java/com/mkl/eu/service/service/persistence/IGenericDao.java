@@ -89,4 +89,9 @@ public interface IGenericDao<T, PK extends Serializable> {
      * @param instances to delete.
      */
     void deleteAll(List<T> instances);
+
+    /**
+     * Flush the session.
+     */
+    void flush();
 }
