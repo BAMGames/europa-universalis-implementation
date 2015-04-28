@@ -1,8 +1,8 @@
 package com.mkl.eu.service.service.mapping.country;
 
-import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -24,15 +24,15 @@ public class CountryMapping extends AbstractMapping {
      * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    public List<Country> oesToVos(List<CountryEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    public List<PlayableCountry> oesToVos(List<PlayableCountryEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
         if (sources == null) {
             return null;
         }
 
-        List<Country> targets = new ArrayList<>();
+        List<PlayableCountry> targets = new ArrayList<>();
 
-        for (CountryEntity source : sources) {
-            Country target = storeVo(Country.class, source, objectsCreated, this::oeToVo);
+        for (PlayableCountryEntity source : sources) {
+            PlayableCountry target = storeVo(PlayableCountry.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }
@@ -47,12 +47,12 @@ public class CountryMapping extends AbstractMapping {
      * @param source object source.
      * @return object mapped.
      */
-    public Country oeToVo(CountryEntity source) {
+    public PlayableCountry oeToVo(PlayableCountryEntity source) {
         if (source == null) {
             return null;
         }
 
-        Country target = new Country();
+        PlayableCountry target = new PlayableCountry();
 
         target.setId(source.getId());
         target.setName(source.getName());

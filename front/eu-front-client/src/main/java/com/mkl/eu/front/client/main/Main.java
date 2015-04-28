@@ -4,7 +4,6 @@ import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
-import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
@@ -13,7 +12,6 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.DiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.map.MapConfiguration;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,13 +178,7 @@ public class Main extends JFrame implements DiffListener {
 
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY);
         if (attribute != null) {
-            String nameCountry = attribute.getValue();
-            Country country = findFirst(game.getCountries(), country1 -> StringUtils.equals(nameCountry, country1.getName()));
-            if (country == null) {
-                country = new Country();
-                country.setName(nameCountry);
-            }
-            counter.setCountry(country);
+            counter.setCountry(attribute.getValue());
         } else {
             LOGGER.error("Missing country in counter add event.");
         }
@@ -202,8 +194,7 @@ public class Main extends JFrame implements DiffListener {
         Stack stack1 = new Stack();
         stack1.setProvince("Prypeć");
         Counter counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
+        counter1.setCountry("FRA");
         counter1.setType(CounterTypeEnum.ARMY_PLUS);
         stack1.getCounters().add(counter1);
         stack1.getCounters().add(counter1);
@@ -212,13 +203,11 @@ public class Main extends JFrame implements DiffListener {
         stack1 = new Stack();
         stack1.setProvince("Prypeć");
         counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
+        counter1.setCountry("FRA");
         counter1.setType(CounterTypeEnum.ARMY_PLUS);
         stack1.getCounters().add(counter1);
         Counter counter2 = new Counter();
-        counter2.setCountry(new Country());
-        counter2.getCountry().setName("FRA");
+        counter2.setCountry("FRA");
         counter2.setType(CounterTypeEnum.ARMY_MINUS);
         stack1.getCounters().add(counter2);
         stacks.add(stack1);
@@ -226,18 +215,15 @@ public class Main extends JFrame implements DiffListener {
         stack1 = new Stack();
         stack1.setProvince("Prypeć");
         counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
+        counter1.setCountry("FRA");
         counter1.setType(CounterTypeEnum.ARMY_PLUS);
         stack1.getCounters().add(counter1);
         counter2 = new Counter();
-        counter2.setCountry(new Country());
-        counter2.getCountry().setName("FRA");
+        counter2.setCountry("FRA");
         counter2.setType(CounterTypeEnum.ARMY_MINUS);
         stack1.getCounters().add(counter2);
         Counter counter3 = new Counter();
-        counter3.setCountry(new Country());
-        counter3.getCountry().setName("FRA");
+        counter3.setCountry("FRA");
         counter3.setType(CounterTypeEnum.LAND_DETACHMENT);
         stack1.getCounters().add(counter3);
         stacks.add(stack1);
@@ -245,8 +231,7 @@ public class Main extends JFrame implements DiffListener {
         stack1 = new Stack();
         stack1.setProvince("Languedoc");
         counter1 = new Counter();
-        counter1.setCountry(new Country());
-        counter1.getCountry().setName("FRA");
+        counter1.setCountry("FRA");
         counter1.setType(CounterTypeEnum.ARMY_PLUS);
         stack1.getCounters().add(counter1);
         stacks.add(stack1);

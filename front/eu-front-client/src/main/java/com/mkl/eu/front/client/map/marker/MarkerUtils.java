@@ -100,7 +100,7 @@ public class MarkerUtils {
      * @return the image of the counter.
      */
     public PImage getImageFromCounter(Counter counter) {
-        return getImageFromCounter(counter.getType().name(), counter.getCountry().getName());
+        return getImageFromCounter(counter.getType().name(), counter.getCountry());
     }
 
     /**

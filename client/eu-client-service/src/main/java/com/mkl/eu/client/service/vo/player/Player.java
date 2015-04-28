@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.vo.player;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 
 /**
  * Player on a game. A player manages a country.
@@ -10,15 +10,15 @@ import com.mkl.eu.client.service.vo.country.Country;
  */
 public class Player extends EuObject {
     /** The country being managed by the player. */
-    private Country country;
+    private PlayableCountry country;
 
     /** @return the country. */
-    public Country getCountry() {
+    public PlayableCountry getCountry() {
         return country;
     }
 
     /** @param country the country to set. */
-    public void setCountry(Country country) {
+    public void setCountry(PlayableCountry country) {
         this.country = country;
     }
 }

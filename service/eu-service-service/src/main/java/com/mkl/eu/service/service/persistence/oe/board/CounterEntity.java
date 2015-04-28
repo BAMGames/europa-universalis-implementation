@@ -2,7 +2,6 @@ package com.mkl.eu.service.service.persistence.oe.board;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,8 +16,8 @@ import java.io.Serializable;
 public class CounterEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
-    /** Owner of the counter. */
-    private CountryEntity country;
+    /** Name of the country owning of the counter. */
+    private String country;
     /** Stack owning the counter. */
     private StackEntity owner;
     /** Type of the counter. */
@@ -38,14 +37,13 @@ public class CounterEntity implements IEntity, Serializable {
     }
 
     /** @return the country. */
-    @ManyToOne
-    @JoinColumn(name = "ID_COUNTRY")
-    public CountryEntity getCountry() {
+    @Column(name = "R_COUNTRY")
+    public String getCountry() {
         return country;
     }
 
     /** @param country the country to set. */
-    public void setCountry(CountryEntity country) {
+    public void setCountry(String country) {
         this.country = country;
     }
 

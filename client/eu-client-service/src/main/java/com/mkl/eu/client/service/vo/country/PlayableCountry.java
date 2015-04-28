@@ -5,26 +5,17 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.event.EconomicalEvent;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Country (can be minor or major).
+ * Country (major or former major or future major one).
  *
  * @author MKL
  */
-public class Country extends EuObject {
-    /**
-     * Constant for Neutral country.
-     */
-    private static final String NEUTRAL_COUNTRY_NAME = "TECH_COUNTRY_NEUTRAL";
-    /**
-     * Neutral country.
-     */
-    public static final Country NEUTRAL_COUNTRY;
+public class PlayableCountry extends EuObject {
     /**
      * Name of the country.
      */
@@ -54,11 +45,6 @@ public class Country extends EuObject {
      */
     private List<EconomicalEvent> economicalEvents;
 
-    static {
-        NEUTRAL_COUNTRY = new Country();
-        NEUTRAL_COUNTRY.setName(NEUTRAL_COUNTRY_NAME);
-    }
-
     /**
      * @param name the name to set.
      */
@@ -71,13 +57,6 @@ public class Country extends EuObject {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * @return <code>true</code> if the country is the neutral one.
-     */
-    public boolean isNeutral() {
-        return StringUtils.equals(NEUTRAL_COUNTRY_NAME, name);
     }
 
     /**

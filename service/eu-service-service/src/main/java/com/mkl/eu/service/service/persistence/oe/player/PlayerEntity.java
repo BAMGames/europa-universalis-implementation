@@ -2,7 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.player;
 
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,7 +18,7 @@ public class PlayerEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
     /** The country being managed by the player. */
-    private CountryEntity country;
+    private PlayableCountryEntity country;
     /** Game of the entity. */
     private GameEntity game;
 
@@ -39,12 +39,12 @@ public class PlayerEntity implements IEntity, Serializable {
     /** @return the country. */
     @OneToOne
     @JoinColumn(name = "ID_COUNTRY")
-    public CountryEntity getCountry() {
+    public PlayableCountryEntity getCountry() {
         return country;
     }
 
     /** @param country the country to set. */
-    public void setCountry(CountryEntity country) {
+    public void setCountry(PlayableCountryEntity country) {
         this.country = country;
     }
 

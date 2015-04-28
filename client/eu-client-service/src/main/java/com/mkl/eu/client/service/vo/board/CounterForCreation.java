@@ -11,10 +11,8 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 public class CounterForCreation {
     /** Type of the counter. */
     private CounterTypeEnum type;
-    /** Id of the country (either idCountry of nameCountry must exist). */
-    private Long idCountry;
-    /** Name of the country (either idCountry of nameCountry must exist). */
-    private String nameCountry;
+    /** Name of the country. */
+    private String country;
 
     /** @return the type. */
     public CounterTypeEnum getType() {
@@ -26,23 +24,13 @@ public class CounterForCreation {
         this.type = type;
     }
 
-    /** @return the idCountry. */
-    public Long getIdCountry() {
-        return idCountry;
+    /** @return the country. */
+    public String getCountry() {
+        return country;
     }
 
-    /** @param idCountry the idCountry to set. */
-    public void setIdCountry(Long idCountry) {
-        this.idCountry = idCountry;
-    }
-
-    /** @return the nameCountry. */
-    public String getNameCountry() {
-        return nameCountry;
-    }
-
-    /** @param nameCountry the nameCountry to set. */
-    public void setNameCountry(String nameCountry) {
-        this.nameCountry = nameCountry;
+    /** @param country the country to set. */
+    public void setCountry(String country) {
+        this.country = country;
     }
 }

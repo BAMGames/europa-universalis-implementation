@@ -1,7 +1,5 @@
 package com.mkl.eu.client.service.vo.board;
 
-import com.mkl.eu.client.service.vo.country.Country;
-
 /**
  * European province. A tile on the european board that can contains counters.
  *
@@ -10,8 +8,8 @@ import com.mkl.eu.client.service.vo.country.Country;
 public class EuropeanProvince extends AbstractProvince {
     /** Base income of the province. */
     private Integer income;
-    /** Owner of the province if no owner counter is present. */
-    private Country defaultOwner;
+    /** Name of the country owner of the province if no owner counter is present. */
+    private String defaultOwner;
     /** Flag saying that the province contains a port. */
     private boolean port;
     /** Flag saying that the province port can be praesidiable. */
@@ -28,12 +26,12 @@ public class EuropeanProvince extends AbstractProvince {
     }
 
     /** @return the defaultOwner. */
-    public Country getDefaultOwner() {
+    public String getDefaultOwner() {
         return defaultOwner;
     }
 
     /** @param defaultOwner the defaultOwner to set. */
-    public void setDefaultOwner(Country defaultOwner) {
+    public void setDefaultOwner(String defaultOwner) {
         this.defaultOwner = defaultOwner;
     }
 

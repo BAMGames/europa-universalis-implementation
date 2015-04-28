@@ -10,7 +10,7 @@ import com.mkl.eu.client.service.vo.board.Leader;
  */
 public class Monarch extends EuObject {
     /** Country the monarch rules. */
-    private Country country;
+    private PlayableCountry country;
     /** Turn when the leader comes to play. */
     private Integer begin;
     /** Turn when the leader dies (he dies at the start of this turn). */
@@ -29,14 +29,14 @@ public class Monarch extends EuObject {
     /**
      * @return the country.
      */
-    public Country getCountry() {
+    public PlayableCountry getCountry() {
         return country;
     }
 
     /**
      * @param country the country to set.
      */
-    public void setCountry(Country country) {
+    public void setCountry(PlayableCountry country) {
         this.country = country;
     }
 

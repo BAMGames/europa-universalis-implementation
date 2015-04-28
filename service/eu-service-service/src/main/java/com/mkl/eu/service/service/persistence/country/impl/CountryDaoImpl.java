@@ -2,7 +2,7 @@ package com.mkl.eu.service.service.persistence.country.impl;
 
 import com.mkl.eu.service.service.persistence.country.ICountryDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -13,22 +13,22 @@ import org.springframework.stereotype.Repository;
  * @author MKL.
  */
 @Repository
-public class CountryDaoImpl extends GenericDaoImpl<CountryEntity, Long> implements ICountryDao {
+public class CountryDaoImpl extends GenericDaoImpl<PlayableCountryEntity, Long> implements ICountryDao {
     /**
      * Constructor.
      */
     public CountryDaoImpl() {
-        super(CountryEntity.class);
+        super(PlayableCountryEntity.class);
     }
 
     /** {@inheritDoc} */
     @Override
-    public CountryEntity getCountryByName(String name, Long idGame) {
-        Criteria criteria = getSession().createCriteria(CountryEntity.class);
+    public PlayableCountryEntity getCountryByName(String name, Long idGame) {
+        Criteria criteria = getSession().createCriteria(PlayableCountryEntity.class);
 
         criteria.add(Restrictions.eq("name", name));
         criteria.add(Restrictions.eq("game.id", idGame));
 
-        return (CountryEntity) criteria.uniqueResult();
+        return (PlayableCountryEntity) criteria.uniqueResult();
     }
 }

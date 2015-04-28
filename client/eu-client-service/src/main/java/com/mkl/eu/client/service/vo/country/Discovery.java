@@ -10,7 +10,7 @@ import com.mkl.eu.client.service.vo.board.Stack;
  */
 public class Discovery extends EuObject {
     /** Country the discovery belongs to. */
-    private Country country;
+    private PlayableCountry country;
     /** Province of the discovery. */
     private String province;
     /** Stack where the discovery is if being rappatried. */
@@ -21,14 +21,14 @@ public class Discovery extends EuObject {
     /**
      * @return the country.
      */
-    public Country getCountry() {
+    public PlayableCountry getCountry() {
         return country;
     }
 
     /**
      * @param country the country to set.
      */
-    public void setCountry(Country country) {
+    public void setCountry(PlayableCountry country) {
         this.country = country;
     }
 

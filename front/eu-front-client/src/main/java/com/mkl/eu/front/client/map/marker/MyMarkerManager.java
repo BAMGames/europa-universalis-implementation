@@ -258,7 +258,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      */
     private void createStack(CounterTypeEnum type, IMapMarker province) {
         CounterForCreation counter = new CounterForCreation();
-        counter.setNameCountry("FRA");
+        counter.setCountry("FRA");
         counter.setType(type);
         Long idGame = MapConfiguration.getIdGame();
         DiffResponse response = gameAdminService.createCounter(idGame, MapConfiguration.getVersionGame(), counter, province.getId());

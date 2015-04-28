@@ -1,11 +1,8 @@
 package com.mkl.eu.client.service.vo.board;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
@@ -14,21 +11,20 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author MKL
  */
 public class Counter extends EuObject {
-    /** Owner of the counter. */
-    private Country country;
+    /** Name of the country owning of the counter. */
+    private String country;
     /** Stack owning the counter. */
     private Stack owner;
     /** Type of the counter. */
     private CounterTypeEnum type;
 
     /** @return the country. */
-    @XmlIDREF
-    public Country getCountry() {
+    public String getCountry() {
         return country;
     }
 
     /** @param country the country to set. */
-    public void setCountry(Country country) {
+    public void setCountry(String country) {
         this.country = country;
     }
 
@@ -51,18 +47,5 @@ public class Counter extends EuObject {
     /** @param type the type to set. */
     public void setType(CounterTypeEnum type) {
         this.type = type;
-    }
-
-    /**
-     * This method is called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     *
-     * @param unmarshaller the unmarshaller.
-     * @param parent       the parent object.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        if (this.country != null) {
-            this.country.getCounters().add(this);
-        }
     }
 }

@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.mapping.player;
 
-import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.player.Player;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.country.CountryMapping;
@@ -62,7 +62,7 @@ public class PlayerMapping extends AbstractMapping {
         Player target = new Player();
 
         target.setId(source.getId());
-        target.setCountry(storeVo(Country.class, source.getCountry(), objectsCreated, countryMapping::oeToVo));
+        target.setCountry(storeVo(PlayableCountry.class, source.getCountry(), objectsCreated, countryMapping::oeToVo));
 
         return target;
     }

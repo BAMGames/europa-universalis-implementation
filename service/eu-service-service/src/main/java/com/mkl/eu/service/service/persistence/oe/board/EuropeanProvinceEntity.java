@@ -1,8 +1,9 @@
 package com.mkl.eu.service.service.persistence.oe.board;
 
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
 /**
  * European province. A tile on the european board that can contains counters.
@@ -15,8 +16,8 @@ import javax.persistence.*;
 public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     /** Base income of the province. */
     private Integer income;
-    /** Owner of the province if no owner counter is present. */
-    private CountryEntity defaultOwner;
+    /** Name of the country owning of the province if no owner counter is present. */
+    private String defaultOwner;
     /** Flag saying that the province contains a port. */
     private Boolean port;
     /** Flag saying that the province port can be praesidiable. */
@@ -34,14 +35,13 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     }
 
     /** @return the defaultOwner. */
-    @ManyToOne
-    @JoinColumn(name = "ID_COUNTRY")
-    public CountryEntity getDefaultOwner() {
+    @Column(name = "R_COUNTRY")
+    public String getDefaultOwner() {
         return defaultOwner;
     }
 
     /** @param defaultOwner the defaultOwner to set. */
-    public void setDefaultOwner(CountryEntity defaultOwner) {
+    public void setDefaultOwner(String defaultOwner) {
         this.defaultOwner = defaultOwner;
     }
 

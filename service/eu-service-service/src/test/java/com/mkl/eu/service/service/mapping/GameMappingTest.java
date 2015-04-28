@@ -3,7 +3,7 @@ package com.mkl.eu.service.service.mapping;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
-import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
@@ -15,7 +15,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
-import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
 import com.mkl.eu.service.service.persistence.oe.player.PlayerEntity;
 import com.mkl.eu.service.service.persistence.oe.player.RelationEntity;
@@ -38,10 +38,10 @@ import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/com/mkl/eu/service/service/eu-service-service-applicationContext-test.xml"})
 public class GameMappingTest {
-    private static final Country FRA_VO;
-    private static final Country PRU_VO;
-    private static final CountryEntity FRA_OE;
-    private static final CountryEntity PRU_OE;
+    private static final PlayableCountry FRA_VO;
+    private static final PlayableCountry PRU_VO;
+    private static final PlayableCountryEntity FRA_OE;
+    private static final PlayableCountryEntity PRU_OE;
     private static final String PECS_VO = "Pecs";
     private static final String TYR_VO = "Tyr";
     private static final String IDF_VO = "IdF";
@@ -52,26 +52,26 @@ public class GameMappingTest {
     private GameMapping gameMapping;
 
     static {
-        FRA_VO = new Country();
+        FRA_VO = new PlayableCountry();
         FRA_VO.setId(1L);
         FRA_VO.setName("FRA");
 
-        PRU_VO = new Country();
+        PRU_VO = new PlayableCountry();
         PRU_VO.setId(2L);
         PRU_VO.setName("PRU");
 
-        FRA_OE = new CountryEntity();
+        FRA_OE = new PlayableCountryEntity();
         FRA_OE.setId(1L);
         FRA_OE.setName("FRA");
 
-        PRU_OE = new CountryEntity();
+        PRU_OE = new PlayableCountryEntity();
         PRU_OE.setId(2L);
         PRU_OE.setName("PRU");
 
         PECS_OE = new EuropeanProvinceEntity();
         PECS_OE.setId(1L);
         PECS_OE.setName("Pecs");
-        PECS_OE.setDefaultOwner(FRA_OE);
+        PECS_OE.setDefaultOwner("FRA");
         PECS_OE.setIncome(5);
         PECS_OE.setPort(true);
         PECS_OE.setPraesidiable(false);
@@ -80,7 +80,7 @@ public class GameMappingTest {
         TYR_OE = new EuropeanProvinceEntity();
         TYR_OE.setId(2L);
         TYR_OE.setName("Tyr");
-        TYR_OE.setDefaultOwner(FRA_OE);
+        TYR_OE.setDefaultOwner("FRA");
         TYR_OE.setIncome(2);
         TYR_OE.setPort(null);
         TYR_OE.setPraesidiable(true);
@@ -89,7 +89,7 @@ public class GameMappingTest {
         IDF_OE = new EuropeanProvinceEntity();
         IDF_OE.setId(3L);
         IDF_OE.setName("IdF");
-        IDF_OE.setDefaultOwner(FRA_OE);
+        IDF_OE.setDefaultOwner("FRA");
         IDF_OE.setIncome(18);
         IDF_OE.setPort(false);
         IDF_OE.setPraesidiable(null);
@@ -206,13 +206,13 @@ public class GameMappingTest {
         Counter subObject = new Counter();
         subObject.setId(1L);
         subObject.setType(CounterTypeEnum.ARMY_MINUS);
-        subObject.setCountry(FRA_VO);
+        subObject.setCountry("FRA");
         subObject.setOwner(object);
         subObjects.add(subObject);
         subObject = new Counter();
         subObject.setId(2L);
         subObject.setType(CounterTypeEnum.ARMY_PLUS);
-        subObject.setCountry(PRU_VO);
+        subObject.setCountry("PRU");
         subObject.setOwner(object);
         subObjects.add(subObject);
         object.setCounters(subObjects);
@@ -224,7 +224,7 @@ public class GameMappingTest {
         subObject = new Counter();
         subObject.setId(3L);
         subObject.setType(CounterTypeEnum.MNU_ART_MINUS);
-        subObject.setCountry(FRA_VO);
+        subObject.setCountry("FRA");
         subObject.setOwner(object);
         subObjects.add(subObject);
         object.setCounters(subObjects);
@@ -324,13 +324,13 @@ public class GameMappingTest {
         CounterEntity subObject = new CounterEntity();
         subObject.setId(1L);
         subObject.setType(CounterTypeEnum.ARMY_MINUS);
-        subObject.setCountry(FRA_OE);
+        subObject.setCountry("FRA");
         subObject.setOwner(object);
         subObjects.add(subObject);
         subObject = new CounterEntity();
         subObject.setId(2L);
         subObject.setType(CounterTypeEnum.ARMY_PLUS);
-        subObject.setCountry(PRU_OE);
+        subObject.setCountry("PRU");
         subObject.setOwner(object);
         subObjects.add(subObject);
         object.setCounters(subObjects);
@@ -342,7 +342,7 @@ public class GameMappingTest {
         subObject = new CounterEntity();
         subObject.setId(3L);
         subObject.setType(CounterTypeEnum.MNU_ART_MINUS);
-        subObject.setCountry(FRA_OE);
+        subObject.setCountry("FRA");
         subObject.setOwner(object);
         subObjects.add(subObject);
         object.setCounters(subObjects);

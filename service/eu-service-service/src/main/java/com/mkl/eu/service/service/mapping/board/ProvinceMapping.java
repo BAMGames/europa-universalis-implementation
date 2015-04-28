@@ -2,15 +2,10 @@ package com.mkl.eu.service.service.mapping.board;
 
 import com.mkl.eu.client.service.vo.board.AbstractProvince;
 import com.mkl.eu.client.service.vo.board.EuropeanProvince;
-import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
-import com.mkl.eu.service.service.mapping.country.CountryMapping;
 import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.board.EuropeanProvinceEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * Mapping between VO and OE for a Counter.
@@ -19,18 +14,14 @@ import java.util.Map;
  */
 @Component
 public class ProvinceMapping extends AbstractMapping {
-    /** Mapping for a country. */
-    @Autowired
-    private CountryMapping countryMapping;
 
     /**
      * OE to VO.
      *
      * @param source         object source.
-     * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    public AbstractProvince oeToVo(AbstractProvinceEntity source, Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    public AbstractProvince oeToVo(AbstractProvinceEntity source) {
         if (source == null) {
             return null;
         }
@@ -46,7 +37,7 @@ public class ProvinceMapping extends AbstractMapping {
             if (province.getPraesidiable() != null) {
                 ((EuropeanProvince) target).setPraesidiable(province.getPraesidiable());
             }
-            ((EuropeanProvince) target).setDefaultOwner(storeVo(Country.class, province.getDefaultOwner(), objectsCreated, countryMapping::oeToVo));
+            ((EuropeanProvince) target).setDefaultOwner(province.getDefaultOwner());
         } else {
             return null;
         }

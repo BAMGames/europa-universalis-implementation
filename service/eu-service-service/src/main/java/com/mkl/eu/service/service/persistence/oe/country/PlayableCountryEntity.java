@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "COUNTRY")
-public class CountryEntity implements IEntity, Serializable {
+public class PlayableCountryEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
     /**
