@@ -83,7 +83,7 @@ public class MarkerUtils {
                 }
 
                 for (Stack stack : game.getStacks()) {
-                    if (StringUtils.equals(stack.getProvince().getName(), marker.getId())) {
+                    if (StringUtils.equals(stack.getProvince(), marker.getId())) {
                         StackMarker stackMarker = new StackMarker(mapMarker);
                         for (Counter counter : stack.getCounters()) {
                             stackMarker.addCounter(new CounterMarker(getImageFromCounter(counter)));
@@ -103,10 +103,21 @@ public class MarkerUtils {
      * @return the image of the counter.
      */
     public PImage getImageFromCounter(Counter counter) {
+        return getImageFromCounter(counter.getType().name(), counter.getCountry().getName());
+    }
+
+    /**
+     * Retrieves the image of the counter.
+     *
+     * @param type        of the counter.
+     * @param nameCountry name of the country of the counter.
+     * @return the image of the counter.
+     */
+    public PImage getImageFromCounter(String type, String nameCountry) {
         // TODO configure
-        StringBuilder path = new StringBuilder("data/map/v2/counters/").append(counter.getCountry().getName())
-                .append("/").append(counter.getCountry().getName()).append("_")
-                .append(counter.getType().name()).append(".png");
+        StringBuilder path = new StringBuilder("data/map/v2/counters/").append(nameCountry)
+                .append("/").append(nameCountry).append("_")
+                .append(type).append(".png");
 
         return pApplet.loadImage(path.toString());
     }

@@ -9,4 +9,8 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
     <jaxws:client id="gameClient"
                   serviceClass="com.mkl.eu.client.service.service.IGameService"
                   address="http://localhost:8080/eu/services/GameService?wsdl"/>
+
+    <jaxws:client id="gameAdminClient"
+                  serviceClass="com.mkl.eu.client.service.service.IGameAdminService"
+                  address="http://localhost:8080/eu/services/GameAdminService?wsdl"/>
 </beans>

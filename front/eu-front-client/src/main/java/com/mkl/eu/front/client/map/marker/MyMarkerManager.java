@@ -1,10 +1,14 @@
 package com.mkl.eu.front.client.map.marker;
 
-import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.service.IGameAdminService;
+import com.mkl.eu.client.service.vo.board.CounterForCreation;
+import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.DiffListener;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Component;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +40,9 @@ import java.util.List;
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
+    /** Game Admin Service. */
+    @Autowired
+    private IGameAdminService gameAdminService;
     /** Utility to draw counters. */
     @Autowired
     private MarkerUtils markerUtils;
@@ -56,6 +64,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private Location menuLocation;
     /** Contextual menu. */
     private ContextualMenu menu;
+    /** Listeners for diffs event. */
+    private List<DiffListener> diffListeners = new ArrayList<>();
 
     /** {@inheritDoc} */
     public void draw() {
@@ -246,17 +256,14 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @param province where the stack should be created.
      * @return the stack created.
      */
-    private StackMarker createStack(CounterTypeEnum type, IMapMarker province) {
-        // TODO service
-        Counter counter = new Counter();
-        counter.setCountry(new Country());
-        counter.getCountry().setName("FRA");
+    private void createStack(CounterTypeEnum type, IMapMarker province) {
+        CounterForCreation counter = new CounterForCreation();
+        counter.setNameCountry("FRA");
         counter.setType(type);
-        StackMarker stackMarker = new StackMarker(province);
-        stackMarker.addCounter(new CounterMarker(markerUtils.getImageFromCounter(counter)));
-        province.addStack(stackMarker);
-
-        return stackMarker;
+        Long idGame = MapConfiguration.getIdGame();
+        DiffResponse response = gameAdminService.createCounter(idGame, MapConfiguration.getVersionGame(), counter, province.getId());
+        DiffEvent event = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+        processDiffEvent(event);
     }
 
     /** @return the selectedMarker. */
@@ -408,5 +415,27 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         }
 
         return isNeighbour;
+    }
+
+    /**
+     * Add a diff listener.
+     *
+     * @param diffListener to add.
+     */
+    public void addDiffListener(DiffListener diffListener) {
+        if (!diffListeners.contains(diffListener)) {
+            diffListeners.add(diffListener);
+        }
+    }
+
+    /**
+     * Process a DiffEvent.
+     *
+     * @param event to process.
+     */
+    private void processDiffEvent(DiffEvent event) {
+        for (DiffListener diffListener : diffListeners) {
+            diffListener.update(event);
+        }
     }
 }
