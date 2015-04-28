@@ -2,15 +2,12 @@ package com.mkl.eu.service.service.persistence.oe.country;
 
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
-import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Country (can be minor or major).
+ * Country (major or former major or future major one).
  *
  * @author MKL
  */
@@ -23,10 +20,6 @@ public class PlayableCountryEntity implements IEntity, Serializable {
      * Name of the country.
      */
     private String name;
-    /**
-     * Counters of the country.
-     */
-    private List<CounterEntity> counters = new ArrayList<>();
     /** Game of the entity. */
     private GameEntity game;
 
@@ -57,21 +50,6 @@ public class PlayableCountryEntity implements IEntity, Serializable {
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * @return the counters.
-     */
-    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<CounterEntity> getCounters() {
-        return counters;
-    }
-
-    /**
-     * @param counters the counters to set.
-     */
-    public void setCounters(List<CounterEntity> counters) {
-        this.counters = counters;
     }
 
     /** @return the game. */

@@ -1,12 +1,10 @@
 package com.mkl.eu.client.service.vo.country;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.event.EconomicalEvent;
 
-import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +18,6 @@ public class PlayableCountry extends EuObject {
      * Name of the country.
      */
     private String name;
-    /**
-     * Counters of the country.
-     */
-    private List<Counter> counters = new ArrayList<>();
     /**
      * Monarchs (past and present) of the country.
      */
@@ -57,21 +51,6 @@ public class PlayableCountry extends EuObject {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * @return the counters.
-     */
-    @XmlTransient
-    public List<Counter> getCounters() {
-        return counters;
-    }
-
-    /**
-     * @param counters the counters to set.
-     */
-    public void setCounters(List<Counter> counters) {
-        this.counters = counters;
     }
 
     /**

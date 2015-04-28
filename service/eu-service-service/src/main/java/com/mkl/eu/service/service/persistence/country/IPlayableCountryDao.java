@@ -4,11 +4,11 @@ import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 
 /**
- * Interface of the Country DAO.
+ * Interface of the PlayableCountry DAO.
  *
  * @author MKL.
  */
-public interface ICountryDao extends IGenericDao<PlayableCountryEntity, Long> {
+public interface IPlayableCountryDao extends IGenericDao<PlayableCountryEntity, Long> {
     /**
      * Returns the country given its name.
      *

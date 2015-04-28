@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.persistence.country.impl;
 
-import com.mkl.eu.service.service.persistence.country.ICountryDao;
+import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import org.hibernate.Criteria;
@@ -8,16 +8,16 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
 /**
- * Implementation of the Country DAO.
+ * Implementation of the PlayableCountry DAO.
  *
  * @author MKL.
  */
 @Repository
-public class CountryDaoImpl extends GenericDaoImpl<PlayableCountryEntity, Long> implements ICountryDao {
+public class PlayableCountryDaoImpl extends GenericDaoImpl<PlayableCountryEntity, Long> implements IPlayableCountryDao {
     /**
      * Constructor.
      */
-    public CountryDaoImpl() {
+    public PlayableCountryDaoImpl() {
         super(PlayableCountryEntity.class);
     }
 
