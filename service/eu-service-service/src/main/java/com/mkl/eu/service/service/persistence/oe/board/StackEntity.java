@@ -18,8 +18,8 @@ import java.util.List;
 public class StackEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
-    /** Province where the stack is located (String or Province ?). */
-    private AbstractProvinceEntity province;
+    /** Name of the province where the stack is located. */
+    private String province;
     /** Counters of the stack. */
     private List<CounterEntity> counters = new ArrayList<>();
     /** Game of the entity. */
@@ -40,14 +40,13 @@ public class StackEntity implements IEntity, Serializable {
     }
 
     /** @return the province. */
-    @ManyToOne
-    @JoinColumn(name = "ID_PROVINCE")
-    public AbstractProvinceEntity getProvince() {
+    @Column(name = "R_PROVINCE")
+    public String getProvince() {
         return province;
     }
 
     /** @param province the province to set. */
-    public void setProvince(AbstractProvinceEntity province) {
+    public void setProvince(String province) {
         this.province = province;
     }
 

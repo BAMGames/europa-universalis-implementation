@@ -60,7 +60,7 @@ public class StackMapping extends AbstractMapping {
         Stack target = new Stack();
 
         target.setId(source.getId());
-        target.setProvince(source.getProvince().getName());
+        target.setProvince(source.getProvince());
         target.setCounters(counterMapping.oesToVos(source.getCounters(), target, objectsCreated));
 
         return target;

@@ -96,7 +96,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
                 .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE).setParams(METHOD_MOVE_STACK, province));
 
         StackEntity stack = new StackEntity();
-        stack.setProvince(prov);
+        stack.setProvince(province);
         stack.setGame(game);
 
         CounterEntity counterEntity = new CounterEntity();

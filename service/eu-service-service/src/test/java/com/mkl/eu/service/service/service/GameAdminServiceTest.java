@@ -264,7 +264,7 @@ public class GameAdminServiceTest {
         Assert.assertEquals(diffAfter, response.getDiffs());
 
         Assert.assertEquals(1, game.getStacks().size());
-        Assert.assertEquals(idf, game.getStacks().get(0).getProvince());
+        Assert.assertEquals("IdF", game.getStacks().get(0).getProvince());
         Assert.assertEquals(game, game.getStacks().get(0).getGame());
         Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
         Assert.assertEquals(counter.getCountry(), game.getStacks().get(0).getCounters().get(0).getCountry());

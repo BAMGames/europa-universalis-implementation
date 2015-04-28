@@ -7,13 +7,11 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 import com.mkl.eu.client.service.vo.player.Player;
 import com.mkl.eu.client.service.vo.player.Relation;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
-import com.mkl.eu.service.service.persistence.oe.board.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
@@ -42,12 +40,9 @@ public class GameMappingTest {
     private static final PlayableCountry PRU_VO;
     private static final PlayableCountryEntity FRA_OE;
     private static final PlayableCountryEntity PRU_OE;
-    private static final String PECS_VO = "Pecs";
-    private static final String TYR_VO = "Tyr";
-    private static final String IDF_VO = "IdF";
-    private static final EuropeanProvinceEntity PECS_OE;
-    private static final EuropeanProvinceEntity TYR_OE;
-    private static final EuropeanProvinceEntity IDF_OE;
+    private static final String PECS = "Pecs";
+    private static final String TYR = "Tyr";
+    private static final String IDF = "IdF";
     @Autowired
     private GameMapping gameMapping;
 
@@ -67,33 +62,6 @@ public class GameMappingTest {
         PRU_OE = new PlayableCountryEntity();
         PRU_OE.setId(2L);
         PRU_OE.setName("PRU");
-
-        PECS_OE = new EuropeanProvinceEntity();
-        PECS_OE.setId(1L);
-        PECS_OE.setName("Pecs");
-        PECS_OE.setDefaultOwner("FRA");
-        PECS_OE.setIncome(5);
-        PECS_OE.setPort(true);
-        PECS_OE.setPraesidiable(false);
-        PECS_OE.setTerrain(TerrainEnum.DENSE_FOREST);
-
-        TYR_OE = new EuropeanProvinceEntity();
-        TYR_OE.setId(2L);
-        TYR_OE.setName("Tyr");
-        TYR_OE.setDefaultOwner("FRA");
-        TYR_OE.setIncome(2);
-        TYR_OE.setPort(null);
-        TYR_OE.setPraesidiable(true);
-        TYR_OE.setTerrain(TerrainEnum.PLAIN);
-
-        IDF_OE = new EuropeanProvinceEntity();
-        IDF_OE.setId(3L);
-        IDF_OE.setName("IdF");
-        IDF_OE.setDefaultOwner("FRA");
-        IDF_OE.setIncome(18);
-        IDF_OE.setPort(false);
-        IDF_OE.setPraesidiable(null);
-        IDF_OE.setTerrain(TerrainEnum.SEA);
     }
 
     @Test
@@ -201,7 +169,7 @@ public class GameMappingTest {
 
         Stack object = new Stack();
         object.setId(1L);
-        object.setProvince(PECS_VO);
+        object.setProvince(PECS);
         List<Counter> subObjects = new ArrayList<>();
         Counter subObject = new Counter();
         subObject.setId(1L);
@@ -219,7 +187,7 @@ public class GameMappingTest {
         objects.add(object);
         object = new Stack();
         object.setId(2L);
-        object.setProvince(TYR_VO);
+        object.setProvince(TYR);
         subObjects = new ArrayList<>();
         subObject = new Counter();
         subObject.setId(3L);
@@ -231,7 +199,7 @@ public class GameMappingTest {
         objects.add(object);
         object = new Stack();
         object.setId(3L);
-        object.setProvince(IDF_VO);
+        object.setProvince(IDF);
         objects.add(object);
 
         return objects;
@@ -319,7 +287,7 @@ public class GameMappingTest {
 
         StackEntity object = new StackEntity();
         object.setId(1L);
-        object.setProvince(PECS_OE);
+        object.setProvince(PECS);
         List<CounterEntity> subObjects = new ArrayList<>();
         CounterEntity subObject = new CounterEntity();
         subObject.setId(1L);
@@ -337,7 +305,7 @@ public class GameMappingTest {
         objects.add(object);
         object = new StackEntity();
         object.setId(2L);
-        object.setProvince(TYR_OE);
+        object.setProvince(TYR);
         subObjects = new ArrayList<>();
         subObject = new CounterEntity();
         subObject.setId(3L);
@@ -349,7 +317,7 @@ public class GameMappingTest {
         objects.add(object);
         object = new StackEntity();
         object.setId(3L);
-        object.setProvince(IDF_OE);
+        object.setProvince(IDF);
         objects.add(object);
 
         return objects;

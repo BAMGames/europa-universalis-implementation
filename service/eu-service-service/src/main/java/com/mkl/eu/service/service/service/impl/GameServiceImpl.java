@@ -110,11 +110,14 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         failIfNull(new CheckForThrow<>().setTest(province).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo));
 
-        boolean isNear = stack.getProvince().getBorders().stream().filter(x -> province.getId().equals(x.getProvinceTo().getId())).findFirst().isPresent();
-
+        AbstractProvinceEntity provinceStack = provinceDao.getProvinceByName(stack.getProvince());
+        boolean isNear = false;
+        if (provinceStack != null) {
+            isNear = provinceStack.getBorders().stream().filter(x -> province.getId().equals(x.getProvinceTo().getId())).findFirst().isPresent();
+        }
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(isNear).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_NOT_NEIGHBOR).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince().getName()));
+                .setMsgFormat(MSG_NOT_NEIGHBOR).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince()));
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
@@ -124,7 +127,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         diff.setIdObject(idStack);
         DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_FROM);
-        diffAttributes.setValue(stack.getProvince().getName());
+        diffAttributes.setValue(stack.getProvince());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
         diffAttributes = new DiffAttributesEntity();
@@ -137,7 +140,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
         diffs.add(diff);
 
-        stack.setProvince(province);
+        stack.setProvince(provinceTo);
         gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();

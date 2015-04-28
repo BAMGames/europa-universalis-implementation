@@ -202,7 +202,7 @@ public class GameServiceTest {
         }
 
         StackEntity stack = new StackEntity();
-        stack.setProvince(pecs);
+        stack.setProvince("pecs");
         stack.setId(14L);
         game.getStacks().add(stack);
 
@@ -224,6 +224,7 @@ public class GameServiceTest {
             Assert.assertEquals("provinceTo", e.getParams()[0]);
         }
 
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
 
         try {
@@ -254,16 +255,17 @@ public class GameServiceTest {
         game.setId(12L);
         game.setVersion(5L);
         StackEntity stack = new StackEntity();
-        stack.setProvince(pecs);
+        stack.setProvince("pecs");
         stack.setId(13L);
         BorderEntity border = new BorderEntity();
         border.setProvinceFrom(pecs);
         border.setProvinceTo(idf);
-        stack.getProvince().getBorders().add(border);
+        pecs.getBorders().add(border);
         game.getStacks().add(stack);
 
         when(gameDao.lock(12L)).thenReturn(game);
 
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
@@ -290,6 +292,7 @@ public class GameServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("IdF");
+        inOrder.verify(provinceDao).getProvinceByName("pecs");
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
