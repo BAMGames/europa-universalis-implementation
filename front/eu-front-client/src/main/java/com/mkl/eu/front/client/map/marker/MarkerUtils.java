@@ -2,7 +2,6 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.front.client.vo.Border;
 import com.thoughtworks.xstream.XStream;
 import de.fhpotsdam.unfolding.data.Feature;
@@ -82,15 +81,13 @@ public class MarkerUtils {
                     }
                 }
 
-                for (Stack stack : game.getStacks()) {
-                    if (StringUtils.equals(stack.getProvince(), marker.getId())) {
-                        StackMarker stackMarker = new StackMarker(mapMarker);
-                        for (Counter counter : stack.getCounters()) {
-                            stackMarker.addCounter(new CounterMarker(getImageFromCounter(counter)));
-                        }
-                        mapMarker.addStack(stackMarker);
+                game.getStacks().stream().filter(stack -> StringUtils.equals(stack.getProvince(), marker.getId())).forEach(stack -> {
+                    StackMarker stackMarker = new StackMarker(mapMarker);
+                    for (Counter counter : stack.getCounters()) {
+                        stackMarker.addCounter(new CounterMarker(getImageFromCounter(counter)));
                     }
-                }
+                    mapMarker.addStack(stackMarker);
+                });
             }
         }
         return countryMarkers;

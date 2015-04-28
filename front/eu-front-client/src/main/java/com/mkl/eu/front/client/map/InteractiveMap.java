@@ -57,6 +57,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
     private InfoView info;
     /** Markers of the loaded game. */
     private Map<String, Marker> countryMarkers;
+    /** Game. */
+    private Game game;
 
     /**
      * Main method.
@@ -84,7 +86,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
      * @param game to load.
      */
     public void setGame(Game game) {
-        countryMarkers = markerUtils.createMarkers(game);
+        this.game = game;
     }
 
     /** Set up the map and the markers. */
@@ -134,6 +136,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
 //        eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
 //        eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
 
+        countryMarkers = markerUtils.createMarkers(game);
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
 
         // Disable the auto-draw feature. Manual redraw on change.
