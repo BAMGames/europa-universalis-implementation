@@ -1,6 +1,5 @@
 package com.mkl.eu.service.service.mapping.board;
 
-import com.mkl.eu.client.service.vo.board.AbstractProvince;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -21,9 +20,6 @@ public class StackMapping extends AbstractMapping {
     /** Mapping for a counter. */
     @Autowired
     private CounterMapping counterMapping;
-    /** Mapping for a province. */
-    @Autowired
-    private ProvinceMapping provinceMapping;
 
     /**
      * OEs to VOs.
@@ -64,7 +60,7 @@ public class StackMapping extends AbstractMapping {
         Stack target = new Stack();
 
         target.setId(source.getId());
-        target.setProvince(storeVo(AbstractProvince.class, source.getProvince(), objectsCreated, provinceMapping::oeToVo));
+        target.setProvince(source.getProvince().getName());
         target.setCounters(counterMapping.oesToVos(source.getCounters(), target, objectsCreated));
 
         return target;

@@ -13,17 +13,17 @@ import java.util.List;
  */
 public class Stack extends EuObject {
     /** Province where the stack is located. */
-    private AbstractProvince province;
+    private String province;
     /** Counters of the stack. */
     private List<Counter> counters = new ArrayList<>();
 
     /** @return the province. */
-    public AbstractProvince getProvince() {
+    public String getProvince() {
         return province;
     }
 
     /** @param province the province to set. */
-    public void setProvince(AbstractProvince province) {
+    public void setProvince(String province) {
         this.province = province;
     }
 
@@ -45,9 +45,6 @@ public class Stack extends EuObject {
      * @param parent       the parent object.
      */
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        if (this.province != null) {
-            this.province.getStacks().add(this);
-        }
         if (this.counters != null) {
             for (Counter counter : counters) {
                 counter.setOwner(this);

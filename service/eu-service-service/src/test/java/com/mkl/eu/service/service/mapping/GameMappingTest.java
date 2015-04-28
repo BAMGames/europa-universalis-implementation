@@ -2,7 +2,6 @@ package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.board.EuropeanProvince;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Country;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
@@ -43,9 +42,9 @@ public class GameMappingTest {
     private static final Country PRU_VO;
     private static final CountryEntity FRA_OE;
     private static final CountryEntity PRU_OE;
-    private static final EuropeanProvince PECS_VO;
-    private static final EuropeanProvince TYR_VO;
-    private static final EuropeanProvince IDF_VO;
+    private static final String PECS_VO = "Pecs";
+    private static final String TYR_VO = "Tyr";
+    private static final String IDF_VO = "IdF";
     private static final EuropeanProvinceEntity PECS_OE;
     private static final EuropeanProvinceEntity TYR_OE;
     private static final EuropeanProvinceEntity IDF_OE;
@@ -69,15 +68,6 @@ public class GameMappingTest {
         PRU_OE.setId(2L);
         PRU_OE.setName("PRU");
 
-        PECS_VO = new EuropeanProvince();
-        PECS_VO.setId(1L);
-        PECS_VO.setName("Pecs");
-        PECS_VO.setDefaultOwner(FRA_VO);
-        PECS_VO.setIncome(5);
-        PECS_VO.setPort(true);
-        PECS_VO.setPraesidiable(false);
-        PECS_VO.setTerrain(TerrainEnum.DENSE_FOREST);
-
         PECS_OE = new EuropeanProvinceEntity();
         PECS_OE.setId(1L);
         PECS_OE.setName("Pecs");
@@ -87,15 +77,6 @@ public class GameMappingTest {
         PECS_OE.setPraesidiable(false);
         PECS_OE.setTerrain(TerrainEnum.DENSE_FOREST);
 
-        TYR_VO = new EuropeanProvince();
-        TYR_VO.setId(2L);
-        TYR_VO.setName("Tyr");
-        TYR_VO.setDefaultOwner(FRA_VO);
-        TYR_VO.setIncome(2);
-        TYR_VO.setPort(false);
-        TYR_VO.setPraesidiable(true);
-        TYR_VO.setTerrain(TerrainEnum.PLAIN);
-
         TYR_OE = new EuropeanProvinceEntity();
         TYR_OE.setId(2L);
         TYR_OE.setName("Tyr");
@@ -104,15 +85,6 @@ public class GameMappingTest {
         TYR_OE.setPort(null);
         TYR_OE.setPraesidiable(true);
         TYR_OE.setTerrain(TerrainEnum.PLAIN);
-
-        IDF_VO = new EuropeanProvince();
-        IDF_VO.setId(3L);
-        IDF_VO.setName("IdF");
-        IDF_VO.setDefaultOwner(FRA_VO);
-        IDF_VO.setIncome(18);
-        IDF_VO.setPort(false);
-        IDF_VO.setPraesidiable(false);
-        IDF_VO.setTerrain(TerrainEnum.SEA);
 
         IDF_OE = new EuropeanProvinceEntity();
         IDF_OE.setId(3L);
