@@ -12,12 +12,12 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
-import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
-import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.GameAdminServiceImpl;
 import org.junit.Assert;
@@ -52,7 +52,7 @@ public class GameAdminServiceTest {
     private IProvinceDao provinceDao;
 
     @Mock
-    private IPlayableCountryDao playableCountryDao;
+    private ICountryDao countryDao;
 
     @Mock
     private IStackDao stackDao;
@@ -174,7 +174,7 @@ public class GameAdminServiceTest {
             Assert.assertEquals("counter.country", e.getParams()[0]);
         }
 
-        when(playableCountryDao.getCountryByName("FRA", 12L)).thenReturn(new PlayableCountryEntity());
+        when(countryDao.getCountryByName("FRA")).thenReturn(new CountryEntity());
 
         try {
             gameAdminService.createCounter(idGame, versionGame, counter, province);
@@ -204,7 +204,7 @@ public class GameAdminServiceTest {
 
         when(gameDao.lock(12L)).thenReturn(game);
 
-        when(playableCountryDao.getCountryByName("FRA", 12L)).thenReturn(new PlayableCountryEntity());
+        when(countryDao.getCountryByName("FRA")).thenReturn(new CountryEntity());
 
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
 
@@ -233,11 +233,11 @@ public class GameAdminServiceTest {
 
         DiffResponse response = gameAdminService.createCounter(idGame, versionGame, counter, province);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, playableCountryDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, countryDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).getCountryByName("FRA", 12L);
+        inOrder.verify(countryDao).getCountryByName("FRA");
         inOrder.verify(provinceDao).getProvinceByName("IdF");
         inOrder.verify(gameDao).update(game, true);
         inOrder.verify(diffDao).create(anyObject());

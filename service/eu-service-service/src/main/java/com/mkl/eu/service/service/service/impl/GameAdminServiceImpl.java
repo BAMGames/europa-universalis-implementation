@@ -12,15 +12,15 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
-import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
-import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.CountryEntity;
+import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +44,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
     private IProvinceDao provinceDao;
     /** Country DAO. */
     @Autowired
-    private IPlayableCountryDao playableCountryDao;
+    private ICountryDao countryDao;
     /** Stack DAO. */
     @Autowired
     private IStackDao stackDao;
@@ -80,11 +80,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
-        // TODO replace playableCountryDao by referentielDao
-        PlayableCountryEntity country = null;
-        if (country == null) {
-            country = playableCountryDao.getCountryByName(counter.getCountry(), idGame);
-        }
+        CountryEntity country = countryDao.getCountryByName(counter.getCountry());
 
         failIfNull(new CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_COUNTER + ".country")
