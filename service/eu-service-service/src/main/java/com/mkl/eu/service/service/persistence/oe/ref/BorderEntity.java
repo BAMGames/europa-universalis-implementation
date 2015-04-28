@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.persistence.oe.board;
+package com.mkl.eu.service.service.persistence.oe.ref;
 
 import com.mkl.eu.client.service.vo.enumeration.BorderEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author MKL.
  */
 @Entity
-@Table(name = "BORDER")
+@Table(name = "R_BORDER")
 public class BorderEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
@@ -38,7 +38,7 @@ public class BorderEntity implements IEntity, Serializable {
 
     /** @return the provinceFrom. */
     @ManyToOne
-    @JoinColumn(name = "ID_PROVINCE_FROM")
+    @JoinColumn(name = "ID_R_PROVINCE_FROM")
     public AbstractProvinceEntity getProvinceFrom() {
         return provinceFrom;
     }
@@ -50,7 +50,7 @@ public class BorderEntity implements IEntity, Serializable {
 
     /** @return the provinceTo. */
     @ManyToOne
-    @JoinColumn(name = "ID_PROVINCE_TO")
+    @JoinColumn(name = "ID_R_PROVINCE_TO")
     public AbstractProvinceEntity getProvinceTo() {
         return provinceTo;
     }

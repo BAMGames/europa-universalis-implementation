@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.persistence.oe.board;
+package com.mkl.eu.service.service.persistence.oe.ref;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,7 +11,7 @@ import javax.persistence.Table;
  * @author MKL.
  */
 @Entity
-@Table(name = "PROVINCE_EU")
+@Table(name = "R_PROVINCE_EU")
 @PrimaryKeyJoinColumn(name = "ID")
 public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     /** Base income of the province. */

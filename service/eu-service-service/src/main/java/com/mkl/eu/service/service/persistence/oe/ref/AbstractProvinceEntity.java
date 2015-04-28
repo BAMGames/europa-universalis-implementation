@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.persistence.oe.board;
+package com.mkl.eu.service.service.persistence.oe.ref;
 
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "PROVINCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"NAME"})})
+@Table(name = "R_PROVINCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"NAME"})})
 public abstract class AbstractProvinceEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;

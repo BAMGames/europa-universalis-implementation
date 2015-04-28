@@ -1,8 +1,8 @@
-package com.mkl.eu.service.service.persistence.board.impl;
+package com.mkl.eu.service.service.persistence.ref.impl;
 
-import com.mkl.eu.service.service.persistence.board.IProvinceDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
-import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;

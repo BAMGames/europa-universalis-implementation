@@ -1,7 +1,7 @@
-package com.mkl.eu.service.service.persistence.board;
+package com.mkl.eu.service.service.persistence.ref;
 
 import com.mkl.eu.service.service.persistence.IGenericDao;
-import com.mkl.eu.service.service.persistence.oe.board.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.AbstractProvinceEntity;
 
 /**
  * Interface of the Province DAO.
