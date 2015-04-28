@@ -4,7 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.IGameAdminService;
-import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
@@ -21,6 +21,7 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +53,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
     private DiffMapping diffMapping;
 
     @Override
-    public DiffResponse createCounter(Long idGame, Long versionGame, Counter counter, String province) {
+    public DiffResponse createCounter(Long idGame, Long versionGame, CounterForCreation counter, String province) {
         // TODO authorization
         failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_CREATE_COUNTER));
@@ -64,7 +65,8 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER));
         failIfNull(new CheckForThrow<>().setTest(counter.getType()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_COUNTER + ".type").setParams(METHOD_CREATE_COUNTER));
-        failIfNull(new CheckForThrow<>().setTest(counter.getCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfFalse(new CheckForThrow<Boolean>().setTest(counter.getIdCountry() != null || !StringUtils.isEmpty(counter.getNameCountry()))
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_COUNTER + ".country").setParams(METHOD_CREATE_COUNTER));
 
 
@@ -78,21 +80,36 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
         CountryEntity country = null;
-        if (counter.getCountry().getId() != null) {
-            country = countryDao.load(counter.getCountry().getId());
+        if (counter.getIdCountry() != null) {
+            country = countryDao.load(counter.getIdCountry());
         }
         if (country == null) {
-            country = countryDao.getCountryByName(counter.getCountry().getName(), idGame);
+            country = countryDao.getCountryByName(counter.getNameCountry(), idGame);
         }
 
         failIfNull(new CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_COUNTER + ".country")
-                .setParams(METHOD_CREATE_COUNTER, counter.getCountry().getId() + " / " + counter.getCountry().getName()));
+                .setParams(METHOD_CREATE_COUNTER, counter.getIdCountry() + " / " + counter.getNameCountry()));
 
         AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
 
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE).setParams(METHOD_MOVE_STACK, province));
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince(prov);
+        stack.setGame(game);
+
+        CounterEntity counterEntity = new CounterEntity();
+        counterEntity.setCountry(country);
+        counterEntity.setType(counter.getType());
+        counterEntity.setOwner(stack);
+
+        stack.getCounters().add(counterEntity);
+
+        game.getStacks().add(stack);
+
+        gameDao.update(game, true);
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
@@ -115,26 +132,20 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         diffAttributes.setValue(country.getName());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STACK);
+        diffAttributes.setValue(stack.getId().toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.COUNTER);
+        diffAttributes.setValue(counterEntity.getId().toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
 
         diffDao.create(diff);
 
         diffs.add(diff);
-
-
-        StackEntity stack = new StackEntity();
-        stack.setProvince(prov);
-        stack.setGame(game);
-
-        CounterEntity counterEntity = new CounterEntity();
-        counterEntity.setCountry(country);
-        counterEntity.setType(counter.getType());
-        counterEntity.setOwner(stack);
-
-        stack.getCounters().add(counterEntity);
-
-        game.getStacks().add(stack);
-
-        gameDao.update(game);
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));

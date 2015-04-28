@@ -63,9 +63,10 @@ public interface IGenericDao<T, PK extends Serializable> {
      * update an instance.
      *
      * @param instance to update.
+     * @param flush    to flush the session after the update.
      * @return instance updated.
      */
-    T update(T instance);
+    T update(T instance, boolean flush);
 
     /**
      * Multiple update.

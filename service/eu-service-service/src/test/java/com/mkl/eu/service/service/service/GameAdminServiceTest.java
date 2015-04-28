@@ -2,8 +2,7 @@ package com.mkl.eu.service.service.service;
 
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
-import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.country.Country;
+import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
@@ -67,7 +66,7 @@ public class GameAdminServiceTest {
     public void testCreateCounterFailSimple() {
         Long idGame = 12L;
         Long versionGame = 1L;
-        Counter counter = new Counter();
+        CounterForCreation counter = new CounterForCreation();
         String province = "IdF";
 
         try {
@@ -120,7 +119,7 @@ public class GameAdminServiceTest {
             Assert.assertEquals("counter.country", e.getParams()[0]);
         }
 
-        counter.setCountry(new Country());
+        counter.setIdCountry(2L);
 
         try {
             gameAdminService.createCounter(idGame, versionGame, counter, province);
@@ -148,9 +147,9 @@ public class GameAdminServiceTest {
     public void testCreateCounterFailComplex() {
         Long idGame = 12L;
         Long versionGame = 1L;
-        Counter counter = new Counter();
+        CounterForCreation counter = new CounterForCreation();
         counter.setType(CounterTypeEnum.ARMY_MINUS);
-        counter.setCountry(new Country());
+        counter.setIdCountry(25L);
         String province = "IdF";
 
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -171,8 +170,6 @@ public class GameAdminServiceTest {
             Assert.assertEquals("counter.country", e.getParams()[0]);
         }
 
-        counter.getCountry().setId(25L);
-
         when(countryDao.load(25L)).thenReturn(new CountryEntity());
 
         try {
@@ -188,10 +185,9 @@ public class GameAdminServiceTest {
     public void testCreateCounterSuccess() {
         Long idGame = 12L;
         Long versionGame = 1L;
-        Counter counter = new Counter();
+        CounterForCreation counter = new CounterForCreation();
         counter.setType(CounterTypeEnum.ARMY_MINUS);
-        counter.setCountry(new Country());
-        counter.getCountry().setName("FRA");
+        counter.setNameCountry("FRA");
         String province = "IdF";
 
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -229,6 +225,12 @@ public class GameAdminServiceTest {
 
         when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
 
+        when(gameDao.update(game, true)).thenAnswer(invocation -> {
+            game.getStacks().get(0).setId(1L);
+            game.getStacks().get(0).getCounters().get(0).setId(2L);
+            return game;
+        });
+
         DiffResponse response = gameAdminService.createCounter(idGame, versionGame, counter, province);
 
         InOrder inOrder = inOrder(gameDao, provinceDao, countryDao, diffDao, diffMapping);
@@ -237,6 +239,7 @@ public class GameAdminServiceTest {
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(countryDao).getCountryByName("FRA", 12L);
         inOrder.verify(provinceDao).getProvinceByName("IdF");
+        inOrder.verify(gameDao).update(game, true);
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
@@ -245,13 +248,17 @@ public class GameAdminServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(3, diffEntity.getAttributes().size());
+        Assert.assertEquals(5, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(idf.getName(), diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals(counter.getType().name(), diffEntity.getAttributes().get(1).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.COUNTRY, diffEntity.getAttributes().get(2).getType());
         Assert.assertEquals(country.getName(), diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals(game.getStacks().get(0).getId().toString(), diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTER, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals(game.getStacks().get(0).getCounters().get(0).getId().toString(), diffEntity.getAttributes().get(4).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

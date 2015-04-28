@@ -18,6 +18,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#PROVINCE</li>
      * <li>DiffAttributeTypeEnum#TYPE for the type of the counter</li>
      * <li>DiffAttributeTypeEnum#COUNTRY for the name of the country of the counter</li>
+     * <li>DiffAttributeTypeEnum#STACK for the id of the stack (can be a new one)</li>
+     * <li>DiffAttributeTypeEnum#COUNTER for the id of the counter (will be a new one)</li>
      * </ul>
      * </li>
      * </ul>

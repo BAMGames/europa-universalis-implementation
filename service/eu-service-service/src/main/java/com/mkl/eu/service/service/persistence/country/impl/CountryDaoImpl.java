@@ -27,7 +27,7 @@ public class CountryDaoImpl extends GenericDaoImpl<CountryEntity, Long> implemen
         Criteria criteria = getSession().createCriteria(CountryEntity.class);
 
         criteria.add(Restrictions.eq("name", name));
-        criteria.add(Restrictions.eq("idGame", idGame));
+        criteria.add(Restrictions.eq("game.id", idGame));
 
         return (CountryEntity) criteria.uniqueResult();
     }

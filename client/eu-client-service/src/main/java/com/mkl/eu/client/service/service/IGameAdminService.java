@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.service;
 
 import com.mkl.eu.client.common.exception.TechnicalException;
-import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -29,6 +29,6 @@ public interface IGameAdminService extends INameConstants {
     @WebResult(name = RESPONSE)
     DiffResponse createCounter(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
                                @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
-                               @WebParam(name = PARAMETER_COUNTER) Counter counter,
+                               @WebParam(name = PARAMETER_COUNTER) CounterForCreation counter,
                                @WebParam(name = PARAMETER_PROVINCE) String province) throws TechnicalException;
 }

@@ -16,6 +16,10 @@ public enum DiffAttributeTypeEnum {
     STACK_FROM,
     /** Where the diff went to (move of a counter): id of the stack. */
     STACK_TO,
+    /** To which stack the diff was made: id of the stack. */
+    STACK,
+    /** To which counter the diff was made: id of the counter. */
+    COUNTER,
     /** Type of the  principal object. */
     TYPE,
     /** Country of the principal object. */

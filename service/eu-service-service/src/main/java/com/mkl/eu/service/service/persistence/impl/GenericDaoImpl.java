@@ -167,10 +167,13 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
      */
     @SuppressWarnings("unchecked")
     @Override
-    public T update(T o) {
+    public T update(T o, boolean flush) {
         T res;
         try {
             res = (T) getSession().merge(o);
+            if (flush) {
+                getSession().flush();
+            }
         } catch (StaleObjectStateException e) {
             if (e.getMessage() != null && e.getMessage().startsWith("Row was updated or deleted by another transaction")) {
                 LOG.warn("update: Mise à jour impossible en raison d'une modification concurrente");

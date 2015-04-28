@@ -138,7 +138,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         diffs.add(diff);
 
         stack.setProvince(province);
-        gameDao.update(game);
+        gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));
