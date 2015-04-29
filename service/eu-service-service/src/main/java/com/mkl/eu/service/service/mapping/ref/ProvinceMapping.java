@@ -32,11 +32,11 @@ public class ProvinceMapping extends AbstractMapping {
             EuropeanProvinceEntity province = (EuropeanProvinceEntity) source;
             target = new EuropeanProvince();
             ((EuropeanProvince) target).setIncome(province.getIncome());
-            if (province.getPort() != null) {
-                ((EuropeanProvince) target).setPort(province.getPort());
+            if (province.isPort() != null) {
+                ((EuropeanProvince) target).setPort(province.isPort());
             }
-            if (province.getPraesidiable() != null) {
-                ((EuropeanProvince) target).setPraesidiable(province.getPraesidiable());
+            if (province.isPraesidiable() != null) {
+                ((EuropeanProvince) target).setPraesidiable(province.isPraesidiable());
             }
             ((EuropeanProvince) target).setDefaultOwner(province.getDefaultOwner());
         } else {

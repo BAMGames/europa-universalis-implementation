@@ -16,12 +16,20 @@ import javax.persistence.Table;
 public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     /** Base income of the province. */
     private Integer income;
+    /** Level of the natural fortress of the province. */
+    private Integer fortress;
+    /** Flag saying that the province is the capital of the defaultOwner. */
+    private Boolean capital;
     /** Name of the country owning of the province if no owner counter is present. */
     private String defaultOwner;
-    /** Flag saying that the province contains a port. */
+    /** Flag saying that the province contains a natural port. */
     private Boolean port;
-    /** Flag saying that the province port can be praesidiable. */
+    /** Flag saying that the province contains a natural arsenal. */
+    private Boolean arsenal;
+    /** Flag saying that the natural port can be blocked by a fortress. */
     private Boolean praesidiable;
+    /** Metadata on the province. Names of cities and province for search function. */
+    private String metadata;
 
     /** @return the income. */
     @Column(name = "INCOME")
@@ -32,6 +40,28 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     /** @param income the income to set. */
     public void setIncome(Integer income) {
         this.income = income;
+    }
+
+    /** @return the fortress. */
+    @Column(name = "FORTRESS")
+    public Integer getFortress() {
+        return fortress;
+    }
+
+    /** @param fortress the fortress to set. */
+    public void setFortress(Integer fortress) {
+        this.fortress = fortress;
+    }
+
+    /** @return the capital. */
+    @Column(name = "CAPITAL", columnDefinition = "BIT")
+    public Boolean isCapital() {
+        return capital;
+    }
+
+    /** @param capital the capital to set. */
+    public void setCapital(Boolean capital) {
+        this.capital = capital;
     }
 
     /** @return the defaultOwner. */
@@ -47,7 +77,7 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
 
     /** @return the port. */
     @Column(name = "PORT", columnDefinition = "BIT")
-    public Boolean getPort() {
+    public Boolean isPort() {
         return port;
     }
 
@@ -56,14 +86,36 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
         this.port = port;
     }
 
+    /** @return the arsenal. */
+    @Column(name = "ARSENAL", columnDefinition = "BIT")
+    public Boolean isArsenal() {
+        return arsenal;
+    }
+
+    /** @param arsenal the arsenal to set. */
+    public void setArsenal(Boolean arsenal) {
+        this.arsenal = arsenal;
+    }
+
     /** @return the praesidiable. */
     @Column(name = "PRAESIDIABLE", columnDefinition = "BIT")
-    public Boolean getPraesidiable() {
+    public Boolean isPraesidiable() {
         return praesidiable;
     }
 
     /** @param praesidiable the praesidiable to set. */
     public void setPraesidiable(Boolean praesidiable) {
         this.praesidiable = praesidiable;
+    }
+
+    /** @return the metadata. */
+    @Column(name = "METADATA")
+    public String getMetadata() {
+        return metadata;
+    }
+
+    /** @param metadata the metadata to set. */
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 }
