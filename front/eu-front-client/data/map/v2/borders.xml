@@ -94,7 +94,7 @@
   </border>
   <border>
     <first>La Mancha</first>
-    <second>Valencia</second>
+    <second>València</second>
   </border>
   <border>
     <first>Castilla La Vieja</first>
@@ -128,7 +128,7 @@
   </border>
   <border>
     <first>Murcia</first>
-    <second>Valencia</second>
+    <second>València</second>
   </border>
   <border>
     <first>Cuba~W</first>
@@ -862,12 +862,12 @@
     <second>Oman~W</second>
   </border>
   <border>
-    <first>Mişr</first>
-    <second>Sīnā’</second>
+    <first>Carniola</first>
+    <second>Slovenija</second>
   </border>
   <border>
-    <first>Kranj</first>
-    <second>Slovenija</second>
+    <first>Mişr</first>
+    <second>Sīnā’</second>
   </border>
   <border>
     <first>Minas Gerais~W</first>
@@ -1164,7 +1164,7 @@
   </border>
   <border>
     <first>Aragón</first>
-    <second>Valencia</second>
+    <second>València</second>
   </border>
   <border>
     <first>Gelderland</first>
@@ -1394,7 +1394,7 @@
     <second>Cabo Verde</second>
   </border>
   <border>
-    <first>Kranj</first>
+    <first>Carniola</first>
     <second>Pécs</second>
   </border>
   <border>
@@ -1733,7 +1733,7 @@
     <second>Oman~W</second>
   </border>
   <border>
-    <first>Luxembourg</first>
+    <first>Luxemburg</first>
     <second>Trier</second>
   </border>
   <border>
@@ -1757,10 +1757,6 @@
   <border>
     <first>Antalya</first>
     <second>Méditerrannée orientale</second>
-  </border>
-  <border>
-    <first>Baltique</first>
-    <second>Sjaelland</second>
   </border>
   <border>
     <first>Cap~S</first>
@@ -2068,7 +2064,7 @@
   </border>
   <border>
     <first>Mainz</first>
-    <second>Wurtemberg</second>
+    <second>Würtemberg</second>
   </border>
   <border>
     <first>Afghanistan~W</first>
@@ -2185,8 +2181,8 @@
     <second>Côte du Chili</second>
   </border>
   <border>
-    <first>Hrvatska</first>
-    <second>Kranj</second>
+    <first>Carniola</first>
+    <second>Hrvatska</second>
   </border>
   <border>
     <first>Mer d’Arafura</first>
@@ -3203,7 +3199,7 @@
   </border>
   <border>
     <first>Schwaben</first>
-    <second>Wurtemberg</second>
+    <second>Würtemberg</second>
   </border>
   <border>
     <first>Chichimeca~N</first>
@@ -3382,7 +3378,7 @@
   </border>
   <border>
     <first>Franken</first>
-    <second>Wurtemberg</second>
+    <second>Würtemberg</second>
   </border>
   <border>
     <first>Arizona~E</first>
@@ -3581,8 +3577,8 @@
     <second>Vizcaya</second>
   </border>
   <border>
-    <first>Kapela</first>
-    <second>Kranj</second>
+    <first>Carniola</first>
+    <second>Kapela</second>
   </border>
   <border>
     <first>Azteca~SE</first>
@@ -3903,8 +3899,8 @@
     <second>Trabzon</second>
   </border>
   <border>
-    <first>Karelen</first>
-    <second>Neva</second>
+    <first>Ingermanland</first>
+    <second>Karelen</second>
     <type>river</type>
   </border>
   <border>
@@ -3932,7 +3928,7 @@
     <second>Caraïbes</second>
   </border>
   <border>
-    <first>Neva</first>
+    <first>Ingermanland</first>
     <second>Pskov</second>
   </border>
   <border>
@@ -3944,7 +3940,7 @@
     <second>Çanakkale Boğazı</second>
   </border>
   <border>
-    <first>Neva</first>
+    <first>Ingermanland</first>
     <second>Novgorod</second>
   </border>
   <border>
@@ -3978,7 +3974,7 @@
   </border>
   <border>
     <first>Baden</first>
-    <second>Wurtemberg</second>
+    <second>Würtemberg</second>
   </border>
   <border>
     <first>East Anglia</first>
@@ -4037,7 +4033,7 @@
   </border>
   <border>
     <first>Pfalz</first>
-    <second>Wurtemberg</second>
+    <second>Würtemberg</second>
     <type>river</type>
   </border>
   <border>
@@ -4410,7 +4406,7 @@
   </border>
   <border>
     <first>Köln</first>
-    <second>Luxembourg</second>
+    <second>Luxemburg</second>
   </border>
   <border>
     <first>Illinois~SE</first>
@@ -4657,7 +4653,7 @@
   </border>
   <border>
     <first>Castilla La Nueva</first>
-    <second>Valencia</second>
+    <second>València</second>
   </border>
   <border>
     <first>Aden~W</first>
@@ -5620,12 +5616,12 @@
     <second>Lena~N</second>
   </border>
   <border>
-    <first>Köln</first>
-    <second>Limburg</second>
+    <first>Carniola</first>
+    <second>Kärnten</second>
   </border>
   <border>
-    <first>Kranj</first>
-    <second>Kärnten</second>
+    <first>Köln</first>
+    <second>Limburg</second>
   </border>
   <border>
     <first>Golfe du Mexique</first>
@@ -5717,7 +5713,7 @@
   </border>
   <border>
     <first>Limburg</first>
-    <second>Luxembourg</second>
+    <second>Luxemburg</second>
   </border>
   <border>
     <first>Alentejo</first>
@@ -6070,7 +6066,7 @@
   </border>
   <border>
     <first>Lorraine</first>
-    <second>Luxembourg</second>
+    <second>Luxemburg</second>
   </border>
   <border>
     <first>Acadie~Cape</first>
@@ -6218,10 +6214,6 @@
     <first>Dellī~C</first>
     <second>Dellī~N</second>
     <type>river</type>
-  </border>
-  <border>
-    <first>Golfe Persique</first>
-    <second>Isfahan</second>
   </border>
   <border>
     <first>Angola~S</first>
@@ -6420,7 +6412,7 @@
   </border>
   <border>
     <first>Hainaut</first>
-    <second>Luxembourg</second>
+    <second>Luxemburg</second>
   </border>
   <border>
     <first>Nankin~NW</first>
@@ -6496,7 +6488,7 @@
   </border>
   <border>
     <first>Champagne</first>
-    <second>Luxembourg</second>
+    <second>Luxemburg</second>
   </border>
   <border>
     <first>Mandchourie~S</first>
@@ -6561,7 +6553,7 @@
   </border>
   <border>
     <first>Liège</first>
-    <second>Luxembourg</second>
+    <second>Luxemburg</second>
   </border>
   <border>
     <first>Mer des Épices</first>
@@ -6679,7 +6671,7 @@
   </border>
   <border>
     <first>Méditerrannée occidentale</first>
-    <second>Valencia</second>
+    <second>València</second>
   </border>
   <border>
     <first>Azarbāyadjān</first>
@@ -7343,7 +7335,7 @@
     <second>Golfe de Panama</second>
   </border>
   <border>
-    <first>Luxembourg</first>
+    <first>Luxemburg</first>
     <second>Pfalz</second>
     <type>river</type>
   </border>
@@ -7953,7 +7945,7 @@
   </border>
   <border>
     <first>Balaton</first>
-    <second>Kranj</second>
+    <second>Carniola</second>
   </border>
   <border>
     <first>Amour~W</first>
@@ -8471,7 +8463,7 @@
   </border>
   <border>
     <first>Eesti</first>
-    <second>Neva</second>
+    <second>Ingermanland</second>
     <type>river</type>
   </border>
   <border>
@@ -8748,7 +8740,7 @@
   </border>
   <border>
     <first>Baie de Botnie</first>
-    <second>Neva</second>
+    <second>Ingermanland</second>
   </border>
   <border>
     <first>Bohème</first>

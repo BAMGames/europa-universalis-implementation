@@ -12,6 +12,22 @@ import java.util.List;
 public interface IMapMarker {
     /** Name of the marker property for the terrain. */
     String PROP_TERRAIN = "terrain";
+    /** Name of the marker property for the rotw flag. */
+    String PROP_ROTW = "rotw";
+    /** Name of the marker property for the income. */
+    String PROP_INCOME = "income";
+    /** Name of the marker property for the fortress level. */
+    String PROP_FORTRESS = "fortress";
+    /** Name of the marker property for the capital flag. */
+    String PROP_CAPITAL = "capital";
+    /** Name of the marker property for the port flag. */
+    String PROP_PORT = "port";
+    /** Name of the marker property for the arsenal flag. */
+    String PROP_ARSENAL = "arsenal";
+    /** Name of the marker property for the praesidiable flag. */
+    String PROP_PREASIDIABLE = "praesidiable";
+    /** Name of the marker property for the metadata. */
+    String PROP_METADATA = "metadata";
 
     /**
      * Sets the highlightColor.
