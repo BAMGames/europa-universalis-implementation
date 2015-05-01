@@ -22,6 +22,15 @@ public class FunctionalException extends Exception {
     private Object[] params;
 
     /**
+     * Constructor for jaxb/cxf
+     *
+     * @param message of the exception.
+     */
+    public FunctionalException(String message) {
+        super(message);
+    }
+
+    /**
      * Constructor.
      *
      * @param code    should be unique. Cannot be <code>null</code>.

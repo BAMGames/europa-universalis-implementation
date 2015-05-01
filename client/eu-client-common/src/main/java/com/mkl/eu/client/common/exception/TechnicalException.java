@@ -22,6 +22,15 @@ public class TechnicalException extends RuntimeException {
     private Object[] params;
 
     /**
+     * Constructor for jaxb/cxf.
+     *
+     * @param message of the exception.
+     */
+    public TechnicalException(String message) {
+        super(message);
+    }
+
+    /**
      * Constructor.
      *
      * @param code    should be unique. Cannot be <code>null</code>.
