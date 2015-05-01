@@ -60,7 +60,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Long idGame, Long versionGame) {
+    public DiffResponse updateGame(Long idGame, Long versionGame) throws FunctionalException {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_UPDATE_GAME));
         failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
@@ -78,7 +78,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) {
+    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) throws FunctionalException {
         // TODO authorization
         failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK));

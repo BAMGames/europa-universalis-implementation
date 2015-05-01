@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.service.impl;
 
-import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.exception.FunctionalException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,36 +25,40 @@ public abstract class AbstractService {
     public static final String MSG_NOT_NEIGHBOR = "{1}: {0} {2} is not a neighbor of {3}.";
 
     /**
-     * Will throw a TechnicalException if the test is <code>null</code>.
+     * Will throw a FunctionalException if the test is <code>null</code>.
+     * @throws FunctionalException the exception.
      */
-    protected void failIfNull(CheckForThrow check) {
+    protected void failIfNull(CheckForThrow check) throws FunctionalException {
         if (check.getTest() == null) {
             fail(check);
         }
     }
 
     /**
-     * Will throw a TechnicalException if the test is <code>null</code> or empty.
+     * Will throw a FunctionalException if the test is <code>null</code> or empty.
+     * @throws FunctionalException the exception.
      */
-    protected void failIfEmpty(CheckForThrow<String> check) {
+    protected void failIfEmpty(CheckForThrow<String> check) throws FunctionalException {
         if (StringUtils.isEmpty(check.getTest())) {
             fail(check);
         }
     }
 
     /**
-     * Will throw a TechnicalException if the test is <code>null</code>.
+     * Will throw a FunctionalException if the test is <code>null</code>.
+     * @throws FunctionalException the exception.
      */
-    protected void failIfFalse(CheckForThrow<Boolean> check) {
+    protected void failIfFalse(CheckForThrow<Boolean> check) throws FunctionalException {
         if (check.getTest() == null || !check.getTest()) {
             fail(check);
         }
     }
 
     /**
-     * Log and throws an Exception.
+     * Log and throws a FunctionalException.
+     * @throws FunctionalException the exception.
      */
-    private void fail(CheckForThrow check) {
+    private void fail(CheckForThrow check) throws FunctionalException {
         Object[] args;
         if (check.getParams() != null) {
             args = new Object[check.getParams().length + 1];
@@ -65,7 +69,7 @@ public abstract class AbstractService {
         args[0] = check.getName();
         String msg = MessageFormat.format(check.getMsgFormat(), args);
         LOGGER.error(msg);
-        throw new TechnicalException(check.getCodeError(), msg, null, check.getName());
+        throw new FunctionalException(check.getCodeError(), msg, null, check.getName());
     }
 
     /**

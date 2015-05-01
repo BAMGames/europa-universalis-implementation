@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.ws.impl;
 
+import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
@@ -24,7 +25,7 @@ public class GameAdminWsServiceImpl extends SpringBeanAutowiringSupport implemen
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse createCounter(Long idGame, Long versionGame, CounterForCreation counter, String province) throws TechnicalException {
+    public DiffResponse createCounter(Long idGame, Long versionGame, CounterForCreation counter, String province) throws FunctionalException, TechnicalException {
         return gameAdminService.createCounter(idGame, versionGame, counter, province);
     }
 }

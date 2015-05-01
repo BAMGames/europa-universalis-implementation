@@ -56,7 +56,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
     private DiffMapping diffMapping;
 
     @Override
-    public DiffResponse createCounter(Long idGame, Long versionGame, CounterForCreation counter, String province) {
+    public DiffResponse createCounter(Long idGame, Long versionGame, CounterForCreation counter, String province) throws FunctionalException {
         // TODO authorization
         failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_CREATE_COUNTER));

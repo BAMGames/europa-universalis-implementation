@@ -1,5 +1,6 @@
 package com.mkl.eu.client.service.service;
 
+import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -24,11 +25,12 @@ public interface IGameAdminService extends INameConstants {
      * @param counter     to create.
      * @param province    province where the counter will spawn.
      * @return the diffs involved by this service.
-     * @throws TechnicalException technical exception.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
     DiffResponse createCounter(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
                                @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
                                @WebParam(name = PARAMETER_COUNTER) CounterForCreation counter,
-                               @WebParam(name = PARAMETER_PROVINCE) String province) throws TechnicalException;
+                               @WebParam(name = PARAMETER_PROVINCE) String province) throws FunctionalException, TechnicalException;
 }
