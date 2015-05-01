@@ -38,6 +38,10 @@ public class MapKeyboardHandler extends KeyboardHandler {
 
         if (keyCode == 67) {
             MapConfiguration.switchColor();
+        } else if (keyCode == 65) {
+            for (UnfoldingMap map : maps) {
+                map.setTweening(!map.isTweening());
+            }
         }
     }
 }
