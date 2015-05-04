@@ -176,6 +176,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
      */
     public void addDiffListener(DiffListener diffListener) {
         markerManager.addDiffListener(diffListener);
+        info.addDiffListener(diffListener);
     }
 
     /** {@inheritDoc} */
@@ -187,6 +188,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
                     updateCounter(diff);
                     break;
                 case STACK:
+                    updateStack(diff);
                     break;
                 default:
                     break;
@@ -247,8 +249,75 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
 
         String nameCountry = attribute.getValue();
 
-        StackMarker stackMarker = new StackMarker(province);
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK);
+        if (attribute == null) {
+            LOGGER.error("Missing stack id in counter add event.");
+            return;
+        }
+
+        StackMarker stackMarker = new StackMarker(Long.parseLong(attribute.getValue()), province);
         stackMarker.addCounter(new CounterMarker(markerUtils.getImageFromCounter(type, nameCountry)));
         province.addStack(stackMarker);
+    }
+
+    /**
+     * Process a stack diff event.
+     *
+     * @param diff involving a counter.
+     */
+    private void updateStack(Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                break;
+            case MOVE:
+                moveStack(diff);
+                break;
+            case REMOVE:
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the move stack diff event.
+     *
+     * @param diff involving a add counter.
+     */
+    private void moveStack(Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_FROM);
+        if (attribute == null) {
+            LOGGER.error("Missing province from in stack move event.");
+            return;
+        }
+
+        Marker prov = countryMarkers.get(attribute.getValue());
+        if (!(prov instanceof IMapMarker)) {
+            LOGGER.error("province is not a IMapMarker.");
+            return;
+        }
+        IMapMarker province = (IMapMarker) prov;
+
+        StackMarker stack;
+        Long idStack = diff.getIdObject();
+        stack = findFirst(province.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+        if (stack == null) {
+            LOGGER.error("Missing stack in stack move event.");
+            return;
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_TO);
+        if (attribute == null) {
+            LOGGER.error("Missing province to in stack move event.");
+            return;
+        }
+
+        Marker provTo = countryMarkers.get(attribute.getValue());
+        if (!(provTo instanceof IMapMarker)) {
+            LOGGER.error("province is not a IMapMarker.");
+            return;
+        }
+        IMapMarker provinceTo = (IMapMarker) provTo;
+        provinceTo.addStack(stack);
     }
 }

@@ -9,6 +9,8 @@ import java.util.List;
  * @author MKL
  */
 public class StackMarker {
+    /** Id of the stack. */
+    private Long id;
     /** Province marker where the stack is. */
     private IMapMarker province;
     /** Counters marker of the stack. */
@@ -17,10 +19,17 @@ public class StackMarker {
     /**
      * Constructor.
      *
+     * @param id       of the stack.
      * @param province where the stack is.
      */
-    public StackMarker(IMapMarker province) {
+    public StackMarker(Long id, IMapMarker province) {
+        this.id = id;
         this.province = province;
+    }
+
+    /** @return the id. */
+    public Long getId() {
+        return id;
     }
 
     /** @return the province. */

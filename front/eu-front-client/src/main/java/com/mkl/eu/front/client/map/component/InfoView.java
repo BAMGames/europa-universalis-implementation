@@ -1,6 +1,11 @@
 package com.mkl.eu.front.client.map.component;
 
+import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.DiffListener;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -12,12 +17,17 @@ import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Information panel.
@@ -26,6 +36,11 @@ import processing.core.PGraphics;
  */
 @Component
 public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener {
+    /** Logger. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
+    /** Game Service. */
+    @Autowired
+    private IGameService gameService;
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -64,6 +79,8 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     private Object contextualized;
     /** Contextual menu. */
     private ContextualMenu menu;
+    /** Listeners for diffs event. */
+    private List<DiffListener> diffListeners = new ArrayList<>();
 
     /**
      * Constructor.
@@ -285,8 +302,16 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                 label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                // TODO service
-                border.getProvince().addStack(stack);
+                Long idGame = MapConfiguration.getIdGame();
+                try {
+                    DiffResponse response = gameService.moveStack(idGame, MapConfiguration.getVersionGame(),
+                            stack.getId(), border.getProvince().getId());
+                    DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                    processDiffEvent(diff);
+                } catch (Exception e) {
+                    LOGGER.error("Error when moving stack.", e);
+                    // TODO exception handling
+                }
                 resetContextualMenu();
             }));
         }
@@ -338,7 +363,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
 
                     if (drop != dragged.getOwner()) {
                         if (drop == null) {
-                            drop = new StackMarker((IMapMarker) getSelected());
+                            drop = new StackMarker(1L, (IMapMarker) getSelected());
                             ((IMapMarker) getSelected()).addStack(drop);
                         }
                         StackMarker oldStack = dragged.getOwner();
@@ -355,6 +380,28 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                 default:
                     break;
             }
+        }
+    }
+
+    /**
+     * Add a diff listener.
+     *
+     * @param diffListener to add.
+     */
+    public void addDiffListener(DiffListener diffListener) {
+        if (!diffListeners.contains(diffListener)) {
+            diffListeners.add(diffListener);
+        }
+    }
+
+    /**
+     * Process a DiffEvent.
+     *
+     * @param event to process.
+     */
+    private void processDiffEvent(DiffEvent event) {
+        for (DiffListener diffListener : diffListeners) {
+            diffListener.update(event);
         }
     }
 }

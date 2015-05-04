@@ -1,6 +1,7 @@
 package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.service.IGameAdminService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
@@ -40,12 +41,12 @@ import java.util.List;
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
+    /** Game Service. */
+    @Autowired
+    private IGameService gameService;
     /** Game Admin Service. */
     @Autowired
     private IGameAdminService gameAdminService;
-    /** Utility to draw counters. */
-    @Autowired
-    private MarkerUtils markerUtils;
     /** Internationalisation. */
     @Autowired
     private MessageSource message;
@@ -239,8 +240,16 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                 label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                // TODO service
-                border.getProvince().addStack(stack);
+                Long idGame = MapConfiguration.getIdGame();
+                try {
+                    DiffResponse response = gameService.moveStack(idGame, MapConfiguration.getVersionGame(),
+                            stack.getId(), border.getProvince().getId());
+                    DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                    processDiffEvent(diff);
+                } catch (Exception e) {
+                    LOGGER.error("Error when moving stack.", e);
+                    // TODO exception handling
+                }
                 resetContextualMenu();
             }));
         }
@@ -258,7 +267,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      */
     private void createStack(CounterFaceTypeEnum type, IMapMarker province) {
         CounterForCreation counter = new CounterForCreation();
-        counter.setCountry("FRA");
+        counter.setCountry("france");
         counter.setType(type);
         Long idGame = MapConfiguration.getIdGame();
         try {
@@ -266,8 +275,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             DiffEvent event = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
             processDiffEvent(event);
         } catch (Exception e) {
+            LOGGER.error("Error when creating counter.", e);
             // TODO exception handling
-            e.printStackTrace();
         }
     }
 

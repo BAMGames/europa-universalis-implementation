@@ -12,6 +12,7 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.DiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.map.MapConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +100,7 @@ public class Main extends JFrame implements DiffListener {
                         updateCounter(game, diff);
                         break;
                     case STACK:
+                        updateStack(game, diff);
                         break;
                     default:
                         break;
@@ -146,6 +148,7 @@ public class Main extends JFrame implements DiffListener {
             if (stack == null) {
                 stack = new Stack();
                 stack.setId(idStack);
+                game.getStacks().add(stack);
             }
         } else {
             LOGGER.error("Missing stack id in counter add event.");
@@ -182,6 +185,58 @@ public class Main extends JFrame implements DiffListener {
             counter.setCountry(attribute.getValue());
         } else {
             LOGGER.error("Missing country in counter add event.");
+        }
+    }
+
+    /**
+     * Process a stack diff event.
+     *
+     * @param game to update.
+     * @param diff involving a counter.
+     */
+    private void updateStack(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                break;
+            case MOVE:
+                moveStack(game, diff);
+                break;
+            case REMOVE:
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the move stack diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add counter.
+     */
+    private void moveStack(Game game, Diff diff) {
+        Stack stack;
+        Long idStack = diff.getIdObject();
+        stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+        if (stack == null) {
+            LOGGER.error("Missing stack in stack move event.");
+            stack = new Stack();
+        }
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_FROM);
+        if (attribute != null) {
+            if (!StringUtils.equals(attribute.getValue(), stack.getProvince())) {
+                LOGGER.error("Stack was not in from province in stack move event.");
+            }
+        } else {
+            LOGGER.error("Missing province from in stack move event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_TO);
+        if (attribute != null) {
+            stack.setProvince(attribute.getValue());
+        } else {
+            LOGGER.error("Missing province to in stack move event.");
         }
     }
 
