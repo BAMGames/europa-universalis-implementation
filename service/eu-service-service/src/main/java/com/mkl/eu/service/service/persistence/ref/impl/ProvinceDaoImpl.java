@@ -1,7 +1,7 @@
 package com.mkl.eu.service.service.persistence.ref.impl;
 
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
-import com.mkl.eu.service.service.persistence.oe.ref.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;

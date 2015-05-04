@@ -1,274 +1,116 @@
 package com.mkl.eu.client.service.vo.enumeration;
 
 /**
- * Type of a counter (in progress).
+ * Type of the face of a counter (in progress).
  *
  * @author MKL
  */
 public enum CounterTypeEnum {
-    /** A-.*/
-    ARMY_MINUS,
-    /** A+. */
-    ARMY_PLUS,
-    /** LD. */
-    LAND_DETACHMENT,
-    /** LDe. */
-    LAND_DETACHEMENT_EXPLORATION,
-    /** F-. */
-    FLEET_MINUS,
-    /** F+. */
-    FLEET_PLUS,
-    /** NWD. */
-    NAVAL_WARSHIP_DETACHMENT,
-    /** NDe. */
-    NAVAL_DETACHMENT_EXPLORATION,
-    /** NG. */
-    NAVAL_GALLEY,
-    /** DTr. */
-    NAVAL_TRANSPORT,
-    /** P- (pirate and corsair). */
-    PIRATE_MINUS,
-    /** P+ (pirate and corsair). */
-    PIRATE_PLUS,
-    /** F0. */
-    FORT,
-    /** F1. */
-    FORTRESS_1,
-    /** F2. */
-    FORTRESS_2,
-    /** F3. */
-    FORTRESS_3,
-    /** F4. */
-    FORTRESS_4,
-    /** F5. */
-    FORTRESS_5,
-    /** Ars2. */
-    ARSENAL_2,
-    /** Ars3. */
-    ARSENAL_3,
-    /** Ars4. */
-    ARSENAL_4,
-    /** Missionnary. */
-    MISSIONNARY,
-    /** Mission. */
-    MISSION,
-    /** Col-. */
-    COLONY_MINUS,
-    /** Col+. */
-    COLONY_PLUS,
-    /** TP-. */
-    TRADING_POST_MINUS,
-    /** TP+.*/
-    TRADING_POST_PLUS,
-    /** Own.*/
-    OWN,
-    /** Control.*/
-    CONTROL,
-    /** Spanigh gold transport fleet of Atlantic.*/
-    FLOTA_DE_ORO,
-    /** Spanish gold transport fleet of Pacific.*/
-    FLOTA_DEL_PERU,
-    /** Gold transport fleet of Indian.*/
-    EAST_INDIES,
-    /** Turkish gold transport fleet of Asia.*/
-    LEVANT,
-
-    // MANUFACTURES //
-    /** Manufacture of Art-.*/
-    MNU_ART_MINUS,
-    /** Manufacture of Art+.*/
-    MNU_ART_PLUS,
-    /** Manufacture of Wood-.*/
-    MNU_WOOD_MINUS,
-    /** Manufacture of Wood+.*/
-    MNU_WOOD_PLUS,
-    /** Manufacture of Cereals-.*/
-    MNU_CEREALES_MINUS,
-    /** Manufacture of Cereals+.*/
-    MNU_CEREALES_PLUS,
-    /** Manufacture of Instruments-.*/
-    MNU_INSTRUMENTS_MINUS,
-    /** Manufacture of Instruments+.*/
-    MNU_INSTRUMENTS_PLUS,
-    /** Manufacture of Metal-.*/
-    MNU_METAL_MINUS,
-    /** Manufacture of Metal+.*/
-    MNU_METAL_PLUS,
-    /** Manufacture of Metal- (special prussian manufacture on silesie).*/
-    MNU_METAL_SCHLESIEN_MINUS,
-    /** Manufacture of Metal+ (special prussian manufacture on silesie).*/
-    MNU_METAL_SCHLESIEN_PLUS,
-    /** Manufacture of Fish-.*/
-    MNU_FISH_MINUS,
-    /** Manufacture of Fish+.*/
-    MNU_FISH_PLUS,
-    /** Manufacture of Clothes-.*/
-    MNU_CLOTHES_MINUS,
-    /** Manufacture of Clothes+.*/
-    MNU_CLOTHES_PLUS,
-    /** Manufacture of Salt-.*/
-    MNU_SALT_MINUS,
-    /** Manufacture of Salt+.*/
-    MNU_SALT_PLUS,
-    /** Manufacture of Wine-.*/
-    MNU_WINE_MINUS,
-    /** Manufacture of Wine+.*/
-    MNU_WINE_PLUS,
-
-    // DIPLOMATIC COUNTERS //
-
-    /** Diplomacy with ROTW relation.*/
-    ROTW_RELATION,
-    /** Diplomacy with ROTW alliance.*/
-    ROTW_ALLIANCE,
-    /** Diplomacy with European minor country.*/
-    DIPLOMACY,
-
-    // NEUTRAL COUNTERS //
-
-    /** Revolt-.*/
-    REVOLT_MINUS,
-    /** Revolt+.*/
-    REVOLT_PLUS,
-    /** Gold mine.*/
-    GOLD_MINE,
-    /** Gold mine depleted.*/
-    GOLD_DEPLETED,
-    /** Pillage-.*/
-    PILLAGE_MINUS,
-    /** Pillage+.*/
-    PILLAGE_PLUS,
-    /** SiegeWork-.*/
-    SIEGEWORK_MINUS,
-    /** SiegeWork+.*/
-    SIEGEWORK_PLUS,
-    /** Dutch flood.*/
-    FLOOD,
-    /** Turn.*/
-    TURN,
-    /** Good weath (military rounds).*/
-    GOOD_WEATHER,
-    /** Bad weather (military rounds).*/
-    BAD_WEATHER,
-    /** Great orient trace center.*/
-    TRADE_CENTER_GREAT_ORIENT,
-    /** Mediterannean trade center.*/
-    TRADE_CENTER_MEDITERANNEAN,
-    /** Atlantic trade center.*/
-    TRADE_CENTER_ATLANTIC,
-    /** Indian trade center.*/
-    TRADE_CENTER_INDIAN,
-
-    // EXOTIC RESSOURCES //
-
-    /** Exotic resource price of spice.*/
-    SPICE_PRICE,
-    /** Exotic resource production of spice.*/
-    SPICE_PRODUCTION,
-    /** Exotic resource price of sugar.*/
-    SUGAR_PRICE,
-    /** Exotic resource production of sugar.*/
-    SUGAR_PRODUCTION,
-    /** Exotic resource price of fish.*/
-    FISH_PRICE,
-    /** Exotic resource production of fish.*/
-    FISH_PRODUCTION,
-    /** Exotic resource price of products of america.*/
-    PRODUCTS_OF_AMERICA_PRICE,
-    /** Exotic resource production of products of america.*/
-    PRODUCTS_OF_AMERICA_PRODUCTION,
-    /** Exotic resource price of silk.*/
-    SILK_PRICE,
-    /** Exotic resource production of silk.*/
-    SILK_PRODUCTION,
-    /** Exotic resource price of salt.*/
-    SALT_PRICE,
-    /** Exotic resource production of salt.*/
-    SALT_PRODUCTION,
-    /** Exotic resource price of cotton.*/
-    COTTON_PRICE,
-    /** Exotic resource production of cotton.*/
-    COTTON_PRODUCTION,
-    /** Exotic resource price of furs.*/
-    FURS_PRICE,
-    /** Exotic resource production of furs.*/
-    FURS_PRODUCTION,
-    /** Exotic resource price of products of orient.*/
-    PRODUCTS_OF_ORIENT_PRICE,
-    /** Exotic resource production of products of orient.*/
-    PRODUCTS_OF_ORIENT_PRODUCTION,
-    /** Exotic resource price of slave.*/
-    SLAVE_PRICE,
-    /** Exotic resource production of slave.*/
-    SLAVE_PRODUCTION,
-    /** Inflation counter.*/
-    INFLATION,
-    /** Inflation counter with gold from America.*/
-    INFLATION_GOLD,
-
-    // TECHNOLOGY COUNTERS //
-
-    /** Land technology Renaissance.*/
-    TECH_RENAISSANCE,
-    /** Land technology Tercios (special spanish tech).*/
-    TECH_TERCIOS,
-    /** Land technology Arquebus.*/
-    TECH_ARQUEBUS,
-    /** Land technology Musket.*/
-    TECH_MUSKET,
-    /** Land technology Baroque.*/
-    TECH_BAROQUE,
-    /** Land technology Manoeuvre.*/
-    TECH_MANOEUVRE,
-    /** Land technology Lace War.*/
-    TECH_LACE_WAR,
-    /** Naval technology New Galeon.*/
-    TECH_NAE_GALEON,
-    /** Naval technology Galleon fleet.*/
-    TECH_GALLEON_FLUYT,
-    /** Naval technology Galleas (special Venetian tech).*/
-    TECH_GALLEASS,
-    /** Naval technology Battery.*/
-    TECH_BATTERY,
-    /** Naval technology Vessek.*/
-    TECH_VESSEL,
-    /** Naval technology 3 Decker.*/
-    TECH_THREE_DECKER,
-    /** Naval technology 74.*/
-    TECH_SEVENTY_FOUR,
-    /** Land technology of a country.*/
-    TECH_LAND,
-    /** Naval technology of a country.*/
-    TECH_NAVAL,
-    /** Land technology of asia group.*/
-    TECH_LAND_ASIA,
-    /** Naval technology of asia group.*/
-    TECH_NAVAL_ASIA,
-    /** Land technology of islam group.*/
-    TECH_LAND_ISLAM,
-    /** Naval technology of islam group.*/
-    TECH_NAVAL_ISLAM,
-    /** Land technology of latin group.*/
-    TECH_LAND_LATIN,
-    /** Naval technology of latin group.*/
-    TECH_NAVAL_LATIN,
-    /** Land technology of orthodox group.*/
-    TECH_LAND_ORTHODOX,
-    /** Naval technology of orthodox group.*/
-    TECH_NAVAL_ORTHODOX,
+    /** Army counter. */
+    ARMY(CounterFaceTypeEnum.ARMY_PLUS, CounterFaceTypeEnum.ARMY_MINUS),
+    /** Army Timar counter (for Turkey). */
+    ARMY_TIMAR(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, CounterFaceTypeEnum.ARMY_TIMAR_MINUS),
+    /** Fleet counter. */
+    FLEET(CounterFaceTypeEnum.FLEET_PLUS, CounterFaceTypeEnum.FLEET_MINUS),
+    /** Transport fleet counter. */
+    FLEET_TRANSPORT(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS, CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS),
+    /** LD / ND counter. */
+    LDND(CounterFaceTypeEnum.LAND_DETACHMENT, CounterFaceTypeEnum.NAVAL_WARSHIP_DETACHMENT),
+    /** LD Timar / ND counter. */
+    LDND_TIMAR(CounterFaceTypeEnum.LAND_TIMAR_DETACHMENT, CounterFaceTypeEnum.NAVAL_WARSHIP_DETACHMENT),
+    /** LD counter alone. */
+    LD(CounterFaceTypeEnum.LAND_DETACHMENT, null),
+    /** LD Timar counter alone. */
+    LD_TIMAR(CounterFaceTypeEnum.LAND_TIMAR_DETACHMENT, null),
+    /** LDE / NDE counter. */
+    LDENDE(CounterFaceTypeEnum.LAND_DETACHEMENT_EXPLORATION, CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION),
+    /** LDE counter alone. */
+    LDE(CounterFaceTypeEnum.LAND_DETACHEMENT_EXPLORATION, null),
+    /** NDE counter alone. */
+    NDE(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, null),
+    /** NTD counter alone. */
+    NTD(CounterFaceTypeEnum.NAVAL_TRANSPORT, null),
+    /** Pirate or corsair counter. */
+    PIRATE(CounterFaceTypeEnum.PIRATE_PLUS, CounterFaceTypeEnum.PIRATE_MINUS),
+    /** Trading post counter. */
+    TP(CounterFaceTypeEnum.TRADING_POST_PLUS, CounterFaceTypeEnum.TRADING_POST_MINUS),
+    /** Colony counter. */
+    COL(CounterFaceTypeEnum.COLONY_PLUS, CounterFaceTypeEnum.COLONY_MINUS),
+    /** Fortress 1/2. */
+    FORT12(CounterFaceTypeEnum.FORTRESS_1, CounterFaceTypeEnum.FORTRESS_2),
+    /** Fortress 2/3. */
+    FORT23(CounterFaceTypeEnum.FORTRESS_2, CounterFaceTypeEnum.FORTRESS_3),
+    /** Fortress 3/4. */
+    FORT34(CounterFaceTypeEnum.FORTRESS_3, CounterFaceTypeEnum.FORTRESS_4),
+    /** Fortress 4/5. */
+    FORT45(CounterFaceTypeEnum.FORTRESS_4, CounterFaceTypeEnum.FORTRESS_5),
+    /** Fort. */
+    FORT(CounterFaceTypeEnum.FORT, null),
+    /** Arsenal 2/3. */
+    ARS23(CounterFaceTypeEnum.ARSENAL_2, CounterFaceTypeEnum.ARSENAL_3),
+    /** Arsenal 2/3 at Gibraltar (english player). */
+    ARS23_GIBRALTAR(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR, CounterFaceTypeEnum.ARSENAL_3_GIBRALTAR),
+    /** Arsenal 3/4. */
+    ARS34(CounterFaceTypeEnum.ARSENAL_3, CounterFaceTypeEnum.ARSENAL_4),
+    /** Missions. */
+    MISSION(CounterFaceTypeEnum.MISSION, CounterFaceTypeEnum.MISSIONNARY),
+    /** Sepoy. */
+    SEPOY(CounterFaceTypeEnum.LAND_SEPOY, null),
+    /** Sepoy exploration. */
+    SEPOY_EXPLORATION(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION, null),
+    /** Indian. */
+    INDIAN(CounterFaceTypeEnum.LAND_INDIAN, null),
+    /** Indian exploration. */
+    INDIAN_EXPLORATION(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION, null),
+    /** Trading fleet. */
+    TF(CounterFaceTypeEnum.TRADING_FLEET_PLUS, CounterFaceTypeEnum.TRADING_FLEET_MINUS),
+    /** Rotw diplomatic counter. */
+    ROTW_DIPLO(CounterFaceTypeEnum.ROTW_ALLIANCE, CounterFaceTypeEnum.ROTW_RELATION),
+    /** Manufacture of Art. */
+    MNU_ART(CounterFaceTypeEnum.MNU_ART_PLUS, CounterFaceTypeEnum.MNU_ART_MINUS),
+    /** Manufacture of Cereales. */
+    MNU_CEREALS(CounterFaceTypeEnum.MNU_CEREALS_PLUS, CounterFaceTypeEnum.MNU_CEREALS_MINUS),
+    /** Manufacture of Clothes. */
+    MNU_CLOTHES(CounterFaceTypeEnum.MNU_CLOTHES_PLUS, CounterFaceTypeEnum.MNU_CLOTHES_MINUS),
+    /** Manufacture of Fish. */
+    MNU_FISH(CounterFaceTypeEnum.MNU_FISH_PLUS, CounterFaceTypeEnum.MNU_FISH_MINUS),
+    /** Manufacture of Instruments. */
+    MNU_INSTRUMENTS(CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS, CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS),
+    /** Manufacture of Metal. */
+    MNU_METAL(CounterFaceTypeEnum.MNU_METAL_PLUS, CounterFaceTypeEnum.MNU_METAL_MINUS),
+    /** Manufacture of Metal (special for PRU). */
+    MNU_METAL_SCHLESIEN(CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS, CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS),
+    /** Manufacture of Salt. */
+    MNU_SALT(CounterFaceTypeEnum.MNU_SALT_PLUS, CounterFaceTypeEnum.MNU_SALT_MINUS),
+    /** Manufacture of Wine. */
+    MNU_WINE(CounterFaceTypeEnum.MNU_WINE_PLUS, CounterFaceTypeEnum.MNU_WINE_MINUS),
+    /** Manufacture of Wood. */
+    MNU_WOOD(CounterFaceTypeEnum.MNU_WOOD_PLUS, CounterFaceTypeEnum.MNU_WOOD_MINUS);
 
 
-    // STABILITY COUNTERS //
+    /** Type of face of recto. */
+    private CounterFaceTypeEnum faceRecto;
+    /** Type of face of verso. */
+    private CounterFaceTypeEnum faceVerso;
 
-    /** Stability.*/
-    STABILITY,
+    /**
+     * Constructor.
+     *
+     * @param faceRecto type of face of recto.
+     * @param faceVerso type of face of verso.
+     */
+    private CounterTypeEnum(CounterFaceTypeEnum faceRecto, CounterFaceTypeEnum faceVerso) {
+        this.faceRecto = faceRecto;
+        this.faceVerso = faceVerso;
+    }
 
-    // ROTW COUNTERS
+    /** @return the faceRecto. */
+    public CounterFaceTypeEnum getFaceRecto() {
+        return faceRecto;
+    }
 
-
-
-    // ORMUS_SILK, KARNATAKA_1, DOS_DE_FORT, PERSIA_AREA,, BISINAGAR_AREA,
-    // GUZARATE_AREA, NO_RUSSIAN_CTZ, BANGLA_1, SUND_TAXES, REVOLUTIONNAIRES,
-    // FREE_TRADE, BANGLIA_1, RUS_STZ, MOGOLIS_AREA, MOGOLIS_LOST_AREA, CHINA_AREA,
-    //
+    /** @return the faceVerso. */
+    public CounterFaceTypeEnum getFaceVerso() {
+        return faceVerso;
+    }
 }

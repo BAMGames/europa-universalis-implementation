@@ -1,6 +1,6 @@
 package com.mkl.eu.client.service.vo.board;
 
-import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 
 /**
  * Counter (A+, MNU, fortress,...) used for the service createCounter.
@@ -10,17 +10,17 @@ import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
  */
 public class CounterForCreation {
     /** Type of the counter. */
-    private CounterTypeEnum type;
+    private CounterFaceTypeEnum type;
     /** Name of the country. */
     private String country;
 
     /** @return the type. */
-    public CounterTypeEnum getType() {
+    public CounterFaceTypeEnum getType() {
         return type;
     }
 
     /** @param type the type to set. */
-    public void setType(CounterTypeEnum type) {
+    public void setType(CounterFaceTypeEnum type) {
         this.type = type;
     }
 

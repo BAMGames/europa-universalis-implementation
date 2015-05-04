@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.persistence.oe.ref;
+package com.mkl.eu.service.service.persistence.oe.ref.province;
 
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;

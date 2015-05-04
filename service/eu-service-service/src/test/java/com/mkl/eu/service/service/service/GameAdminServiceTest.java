@@ -5,7 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
@@ -15,8 +15,8 @@ import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.CountryEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.GameAdminServiceImpl;
@@ -113,7 +113,7 @@ public class GameAdminServiceTest {
             Assert.assertEquals("counter.type", e.getParams()[0]);
         }
 
-        counter.setType(CounterTypeEnum.ARMY_MINUS);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
 
         try {
             gameAdminService.createCounter(idGame, versionGame, counter, province);
@@ -152,7 +152,7 @@ public class GameAdminServiceTest {
         Long idGame = 12L;
         Long versionGame = 1L;
         CounterForCreation counter = new CounterForCreation();
-        counter.setType(CounterTypeEnum.ARMY_MINUS);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
         counter.setCountry("FRA");
         String province = "IdF";
 
@@ -190,7 +190,7 @@ public class GameAdminServiceTest {
         Long idGame = 12L;
         Long versionGame = 1L;
         CounterForCreation counter = new CounterForCreation();
-        counter.setType(CounterTypeEnum.ARMY_MINUS);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
         counter.setCountry("FRA");
         String province = "IdF";
 

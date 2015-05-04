@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.board;
 
-import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 
 import javax.persistence.*;
@@ -21,7 +21,7 @@ public class CounterEntity implements IEntity, Serializable {
     /** Stack owning the counter. */
     private StackEntity owner;
     /** Type of the counter. */
-    private CounterTypeEnum type;
+    private CounterFaceTypeEnum type;
 
     /** @return the id. */
     @Id
@@ -62,12 +62,12 @@ public class CounterEntity implements IEntity, Serializable {
     /** @return the type. */
     @Enumerated(EnumType.STRING)
     @Column(name = "TYPE")
-    public CounterTypeEnum getType() {
+    public CounterFaceTypeEnum getType() {
         return type;
     }
 
     /** @param type the type to set. */
-    public void setType(CounterTypeEnum type) {
+    public void setType(CounterFaceTypeEnum type) {
         this.type = type;
     }
 }

@@ -1,7 +1,11 @@
-package com.mkl.eu.service.service.persistence.oe.ref;
+package com.mkl.eu.service.service.persistence.oe.ref.country;
 
+import com.mkl.eu.client.service.vo.enumeration.ArmyClassEnum;
 import com.mkl.eu.client.service.vo.enumeration.CountryTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
+import com.mkl.eu.client.service.vo.enumeration.ReligionEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -22,17 +26,28 @@ public class CountryEntity implements IEntity, Serializable {
     /** Type of the country. */
     private CountryTypeEnum type;
     /** Religion at start of the country. */
-    private String religion;
+    private ReligionEnum religion;
+    /** Cultural group of this country. */
+    private CultureEnum culture;
     /** Flag saying that the country is part of HRE. */
     private Boolean hre;
     /** Flag saying that the country is an elector of the HRE. */
     private Boolean elector;
-    /** TODO conceptin of preferences/geopolitic. */
+    /** Geopolitics preference to another country (name of the major country). */
+    private String preference;
+    /** Bonus of the geopolitics preference. */
+    private Integer preferenceBonus;
     /** Fidelity of this country (high value means it will stay on diplomatic track. */
     private int fidelity;
-    /** TODO conception of basic forces/reinforcements/forces. */
+    /** Basic forces of the country. List of forces already built when a country begins a war. */
+    private List<BasicForceEntity> basicForces;
+    /** Reinforcements of the country. List of forces that are created each turn of war. */
+    private List<ReinforcementsEntity> reinforcements;
+    /** Limit forces. Exhaustive list of counters of the country (except leaders). */
+    private List<LimitEntity> limits;
+    /** TODO conception of preferences. */
     /** Army class of this country. */
-    private String armyClass;
+    private ArmyClassEnum armyClass;
     /** Capitals of the country (may be empty). */
     private List<EuropeanProvinceEntity> capitals;
     /** Provinces of the country (province.defaultOwner is often this country). */
@@ -95,13 +110,37 @@ public class CountryEntity implements IEntity, Serializable {
 
     /** @return the religion. */
     @Column(name = "RELIGION")
-    public String getReligion() {
+    @Enumerated(EnumType.STRING)
+    public ReligionEnum getReligion() {
         return religion;
     }
 
     /** @param religion the religion to set. */
-    public void setReligion(String religion) {
+    public void setReligion(ReligionEnum religion) {
         this.religion = religion;
+    }
+
+    /** @return the culture. */
+    @Column(name = "CULTURE")
+    @Enumerated(EnumType.STRING)
+    public CultureEnum getCulture() {
+        return culture;
+    }
+
+    /** @param culture the culture to set. */
+    public void setCulture(CultureEnum culture) {
+        this.culture = culture;
+    }
+
+    /** @return the hre. */
+    @Column(name = "HRE", columnDefinition = "BIT")
+    public Boolean isHre() {
+        return hre;
+    }
+
+    /** @param hre the hre to set. */
+    public void setHre(Boolean hre) {
+        this.hre = hre;
     }
 
     /** @return the elector. */
@@ -115,15 +154,26 @@ public class CountryEntity implements IEntity, Serializable {
         this.elector = elector;
     }
 
-    /** @return the hre. */
-    @Column(name = "HRE", columnDefinition = "BIT")
-    public Boolean isHre() {
-        return hre;
+    /** @return the preference. */
+    @Column(name = "GEOPOLITICS_COUNTRY")
+    public String getPreference() {
+        return preference;
     }
 
-    /** @param hre the hre to set. */
-    public void setHre(Boolean hre) {
-        this.hre = hre;
+    /** @param preference the preference to set. */
+    public void setPreference(String preference) {
+        this.preference = preference;
+    }
+
+    /** @return the preferenceBonus. */
+    @Column(name = "GEOPOLITICS_BONUS")
+    public Integer getPreferenceBonus() {
+        return preferenceBonus;
+    }
+
+    /** @param preferenceBonus the preferenceBonus to set. */
+    public void setPreferenceBonus(Integer preferenceBonus) {
+        this.preferenceBonus = preferenceBonus;
     }
 
     /** @return the royalMarriage. */
@@ -214,14 +264,48 @@ public class CountryEntity implements IEntity, Serializable {
         this.fidelity = fidelity;
     }
 
+    /** @return the basicForces. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<BasicForceEntity> getBasicForces() {
+        return basicForces;
+    }
+
+    /** @param basicForces the basicForces to set. */
+    public void setBasicForces(List<BasicForceEntity> basicForces) {
+        this.basicForces = basicForces;
+    }
+
+    /** @return the reinforcements. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<ReinforcementsEntity> getReinforcements() {
+        return reinforcements;
+    }
+
+    /** @param reinforcements the reinforcements to set. */
+    public void setReinforcements(List<ReinforcementsEntity> reinforcements) {
+        this.reinforcements = reinforcements;
+    }
+
+    /** @return the limits. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<LimitEntity> getLimits() {
+        return limits;
+    }
+
+    /** @param limits the limits to set. */
+    public void setLimits(List<LimitEntity> limits) {
+        this.limits = limits;
+    }
+
     /** @return the armyClass. */
     @Column(name = "ARMY_CLASS")
-    public String getArmyClass() {
+    @Enumerated(EnumType.STRING)
+    public ArmyClassEnum getArmyClass() {
         return armyClass;
     }
 
     /** @param armyClass the armyClass to set. */
-    public void setArmyClass(String armyClass) {
+    public void setArmyClass(ArmyClassEnum armyClass) {
         this.armyClass = armyClass;
     }
 

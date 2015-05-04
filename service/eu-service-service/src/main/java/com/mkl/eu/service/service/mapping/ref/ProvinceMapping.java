@@ -3,8 +3,8 @@ package com.mkl.eu.service.service.mapping.ref;
 import com.mkl.eu.client.service.vo.ref.AbstractProvince;
 import com.mkl.eu.client.service.vo.ref.EuropeanProvince;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
-import com.mkl.eu.service.service.persistence.oe.ref.AbstractProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import org.springframework.stereotype.Component;
 
 /**

@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.persistence.oe.ref;
+package com.mkl.eu.service.service.persistence.oe.ref.province;
 
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;

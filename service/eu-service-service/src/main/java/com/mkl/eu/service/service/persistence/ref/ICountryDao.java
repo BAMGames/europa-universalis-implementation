@@ -1,7 +1,7 @@
 package com.mkl.eu.service.service.persistence.ref;
 
 import com.mkl.eu.service.service.persistence.IGenericDao;
-import com.mkl.eu.service.service.persistence.oe.ref.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 
 /**
  * Interface of the Country DAO.

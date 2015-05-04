@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.vo.board;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -16,7 +16,7 @@ public class Counter extends EuObject {
     /** Stack owning the counter. */
     private Stack owner;
     /** Type of the counter. */
-    private CounterTypeEnum type;
+    private CounterFaceTypeEnum type;
 
     /** @return the country. */
     public String getCountry() {
@@ -40,12 +40,12 @@ public class Counter extends EuObject {
     }
 
     /** @return the type. */
-    public CounterTypeEnum getType() {
+    public CounterFaceTypeEnum getType() {
         return type;
     }
 
     /** @param type the type to set. */
-    public void setType(CounterTypeEnum type) {
+    public void setType(CounterFaceTypeEnum type) {
         this.type = type;
     }
 }
