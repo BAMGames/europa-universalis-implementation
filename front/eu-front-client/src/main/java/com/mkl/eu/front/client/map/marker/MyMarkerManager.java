@@ -3,7 +3,7 @@ package com.mkl.eu.front.client.map.marker;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.client.service.vo.enumeration.CounterTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.DiffListener;
@@ -201,9 +201,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterTypeEnum.ARMY_PLUS, province)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterTypeEnum.ARMY_MINUS, province)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterTypeEnum.LAND_DETACHMENT, province)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterFaceTypeEnum.ARMY_PLUS, province)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterFaceTypeEnum.ARMY_MINUS, province)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterFaceTypeEnum.LAND_DETACHMENT, province)));
         ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
         ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
         subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
@@ -256,14 +256,19 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @param province where the stack should be created.
      * @return the stack created.
      */
-    private void createStack(CounterTypeEnum type, IMapMarker province) {
+    private void createStack(CounterFaceTypeEnum type, IMapMarker province) {
         CounterForCreation counter = new CounterForCreation();
         counter.setCountry("FRA");
         counter.setType(type);
         Long idGame = MapConfiguration.getIdGame();
-        DiffResponse response = gameAdminService.createCounter(idGame, MapConfiguration.getVersionGame(), counter, province.getId());
-        DiffEvent event = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
-        processDiffEvent(event);
+        try {
+            DiffResponse response = gameAdminService.createCounter(idGame, MapConfiguration.getVersionGame(), counter, province.getId());
+            DiffEvent event = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+            processDiffEvent(event);
+        } catch (Exception e) {
+            // TODO exception handling
+            e.printStackTrace();
+        }
     }
 
     /** @return the selectedMarker. */
