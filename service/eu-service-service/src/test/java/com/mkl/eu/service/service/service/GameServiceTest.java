@@ -109,6 +109,10 @@ public class GameServiceTest {
 
         Assert.assertEquals(7L, response.getVersionGame().longValue());
         Assert.assertEquals(diffVos, response.getDiffs());
+
+        response = gameService.updateGame(1L, 12L);
+
+        Assert.assertEquals(12L, response.getVersionGame().longValue());
     }
 
     @Test

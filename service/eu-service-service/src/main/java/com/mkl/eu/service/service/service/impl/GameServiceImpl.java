@@ -71,7 +71,12 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffVos);
-        response.setVersionGame(diffs.stream().max((o1, o2) -> (int) (o1.getVersionGame() - o2.getVersionGame())).get().getVersionGame());
+        if (!diffs.isEmpty()) {
+            response.setVersionGame(diffs.stream().max((o1, o2) -> (int) (o1.getVersionGame() - o2.getVersionGame())).get().getVersionGame());
+        } else {
+            // if no diff, game is up to date and has the right version
+            response.setVersionGame(versionGame);
+        }
 
         return response;
     }
