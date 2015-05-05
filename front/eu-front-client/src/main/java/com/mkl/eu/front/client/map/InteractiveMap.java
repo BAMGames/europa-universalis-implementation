@@ -1,11 +1,13 @@
 package com.mkl.eu.front.client.map;
 
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.DiffListener;
+import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -18,7 +20,6 @@ import com.mkl.eu.front.client.map.provider.EUProvider;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.events.*;
 import de.fhpotsdam.unfolding.geo.Location;
-import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import org.slf4j.Logger;
@@ -26,6 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import processing.core.PApplet;
 
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
@@ -35,7 +39,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  *
  * @author MKL
  */
-public class InteractiveMap extends PApplet implements MapEventListener, DiffListener {
+public class InteractiveMap extends PApplet implements MapEventListener, IDiffListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
     /** Utility for markers. */
@@ -44,6 +48,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
     /** Marker manager. */
     @Autowired
     private MyMarkerManager markerManager;
+    /** Game service. */
+    @Autowired
+    private IGameService gameService;
     /** Interactive map. */
     private UnfoldingMap mapDetail;
 
@@ -59,6 +66,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
     private Map<String, Marker> countryMarkers;
     /** Game. */
     private Game game;
+    /** Components that listener to diffs. */
+    private List<IDiffListenerContainer> components = new ArrayList<>();
 
     /**
      * Main method.
@@ -81,28 +90,16 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
     }
 
     /**
-     * Store the markers of the given game.
-     *
-     * @param game to load.
+     * Initialization.
      */
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    /** Set up the map and the markers. */
-    public void setup() {
-        size(1000, 600, OPENGL);
-        if (frame != null) {
-            frame.setResizable(true);
-        }
-
+    @PostConstruct
+    public void initialize() {
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         // Too many inaccessible field to enable tween and no loop.
         mapDetail.setTweening(true);
         mapDetail.zoomToLevel(7);
         mapDetail.setZoomRange(5, 10);
         mapDetail.panTo(1300, -300);
-
 
         // Static overview map
         mapOverviewStatic = new UnfoldingMap(this, "overviewStatic", 805, 5, 185, 235, true, false, new EUProvider(this), null);
@@ -116,7 +113,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
         info.init(805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
-        KeyboardHandler keyboardHandler = new MapKeyboardHandler(this, mapDetail);
+        MapKeyboardHandler keyboardHandler = new MapKeyboardHandler(this, gameService, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, markerManager, mapDetail);
         new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
         InfoViewMouseHandler infoHandler = new InfoViewMouseHandler(this, info, mapDetail);
@@ -135,6 +132,27 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
 //        eventDispatcher.register(this, ZoomMapEvent.TYPE_ZOOM, getId(), mapDetail.getId());
 //        eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
 //        eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
+
+        components.add(markerManager);
+        components.add(info);
+        components.add(keyboardHandler);
+    }
+
+    /**
+     * Store the markers of the given game.
+     *
+     * @param game to load.
+     */
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    /** Set up the map and the markers. */
+    public void setup() {
+        size(1000, 600, OPENGL);
+        if (frame != null) {
+            frame.setResizable(true);
+        }
 
         countryMarkers = markerUtils.createMarkers(game);
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
@@ -174,9 +192,10 @@ public class InteractiveMap extends PApplet implements MapEventListener, DiffLis
      *
      * @param diffListener to add.
      */
-    public void addDiffListener(DiffListener diffListener) {
-        markerManager.addDiffListener(diffListener);
-        info.addDiffListener(diffListener);
+    public void addDiffListener(IDiffListener diffListener) {
+        for (IDiffListenerContainer component : components) {
+            component.addDiffListener(diffListener);
+        }
     }
 
     /** {@inheritDoc} */

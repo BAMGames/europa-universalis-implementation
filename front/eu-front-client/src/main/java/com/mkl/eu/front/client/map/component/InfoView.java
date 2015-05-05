@@ -3,7 +3,8 @@ package com.mkl.eu.front.client.map.component;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.DiffListener;
+import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
@@ -35,7 +36,7 @@ import java.util.List;
  * @author MKL
  */
 @Component
-public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener {
+public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
     /** Game Service. */
@@ -80,7 +81,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** Contextual menu. */
     private ContextualMenu menu;
     /** Listeners for diffs event. */
-    private List<DiffListener> diffListeners = new ArrayList<>();
+    private List<IDiffListener> diffListeners = new ArrayList<>();
 
     /**
      * Constructor.
@@ -362,6 +363,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
 
 
                     if (drop != dragged.getOwner()) {
+                        // TODO service
                         if (drop == null) {
                             drop = new StackMarker(1L, (IMapMarker) getSelected());
                             ((IMapMarker) getSelected()).addStack(drop);
@@ -388,7 +390,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
      *
      * @param diffListener to add.
      */
-    public void addDiffListener(DiffListener diffListener) {
+    public void addDiffListener(IDiffListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
@@ -400,7 +402,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
      * @param event to process.
      */
     private void processDiffEvent(DiffEvent event) {
-        for (DiffListener diffListener : diffListeners) {
+        for (IDiffListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }

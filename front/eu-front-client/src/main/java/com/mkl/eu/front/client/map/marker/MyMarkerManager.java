@@ -7,7 +7,8 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.DiffListener;
+import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
@@ -38,7 +39,7 @@ import java.util.List;
  * @author MKL
  */
 @Component
-public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener {
+public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Game Service. */
@@ -66,7 +67,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Contextual menu. */
     private ContextualMenu menu;
     /** Listeners for diffs event. */
-    private List<DiffListener> diffListeners = new ArrayList<>();
+    private List<IDiffListener> diffListeners = new ArrayList<>();
 
     /** {@inheritDoc} */
     public void draw() {
@@ -395,7 +396,16 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     IMapMarker drop = getDrop(dragEvent.getX(), dragEvent.getY());
 
                     if (isNeighbour(dragged.getProvince(), drop)) {
-                        drop.addStack(dragged);
+                        Long idGame = MapConfiguration.getIdGame();
+                        try {
+                            DiffResponse response = gameService.moveStack(idGame, MapConfiguration.getVersionGame(),
+                                    dragged.getId(), drop.getId());
+                            DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                            processDiffEvent(diff);
+                        } catch (Exception e) {
+                            LOGGER.error("Error when moving stack.", e);
+                            // TODO exception handling
+                        }
                     }
 
                     setDragged(null);
@@ -436,7 +446,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      *
      * @param diffListener to add.
      */
-    public void addDiffListener(DiffListener diffListener) {
+    public void addDiffListener(IDiffListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
@@ -448,7 +458,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * @param event to process.
      */
     private void processDiffEvent(DiffEvent event) {
-        for (DiffListener diffListener : diffListeners) {
+        for (IDiffListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }

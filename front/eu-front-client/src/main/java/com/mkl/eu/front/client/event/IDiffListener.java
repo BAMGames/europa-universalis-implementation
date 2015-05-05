@@ -5,7 +5,7 @@ package com.mkl.eu.front.client.event;
  *
  * @author MKL.
  */
-public interface DiffListener {
+public interface IDiffListener {
     /**
      * Update the client with the given event.
      *

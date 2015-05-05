@@ -9,7 +9,7 @@ import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.DiffListener;
+import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +32,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  * @author MKL.
  */
 @org.springframework.stereotype.Component
-public class Main extends JFrame implements DiffListener {
+public class Main extends JFrame implements IDiffListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
     /** Game service. */
