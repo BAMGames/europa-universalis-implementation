@@ -56,10 +56,10 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STACK_FROM</li>
-     * <li>DiffAttributeTypeEnum#STACK_TO</li>
+     * <li>DiffAttributeTypeEnum#STACK_TO (can be a new one)</li>
      * </ul>
      * </li>
      * </ul>
      */
-    MOVE;
+    MOVE
 }

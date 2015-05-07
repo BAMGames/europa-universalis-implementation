@@ -36,7 +36,7 @@ public interface IGameService extends INameConstants {
      * @param versionGame previous version of the game.
      * @return the diffs.
      * @throws FunctionalException functional exception.
-     * @throws TechnicalException technical exception.
+     * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
     DiffResponse updateGame(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
@@ -58,4 +58,21 @@ public interface IGameService extends INameConstants {
                            @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
                            @WebParam(name = PARAMETER_ID_STACK) Long idStack,
                            @WebParam(name = PARAMETER_PROVINCE_TO) String provinceTo) throws FunctionalException, TechnicalException;
+
+    /**
+     * Move a counter from a stack to another..
+     *
+     * @param idGame      id of the game.
+     * @param versionGame version of the game.
+     * @param idCounter   id of the counter to move.
+     * @param idStack     id of the stack where the counter will move to. Can be <code>null</code> for creation of a stack.
+     * @return the diffs involved by this service.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse moveCounter(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
+                             @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
+                             @WebParam(name = PARAMETER_ID_COUNTER) Long idCounter,
+                             @WebParam(name = PARAMETER_ID_STACK) Long idStack) throws FunctionalException, TechnicalException;
 }

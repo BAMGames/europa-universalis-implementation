@@ -23,6 +23,10 @@ public abstract class AbstractService {
     public static final String MSG_VERSION_INCORRECT = "{1}: {0} {2} is greater than actual ({3}).";
     /** Error message when a province is not the neighbor of another (assuming it should have been). */
     public static final String MSG_NOT_NEIGHBOR = "{1}: {0} {2} is not a neighbor of {3}.";
+    /** Error message when an action should be done in a province and it is not. */
+    public static final String MSG_NOT_SAME_PROVINCE = "{1}: {0} / The action should be in {2} but was in {3}.";
+    /** Error message when an action should be done in a different stack. */
+    public static final String MSG_NOT_SAME_STACK = "{1}: {0} / The stack should be another one.";
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.

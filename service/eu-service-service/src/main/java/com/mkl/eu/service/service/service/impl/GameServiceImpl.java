@@ -13,13 +13,17 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.board.ICounterDao;
+import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +45,12 @@ public class GameServiceImpl extends AbstractService implements IGameService {
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
+    /** Stack DAO. */
+    @Autowired
+    private IStackDao stackDao;
+    /** Counter DAO. */
+    @Autowired
+    private ICounterDao counterDao;
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
@@ -146,6 +156,95 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         diffs.add(diff);
 
         stack.setProvince(provinceTo);
+        gameDao.update(game, false);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse moveCounter(Long idGame, Long versionGame, Long idCounter, Long idStack) throws FunctionalException, TechnicalException {
+        // TODO authorization
+        failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_COUNTER));
+        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_COUNTER));
+        failIfNull(new CheckForThrow<>().setTest(idCounter).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER));
+
+        GameEntity game = gameDao.lock(idGame);
+
+        failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_COUNTER, idGame));
+        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_COUNTER, versionGame, game.getVersion()));
+
+        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
+
+        CounterEntity counter = counterDao.getCounter(idCounter, idGame);
+
+        failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER, idGame));
+
+        Optional<StackEntity> stackOpt = null;
+        if (idStack != null) {
+            stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
+        }
+
+
+        StackEntity stack;
+        if (stackOpt != null && stackOpt.isPresent()) {
+            stack = stackOpt.get();
+        } else {
+            stack = new StackEntity();
+            stack.setProvince(counter.getOwner().getProvince());
+            stack.setGame(game);
+
+        /*
+         Thanks Hibernate to have 7 years old bugs.
+         https://hibernate.atlassian.net/browse/HHH-6776
+         https://hibernate.atlassian.net/browse/HHH-7404
+          */
+
+            stackDao.create(stack);
+
+            game.getStacks().add(stack);
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(counter.getOwner().getProvince(), stack.getProvince())).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_NOT_SAME_PROVINCE).setName(PARAMETER_ID_STACK).setParams(METHOD_MOVE_COUNTER, counter.getOwner().getProvince(), stack.getProvince()));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(counter.getOwner() != stack).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_NOT_SAME_STACK).setName(PARAMETER_ID_STACK).setParams(METHOD_MOVE_COUNTER));
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MOVE);
+        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+        diff.setIdObject(idCounter);
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STACK_FROM);
+        diffAttributes.setValue(counter.getOwner().getId().toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STACK_TO);
+        diffAttributes.setValue(stack.getId().toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        diffDao.create(diff);
+
+        diffs.add(diff);
+
+        counter.getOwner().getCounters().remove(counter);
+        stack.getCounters().add(counter);
+        counter.setOwner(stack);
         gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();

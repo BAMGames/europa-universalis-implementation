@@ -40,4 +40,10 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
     public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) throws FunctionalException, TechnicalException {
         return gameService.moveStack(idGame, versionGame, idStack, provinceTo);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse moveCounter(Long idGame, Long versionGame, Long idCounter, Long idStack) throws FunctionalException, TechnicalException {
+        return gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+    }
 }

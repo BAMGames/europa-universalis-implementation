@@ -12,6 +12,8 @@ public interface INameConstants {
     String PARAMETER_VERSION_GAME = "versionGame";
     /** Name of the parameter idStack. */
     String PARAMETER_ID_STACK = "idStack";
+    /** Name of the parameter idStack. */
+    String PARAMETER_ID_COUNTER = "idCounter";
     /** Name of the parameter provinceTo. */
     String PARAMETER_PROVINCE_TO = "provinceTo";
     /** Name of the parameter province. */
@@ -24,6 +26,8 @@ public interface INameConstants {
     String RESPONSE_GAME = "game";
     /** Name of the method moveStack. */
     String METHOD_MOVE_STACK = "moveStack";
+    /** Name of the method moveCounter. */
+    String METHOD_MOVE_COUNTER = "moveStack";
     /** Name of the method createCounter. */
     String METHOD_CREATE_COUNTER = "createCounter";
     /** Name of the method updateGame. */
