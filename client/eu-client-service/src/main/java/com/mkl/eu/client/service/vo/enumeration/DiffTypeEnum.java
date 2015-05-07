@@ -57,6 +57,7 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffAttributeTypeEnum#STACK_FROM</li>
      * <li>DiffAttributeTypeEnum#STACK_TO (can be a new one)</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE where the move is done</li>
      * <li>DiffAttributeTypeEnum#STACK_DEL (if STACK_FROM has no counter anymore) - optional attribute</li>
      * </ul>
      * </li>

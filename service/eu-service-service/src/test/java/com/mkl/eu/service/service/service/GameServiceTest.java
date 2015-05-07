@@ -502,11 +502,13 @@ public class GameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(2, diffEntity.getAttributes().size());
+        Assert.assertEquals(3, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals("9", diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals("8", diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals("IdF", diffEntity.getAttributes().get(2).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
@@ -578,13 +580,15 @@ public class GameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(3, diffEntity.getAttributes().size());
+        Assert.assertEquals(4, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals("9", diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals("25", diffEntity.getAttributes().get(1).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diffEntity.getAttributes().get(2).getType());
-        Assert.assertEquals("9", diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals("IdF", diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("9", diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
