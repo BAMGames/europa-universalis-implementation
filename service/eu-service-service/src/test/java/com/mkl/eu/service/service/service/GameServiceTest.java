@@ -461,6 +461,8 @@ public class GameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        stack.getCounters().add(new CounterEntity());
         game.getStacks().add(stack);
 
         when(gameDao.lock(12L)).thenReturn(game);
@@ -527,6 +529,7 @@ public class GameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
+        stack.getCounters().add(counter);
         game.getStacks().add(stack);
 
         when(gameDao.lock(12L)).thenReturn(game);
@@ -566,6 +569,7 @@ public class GameServiceTest {
         inOrder.verify(counterDao).getCounter(13L, 12L);
         inOrder.verify(stackDao).create(arg.capture());
         inOrder.verify(diffDao).create(anyObject());
+        inOrder.verify(stackDao).delete(stack);
         inOrder.verify(gameDao).update(game, false);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
@@ -574,11 +578,13 @@ public class GameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(2, diffEntity.getAttributes().size());
+        Assert.assertEquals(3, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals("9", diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals("25", diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals("9", diffEntity.getAttributes().get(2).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

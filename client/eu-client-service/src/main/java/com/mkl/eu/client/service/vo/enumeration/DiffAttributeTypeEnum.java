@@ -18,6 +18,8 @@ public enum DiffAttributeTypeEnum {
     STACK_TO,
     /** To which stack the diff was made: id of the stack. */
     STACK,
+    /** Which stack was deleted during the diff: id of the stack. */
+    STACK_DEL,
     /** To which counter the diff was made: id of the counter. */
     COUNTER,
     /** Type of the  principal object. */

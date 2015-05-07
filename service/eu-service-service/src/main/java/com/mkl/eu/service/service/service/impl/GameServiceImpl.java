@@ -237,14 +237,27 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         diffAttributes.setValue(stack.getId().toString());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        if (counter.getOwner().getCounters().size() == 1) {
+            diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
+            diffAttributes.setValue(counter.getOwner().getId().toString());
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+        }
 
         diffDao.create(diff);
 
         diffs.add(diff);
 
+        StackEntity oldStack = counter.getOwner();
         counter.getOwner().getCounters().remove(counter);
         stack.getCounters().add(counter);
         counter.setOwner(stack);
+        if (oldStack.getCounters().isEmpty()) {
+            game.getStacks().remove(oldStack);
+            stackDao.delete(oldStack);
+        }
+
         gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();
