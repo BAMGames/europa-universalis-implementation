@@ -24,9 +24,9 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     private List<BorderMarker> neighbours = new ArrayList<>();
     /** Counters of the province. */
     private List<StackMarker> stacks = new ArrayList<>();
-    /** Lower left location of the shape. */
+    /** Lower left location of the shape. X and Y are inversed due to unfolding bug. */
     private Location topLeft;
-    /** Upper right location of the shape. */
+    /** Upper right location of the shape. X and Y are inversed due to unfolding bug. */
     private Location bottomRight;
     /** Center of the shape. */
     private Location center;
@@ -175,6 +175,14 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     /** {@inheritDoc} */
     @Override
     public boolean isInside(UnfoldingMap map, float checkX, float checkY) {
+        ScreenPosition tl = map.getScreenPosition(topLeft);
+        ScreenPosition br = map.getScreenPosition(bottomRight);
+        // fast response for false using the smaller rectangle possible to size the shape.
+        if (tl.x > checkX || br.x < checkX
+                || tl.y > checkY || br.y < checkY) {
+            return false;
+        }
+
         List<ScreenPosition> positions = new ArrayList<>();
         for (Location location : locations) {
             ScreenPosition pos = map.getScreenPosition(location);
