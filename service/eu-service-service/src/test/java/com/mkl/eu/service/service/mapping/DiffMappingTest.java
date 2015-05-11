@@ -59,6 +59,7 @@ public class DiffMappingTest {
         DiffEntity object = new DiffEntity();
         object.setId(1L);
         object.setIdGame(2L);
+        object.setVersionGame(1L);
         object.setIdObject(12L);
         object.setTypeObject(DiffTypeObjectEnum.STACK);
         object.setType(DiffTypeEnum.MOVE);
@@ -81,6 +82,7 @@ public class DiffMappingTest {
         object = new DiffEntity();
         object.setId(2L);
         object.setIdGame(2L);
+        object.setVersionGame(2L);
         object.setIdObject(15L);
         object.setTypeObject(DiffTypeObjectEnum.COUNTER);
         object.setType(DiffTypeEnum.REMOVE);
@@ -89,6 +91,7 @@ public class DiffMappingTest {
         object = new DiffEntity();
         object.setId(3L);
         object.setIdGame(2L);
+        object.setVersionGame(3L);
         object.setIdObject(13L);
         object.setTypeObject(DiffTypeObjectEnum.COUNTER);
         object.setType(DiffTypeEnum.ADD);
@@ -109,6 +112,7 @@ public class DiffMappingTest {
         List<Diff> objects = new ArrayList<>();
 
         Diff object = new Diff();
+        object.setVersionGame(1L);
         object.setIdObject(12L);
         object.setTypeObject(DiffTypeObjectEnum.STACK);
         object.setType(DiffTypeEnum.MOVE);
@@ -125,12 +129,14 @@ public class DiffMappingTest {
         objects.add(object);
 
         object = new Diff();
+        object.setVersionGame(2L);
         object.setIdObject(15L);
         object.setTypeObject(DiffTypeObjectEnum.COUNTER);
         object.setType(DiffTypeEnum.REMOVE);
         objects.add(object);
 
         object = new Diff();
+        object.setVersionGame(3L);
         object.setIdObject(13L);
         object.setTypeObject(DiffTypeObjectEnum.COUNTER);
         object.setType(DiffTypeEnum.ADD);

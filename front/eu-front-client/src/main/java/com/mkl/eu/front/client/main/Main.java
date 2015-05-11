@@ -55,7 +55,7 @@ public class Main extends JFrame implements IDiffListener {
         MapConfiguration.setIdGame(game.getId());
         MapConfiguration.setVersionGame(game.getVersion());
         map.setGame(game);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
         add(map, BorderLayout.CENTER);
@@ -95,6 +95,9 @@ public class Main extends JFrame implements IDiffListener {
     public synchronized void update(DiffEvent event) {
         if (event.getIdGame().equals(game.getId())) {
             for (Diff diff : event.getDiffs()) {
+                if (MapConfiguration.getVersionGame() > diff.getVersionGame()) {
+                    continue;
+                }
                 switch (diff.getTypeObject()) {
                     case COUNTER:
                         updateCounter(game, diff);
@@ -105,11 +108,11 @@ public class Main extends JFrame implements IDiffListener {
                     default:
                         break;
                 }
+                map.update(diff);
             }
+
             game.setVersion(event.getNewVersion());
             MapConfiguration.setVersionGame(event.getNewVersion());
-
-            map.update(event);
         }
     }
 

@@ -54,6 +54,7 @@ public class DiffMapping extends AbstractMapping {
 
         Diff target = new Diff();
 
+        target.setVersionGame(source.getVersionGame());
         target.setType(source.getType());
         target.setTypeObject(source.getTypeObject());
         target.setIdObject(source.getIdObject());

@@ -13,6 +13,8 @@ import java.util.List;
  * @author MKL.
  */
 public class Diff {
+    /** Version of the game affected by this diff. */
+    private Long versionGame;
     /** Type of the diff (ADD, REMOVE, MOVE, ...). */
     private DiffTypeEnum type;
     /** Type of the principal object. */
@@ -21,6 +23,16 @@ public class Diff {
     private Long idObject;
     /** Attributes of the diff. */
     private List<DiffAttributes> attributes = new ArrayList<>();
+
+    /** @return the versionGame. */
+    public Long getVersionGame() {
+        return versionGame;
+    }
+
+    /** @param versionGame the versionGame to set. */
+    public void setVersionGame(Long versionGame) {
+        this.versionGame = versionGame;
+    }
 
     /** @return the type. */
     public DiffTypeEnum getType() {

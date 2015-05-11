@@ -5,7 +5,6 @@ import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.map.component.InfoView;
@@ -39,7 +38,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  *
  * @author MKL
  */
-public class InteractiveMap extends PApplet implements MapEventListener, IDiffListener, IDiffListenerContainer {
+public class InteractiveMap extends PApplet implements MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
     /** Utility for markers. */
@@ -198,20 +197,21 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public synchronized void update(DiffEvent event) {
-        for (Diff diff : event.getDiffs()) {
-            switch (diff.getTypeObject()) {
-                case COUNTER:
-                    updateCounter(diff);
-                    break;
-                case STACK:
-                    updateStack(diff);
-                    break;
-                default:
-                    break;
-            }
+    /**
+     * Update the Map given the diff.
+     *
+     * @param diff that will update the map.
+     */
+    public synchronized void update(Diff diff) {
+        switch (diff.getTypeObject()) {
+            case COUNTER:
+                updateCounter(diff);
+                break;
+            case STACK:
+                updateStack(diff);
+                break;
+            default:
+                break;
         }
     }
 

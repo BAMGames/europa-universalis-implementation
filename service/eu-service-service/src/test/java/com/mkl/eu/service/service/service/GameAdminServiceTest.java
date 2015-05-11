@@ -250,6 +250,7 @@ public class GameAdminServiceTest {
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(game.getStacks().get(0).getCounters().get(0).getId().longValue(), diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
@@ -388,6 +389,7 @@ public class GameAdminServiceTest {
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(idCounter.longValue(), diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.REMOVE, diffEntity.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
@@ -451,6 +453,7 @@ public class GameAdminServiceTest {
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(idCounter.longValue(), diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.REMOVE, diffEntity.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
