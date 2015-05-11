@@ -255,12 +255,12 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         diffs.add(diff);
 
         StackEntity oldStack = counter.getOwner();
-        counter.getOwner().getCounters().remove(counter);
-        stack.getCounters().add(counter);
         counter.setOwner(stack);
+        oldStack.getCounters().remove(counter);
+        stack.getCounters().add(counter);
         if (oldStack.getCounters().isEmpty()) {
+            oldStack.setGame(null);
             game.getStacks().remove(oldStack);
-            stackDao.delete(oldStack);
         }
 
         gameDao.update(game, false);

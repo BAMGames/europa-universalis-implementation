@@ -50,8 +50,12 @@ public class StackEntity implements IEntity, Serializable {
         this.province = province;
     }
 
-    /** @return the counters. */
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    /**
+     * Thanks Hibernate to delete orphan when moving a child from a parent to another.
+     *
+     * @return the counters.
+     */
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = false)
     public List<CounterEntity> getCounters() {
         return counters;
     }

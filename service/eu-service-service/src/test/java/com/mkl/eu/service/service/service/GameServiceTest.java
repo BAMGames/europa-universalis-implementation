@@ -571,7 +571,6 @@ public class GameServiceTest {
         inOrder.verify(counterDao).getCounter(13L, 12L);
         inOrder.verify(stackDao).create(arg.capture());
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(stackDao).delete(stack);
         inOrder.verify(gameDao).update(game, false);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
