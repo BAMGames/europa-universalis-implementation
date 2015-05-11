@@ -119,7 +119,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         diff.setVersionGame(game.getVersion());
         diff.setType(DiffTypeEnum.ADD);
         diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(null);
+        diff.setIdObject(counterEntity.getId());
         DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
         diffAttributes.setValue(province);
@@ -138,11 +138,6 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.STACK);
         diffAttributes.setValue(stack.getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.COUNTER);
-        diffAttributes.setValue(counterEntity.getId().toString());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
