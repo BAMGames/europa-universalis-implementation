@@ -1,12 +1,5 @@
 package com.mkl.eu.client.service.vo.enumeration;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Enumeration of type of borders.
  *
@@ -14,33 +7,26 @@ import java.util.Map;
  */
 public enum BorderEnum {
     /** River. */
-    RIVER,
+    RIVER("river"),
     /** Mountain pass. */
-    MOUNTAIN_PASS,
+    MOUNTAIN_PASS("pass"),
     /** Straits. */
-    STRAITS;
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(BorderEnum.class);
-    /** Type de roles par code. */
-    private static Map<String, BorderEnum> bordersByCode = new HashMap<>();
+    STRAITS("straits");
 
-    static {
-        bordersByCode.put("river", RIVER);
-        bordersByCode.put("pass", MOUNTAIN_PASS);
-        bordersByCode.put("strait", STRAITS);
-    }
+    /** Code of the enum. */
+    private String code;
 
     /**
-     * Retrieve a border by its code.
+     * Constructor.
      *
-     * @param code of the border.
-     * @return the border.
+     * @param code the code.
      */
-    public static BorderEnum getByCode(String code) {
-        BorderEnum border = bordersByCode.get(code);
-        if (!StringUtils.isEmpty(code) && border == null) {
-            LOGGER.error("Fail to retrieve border by its code: {} does not exist.", code);
-        }
-        return border;
+    BorderEnum(String code) {
+        this.code = code;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
     }
 }
