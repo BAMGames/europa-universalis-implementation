@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.persistence.impl;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.service.service.persistence.IGenericDao;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
 import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import java.util.List;
  * @param <PK> Primary key.
  * @author MKL
  */
-public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGenericDao<T, PK> {
+public abstract class GenericDaoImpl<T extends IEntity, PK extends Serializable> implements IGenericDao<T, PK> {
 
     /**
      * Logger.
@@ -66,7 +67,7 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
             getSession().save(o);
         } catch (HibernateException e) {
             LOG.error("Error during create :" + e.getMessage());
-            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "Une erreur est survenue durant la creation de l'objet en base", e, o);
+            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "Une erreur est survenue durant la creation de l'objet en base", e, o.getId());
         }
         return o;
     }
@@ -83,7 +84,7 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
                 res.add((T) getSession().save(o));
             } catch (HibernateException e) {
                 LOG.error("Error during create all :" + e.getMessage());
-                throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "Une erreur est survenue durant la creation de l'objet en base", e, o);
+                throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "Une erreur est survenue durant la creation de l'objet en base", e, o.getId());
             }
         }
         return res;
@@ -177,14 +178,14 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
         } catch (StaleObjectStateException e) {
             if (e.getMessage() != null && e.getMessage().startsWith("Row was updated or deleted by another transaction")) {
                 LOG.warn("update: Mise à jour impossible en raison d'une modification concurrente");
-                throw new TechnicalException(IConstantsCommonException.CONCURRENT_MODIFICATION, "Mise à jour impossible en raison d'une modification concurrente", e, o);
+                throw new TechnicalException(IConstantsCommonException.CONCURRENT_MODIFICATION, "Mise à jour impossible en raison d'une modification concurrente", e, o.getId());
             } else {
-                LOG.error(MSG_UPDATE + e.getMessage());
-                throw new TechnicalException(IConstantsCommonException.ERROR_UPDATE, MSG_ERROR_UPDATE, e, o);
+                LOG.error(MSG_UPDATE + e.getMessage(), e);
+                throw new TechnicalException(IConstantsCommonException.ERROR_UPDATE, MSG_ERROR_UPDATE, e, o.getId());
             }
         } catch (HibernateException e) {
-            LOG.error(MSG_UPDATE + e.getMessage());
-            throw new TechnicalException(IConstantsCommonException.ERROR_UPDATE, MSG_ERROR_UPDATE, e, o);
+            LOG.error(MSG_UPDATE + e.getMessage(), e);
+            throw new TechnicalException(IConstantsCommonException.ERROR_UPDATE, MSG_ERROR_UPDATE, e, o.getId());
         }
         return res;
     }
@@ -200,7 +201,7 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
             } catch (StaleObjectStateException e) {
                 if (e.getMessage() != null && e.getMessage().startsWith("Row was updated or deleted by another transaction")) {
                     LOG.warn("update: Mise à jour impossible en raison d'une modification concurrente");
-                    throw new TechnicalException(IConstantsCommonException.CONCURRENT_MODIFICATION, "Mise à jour impossible en raison d'une modification concurrente", e, o);
+                    throw new TechnicalException(IConstantsCommonException.CONCURRENT_MODIFICATION, "Mise à jour impossible en raison d'une modification concurrente", e, o.getId());
                 } else {
                     LOG.error(MSG_UPDATE + e.getMessage());
                     throw new TechnicalException(IConstantsCommonException.ERROR_UPDATE, MSG_ERROR_UPDATE, e, o);
@@ -223,7 +224,7 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
             getSession().delete(o);
         } catch (HibernateException e) {
             LOG.error(MSG_DELETE + e.getMessage());
-            throw new TechnicalException(IConstantsCommonException.ERROR_DELETE, "Une erreur est survenue durant la suppression", e, o);
+            throw new TechnicalException(IConstantsCommonException.ERROR_DELETE, "Une erreur est survenue durant la suppression", e, o.getId());
         }
     }
 
@@ -237,7 +238,7 @@ public abstract class GenericDaoImpl<T, PK extends Serializable> implements IGen
                 getSession().delete(o);
             } catch (HibernateException e) {
                 LOG.error(MSG_DELETE + e.getMessage());
-                throw new TechnicalException(IConstantsCommonException.ERROR_DELETE, "Une erreur est survenue durant la suppression", e, o);
+                throw new TechnicalException(IConstantsCommonException.ERROR_DELETE, "Une erreur est survenue durant la suppression", e, o.getId());
             }
         }
     }
