@@ -3,8 +3,6 @@ package com.mkl.eu.service.service.persistence.board.impl;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -24,11 +22,14 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
     /** {@inheritDoc} */
     @Override
     public CounterEntity getCounter(Long idCounter, Long idGame) {
-        Criteria criteria = getSession().createCriteria(CounterEntity.class);
+        CounterEntity counter = load(idCounter);
 
-        criteria.add(Restrictions.eq("id", idCounter));
-        criteria.add(Restrictions.eq("owner.game.id", idGame));
+        if (idGame == null || counter == null || counter.getOwner() == null
+                || counter.getOwner().getGame() == null
+                || counter.getOwner().getGame().getId().longValue() != idGame.longValue()) {
+            counter = null;
+        }
 
-        return (CounterEntity) criteria.uniqueResult();
+        return counter;
     }
 }
