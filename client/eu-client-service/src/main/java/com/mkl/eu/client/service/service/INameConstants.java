@@ -26,6 +26,8 @@ public interface INameConstants {
     String RESPONSE_GAME = "game";
     /** Name of the method moveStack. */
     String METHOD_MOVE_STACK = "moveStack";
+    /** Name of the method moveStack. */
+    String METHOD_REMOVE_COUNTER = "removeCounter";
     /** Name of the method moveCounter. */
     String METHOD_MOVE_COUNTER = "moveStack";
     /** Name of the method createCounter. */

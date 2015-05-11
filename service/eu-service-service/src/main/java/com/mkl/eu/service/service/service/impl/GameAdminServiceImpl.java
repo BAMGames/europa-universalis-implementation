@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -48,6 +49,9 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
     /** Stack DAO. */
     @Autowired
     private IStackDao stackDao;
+    /** Counter DAO. */
+    @Autowired
+    private ICounterDao counterDao;
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
@@ -74,9 +78,9 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         GameEntity game = gameDao.lock(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_CREATE_COUNTER, idGame));
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK, versionGame, game.getVersion()));
+                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_CREATE_COUNTER, versionGame, game.getVersion()));
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
@@ -89,7 +93,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
 
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE).setParams(METHOD_MOVE_STACK, province));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, province));
 
         StackEntity stack = new StackEntity();
         stack.setProvince(province);
@@ -140,6 +144,85 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         diffAttributes.setValue(stack.getId().toString());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+
+        diffDao.create(diff);
+
+        diffs.add(diff);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse removeCounter(Long idGame, Long versionGame, Long idCounter) throws FunctionalException, TechnicalException {
+        // TODO authorization
+        failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_REMOVE_COUNTER));
+        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_REMOVE_COUNTER));
+        failIfNull(new CheckForThrow<>().setTest(idCounter).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER));
+
+        GameEntity game = gameDao.lock(idGame);
+
+        failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_REMOVE_COUNTER, idGame));
+        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_REMOVE_COUNTER, versionGame, game.getVersion()));
+
+        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
+
+        CounterEntity counter = null;
+        for (StackEntity stackEntity : game.getStacks()) {
+            for (CounterEntity counterEntity : stackEntity.getCounters()) {
+                if (counterEntity.getId().equals(idCounter)) {
+                    counter = counterEntity;
+                    break;
+                }
+            }
+            if (counter != null) {
+                break;
+            }
+        }
+
+        failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER, idGame));
+
+        StackEntity stack = counter.getOwner();
+        stack.getCounters().remove(counter);
+        counter.setOwner(null);
+        counterDao.delete(counter);
+
+        if (stack.getCounters().isEmpty()) {
+            stack.setGame(null);
+            game.getStacks().remove(stack);
+        }
+
+        gameDao.update(game, true);
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.REMOVE);
+        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+        diff.setIdObject(idCounter);
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
+        diffAttributes.setValue(stack.getProvince());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        if (stack.getCounters().isEmpty()) {
+            diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
+            diffAttributes.setValue(stack.getId().toString());
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+        }
 
         diffDao.create(diff);
 

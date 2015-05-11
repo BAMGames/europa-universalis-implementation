@@ -33,4 +33,19 @@ public interface IGameAdminService extends INameConstants {
                                @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
                                @WebParam(name = PARAMETER_COUNTER) CounterForCreation counter,
                                @WebParam(name = PARAMETER_PROVINCE) String province) throws FunctionalException, TechnicalException;
+
+    /**
+     * Remove a counter on the board.
+     *
+     * @param idGame      id of the game.
+     * @param versionGame version of the game.
+     * @param idCounter   id of the counter to remove.
+     * @return the diffs involved by this service.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse removeCounter(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
+                               @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
+                               @WebParam(name = PARAMETER_ID_COUNTER) Long idCounter) throws FunctionalException, TechnicalException;
 }

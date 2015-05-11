@@ -128,6 +128,7 @@ public class Main extends JFrame implements IDiffListener {
                 moveCounter(game, diff);
                 break;
             case REMOVE:
+                removeCounter(game, diff);
                 break;
             default:
                 break;
@@ -237,6 +238,46 @@ public class Main extends JFrame implements IDiffListener {
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_DEL);
         if (attribute != null) {
             destroyStack(game, attribute);
+        }
+    }
+
+    /**
+     * Process the remove counter diff event.
+     *
+     * @param game to update.
+     * @param diff involving a remove counter.
+     */
+    private void removeCounter(Game game, Diff diff) {
+        Stack stack = null;
+        Counter counter = null;
+        for (Stack stackVo : game.getStacks()) {
+            for (Counter counterVo : stackVo.getCounters()) {
+                if (diff.getIdObject().equals(counterVo.getId())) {
+                    counter = counterVo;
+                    stack = stackVo;
+                    break;
+                }
+            }
+            if (counter != null) {
+                break;
+            }
+        }
+
+        if (counter == null) {
+            LOGGER.error("Missing counter in counter remove event.");
+            return;
+        }
+
+        stack.getCounters().remove(counter);
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_DEL);
+        if (attribute != null) {
+            Long idStack = Long.parseLong(attribute.getValue());
+            if (idStack.equals(stack.getId())) {
+                game.getStacks().remove(stack);
+            } else {
+                LOGGER.error("Stack to del is not the counter owner in counter remove event.");
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.map.component;
 
+import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
@@ -42,6 +43,9 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** Game Service. */
     @Autowired
     private IGameService gameService;
+    /** Game Admin Service. */
+    @Autowired
+    private IGameAdminService gameAdminService;
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -272,12 +276,15 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.disband", null, globalConfiguration.getLocale()), event -> {
-            // TODO service
-            StackMarker stack = counter.getOwner();
-            stack.removeCounter(counter);
-
-            if (stack.getCounters().isEmpty()) {
-                ((IMapMarker) getSelected()).removeStack(stack);
+            Long idGame = MapConfiguration.getIdGame();
+            try {
+                DiffResponse response = gameAdminService.removeCounter(idGame, MapConfiguration.getVersionGame(),
+                        counter.getId());
+                DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when moving stack.", e);
+                // TODO exception handling
             }
 
             resetContextualMenu();

@@ -28,4 +28,10 @@ public class GameAdminWsServiceImpl extends SpringBeanAutowiringSupport implemen
     public DiffResponse createCounter(Long idGame, Long versionGame, CounterForCreation counter, String province) throws FunctionalException, TechnicalException {
         return gameAdminService.createCounter(idGame, versionGame, counter, province);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse removeCounter(Long idGame, Long versionGame, Long idCounter) throws FunctionalException, TechnicalException {
+        return gameAdminService.removeCounter(idGame, versionGame, idCounter);
+    }
 }

@@ -33,7 +33,8 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
      * <ul>
-     * <li>nothing</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE where the remove is done</li>
+     * <li>DiffAttributeTypeEnum#STACK_DEL (if the stack owning the counter has no counter anymore) - optional attribute</li>
      * </ul>
      * </li>
      * </ul>

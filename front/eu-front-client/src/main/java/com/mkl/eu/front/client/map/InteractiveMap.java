@@ -229,6 +229,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
                 moveCounter(diff);
                 break;
             case REMOVE:
+                removeCounter(diff);
                 break;
             default:
                 break;
@@ -334,6 +335,58 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_DEL);
         if (attribute != null) {
             destroyStack(province, attribute);
+        }
+    }
+
+    /**
+     * Process the remove counter diff event.
+     *
+     * @param diff involving a remove counter.
+     */
+    private void removeCounter(Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        if (attribute == null) {
+            LOGGER.error("Missing province in counter move event.");
+            return;
+        }
+        Marker prov = countryMarkers.get(attribute.getValue());
+        if (!(prov instanceof IMapMarker)) {
+            LOGGER.error("province is not a IMapMarker.");
+            return;
+        }
+        IMapMarker province = (IMapMarker) prov;
+
+
+        StackMarker stack = null;
+        CounterMarker counter = null;
+        for (StackMarker stackVo : province.getStacks()) {
+            for (CounterMarker counterVo : stackVo.getCounters()) {
+                if (diff.getIdObject().equals(counterVo.getId())) {
+                    counter = counterVo;
+                    stack = stackVo;
+                    break;
+                }
+            }
+            if (counter != null) {
+                break;
+            }
+        }
+
+        if (counter == null) {
+            LOGGER.error("Missing counter in counter remove event.");
+            return;
+        }
+
+        stack.removeCounter(counter);
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_DEL);
+        if (attribute != null) {
+            Long idStack = Long.parseLong(attribute.getValue());
+            if (idStack.equals(stack.getId())) {
+                province.removeStack(stack);
+            } else {
+                LOGGER.error("Stack to del is not the counter owner in counter remove event.");
+            }
         }
     }
 
