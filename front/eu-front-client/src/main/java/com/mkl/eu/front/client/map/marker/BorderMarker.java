@@ -21,7 +21,9 @@ public class BorderMarker {
      */
     public BorderMarker(IMapMarker province, String typeBorder) {
         this.province = province;
-        this.type = BorderEnum.getByCode(typeBorder);
+        if (typeBorder != null) {
+            this.type = BorderEnum.valueOf(typeBorder);
+        }
     }
 
     /** @return the province. */
