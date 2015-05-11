@@ -125,6 +125,7 @@ public class Main extends JFrame implements IDiffListener {
                 addCounter(game, diff);
                 break;
             case MOVE:
+                moveCounter(game, diff);
                 break;
             case REMOVE:
                 break;
@@ -163,15 +164,9 @@ public class Main extends JFrame implements IDiffListener {
         }
 
         Counter counter = new Counter();
+        counter.setId(diff.getIdObject());
         counter.setOwner(stack);
         stack.getCounters().add(counter);
-
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTER);
-        if (attribute != null) {
-            counter.setId(Long.parseLong(attribute.getValue()));
-        } else {
-            LOGGER.error("Missing counter id in counter add event.");
-        }
 
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TYPE);
         if (attribute != null) {
@@ -185,6 +180,63 @@ public class Main extends JFrame implements IDiffListener {
             counter.setCountry(attribute.getValue());
         } else {
             LOGGER.error("Missing country in counter add event.");
+        }
+    }
+
+    /**
+     * Process the move counter diff event.
+     *
+     * @param game to update.
+     * @param diff involving a move counter.
+     */
+    private void moveCounter(Game game, Diff diff) {
+        Stack stack = null;
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_FROM);
+        if (attribute != null) {
+            Long idStack = Long.parseLong(attribute.getValue());
+            stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+        }
+        if (stack == null) {
+            LOGGER.error("Missing stack from in counter move event.");
+            return;
+        }
+
+        Counter counter = findFirst(stack.getCounters(), counter1 -> diff.getIdObject().equals(counter1.getId()));
+        if (counter == null) {
+            LOGGER.error("Missing counter in counter move event.");
+            return;
+        }
+
+        Stack stackTo;
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_TO);
+        if (attribute != null) {
+            Long idStack = Long.parseLong(attribute.getValue());
+            stackTo = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+            if (stackTo == null) {
+                stackTo = new Stack();
+                stackTo.setId(idStack);
+
+                attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+                if (attribute != null) {
+                    stackTo.setProvince(attribute.getValue());
+                } else {
+                    LOGGER.error("Missing province in counter move event.");
+                }
+
+                game.getStacks().add(stackTo);
+            }
+        } else {
+            LOGGER.error("Missing stack id in counter add event.");
+            stackTo = new Stack();
+        }
+
+        stack.getCounters().remove(counter);
+        stackTo.getCounters().add(counter);
+        counter.setOwner(stackTo);
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_DEL);
+        if (attribute != null) {
+            destroyStack(game, attribute);
         }
     }
 
@@ -237,6 +289,22 @@ public class Main extends JFrame implements IDiffListener {
             stack.setProvince(attribute.getValue());
         } else {
             LOGGER.error("Missing province to in stack move event.");
+        }
+    }
+
+    /**
+     * Generic destroyStack diff update.
+     *
+     * @param game      to update.
+     * @param attribute of type destroy stack.
+     */
+    private void destroyStack(Game game, DiffAttributes attribute) {
+        Long idStack = Long.parseLong(attribute.getValue());
+        Stack stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+        if (stack != null) {
+            game.getStacks().remove(stack);
+        } else {
+            LOGGER.error("Missing stack for destroy stack generic event.");
         }
     }
 

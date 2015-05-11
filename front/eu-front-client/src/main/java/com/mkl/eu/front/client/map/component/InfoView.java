@@ -300,7 +300,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
             StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
+                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
                 Long idGame = MapConfiguration.getIdGame();
@@ -363,16 +363,19 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
 
 
                     if (drop != dragged.getOwner()) {
-                        // TODO service
-                        if (drop == null) {
-                            drop = new StackMarker(1L, (IMapMarker) getSelected());
-                            ((IMapMarker) getSelected()).addStack(drop);
-                        }
-                        StackMarker oldStack = dragged.getOwner();
-                        drop.addCounter(dragged);
-
-                        if (oldStack.getCounters().isEmpty()) {
-                            ((IMapMarker) getSelected()).removeStack(oldStack);
+                        Long idGame = MapConfiguration.getIdGame();
+                        try {
+                            Long idStack = null;
+                            if (drop != null) {
+                                idStack = drop.getId();
+                            }
+                            DiffResponse response = gameService.moveCounter(idGame, MapConfiguration.getVersionGame(),
+                                    dragged.getId(), idStack);
+                            DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                            processDiffEvent(diff);
+                        } catch (Exception e) {
+                            LOGGER.error("Error when moving stack.", e);
+                            // TODO exception handling
                         }
                     }
 

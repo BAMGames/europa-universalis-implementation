@@ -198,7 +198,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         for (final BorderMarker border : province.getNeighbours()) {
             StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
+                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
             }
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
@@ -238,7 +238,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
             StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType(), null, globalConfiguration.getLocale())).append(")");
+                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
                 Long idGame = MapConfiguration.getIdGame();

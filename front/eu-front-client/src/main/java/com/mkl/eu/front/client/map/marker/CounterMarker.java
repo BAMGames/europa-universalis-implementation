@@ -8,6 +8,8 @@ import processing.core.PImage;
  * @author MKL
  */
 public class CounterMarker {
+    /** Id of the counter. */
+    private Long id;
     /** Image of the counter. */
     private PImage image;
     /** Stack owning the counter. */
@@ -16,10 +18,17 @@ public class CounterMarker {
     /**
      * Constructor.
      *
+     * @param id    the id.
      * @param image the image.
      */
-    public CounterMarker(PImage image) {
+    public CounterMarker(Long id, PImage image) {
+        this.id = id;
         this.image = image;
+    }
+
+    /** @return the id. */
+    public Long getId() {
+        return id;
     }
 
     /** @return the image. */
