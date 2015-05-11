@@ -1,5 +1,7 @@
 package com.mkl.eu.service.service.persistence;
 
+import com.mkl.eu.service.service.persistence.oe.IEntity;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  * @param <PK> cle primaire
  * @author MKL
  */
-public interface IGenericDao<T, PK extends Serializable> {
+public interface IGenericDao<T extends IEntity, PK extends Serializable> {
 
     /**
      * create an instance.
