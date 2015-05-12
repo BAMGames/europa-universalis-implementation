@@ -113,7 +113,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                     continue;
                 }
                 // The hovered stack is drawn afterward so that it is in first plan.
-                if (hovered == stacks.get(i)) {
+                if (hovered == stacks.get(i) && hovered.getCounters().size() > 1) {
                     indexHovered = i;
                     continue;
                 }
@@ -126,7 +126,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 }
             }
             // The hovered stack is drawn afterward so that it is in first plan.
-            if (hovered != null && indexHovered != -1) {
+            if (hovered != null && indexHovered != -1 && hovered.getCounters().size() > 1) {
                 for (int j = 0; j < hovered.getCounters().size(); j++) {
                     CounterMarker counter = hovered.getCounters().get(j);
                     float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
