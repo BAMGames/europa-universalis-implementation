@@ -9,9 +9,11 @@ public enum BorderEnum {
     /** River. */
     RIVER("river"),
     /** Mountain pass. */
-    MOUNTAIN_PASS("pass"),
+    PASS("pass"),
     /** Straits. */
-    STRAITS("straits");
+    STRAIT("strait"),
+    /** . */
+    BERING_STRAIT("beringStrait");
 
     /** Code of the enum. */
     private String code;

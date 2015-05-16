@@ -148,7 +148,13 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
                 Object value = props.get(key);
 
                 if (StringUtils.equals(PROP_TERRAIN, key)) {
-                    value = TerrainEnum.valueOf((String) value);
+                    TerrainEnum terrain = null;
+                    try {
+                        terrain = TerrainEnum.valueOf((String) value);
+                    } catch (Exception e) {
+                        // null value if not parsable
+                    }
+                    value = terrain;
                 }
                 properties.put(key, value);
             }

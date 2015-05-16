@@ -1,5 +1,113 @@
 <list>
   <border>
+    <first>sPacifique</first>
+    <second>sPacifique NE</second>
+  </border>
+  <border>
+    <first>sPacifique</first>
+    <second>sPacifique SE</second>
+  </border>
+  <border>
+    <first>rAmour~N</first>
+    <second>rKamchatka~I</second>
+    <type>BERING_STRAIT</type>
+  </border>
+  <border>
+    <first>rBaikal~NE</first>
+    <second>rKamchatka~I</second>
+    <type>BERING_STRAIT</type>
+  </border>
+  <border>
+    <first>rKamchatka~I</first>
+    <second>rYakoutie~S</second>
+    <type>BERING_STRAIT</type>
+  </border>
+  <border>
+    <first>rKamchatka~I</first>
+    <second>rYakoutie~NE</second>
+    <type>BERING_STRAIT</type>
+  </border>
+  <border>
+    <first>eKocaeli</first>
+    <second>eTrakya</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eJylland</first>
+    <second>eSjaelland</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eSjaelland</first>
+    <second>eSlesvig</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eFriesland</first>
+    <second>eHolland</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eHolland</first>
+    <second>eOverijssel</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eHolland</first>
+    <second>eZeeland</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eUtrecht</first>
+    <second>eZeeland</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eVlaanderen</first>
+    <second>eZeeland</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eCyclades</first>
+    <second>eHellas</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eBam</first>
+    <second>rOrmus~I</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>rOman~E</first>
+    <second>rOrmus~I</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eCalabria</first>
+    <second>eSicilia</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>eKexholm</first>
+    <second>eTavastland</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>rJapon~S</first>
+    <second>rJapon~W</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>rJapon~E</first>
+    <second>rJapon~N</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
+    <first>rAden~W</first>
+    <second>rEthiopie~N</second>
+    <type>STRAIT</type>
+  </border>
+  <border>
     <first>rKansas~E</first>
     <second>rKansas~N</second>
   </border>
@@ -60,7 +168,7 @@
   <border>
     <first>sRouge</first>
     <second>sSeychelles</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eDikoe Pole</first>
@@ -108,7 +216,7 @@
   <border>
     <first>sMascate</first>
     <second>sRouge</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eChampagne</first>
@@ -150,7 +258,7 @@
   <border>
     <first>sOman</first>
     <second>sRouge</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eLincolnshire</first>
@@ -197,7 +305,7 @@
   <border>
     <first>sMascate</first>
     <second>sPersique</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>rPatagonia~S</first>
@@ -235,6 +343,10 @@
   <border>
     <first>sOkhotsk</first>
     <second>sPacifique NW</second>
+  </border>
+  <border>
+    <first>rOrmus~I</first>
+    <second>sPersique</second>
   </border>
   <border>
     <first>eGloucester</first>
@@ -551,7 +663,7 @@
   <border>
     <first>eCastilla La Nueva</first>
     <second>eSalamanca</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rCuba~E</first>
@@ -573,7 +685,7 @@
   <border>
     <first>eTirol</first>
     <second>eTrentino</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rMinas Gerais~S</first>
@@ -598,7 +710,7 @@
   <border>
     <first>eCastilla La Nueva</first>
     <second>eToledo</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eLancashire</first>
@@ -625,7 +737,7 @@
   <border>
     <first>eGraubunden</first>
     <second>eTrentino</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>sArguin</first>
@@ -797,7 +909,7 @@
   <border>
     <first>eBoheme</first>
     <second>eLausitz</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eSinai</first>
@@ -1165,7 +1277,7 @@
   <border>
     <first>eAngora</first>
     <second>eKilikya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eGelderland</first>
@@ -1238,7 +1350,7 @@
   <border>
     <first>eKilikya</first>
     <second>eKonya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rIroquois~SW</first>
@@ -1386,13 +1498,16 @@
     <type>RIVER</type>
   </border>
   <border>
+    <first>rCabo Verde~I</first>
+    <second>sAtlantique</second>
+  </border>
+  <border>
     <first>eCarniola</first>
     <second>ePecs</second>
   </border>
   <border>
     <first>rEthiopie~S</first>
     <second>sRouge</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eHighlands</first>
@@ -1453,6 +1568,10 @@
   <border>
     <first>eAbruzzo</first>
     <second>ePuglia</second>
+  </border>
+  <border>
+    <first>rCabo Verde~I</first>
+    <second>sAtlantique EQ</second>
   </border>
   <border>
     <first>eUtrecht</first>
@@ -1521,7 +1640,7 @@
   <border>
     <first>sLabrador</first>
     <second>sSaint-Laurent</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eIlles Balears</first>
@@ -1585,6 +1704,10 @@
   <border>
     <first>rRecife~NE</first>
     <second>sRecife</second>
+  </border>
+  <border>
+    <first>rCabo Verde~I</first>
+    <second>sArguin</second>
   </border>
   <border>
     <first>eIlles Balears</first>
@@ -1690,7 +1813,6 @@
   <border>
     <first>rTerre-Neuve~N</first>
     <second>sSaint-Laurent</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eToscana</first>
@@ -1723,6 +1845,7 @@
   <border>
     <first>eBergslagen</first>
     <second>eOstlandet</second>
+    <type>PASS</type>
   </border>
   <border>
     <first>eMagyarorszag</first>
@@ -1736,7 +1859,6 @@
   <border>
     <first>rTerre-Neuve~S</first>
     <second>sSaint-Laurent</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eAntalya</first>
@@ -1747,9 +1869,13 @@
     <second>rNatal~S</second>
   </border>
   <border>
+    <first>rCabo Verde~I</first>
+    <second>sGambie</second>
+  </border>
+  <border>
     <first>rPanama~N</first>
     <second>rPanama~S</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eDalmacija</first>
@@ -1758,7 +1884,6 @@
   <border>
     <first>rOman~E</first>
     <second>sPersique</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eCrimee</first>
@@ -1888,7 +2013,7 @@
   <border>
     <first>eMonferrato</first>
     <second>eNice</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eCymru</first>
@@ -1907,7 +2032,6 @@
   <border>
     <first>rBalouchistan~W</first>
     <second>sPersique</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eChampagne</first>
@@ -2187,7 +2311,7 @@
   <border>
     <first>eAlgerie</first>
     <second>eKabylie</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eArmor</first>
@@ -2279,10 +2403,6 @@
     <second>sCaspienne</second>
   </border>
   <border>
-    <first>rAntilles~Dominica</first>
-    <second>sSous-le-vent</second>
-  </border>
-  <border>
     <first>eLiguria</first>
     <second>eNice</second>
   </border>
@@ -2361,10 +2481,6 @@
   <border>
     <first>eArmor</first>
     <second>eFinistere</second>
-  </border>
-  <border>
-    <first>rAntilles~Dominica</first>
-    <second>sCaraibes</second>
   </border>
   <border>
     <first>eDelta</first>
@@ -2673,12 +2789,12 @@
   <border>
     <first>eBulgaristan</first>
     <second>eMakedonya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eOstlandet</first>
     <second>eVastergotland</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rGujarat~E</first>
@@ -2728,6 +2844,10 @@
   <border>
     <first>rQuebec~C</first>
     <second>rQuebec~NE</second>
+  </border>
+  <border>
+    <first>sNord</first>
+    <second>sWestern Approaches</second>
   </border>
   <border>
     <first>eMontenegro</first>
@@ -2853,6 +2973,10 @@
   <border>
     <first>rAral~S</first>
     <second>sCaspienne</second>
+  </border>
+  <border>
+    <first>sIrlande</first>
+    <second>sNord</second>
   </border>
   <border>
     <first>eIfriqiya</first>
@@ -3154,7 +3278,6 @@
   <border>
     <first>rSumatra~C</first>
     <second>sMalaisie</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eHolland</first>
@@ -3424,7 +3547,7 @@
   <border>
     <first>eJamtland</first>
     <second>eTrondelag</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eDikoe Pole</first>
@@ -3580,7 +3703,7 @@
   <border>
     <first>eBergslagen</first>
     <second>eTrondelag</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rIllinois~S</first>
@@ -3624,10 +3747,6 @@
     <second>sAtlantique S</second>
   </border>
   <border>
-    <first>rAntilles~Antigua</first>
-    <second>sCaraibes</second>
-  </border>
-  <border>
     <first>ePrypec</first>
     <second>eSeveria</second>
     <type>RIVER</type>
@@ -3655,10 +3774,7 @@
   <border>
     <first>eBresse</first>
     <second>eSavoia</second>
-  </border>
-  <border>
-    <first>rAntilles~Antigua</first>
-    <second>sSous-le-vent</second>
+    <type>RIVER</type>
   </border>
   <border>
     <first>eNormandie</first>
@@ -3701,7 +3817,6 @@
   <border>
     <first>rAden~E</first>
     <second>sRouge</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>sAtlantique SE</first>
@@ -3904,10 +4019,6 @@
     <second>sAdriatique</second>
   </border>
   <border>
-    <first>rAntilles~Saint-Vincent</first>
-    <second>sCaraibes</second>
-  </border>
-  <border>
     <first>eIngria</first>
     <second>ePskov</second>
   </border>
@@ -3931,10 +4042,6 @@
     <first>eAzarbayadjan</first>
     <second>eShirvan</second>
     <type>RIVER</type>
-  </border>
-  <border>
-    <first>rAntilles~Saint-Vincent</first>
-    <second>sSous-le-vent</second>
   </border>
   <border>
     <first>eKuban</first>
@@ -3992,7 +4099,7 @@
   <border>
     <first>eMakedonya</first>
     <second>eTrakya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>sAtlantique</first>
@@ -4212,7 +4319,7 @@
   <border>
     <first>sAtlantique NO</first>
     <second>sSaint-Laurent</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>rLena~N</first>
@@ -4328,7 +4435,6 @@
   <border>
     <first>rSumatra~S</first>
     <second>sWharton</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>rLabrador~E</first>
@@ -4513,7 +4619,7 @@
   <border>
     <first>sJava</first>
     <second>sWharton</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eAnhalt</first>
@@ -4655,7 +4761,7 @@
   <border>
     <first>eAnnabah</first>
     <second>eKabylie</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rInca~E</first>
@@ -4692,7 +4798,7 @@
   <border>
     <first>eBearn</first>
     <second>eNavarra</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rAmerica~NW</first>
@@ -4737,7 +4843,6 @@
   <border>
     <first>rLabrador~E</first>
     <second>sSaint-Laurent</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>eHessen</first>
@@ -4787,7 +4892,7 @@
   <border>
     <first>eMalopolska</first>
     <second>eSzlovakia</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eLucca</first>
@@ -4813,7 +4918,7 @@
   <border>
     <first>eBearn</first>
     <second>ePirineos</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rInca~S</first>
@@ -5291,7 +5396,7 @@
   <border>
     <first>eAbruzzo</first>
     <second>eLazio</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eAltmark</first>
@@ -5572,7 +5677,7 @@
   <border>
     <first>eHellas</first>
     <second>eMakedonya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rPhilippines~N</first>
@@ -5628,7 +5733,7 @@
   <border>
     <first>eAlep</first>
     <second>eKilikya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eBeira</first>
@@ -5733,7 +5838,7 @@
   <border>
     <first>eGeorgie</first>
     <second>eTerek</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>sArafura</first>
@@ -5825,7 +5930,7 @@
   <border>
     <first>eCaceres</first>
     <second>eToledo</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rCongo~N</first>
@@ -5894,7 +5999,7 @@
   <border>
     <first>eFriuli</first>
     <second>eTirol</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>sPacifique SW</first>
@@ -6159,7 +6264,7 @@
   <border>
     <first>eBursa</first>
     <second>eIzmir</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rPanama~S</first>
@@ -6180,7 +6285,7 @@
   <border>
     <first>rPanama~N</first>
     <second>rYucatan~S</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eAbruzzo</first>
@@ -6425,7 +6530,7 @@
   <border>
     <first>eCampania</first>
     <second>ePuglia</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eChypre</first>
@@ -6443,7 +6548,6 @@
   <border>
     <first>eAlabania</first>
     <second>sIonienne</second>
-    <type>STRAITS</type>
   </border>
   <border>
     <first>sChili</first>
@@ -6546,7 +6650,7 @@
   <border>
     <first>eAbruzzo</first>
     <second>eCampania</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rChili~SW</first>
@@ -6682,7 +6786,7 @@
   <border>
     <first>sJava</first>
     <second>sMalaisie</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>rOregon~N</first>
@@ -6734,7 +6838,7 @@
   <border>
     <first>eAtlas</first>
     <second>eMagrib</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eAzov</first>
@@ -6882,7 +6986,7 @@
   <border>
     <first>eBursa</first>
     <second>eKonya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rVenezuela~E</first>
@@ -7101,7 +7205,7 @@
   <border>
     <first>eMagrib</first>
     <second>eOran</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eCatalunya</first>
@@ -7127,7 +7231,7 @@
   <border>
     <first>eAtlas</first>
     <second>eOran</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rOrissa~S</first>
@@ -7172,7 +7276,7 @@
   <border>
     <first>eIzmir</first>
     <second>eKonya</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rAfghanistan~E</first>
@@ -7231,7 +7335,7 @@
   <border>
     <first>eExtremadura</first>
     <second>eHuelva</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rSeychelles~I</first>
@@ -7526,7 +7630,7 @@
   <border>
     <first>eAlep</first>
     <second>eVan</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rChichimeca~N</first>
@@ -7552,7 +7656,7 @@
   <border>
     <first>sAdriatique</first>
     <second>sIonienne</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>rChichimeca~NW</first>
@@ -7599,7 +7703,7 @@
   <border>
     <first>eAlep</first>
     <second>eAnadolu</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rAmour~N</first>
@@ -7646,7 +7750,7 @@
   <border>
     <first>sIonienne</first>
     <second>sThyrrenienne</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eRif</first>
@@ -7737,6 +7841,10 @@
     <type>RIVER</type>
   </border>
   <border>
+    <first>eIslas Canarias</first>
+    <second>sCanarias</second>
+  </border>
+  <border>
     <first>rAmour~W</first>
     <second>rBaikal~NE</second>
   </border>
@@ -7815,7 +7923,7 @@
   <border>
     <first>eDauphine</first>
     <second>eSavoia</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eAntalya</first>
@@ -7903,6 +8011,10 @@
     <second>rBaikal~E</second>
   </border>
   <border>
+    <first>eIslas Canarias</first>
+    <second>sAtlantique</second>
+  </border>
+  <border>
     <first>eMaine</first>
     <second>eVendee</second>
     <type>RIVER</type>
@@ -7922,6 +8034,10 @@
   <border>
     <first>rAden~So</first>
     <second>sMascate</second>
+  </border>
+  <border>
+    <first>eIslas Canarias</first>
+    <second>sArguin</second>
   </border>
   <border>
     <first>eBalaton</first>
@@ -7997,10 +8113,6 @@
     <second>eMidlands</second>
   </border>
   <border>
-    <first>eKexholm</first>
-    <second>eTavastland</second>
-  </border>
-  <border>
     <first>eGloucester</first>
     <second>sMan</second>
   </border>
@@ -8023,7 +8135,7 @@
   <border>
     <first>eCatalunya</first>
     <second>eRosselo</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rAzteca~E</first>
@@ -8044,7 +8156,7 @@
   <border>
     <first>ePirineos</first>
     <second>eRosselo</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eVeneto</first>
@@ -8252,7 +8364,7 @@
   <border>
     <first>eErdely</first>
     <second>eMoldova</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>sPacifique</first>
@@ -8261,12 +8373,12 @@
   <border>
     <first>eKabylie</first>
     <second>eOran</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eTirol</first>
     <second>eVeneto</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rMauritanie~N</first>
@@ -8301,7 +8413,7 @@
   <border>
     <first>eMoldova</first>
     <second>eMures</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>sPacifique</first>
@@ -8401,7 +8513,7 @@
   <border>
     <first>sMarmara</first>
     <second>sNoire W</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>rIenissei~C</first>
@@ -8435,7 +8547,7 @@
   <border>
     <first>eMures</first>
     <second>eValahia</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>rMalacca~S</first>
@@ -8471,7 +8583,7 @@
   <border>
     <first>sEgee</first>
     <second>sMarmara</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eBolgars</first>
@@ -8538,7 +8650,7 @@
   <border>
     <first>sIndus</first>
     <second>sPersique</second>
-    <type>STRAITS</type>
+    <type>STRAIT</type>
   </border>
   <border>
     <first>eDikoe Pole</first>
@@ -8569,6 +8681,10 @@
     <second>sSous-le-vent</second>
   </border>
   <border>
+    <first>rOrmus~I</first>
+    <second>sMascate</second>
+  </border>
+  <border>
     <first>ePolacak</first>
     <second>eZemaitija</second>
     <type>RIVER</type>
@@ -8584,6 +8700,10 @@
   <border>
     <first>rNyasa~N</first>
     <second>sMozambique</second>
+  </border>
+  <border>
+    <first>eAcores</first>
+    <second>sAcores</second>
   </border>
   <border>
     <first>eLorraine</first>
@@ -8607,6 +8727,10 @@
     <first>rNyasa~C</first>
     <second>rNyasa~N</second>
     <type>RIVER</type>
+  </border>
+  <border>
+    <first>eAcores</first>
+    <second>sAtlantique N</second>
   </border>
   <border>
     <first>rKenya~S</first>
@@ -8721,7 +8845,7 @@
   <border>
     <first>eBoheme</first>
     <second>eSachsen</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>ePalermo</first>
@@ -8730,7 +8854,7 @@
   <border>
     <first>eCataractes</first>
     <second>eNil</second>
-    <type>MOUNTAIN_PASS</type>
+    <type>PASS</type>
   </border>
   <border>
     <first>eOberPfalz</first>
@@ -8739,6 +8863,10 @@
   <border>
     <first>rRio~N</first>
     <second>sBahia</second>
+  </border>
+  <border>
+    <first>eAcores</first>
+    <second>sCanarias</second>
   </border>
   <border>
     <first>ePalermo</first>

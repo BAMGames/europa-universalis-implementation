@@ -14,20 +14,45 @@ public interface IMapMarker {
     String PROP_TERRAIN = "terrain";
     /** Name of the marker property for the rotw flag. */
     String PROP_ROTW = "rotw";
+
+    // Properties for European provinces
     /** Name of the marker property for the income. */
-    String PROP_INCOME = "income";
+    String PROP_EU_INCOME = "income";
     /** Name of the marker property for the fortress level. */
-    String PROP_FORTRESS = "fortress";
+    String PROP_EU_FORTRESS = "fortress";
     /** Name of the marker property for the capital flag. */
-    String PROP_CAPITAL = "capital";
+    String PROP_EU_CAPITAL = "capital";
     /** Name of the marker property for the port flag. */
-    String PROP_PORT = "port";
+    String PROP_EU_PORT = "port";
     /** Name of the marker property for the arsenal flag. */
-    String PROP_ARSENAL = "arsenal";
+    String PROP_EU_ARSENAL = "arsenal";
     /** Name of the marker property for the praesidiable flag. */
-    String PROP_PREASIDIABLE = "praesidiable";
+    String PROP_EU_PREASIDIABLE = "praesidiable";
     /** Name of the marker property for the metadata. */
-    String PROP_METADATA = "metadata";
+    String PROP_EU_METADATA = "metadata";
+
+    /** Name of the marker property for the region. */
+    String PROP_ROTW_REGION = "region";
+    /** Name of the marker property for the fortress level. */
+    String PROP_ROTW_FORTRESS = "fortress";
+    /** Name of the marker property for the metadata. */
+    String PROP_ROTW_METADATA = "metadata";
+
+    // Properties for sea zones
+    /** Name of the marker property for the difficulty. */
+    String PROP_SEA_DIFFICULTY = "difficulty";
+    /** Name of the marker property for the penalty. */
+    String PROP_SEA_PENALTY = "penalty";
+
+    // Properties for trade zones
+    /** Name of the marker property for the type. */
+    String PROP_TZ_TYPE = "type";
+    /** Name of the marker property for the country. */
+    String PROP_TZ_COUNTRY = "country";
+    /** Name of the marker property for the monopoly. */
+    String PROP_TZ_MONOPOLY = "monopoly";
+    /** Name of the marker property for the presence. */
+    String PROP_TZ_PRESENCE = "presence";
 
     /**
      * Sets the highlightColor.

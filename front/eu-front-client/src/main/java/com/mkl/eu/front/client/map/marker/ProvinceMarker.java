@@ -302,7 +302,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 + COUNTER_SIZE, center.getLon() + COUNTER_SIZE))[0]);
         float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
-        if (x >= x0 && x <= x0 + stacks.size() * relativeSize && y >= xy[1] - relativeSize / 2 && y <= xy[1] + relativeSize / 2) {
+        if (x >= x0 && x < x0 + stacks.size() * relativeSize && y >= xy[1] - relativeSize / 2 && y < xy[1] + relativeSize / 2) {
             int index = (int) ((x - x0) / relativeSize);
             stack = stacks.get(index);
         }
@@ -330,7 +330,13 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 Object value = props.get(key);
 
                 if (StringUtils.equals(PROP_TERRAIN, key)) {
-                    value = TerrainEnum.valueOf((String) value);
+                    TerrainEnum terrain = null;
+                    try {
+                        terrain = TerrainEnum.valueOf((String) value);
+                    } catch (Exception e) {
+                        // null value if not parsable
+                    }
+                    value = terrain;
                 }
                 properties.put(key, value);
             }
