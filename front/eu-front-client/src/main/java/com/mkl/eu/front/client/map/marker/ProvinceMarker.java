@@ -110,10 +110,19 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 }
                 for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
                     CounterMarker counter = stacks.get(i).getCounters().get(j);
-                    float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
-                    pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
-                            , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
+                    if (getProperties().get(PROP_TERRAIN) == null
+                            && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
+                        float degree = 360 * i / stacks.size();
+                        float x0 = (float) (xy[0] + Math.sin(Math.toRadians(degree)) * relativeSize);
+                        float y0 = (float) (xy[1] - Math.cos(Math.toRadians(degree)) * relativeSize);
+                        pg.image(counter.getImage(), x0 + relativeSize * j / 10
+                                , y0 + relativeSize * j / 10, relativeSize, relativeSize);
+                    } else {
+                        float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
+                        pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
+                                , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
+                    }
                 }
             }
             pg.popStyle();
@@ -249,6 +258,10 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     /** {@inheritDoc} */
     @Override
     public StackMarker getStack(UnfoldingMap map, int x, int y) {
+        if (getProperties().get(PROP_TERRAIN) == null
+                && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
+            return null;
+        }
         StackMarker stack = null;
 
         float[] xy = map.mapDisplay.getObjectFromLocation(center);

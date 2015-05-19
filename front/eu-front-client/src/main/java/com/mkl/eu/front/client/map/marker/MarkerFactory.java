@@ -259,6 +259,8 @@ public class MarkerFactory {
         List<Marker> markers = new ArrayList<>();
         for (Feature subFeature : feature.getFeatures()) {
             Marker marker = createMarker(subFeature);
+            marker.setId(feature.getId());
+            marker.setProperties(feature.getProperties());
             markers.add(marker);
         }
 
