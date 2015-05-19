@@ -277,7 +277,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         }
 
         StackMarker stackMarker = new StackMarker(Long.parseLong(attribute.getValue()), province);
-        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), markerUtils.getImageFromCounter(type, nameCountry)));
+        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), markerUtils.getImageFromCounter(nameCountry, type)));
         province.addStack(stackMarker);
     }
 

@@ -16,6 +16,7 @@ import processing.core.PApplet;
 import processing.core.PImage;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ public class MarkerUtils {
     /** PApplet. */
     @Autowired
     private PApplet pApplet;
+    /** Cache of the images for the counters. Used to not load several times the same image. first key: country, second key: type. */
+    private Map<String, Map<String, PImage>> countersImage = new HashMap<>();
 
     /**
      * Create the Markers from various sources.
@@ -100,7 +103,7 @@ public class MarkerUtils {
      * @return the image of the counter.
      */
     public PImage getImageFromCounter(Counter counter) {
-        return getImageFromCounter(counter.getType().name(), counter.getCountry());
+        return getImageFromCounter(counter.getCountry(), counter.getType().name());
     }
 
     /**
@@ -110,15 +113,56 @@ public class MarkerUtils {
      * @param nameCountry name of the country of the counter.
      * @return the image of the counter.
      */
-    public PImage getImageFromCounter(String type, String nameCountry) {
-        // TODO configure
-        StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
-        if (nameCountry != null) {
-            path.append(nameCountry)
-                    .append("/").append(nameCountry).append("_");
-        }
-        path.append(type).append(".png");
+    public PImage getImageFromCounter(String nameCountry, String type) {
+        PImage image = getImageFromCache(nameCountry, type);
+        if (image == null) {
+            // TODO configure
+            StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
+            if (nameCountry != null) {
+                path.append(nameCountry)
+                        .append("/").append(nameCountry).append("_");
+            }
+            path.append(type).append(".png");
 
-        return pApplet.loadImage(path.toString());
+            image = pApplet.loadImage(path.toString());
+            putImageInCache(nameCountry, type, image);
+        }
+
+        return image;
+    }
+
+    /**
+     * Retrieve an image of counter from the cache.
+     *
+     * @param country of the counter.
+     * @param type    of the counter.
+     * @return the image of the counter from the cache.
+     */
+    private PImage getImageFromCache(String country, String type) {
+        PImage image = null;
+
+        Map<String, PImage> countryImages = countersImage.get(country);
+        if (countryImages != null) {
+            image = countryImages.get(type);
+        }
+
+        return image;
+    }
+
+    /**
+     * Put an image of counter in the cache.
+     *
+     * @param country of the counter.
+     * @param type    of the counter.
+     * @param image   to store.
+     */
+    private void putImageInCache(String country, String type, PImage image) {
+        Map<String, PImage> countryImages = countersImage.get(country);
+        if (countryImages == null) {
+            countryImages = new HashMap<>();
+            countersImage.put(country, countryImages);
+        }
+
+        countryImages.put(type, image);
     }
 }
