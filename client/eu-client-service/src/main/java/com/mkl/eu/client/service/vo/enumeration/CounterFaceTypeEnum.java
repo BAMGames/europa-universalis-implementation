@@ -17,16 +17,20 @@ public enum CounterFaceTypeEnum {
     /** LD. */
     LAND_DETACHMENT,
     /** LD Timar (for Turkey). */
-    LAND_TIMAR_DETACHMENT,
+    LAND_DETACHMENT_TIMAR,
+    /** LD Kozak (for Russia). */
+    LAND_DETACHMENT_KOZAK,
     /** LDe. */
-    LAND_DETACHEMENT_EXPLORATION,
-    /** Sepoy. */
+    LAND_DETACHMENT_EXPLORATION,
+    /** LDe Kozak (for Russia). */
+    LAND_DETACHMENT_EXPLORATION_KOZAK,
+    /** Sepoy (for France, England and Holland). */
     LAND_SEPOY,
-    /** Sepoy exploration. */
+    /** Sepoy exploration (for France, England and Holland). */
     LAND_SEPOY_EXPLORATION,
-    /** Indian ally. */
+    /** Indian ally (for France). */
     LAND_INDIAN,
-    /** Indian ally exploration. */
+    /** Indian ally exploration (for France). */
     LAND_INDIAN_EXPLORATION,
     /** F-. */
     FLEET_MINUS,
@@ -37,7 +41,7 @@ public enum CounterFaceTypeEnum {
     /** Transport F+. */
     FLEET_TRANSPORT_PLUS,
     /** NWD. */
-    NAVAL_WARSHIP_DETACHMENT,
+    NAVAL_DETACHMENT,
     /** NDe. */
     NAVAL_DETACHMENT_EXPLORATION,
     /** NG. */
@@ -70,6 +74,22 @@ public enum CounterFaceTypeEnum {
     ARSENAL_2_GIBRALTAR,
     /** Ars3 at Gibraltar (english player). */
     ARSENAL_3_GIBRALTAR,
+    /** Ars2 at Sebastopol (russian player). */
+    ARSENAL_2_SEBASTOPOL,
+    /** Ars3 at Sebastopol (russian player). */
+    ARSENAL_3_SEBASTOPOL,
+    /** Ars0 at St-Petersburg (russian player). */
+    ARSENAL_0_ST_PETER,
+    /** Ars1 at St-Petersburg (russian player). */
+    ARSENAL_1_ST_PETER,
+    /** Ars2 at St-Petersburg (russian player). */
+    ARSENAL_2_ST_PETER,
+    /** Ars3 at St-Petersburg (russian player). */
+    ARSENAL_3_ST_PETER,
+    /** Ars4 at St-Petersburg (russian player). */
+    ARSENAL_4_ST_PETER,
+    /** Ars5 at St-Petersburg (russian player). */
+    ARSENAL_5_ST_PETER,
     /** Missionnary. */
     MISSIONNARY,
     /** Mission. */
@@ -149,6 +169,8 @@ public enum CounterFaceTypeEnum {
     ROTW_ALLIANCE,
     /** Diplomacy with European minor country. */
     DIPLOMACY,
+    /** Diplomacy with European minor country (other face). */
+    DIPLOMACY_WAR,
 
     // NEUTRAL COUNTERS //
 
@@ -156,6 +178,10 @@ public enum CounterFaceTypeEnum {
     REVOLT_MINUS,
     /** Revolt+. */
     REVOLT_PLUS,
+    /** Rebellion-. */
+    REBEL_MINUS,
+    /** Rebellion+. */
+    REBEL_PLUS,
     /** Gold mine. */
     GOLD_MINE,
     /** Gold mine depleted. */
@@ -168,8 +194,10 @@ public enum CounterFaceTypeEnum {
     SIEGEWORK_MINUS,
     /** SiegeWork+. */
     SIEGEWORK_PLUS,
-    /** Dutch flood. */
-    FLOOD,
+    /** Dutch flood (first turn). */
+    FLOOD_PLUS,
+    /** Dutch flood (second turn). */
+    FLOOD_MINUS,
     /** Turn. */
     TURN,
     /** Good weath (military rounds). */
@@ -178,8 +206,8 @@ public enum CounterFaceTypeEnum {
     BAD_WEATHER,
     /** Great orient trace center. */
     TRADE_CENTER_GREAT_ORIENT,
-    /** Mediterannean trade center. */
-    TRADE_CENTER_MEDITERANNEAN,
+    /** Mediterranean trade center. */
+    TRADE_CENTER_MEDITERRANEAN,
     /** Atlantic trade center. */
     TRADE_CENTER_ATLANTIC,
     /** Indian trade center. */
@@ -188,9 +216,9 @@ public enum CounterFaceTypeEnum {
     // EXOTIC RESSOURCES //
 
     /** Exotic resource price of spice. */
-    SPICE_PRICE,
+    SPICES_PRICE,
     /** Exotic resource production of spice. */
-    SPICE_PRODUCTION,
+    SPICES_PRODUCTION,
     /** Exotic resource price of sugar. */
     SUGAR_PRICE,
     /** Exotic resource production of sugar. */
@@ -224,9 +252,9 @@ public enum CounterFaceTypeEnum {
     /** Exotic resource production of products of orient. */
     PRODUCTS_OF_ORIENT_PRODUCTION,
     /** Exotic resource price of slave. */
-    SLAVE_PRICE,
+    SLAVES_PRICE,
     /** Exotic resource production of slave. */
-    SLAVE_PRODUCTION,
+    SLAVES_PRODUCTION,
     /** Inflation counter. */
     INFLATION,
     /** Inflation counter with gold from America. */
@@ -237,7 +265,7 @@ public enum CounterFaceTypeEnum {
     /** Land technology Renaissance. */
     TECH_RENAISSANCE,
     /** Land technology Tercios (special spanish tech). */
-    TECH_TERCIOS,
+    TECH_TERCIO,
     /** Land technology Arquebus. */
     TECH_ARQUEBUS,
     /** Land technology Musket. */

@@ -15,17 +15,21 @@ public enum CounterTypeEnum {
     /** Transport fleet counter. */
     FLEET_TRANSPORT(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS, CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS),
     /** LD / ND counter. */
-    LDND(CounterFaceTypeEnum.LAND_DETACHMENT, CounterFaceTypeEnum.NAVAL_WARSHIP_DETACHMENT),
-    /** LD Timar / ND counter. */
-    LDND_TIMAR(CounterFaceTypeEnum.LAND_TIMAR_DETACHMENT, CounterFaceTypeEnum.NAVAL_WARSHIP_DETACHMENT),
+    LDND(CounterFaceTypeEnum.LAND_DETACHMENT, CounterFaceTypeEnum.NAVAL_DETACHMENT),
+    /** LD Timar (turkish) / ND counter. */
+    LDND_TIMAR(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, CounterFaceTypeEnum.NAVAL_DETACHMENT),
     /** LD counter alone. */
     LD(CounterFaceTypeEnum.LAND_DETACHMENT, null),
-    /** LD Timar counter alone. */
-    LD_TIMAR(CounterFaceTypeEnum.LAND_TIMAR_DETACHMENT, null),
+    /** LD Timar (turkish) counter alone. */
+    LD_TIMAR(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, null),
+    /** LD Kozak (russian) counter alone. */
+    LD_KOZAK(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK, null),
     /** LDE / NDE counter. */
-    LDENDE(CounterFaceTypeEnum.LAND_DETACHEMENT_EXPLORATION, CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION),
+    LDENDE(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION),
     /** LDE counter alone. */
-    LDE(CounterFaceTypeEnum.LAND_DETACHEMENT_EXPLORATION, null),
+    LDE(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, null),
+    /** LDE Kozak (russian) counter alone. */
+    LDE_KOZAK(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK, null),
     /** NDE counter alone. */
     NDE(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, null),
     /** NTD counter alone. */
@@ -50,6 +54,14 @@ public enum CounterTypeEnum {
     ARS23(CounterFaceTypeEnum.ARSENAL_2, CounterFaceTypeEnum.ARSENAL_3),
     /** Arsenal 2/3 at Gibraltar (english player). */
     ARS23_GIBRALTAR(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR, CounterFaceTypeEnum.ARSENAL_3_GIBRALTAR),
+    /** Arsenal 2/3 at Sebastopol (russian player). */
+    ARS23_SEBASTOPOL(CounterFaceTypeEnum.ARSENAL_2_SEBASTOPOL, CounterFaceTypeEnum.ARSENAL_3_SEBASTOPOL),
+    /** Arsenal 0/1 at St-Petersburg (russian player). */
+    ARS01_ST_PETER(CounterFaceTypeEnum.ARSENAL_0_ST_PETER, CounterFaceTypeEnum.ARSENAL_1_ST_PETER),
+    /** Arsenal 2/3 at St-Petersburg (russian player). */
+    ARS23_ST_PETER(CounterFaceTypeEnum.ARSENAL_2_ST_PETER, CounterFaceTypeEnum.ARSENAL_3_ST_PETER),
+    /** Arsenal 4/5 at St-Petersburg (russian player). */
+    ARS45_ST_PETER(CounterFaceTypeEnum.ARSENAL_4_ST_PETER, CounterFaceTypeEnum.ARSENAL_5_ST_PETER),
     /** Arsenal 3/4. */
     ARS34(CounterFaceTypeEnum.ARSENAL_3, CounterFaceTypeEnum.ARSENAL_4),
     /** Missions. */

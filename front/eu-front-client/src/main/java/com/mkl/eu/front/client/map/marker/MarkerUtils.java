@@ -112,9 +112,12 @@ public class MarkerUtils {
      */
     public PImage getImageFromCounter(String type, String nameCountry) {
         // TODO configure
-        StringBuilder path = new StringBuilder("data/map/v2/counters/").append(nameCountry)
-                .append("/").append(nameCountry).append("_")
-                .append(type).append(".png");
+        StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
+        if (nameCountry != null) {
+            path.append(nameCountry)
+                    .append("/").append(nameCountry).append("_");
+        }
+        path.append(type).append(".png");
 
         return pApplet.loadImage(path.toString());
     }
