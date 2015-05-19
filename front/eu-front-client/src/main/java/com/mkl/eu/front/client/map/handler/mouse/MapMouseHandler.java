@@ -1,6 +1,5 @@
 package com.mkl.eu.front.client.map.handler.mouse;
 
-import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.MyMarkerManager;
 import com.mkl.eu.front.client.map.marker.StackMarker;
@@ -142,31 +141,6 @@ public class MapMouseHandler extends AbstractDragDropMenuMouseHandler<StackMarke
                 }
             }
         }
-        return stop;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean mouseMoved() {
-        boolean stop = super.mouseMoved();
-        if (!stop) {
-            for (UnfoldingMap map : maps) {
-                if (map.isHit(getMouseX(), getMouseY())) {
-                    Marker marker = map.getDefaultMarkerManager().getFirstHitMarker(getMouseX(), getMouseY());
-                    if (marker != null && marker instanceof IMapMarker) {
-                        ((IMapMarker) marker).hover(map, getMouseX(), getMouseY());
-
-                        HoverEvent event = new HoverEvent(map, map.getId());
-                        event.setX(getMouseX());
-                        event.setY(getMouseY());
-                        eventDispatcher.fireMapEvent(event);
-
-                        stop = true;
-                    }
-                }
-            }
-        }
-
         return stop;
     }
 }

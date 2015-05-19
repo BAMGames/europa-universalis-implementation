@@ -10,6 +10,7 @@ import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
+import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.keyboard.MapKeyboardHandler;
 import com.mkl.eu.front.client.map.handler.mouse.InfoViewMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MapMouseHandler;
@@ -125,6 +126,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         eventDispatcher.register(mapDetail, ZoomMapEvent.TYPE_ZOOM, mapDetail.getId());
 
         eventDispatcher.register(markerManager, DragEvent.TYPE_DRAG, markerManager.getId());
+        eventDispatcher.register(markerManager, HoverEvent.TYPE_HOVER, markerManager.getId());
         eventDispatcher.register(info, DragEvent.TYPE_DRAG, info.getId());
 
 //        eventDispatcher.register(this, PanMapEvent.TYPE_PAN, getId(), mapDetail.getId());

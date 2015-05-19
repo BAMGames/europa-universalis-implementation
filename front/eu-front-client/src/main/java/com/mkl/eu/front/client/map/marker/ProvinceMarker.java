@@ -18,8 +18,6 @@ import java.util.List;
 
 /** @author MKL. */
 public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
-    /** Size of a counter in the Map frame. */
-    private static final float COUNTER_SIZE = 0.1725f;
     /** Neighbours of the province. */
     private List<BorderMarker> neighbours = new ArrayList<>();
     /** Counters of the province. */
@@ -30,8 +28,6 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     private Location bottomRight;
     /** Center of the shape. */
     private Location center;
-    /** Stack being hovered. */
-    private StackMarker hovered = null;
     /** Parent. */
     private IMapMarker parent;
 
@@ -86,7 +82,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
-    public void draw(UnfoldingMap map, StackMarker stackToIgnore) {
+    public void draw(UnfoldingMap map, List<StackMarker> stacksToIgnore) {
         Location bottomRightBorder = map.getBottomRightBorder();
 
         Location topLeftBorder = map.getTopLeftBorder();
@@ -108,13 +104,8 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                     + COUNTER_SIZE, center.getLon() + COUNTER_SIZE))[0]);
             int indexHovered = -1;
             for (int i = 0; i < stacks.size(); i++) {
-                // The stack being dragged is drawn by the MarkerManager.
-                if (stacks.get(i) == stackToIgnore) {
-                    continue;
-                }
-                // The hovered stack is drawn afterward so that it is in first plan.
-                if (hovered == stacks.get(i) && hovered.getCounters().size() > 1) {
-                    indexHovered = i;
+                // The stack being dragged or hovered is drawn by the MarkerManager.
+                if (stacksToIgnore.contains(stacks.get(i))) {
                     continue;
                 }
                 for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
@@ -123,19 +114,6 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
                     pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
                             , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
-                }
-            }
-            // The hovered stack is drawn afterward so that it is in first plan.
-            if (hovered != null && indexHovered != -1 && hovered.getCounters().size() > 1) {
-                for (int j = 0; j < hovered.getCounters().size(); j++) {
-                    CounterMarker counter = hovered.getCounters().get(j);
-                    float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
-
-                    pg.image(counter.getImage(), x0 + relativeSize * j * 2 + relativeSize * indexHovered
-                            , xy[1] + relativeSize / 2, relativeSize, relativeSize);
-                    pg.stroke(255, 255, 0);
-                    drawRectBorder(pg, x0 + relativeSize * j * 2 + relativeSize * indexHovered
-                            , xy[1] + relativeSize / 2, relativeSize, relativeSize, 2.5f);
                 }
             }
             pg.popStyle();
@@ -152,24 +130,6 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     @Override
     public void setParent(IMapMarker parent) {
         this.parent = parent;
-    }
-
-    /**
-     * Draw the borders of a rectangle.
-     *
-     * @param pg    the graphics.
-     * @param x     X coordinate of the rectangle.
-     * @param y     Y coordinate of the rectangle.
-     * @param w     width of the rectangle.
-     * @param h     height of the rectangle.
-     * @param depth of the line.
-     */
-    private void drawRectBorder(PGraphics pg, float x, float y, float w, float h, float depth) {
-        pg.strokeWeight(2 * depth);
-        pg.line(x - depth, y - depth, x + w + depth, y - depth);
-        pg.line(x + w + depth, y - depth, x + w + depth, y + h + depth);
-        pg.line(x + w + depth, y + h + depth, x - depth, y + h + depth);
-        pg.line(x - depth, y + h + depth, x - depth, y - depth);
     }
 
     /** {@inheritDoc} */
@@ -284,12 +244,6 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     public void removeStack(StackMarker stack) {
         stack.setProvince(null);
         stacks.remove(stack);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void hover(UnfoldingMap map, int x, int y) {
-        hovered = getStack(map, x, y);
     }
 
     /** {@inheritDoc} */

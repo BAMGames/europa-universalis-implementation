@@ -14,6 +14,7 @@ import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
+import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
 import de.fhpotsdam.unfolding.events.MapEvent;
@@ -60,6 +61,10 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private StackMarker dragged;
     /** The new location of the dragged object. */
     private Location dragLocation;
+    /** Stack being hovered. */
+    private StackMarker hovered = null;
+    /** Location of the hovered stack. */
+    private Location hoverLocation;
     /** Marker being contextualized. */
     private Object contextualized;
     /** Location of the contextual menu in the map frame. */
@@ -75,25 +80,52 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             return;
 
         PGraphics pg = map.mapDisplay.getOuterPG();
+        List<StackMarker> stacksToIgnore = new ArrayList<>();
+        if (dragged != null) {
+            stacksToIgnore.add(dragged);
+        }
+        if (hovered != null && hovered.getCounters().size() > 1) {
+            stacksToIgnore.add(hovered);
+        }
 
         for (Marker marker : markers) {
             if (marker instanceof IMapMarker) {
-                ((IMapMarker) marker).draw(map, dragged);
+                ((IMapMarker) marker).draw(map, stacksToIgnore);
             } else {
                 marker.draw(map);
             }
         }
 
+        Location randomPoint = new Location(0, 0);
+        float[] xyRand = map.mapDisplay.getObjectFromLocation(randomPoint);
+        float relativeSize = Math.abs(xyRand[0] - map.mapDisplay.getObjectFromLocation(new Location(randomPoint.getLat()
+                + IMapMarker.COUNTER_SIZE, randomPoint.getLon() + IMapMarker.COUNTER_SIZE))[0]);
+
         if (dragged != null && dragLocation != null) {
             pg.pushStyle();
             pg.imageMode(PConstants.CORNER);
             float[] xy = map.mapDisplay.getObjectFromLocation(dragLocation);
-            float size = 0.08f * map.getZoom();
             for (int j = 0; j < dragged.getCounters().size(); j++) {
                 CounterMarker counter = dragged.getCounters().get(j);
                 float x0 = xy[0];
-                pg.image(counter.getImage(), x0 + size * j / 10
-                        , xy[1] + size * j / 10, size, size);
+                pg.image(counter.getImage(), x0 + relativeSize * j / 10
+                        , xy[1] + relativeSize * j / 10, relativeSize, relativeSize);
+            }
+            pg.popStyle();
+        }
+
+        if (hovered != null && hoverLocation != null && hovered.getCounters().size() > 1 && hovered != dragged) {
+            pg.pushStyle();
+            pg.imageMode(PConstants.CORNER);
+            float[] xy = map.mapDisplay.getObjectFromLocation(hoverLocation);
+            for (int j = 0; j < hovered.getCounters().size(); j++) {
+                CounterMarker counter = hovered.getCounters().get(j);
+
+                pg.image(counter.getImage(), xy[0] + relativeSize * j * 2
+                        , xy[1] + relativeSize / 2, relativeSize, relativeSize);
+                pg.stroke(255, 255, 0);
+                drawRectBorder(pg, xy[0] + relativeSize * j * 2
+                        , xy[1] + relativeSize / 2, relativeSize, relativeSize, 2.5f);
             }
             pg.popStyle();
         }
@@ -103,6 +135,24 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             menu.setLocation(new Location(xy[0], xy[1]));
             menu.draw(pg);
         }
+    }
+
+    /**
+     * Draw the borders of a rectangle.
+     *
+     * @param pg    the graphics.
+     * @param x     X coordinate of the rectangle.
+     * @param y     Y coordinate of the rectangle.
+     * @param w     width of the rectangle.
+     * @param h     height of the rectangle.
+     * @param depth of the line.
+     */
+    private void drawRectBorder(PGraphics pg, float x, float y, float w, float h, float depth) {
+        pg.strokeWeight(2 * depth);
+        pg.line(x - depth, y - depth, x + w + depth, y - depth);
+        pg.line(x + w + depth, y - depth, x + w + depth, y + h + depth);
+        pg.line(x + w + depth, y + h + depth, x - depth, y + h + depth);
+        pg.line(x - depth, y + h + depth, x - depth, y - depth);
     }
 
     /** {@inheritDoc} */
@@ -413,6 +463,15 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     break;
                 default:
                     break;
+            }
+        } else if (StringUtils.equals(HoverEvent.TYPE_HOVER, event.getType()) && event instanceof HoverEvent) {
+            HoverEvent hoverEvent = (HoverEvent) event;
+            StackMarker lastHover = hovered;
+            hovered = getDrag(hoverEvent.getX(), hoverEvent.getY());
+            if (hovered != lastHover) {
+                hoverLocation = map.getLocation(hoverEvent.getX(), hoverEvent.getY());
+            } else if (hovered == null) {
+                hoverLocation = null;
             }
         }
     }

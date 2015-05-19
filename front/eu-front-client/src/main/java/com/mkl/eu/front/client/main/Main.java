@@ -88,6 +88,20 @@ public class Main extends JFrame implements IDiffListener {
         centerFrame(main);
         main.pack();
         main.setVisible(true);
+
+//        new Thread(() -> {
+//            while (true) {
+//                try {
+//                    Thread.sleep(2000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+//                NumberFormat nf = new DecimalFormat("#,###.000");
+//                System.out.println("heap : " + nf.format(memoryBean.getHeapMemoryUsage().getUsed() / (1024 * 1024)));
+//                System.out.println("non heap : " + nf.format(memoryBean.getNonHeapMemoryUsage().getUsed() / (1024 * 1024)));
+//            }
+//        }).run();
     }
 
     /** {@inheritDoc} */

@@ -40,10 +40,10 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
-    public void draw(UnfoldingMap map, StackMarker stackToIgnore) {
+    public void draw(UnfoldingMap map, List<StackMarker> stacksToIgnore) {
         for (Marker marker : markers) {
             if (marker instanceof IMapMarker) {
-                ((IMapMarker) marker).draw(map, stackToIgnore);
+                ((IMapMarker) marker).draw(map, stacksToIgnore);
             } else {
                 marker.draw(map);
             }
@@ -130,12 +130,6 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
     @Override
     public void removeStack(StackMarker stack) {
         getFirstMapMarker().removeStack(stack);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void hover(UnfoldingMap map, int x, int y) {
-        getFirstMapMarker().hover(map, x, y);
     }
 
     /** {@inheritDoc} */

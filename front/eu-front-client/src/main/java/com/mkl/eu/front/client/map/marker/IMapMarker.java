@@ -10,6 +10,8 @@ import java.util.List;
  * @author MKL
  */
 public interface IMapMarker {
+    /** Size of a counter in the Map frame. */
+    float COUNTER_SIZE = 0.1725f;
     /** Name of the marker property for the terrain. */
     String PROP_TERRAIN = "terrain";
     /** Name of the marker property for the rotw flag. */
@@ -109,21 +111,12 @@ public interface IMapMarker {
     StackMarker getStack(UnfoldingMap map, int x, int y);
 
     /**
-     * Method called when the marker is hovered.
-     *
-     * @param map the map.
-     * @param x   X coordinate.
-     * @param y   Y coordinate.
-     */
-    void hover(UnfoldingMap map, int x, int y);
-
-    /**
      * Draws this marker.
      *
      * @param map           The map to draw on.
-     * @param stackToIgnore stack not to draw.
+     * @param stacksToIgnore stacks not to draw.
      */
-    void draw(UnfoldingMap map, StackMarker stackToIgnore);
+    void draw(UnfoldingMap map, List<StackMarker> stacksToIgnore);
 
     /** @return In case of Provinces in various pieces, returns the MultiProvinceMarker parent of all. */
     IMapMarker getParent();
