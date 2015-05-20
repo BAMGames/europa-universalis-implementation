@@ -87,7 +87,7 @@ public class MarkerUtils {
                 game.getStacks().stream().filter(stack -> StringUtils.equals(stack.getProvince(), marker.getId())).forEach(stack -> {
                     StackMarker stackMarker = new StackMarker(stack.getId(), mapMarker);
                     for (Counter counter : stack.getCounters()) {
-                        stackMarker.addCounter(new CounterMarker(counter.getId(), getImageFromCounter(counter)));
+                        stackMarker.addCounter(new CounterMarker(counter.getId(), counter.getCountry(), counter.getType(), getImageFromCounter(counter)));
                     }
                     mapMarker.addStack(stackMarker);
                 });

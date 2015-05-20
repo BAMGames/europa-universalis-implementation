@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import de.fhpotsdam.unfolding.UnfoldingMap;
@@ -22,6 +23,11 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     private List<BorderMarker> neighbours = new ArrayList<>();
     /** Counters of the province. */
     private List<StackMarker> stacks = new ArrayList<>();
+    /** Stacks that are in special locations (fortress and praesidios mostly). */
+    /** Stacks on the fortress (a better fortress and besieged units in it). */
+    private List<StackMarker> stacksFortress = new ArrayList<>();
+    /** Stacks on the port (a praesidio, besieged units in it, fleet unit in or besieging port). */
+    private List<StackMarker> stacksPort = new ArrayList<>();
     /** Lower left location of the shape. X and Y are inversed due to unfolding bug. */
     private Location topLeft;
     /** Upper right location of the shape. X and Y are inversed due to unfolding bug. */
@@ -94,6 +100,9 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 super.draw(map);
             }
 
+            if (id.equals("eAndalucia")) {
+                int a = 1;
+            }
 
             PGraphics pg = map.mapDisplay.getOuterPG();
 
@@ -102,30 +111,79 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             float[] xy = map.mapDisplay.getObjectFromLocation(center);
             float relativeSize = Math.abs(xy[0] - map.mapDisplay.getObjectFromLocation(new Location(center.getLat()
                     + COUNTER_SIZE, center.getLon() + COUNTER_SIZE))[0]);
-            int indexHovered = -1;
-            for (int i = 0; i < stacks.size(); i++) {
-                // The stack being dragged or hovered is drawn by the MarkerManager.
-                if (stacksToIgnore.contains(stacks.get(i))) {
-                    continue;
-                }
-                for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
-                    CounterMarker counter = stacks.get(i).getCounters().get(j);
 
-                    if (getProperties().get(PROP_TERRAIN) == null
-                            && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
-                        float degree = 360 * i / stacks.size();
-                        float x0 = (float) (xy[0] + Math.sin(Math.toRadians(degree)) * relativeSize);
-                        float y0 = (float) (xy[1] - Math.cos(Math.toRadians(degree)) * relativeSize);
-                        pg.image(counter.getImage(), x0 + relativeSize * j / 10
-                                , y0 + relativeSize * j / 10, relativeSize, relativeSize);
-                    } else {
-                        float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
-                        pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
-                                , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
-                    }
-                }
+            if (getProperties().get(PROP_TERRAIN) == null
+                    && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
+                drawStacksInCircle(stacks, xy, relativeSize, pg, stacksToIgnore);
+            } else {
+                drawStacks(stacks, xy, relativeSize, pg, stacksToIgnore);
             }
+
+            Location location = getFortressLocation();
+            if (location != null) {
+                xy = map.mapDisplay.getObjectFromLocation(location);
+                drawStacks(stacksFortress, xy, relativeSize, pg, stacksToIgnore);
+            }
+
+            location = getPortLocation();
+            if (location != null) {
+                xy = map.mapDisplay.getObjectFromLocation(location);
+                drawStacks(stacksPort, xy, relativeSize, pg, stacksToIgnore);
+            }
+
             pg.popStyle();
+        }
+    }
+
+    /**
+     * Draw stacks at a starting location.
+     *
+     * @param stacks         stacks to draw.
+     * @param xy             starting location.
+     * @param relativeSize   size of the counters.
+     * @param pg             graphics.
+     * @param stacksToIgnore stacks not to draw.
+     */
+    protected void drawStacks(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksToIgnore) {
+        for (int i = 0; i < stacks.size(); i++) {
+            // The stack being dragged or hovered is drawn by the MarkerManager.
+            if (stacksToIgnore.contains(stacks.get(i))) {
+                continue;
+            }
+            for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
+                CounterMarker counter = stacks.get(i).getCounters().get(j);
+
+                float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
+                pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
+                        , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
+            }
+        }
+    }
+
+    /**
+     * Draw stacks in circle around a location.
+     *
+     * @param stacks         stacks to draw.
+     * @param xy             center location.
+     * @param relativeSize   size of the counters.
+     * @param pg             graphics.
+     * @param stacksToIgnore stacks not to draw.
+     */
+    protected void drawStacksInCircle(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksToIgnore) {
+        for (int i = 0; i < stacks.size(); i++) {
+            // The stack being dragged or hovered is drawn by the MarkerManager.
+            if (stacksToIgnore.contains(stacks.get(i))) {
+                continue;
+            }
+            for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
+                CounterMarker counter = stacks.get(i).getCounters().get(j);
+
+                float degree = 360 * i / stacks.size();
+                float x0 = (float) (xy[0] + Math.sin(Math.toRadians(degree)) * relativeSize);
+                float y0 = (float) (xy[1] - Math.cos(Math.toRadians(degree)) * relativeSize);
+                pg.image(counter.getImage(), x0 + relativeSize * j / 10
+                        , y0 + relativeSize * j / 10, relativeSize, relativeSize);
+            }
         }
     }
 
@@ -243,7 +301,14 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         if (stack.getProvince() != null) {
             stack.getProvince().removeStack(stack);
         }
-        stacks.add(stack);
+
+        if (getFortressLocation() != null && isFortressStack(stack)) {
+            stacksFortress.add(stack);
+        } else if (getPortLocation() != null && isPortStack(stack)) {
+            stacksPort.add(stack);
+        } else {
+            stacks.add(stack);
+        }
 
         stack.setProvince(getRealStackOwner());
     }
@@ -252,6 +317,9 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     @Override
     public void removeStack(StackMarker stack) {
         stack.setProvince(null);
+
+        stacksFortress.remove(stack);
+        stacksPort.remove(stack);
         stacks.remove(stack);
     }
 
@@ -262,11 +330,39 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
             return null;
         }
-        StackMarker stack = null;
 
         float[] xy = map.mapDisplay.getObjectFromLocation(center);
         float relativeSize = Math.abs(xy[0] - map.mapDisplay.getObjectFromLocation(new Location(center.getLat()
                 + COUNTER_SIZE, center.getLon() + COUNTER_SIZE))[0]);
+
+        StackMarker stack = getStack(stacks, xy, x, y, relativeSize);
+        Location location = getFortressLocation();
+        if (stack == null && location != null) {
+            xy = map.mapDisplay.getObjectFromLocation(location);
+            stack = getStack(stacksFortress, xy, x, y, relativeSize);
+        }
+        location = getPortLocation();
+        if (stack == null && location != null) {
+            xy = map.mapDisplay.getObjectFromLocation(location);
+            stack = getStack(stacksPort, xy, x, y, relativeSize);
+        }
+
+        return stack;
+    }
+
+    /**
+     * Returns a stack within a list given a starting location and coordinates.
+     *
+     * @param stacks       existing stacks.
+     * @param xy           location where the stacks are drawn.
+     * @param x            X coordinate.
+     * @param y            Y coordinate.
+     * @param relativeSize size of counters.
+     * @return a stack at given coordinates.
+     */
+    protected StackMarker getStack(List<StackMarker> stacks, float[] xy, int x, int y, float relativeSize) {
+        StackMarker stack = null;
+
         float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
         if (x >= x0 && x < x0 + stacks.size() * relativeSize && y >= xy[1] - relativeSize / 2 && y < xy[1] + relativeSize / 2) {
@@ -287,6 +383,106 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         return province;
     }
 
+    /**
+     * Returns <code>true</code> if the stack should be drawn on the fortress, <code>false</code> otherwise.
+     *
+     * @param stack to test.
+     * @return <code>true</code> if the stack should be drawn on the fortress, <code>false</code> otherwise.
+     */
+    private boolean isFortressStack(StackMarker stack) {
+        if (stack != null && stack.getCounters() != null) {
+            for (CounterMarker counter : stack.getCounters()) {
+                switch (counter.getType()) {
+                    case FORTRESS_1:
+                    case FORTRESS_2:
+                    case FORTRESS_3:
+                    case FORTRESS_4:
+                    case FORTRESS_5:
+                        return StringUtils.equals(counter.getCountry(), getOwner());
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns <code>true</code> if the stack should be drawn on the port, <code>false</code> otherwise.
+     *
+     * @param stack to test.
+     * @return <code>true</code> if the stack should be drawn on the port, <code>false</code> otherwise.
+     */
+    private boolean isPortStack(StackMarker stack) {
+        if (stack != null && stack.getCounters() != null) {
+            for (CounterMarker counter : stack.getCounters()) {
+                switch (counter.getType()) {
+                    case FORTRESS_1:
+                    case FORTRESS_2:
+                    case FORTRESS_3:
+                    case FORTRESS_4:
+                    case FORTRESS_5:
+                        return !StringUtils.equals(counter.getCountry(), getOwner());
+                    case FLEET_MINUS:
+                    case FLEET_PLUS:
+                    case NAVAL_DETACHMENT:
+                    case NAVAL_DETACHMENT_EXPLORATION:
+                    case NAVAL_GALLEY:
+                    case NAVAL_TRANSPORT:
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the country owning this province.
+     *
+     * @return the country owning this province.
+     */
+    private String getOwner() {
+        for (StackMarker stack : stacks) {
+            for (CounterMarker marker : stack.getCounters()) {
+                if (marker.getType() == CounterFaceTypeEnum.OWN) {
+                    return marker.getCountry();
+                }
+            }
+        }
+
+        return (String) getProperties().get(PROP_EU_OWNER);
+    }
+
+    /**
+     * @return the location of the fortress.
+     */
+    protected Location getFortressLocation() {
+        Location location = null;
+        Object x = getProperty(PROP_EU_X_FORTRESS);
+        Object y = getProperty(PROP_EU_Y_FORTRESS);
+        if (x instanceof Double && y instanceof Double) {
+            // Thanks for the x/y inversion in location...
+            location = new Location((Double) y, (Double) x);
+        }
+
+        return location;
+    }
+
+    /**
+     * @return the location of the port.
+     */
+    protected Location getPortLocation() {
+        Location location = null;
+        Object x = getProperty(PROP_EU_X_PORT);
+        Object y = getProperty(PROP_EU_Y_PORT);
+        if (x instanceof Double && y instanceof Double) {
+            // Thanks for the x/y inversion in location...
+            location = new Location((Double) y, (Double) x);
+        }
+
+        return location;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void setProperties(HashMap<String, Object> props) {
@@ -304,6 +500,17 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                         // null value if not parsable
                     }
                     value = terrain;
+                } else if (StringUtils.equals(PROP_EU_X_FORTRESS, key)
+                        || StringUtils.equals(PROP_EU_Y_FORTRESS, key)
+                        || StringUtils.equals(PROP_EU_X_PORT, key)
+                        || StringUtils.equals(PROP_EU_Y_PORT, key)) {
+                    Double number = null;
+                    try {
+                        number = Double.parseDouble((String) value);
+                    } catch (Exception e) {
+                        // null value if not parsable
+                    }
+                    value = number;
                 }
                 properties.put(key, value);
             }

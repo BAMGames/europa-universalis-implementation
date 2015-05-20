@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
@@ -262,7 +263,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
             return;
         }
 
-        String type = attribute.getValue();
+        CounterFaceTypeEnum type = CounterFaceTypeEnum.valueOf(attribute.getValue());
 
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY);
         if (attribute == null) {
@@ -279,7 +280,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         }
 
         StackMarker stackMarker = new StackMarker(Long.parseLong(attribute.getValue()), province);
-        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), markerUtils.getImageFromCounter(nameCountry, type)));
+        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, markerUtils.getImageFromCounter(nameCountry, type.name())));
         province.addStack(stackMarker);
     }
 

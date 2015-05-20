@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import processing.core.PImage;
 
 /**
@@ -14,6 +15,10 @@ public class CounterMarker {
     private PImage image;
     /** Stack owning the counter. */
     private StackMarker owner;
+    /** Name of the country owning of the counter. */
+    private String country;
+    /** Type of the counter. */
+    private CounterFaceTypeEnum type;
 
     /**
      * Constructor.
@@ -21,14 +26,26 @@ public class CounterMarker {
      * @param id    the id.
      * @param image the image.
      */
-    public CounterMarker(Long id, PImage image) {
+    public CounterMarker(Long id, String country, CounterFaceTypeEnum type, PImage image) {
         this.id = id;
+        this.country = country;
+        this.type = type;
         this.image = image;
     }
 
     /** @return the id. */
     public Long getId() {
         return id;
+    }
+
+    /** @return the country. */
+    public String getCountry() {
+        return country;
+    }
+
+    /** @return the type. */
+    public CounterFaceTypeEnum getType() {
+        return type;
     }
 
     /** @return the image. */

@@ -459,10 +459,6 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>eAlabania</first>
-    <second>eMakedonya</second>
-  </border>
-  <border>
     <first>eGelderland</first>
     <second>eLimburg</second>
     <type>RIVER</type>
@@ -974,10 +970,6 @@
     <second>eSlovenija</second>
   </border>
   <border>
-    <first>eEgypte</first>
-    <second>eSinai</second>
-  </border>
-  <border>
     <first>rMinas Gerais~W</first>
     <second>rParaguay~W</second>
   </border>
@@ -1481,10 +1473,6 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>eGastrikland</first>
-    <second>eJamtland</second>
-  </border>
-  <border>
     <first>sGroenland</first>
     <second>sLabrador</second>
   </border>
@@ -1530,6 +1518,10 @@
   <border>
     <first>rRecife~NE</first>
     <second>rRecife~S</second>
+  </border>
+  <border>
+    <first>eGastrikland</first>
+    <second>eJamtland</second>
   </border>
   <border>
     <first>rTerre-Neuve~N</first>
@@ -1843,11 +1835,6 @@
     <second>eTrier</second>
   </border>
   <border>
-    <first>eBergslagen</first>
-    <second>eOstlandet</second>
-    <type>PASS</type>
-  </border>
-  <border>
     <first>eMagyarorszag</first>
     <second>ePecs</second>
     <type>RIVER</type>
@@ -1901,6 +1888,10 @@
   <border>
     <first>eCrimee</first>
     <second>sNoire E</second>
+  </border>
+  <border>
+    <first>eEgypte</first>
+    <second>eSinai</second>
   </border>
   <border>
     <first>rMascareignes~M</first>
@@ -2046,10 +2037,6 @@
     <second>sNorvege</second>
   </border>
   <border>
-    <first>eDelta</first>
-    <second>eSinai</second>
-  </border>
-  <border>
     <first>rMascareignes~M</first>
     <second>sQuarantiemes</second>
   </border>
@@ -2165,6 +2152,10 @@
     <first>rKansas~E</first>
     <second>rKansas~S</second>
     <type>RIVER</type>
+  </border>
+  <border>
+    <first>eDelta</first>
+    <second>eSinai</second>
   </border>
   <border>
     <first>eMainz</first>
@@ -2407,10 +2398,6 @@
     <second>eNice</second>
   </border>
   <border>
-    <first>eDelta</first>
-    <second>eEgypte</second>
-  </border>
-  <border>
     <first>rAoudh~E</first>
     <second>rGondwana~N</second>
     <type>RIVER</type>
@@ -2544,6 +2531,10 @@
   <border>
     <first>rJapon~E</first>
     <second>sPacifique NW</second>
+  </border>
+  <border>
+    <first>eAlabania</first>
+    <second>eMakedonya</second>
   </border>
   <border>
     <first>rSiberie~E</first>
@@ -3078,6 +3069,10 @@
   <border>
     <first>rVirginia~S</first>
     <second>rVirginia~W</second>
+  </border>
+  <border>
+    <first>eDelta</first>
+    <second>eEgypte</second>
   </border>
   <border>
     <first>rKansas~N</first>
@@ -3642,6 +3637,11 @@
     <second>sAtlantique SW</second>
   </border>
   <border>
+    <first>eBergslagen</first>
+    <second>eOstlandet</second>
+    <type>PASS</type>
+  </border>
+  <border>
     <first>rNatal~S</first>
     <second>sTempetes</second>
   </border>
@@ -3772,11 +3772,6 @@
     <second>sTempetes</second>
   </border>
   <border>
-    <first>eBresse</first>
-    <second>eSavoia</second>
-    <type>RIVER</type>
-  </border>
-  <border>
     <first>eNormandie</first>
     <second>eOrleanais</second>
   </border>
@@ -3905,10 +3900,6 @@
   <border>
     <first>rAngola~N</first>
     <second>rAngola~S</second>
-  </border>
-  <border>
-    <first>eSyrie</first>
-    <second>eTerra Sancta</second>
   </border>
   <border>
     <first>eEstland</first>
@@ -4130,10 +4121,6 @@
   <border>
     <first>eUkrainya</first>
     <second>eZaporozhye</second>
-  </border>
-  <border>
-    <first>eSmaland</first>
-    <second>eVastergotland</second>
   </border>
   <border>
     <first>sAtlantique N</first>
@@ -4768,6 +4755,11 @@
     <second>rInca~S</second>
   </border>
   <border>
+    <first>eBresse</first>
+    <second>eSavoia</second>
+    <type>RIVER</type>
+  </border>
+  <border>
     <first>eBassorah</first>
     <second>eNefud</second>
   </border>
@@ -5016,11 +5008,6 @@
     <second>sFundy</second>
   </border>
   <border>
-    <first>eBrega</first>
-    <second>eConnacht</second>
-    <type>RIVER</type>
-  </border>
-  <border>
     <first>eAngora</first>
     <second>eTrabzon</second>
     <type>RIVER</type>
@@ -5231,6 +5218,10 @@
   <border>
     <first>eLubnan</first>
     <second>sMediterranee E</second>
+  </border>
+  <border>
+    <first>eSyrie</first>
+    <second>eTerra Sancta</second>
   </border>
   <border>
     <first>eBoheme</first>
@@ -5569,10 +5560,6 @@
     <second>sPhilippines</second>
   </border>
   <border>
-    <first>eBalaton</first>
-    <second>ePecs</second>
-  </border>
-  <border>
     <first>rIenissei~E</first>
     <second>rIenissei~SE</second>
     <type>RIVER</type>
@@ -5827,11 +5814,6 @@
     <second>rRocheuses~SE</second>
   </border>
   <border>
-    <first>eConnacht</first>
-    <second>eMumhan</second>
-    <type>RIVER</type>
-  </border>
-  <border>
     <first>rArizona~E</first>
     <second>rArizona~S</second>
   </border>
@@ -5893,6 +5875,11 @@
   <border>
     <first>rCap~N</first>
     <second>rCap~W</second>
+  </border>
+  <border>
+    <first>eConnacht</first>
+    <second>eMumhan</second>
+    <type>RIVER</type>
   </border>
   <border>
     <first>eDagestan</first>
@@ -6073,6 +6060,11 @@
   <border>
     <first>rKarnatika~S</first>
     <second>rMalabar~E</second>
+  </border>
+  <border>
+    <first>eBrega</first>
+    <second>eConnacht</second>
+    <type>RIVER</type>
   </border>
   <border>
     <first>eKaluga</first>
@@ -6408,6 +6400,10 @@
   <border>
     <first>rMadagascar~N</first>
     <second>rMadagascar~S</second>
+  </border>
+  <border>
+    <first>eSmaland</first>
+    <second>eVastergotland</second>
   </border>
   <border>
     <first>sChili</first>
@@ -7815,6 +7811,10 @@
     <second>rSiberie~NW</second>
   </border>
   <border>
+    <first>eBalaton</first>
+    <second>ePecs</second>
+  </border>
+  <border>
     <first>rParaguay~SE</first>
     <second>rParaguay~W</second>
     <type>RIVER</type>
@@ -7926,10 +7926,6 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>eAntalya</first>
-    <second>eIzmir</second>
-  </border>
-  <border>
     <first>sCadix</first>
     <second>sMediterranee W</second>
   </border>
@@ -7952,6 +7948,10 @@
   <border>
     <first>rInca~N</first>
     <second>rInca~NW</second>
+  </border>
+  <border>
+    <first>eAntalya</first>
+    <second>eIzmir</second>
   </border>
   <border>
     <first>rAden~So</first>
@@ -8661,10 +8661,6 @@
     <second>sTempetes</second>
   </border>
   <border>
-    <first>eBresse</first>
-    <second>eSuisse</second>
-  </border>
-  <border>
     <first>eRomagna</first>
     <second>sAdriatique</second>
   </border>
@@ -8675,6 +8671,10 @@
   <border>
     <first>eCanakkale</first>
     <second>eMakedonya</second>
+  </border>
+  <border>
+    <first>eBresse</first>
+    <second>eSuisse</second>
   </border>
   <border>
     <first>rAntilles~B</first>

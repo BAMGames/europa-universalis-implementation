@@ -20,10 +20,20 @@ public interface IMapMarker {
     // Properties for European provinces
     /** Name of the marker property for the income. */
     String PROP_EU_INCOME = "income";
+    /** Name of the marker property for the owner. */
+    String PROP_EU_OWNER = "owner";
+    /** Name of the marker property for the x coordinate fortress flag. */
+    String PROP_EU_X_FORTRESS = "xFortress";
+    /** Name of the marker property for the y coordinate fortress flag. */
+    String PROP_EU_Y_FORTRESS = "yFortress";
     /** Name of the marker property for the fortress level. */
     String PROP_EU_FORTRESS = "fortress";
     /** Name of the marker property for the capital flag. */
     String PROP_EU_CAPITAL = "capital";
+    /** Name of the marker property for the x coordinate port flag. */
+    String PROP_EU_X_PORT = "xPort";
+    /** Name of the marker property for the y coordinate port flag. */
+    String PROP_EU_Y_PORT = "yPort";
     /** Name of the marker property for the port flag. */
     String PROP_EU_PORT = "port";
     /** Name of the marker property for the arsenal flag. */
