@@ -2,10 +2,9 @@ package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.service.service.mapping.board.StackMapping;
-import com.mkl.eu.service.service.mapping.country.CountryMapping;
+import com.mkl.eu.service.service.mapping.country.PlayableCountryMapping;
+import com.mkl.eu.service.service.mapping.country.RelationMapping;
 import com.mkl.eu.service.service.mapping.event.PoliticalEventMapping;
-import com.mkl.eu.service.service.mapping.player.PlayerMapping;
-import com.mkl.eu.service.service.mapping.player.RelationMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,13 +21,10 @@ import java.util.Map;
 public class GameMapping {
     /** Mapping for a country. */
     @Autowired
-    private CountryMapping countryMapping;
+    private PlayableCountryMapping playableCountryMapping;
     /** Mapping for political events. */
     @Autowired
     private PoliticalEventMapping politicalEventMapping;
-    /** Mapping for players. */
-    @Autowired
-    private PlayerMapping playerMapping;
     /** Mapping for relations. */
     @Autowired
     private RelationMapping relationMapping;
@@ -56,11 +52,9 @@ public class GameMapping {
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
 
-        target.setCountries(countryMapping.oesToVos(source.getCountries(), objectsCreated));
+        target.setCountries(playableCountryMapping.oesToVos(source.getCountries(), objectsCreated));
 
         target.setEvents(politicalEventMapping.oesToVos(source.getEvents(), objectsCreated));
-
-        target.setPlayers(playerMapping.oesToVos(source.getPlayers(), objectsCreated));
 
         target.setRelations(relationMapping.oesToVos(source.getRelations(), objectsCreated));
 

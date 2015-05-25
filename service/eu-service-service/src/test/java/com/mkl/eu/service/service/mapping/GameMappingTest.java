@@ -4,19 +4,19 @@ import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
+import com.mkl.eu.client.service.vo.country.Relation;
+import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
-import com.mkl.eu.client.service.vo.player.Player;
-import com.mkl.eu.client.service.vo.player.Relation;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
-import com.mkl.eu.service.service.persistence.oe.player.PlayerEntity;
-import com.mkl.eu.service.service.persistence.oe.player.RelationEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,18 +50,22 @@ public class GameMappingTest {
         FRA_VO = new PlayableCountry();
         FRA_VO.setId(1L);
         FRA_VO.setName("FRA");
+        FRA_VO.setUsername("MKL");
 
         PRU_VO = new PlayableCountry();
         PRU_VO.setId(2L);
         PRU_VO.setName("PRU");
+        PRU_VO.setUsername("Fogia");
 
         FRA_OE = new PlayableCountryEntity();
         FRA_OE.setId(1L);
         FRA_OE.setName("FRA");
+        FRA_OE.setUsername("MKL");
 
         PRU_OE = new PlayableCountryEntity();
         PRU_OE.setId(2L);
         PRU_OE.setName("PRU");
+        PRU_OE.setUsername("Fogia");
     }
 
     @Test
@@ -98,15 +102,117 @@ public class GameMappingTest {
         object.getCountries().add(FRA_VO);
         object.getCountries().add(PRU_VO);
 
+        FRA_VO.setEconomicalSheets(createEconomicalSheetVos());
+
         object.setEvents(createEventsVos());
 
-        object.setPlayers(createPlayersVos());
-
-        object.setRelations(createRelationsVos(object.getPlayers().get(0), object.getPlayers().get(0), object.getPlayers().get(0)));
+        object.setRelations(createRelationsVos(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksVos());
 
         return object;
+    }
+
+    private List<EconomicalSheet> createEconomicalSheetVos() {
+        List<EconomicalSheet> objects = new ArrayList<>();
+
+        EconomicalSheet object = new EconomicalSheet();
+        object.setId(1L);
+        object.setTurn(1);
+        objects.add(object);
+
+        object = new EconomicalSheet();
+        object.setId(2L);
+        object.setTurn(2);
+        object.setActCampExpense(3);
+        object.setWoodSlaves(4);
+        object.setWealth(5);
+        object.setVassalIncome(6);
+        object.setUnitPurchExpense(7);
+        object.setUnitMaintExpense(8);
+        object.setTradeIncome(9);
+        object.setTradeCenterLoss(10);
+        object.setTradeCenterIncome(11);
+        object.setTpIncome(12);
+        object.setSubsidies(13);
+        object.setStab(14);
+        object.setSpecialIncome(15);
+        object.setRtStart(16);
+        object.setRtPeace(17);
+        object.setRtEvents(18);
+        object.setRtEnd(19);
+        object.setActCampExpense(20);
+        object.setAdminActExpense(21);
+        object.setAdminReactExpense(22);
+        object.setAdmTotalExpense(23);
+        object.setColIncome(24);
+        object.setDiploActions(25);
+        object.setDiploReactions(26);
+        object.setDomTradeIncome(27);
+        object.setEventIncome(28);
+        object.setExcRecruitExpense(29);
+        object.setExcTaxes(30);
+        object.setExcTaxesMod(31);
+        object.setExoResIncome(32);
+        object.setExpenses(33);
+        object.setFleetLevelIncome(34);
+        object.setFleetMonopIncome(35);
+        object.setFortMaintExpense(36);
+        object.setFortPurchExpense(37);
+        object.setForTradeIncome(38);
+        object.setGoldIncome(39);
+        object.setGoldRotw(40);
+        object.setGrossIncome(41);
+        object.setIncome(42);
+        object.setIndustrialIncome(43);
+        object.setInflation(44);
+        object.setInterBankrupt(45);
+        object.setInterestExpense(46);
+        object.setInterLoan(47);
+        object.setInterLoanInterests(48);
+        object.setInterLoanNew(49);
+        object.setInterLoanRefund(50);
+        object.setLandIncome(51);
+        object.setLoans(52);
+        object.setLostIncome(53);
+        object.setMajCampExpense(54);
+        object.setMandRefundExpense(55);
+        object.setMaxInterLoan(56);
+        object.setMaxNatLoan(57);
+        object.setMilitaryExpense(58);
+        object.setMissMaintExpense(59);
+        object.setMnuIncome(60);
+        object.setMultCampExpense(61);
+        object.setNatLoan(62);
+        object.setNatLoanBankrupt(63);
+        object.setNatLoanEnd(64);
+        object.setNatLoanInterest(65);
+        object.setNatLoanNew(66);
+        object.setNatLoanRefund(67);
+        object.setNatLoanStart(68);
+        object.setNavalRefitExpense(69);
+        object.setOptRefundExpense(70);
+        object.setOtherExpense(71);
+        object.setPassCampExpense(72);
+        object.setPeace(73);
+        object.setPeriodWealth(74);
+        object.setPillages(75);
+        object.setPraesidioExpense(76);
+        object.setPrestigeIncome(77);
+        object.setPrestigeSpent(78);
+        object.setPrestigeVP(79);
+        object.setProvincesIncome(80);
+        object.setRegularIncome(81);
+        object.setRemainingExpenses(82);
+        object.setRotwIncome(83);
+        object.setRtAftExch(84);
+        object.setRtBalance(85);
+        object.setRtBefExch(86);
+        object.setRtCollapse(87);
+        object.setRtDiplo(88);
+        objects.add(object);
+
+        return objects;
     }
 
     private List<PoliticalEvent> createEventsVos() {
@@ -128,24 +234,7 @@ public class GameMappingTest {
         return objects;
     }
 
-    private List<Player> createPlayersVos() {
-        List<Player> objects = new ArrayList<>();
-
-        Player object = new Player();
-        object.setId(1L);
-        object.setCountry(FRA_VO);
-        objects.add(object);
-        object = new Player();
-        object.setId(2L);
-        objects.add(object);
-        object = new Player();
-        object.setId(3L);
-        objects.add(object);
-
-        return objects;
-    }
-
-    private List<Relation> createRelationsVos(Player first, Player second, Player third) {
+    private List<Relation> createRelationsVos(PlayableCountry first, PlayableCountry second, PlayableCountry third) {
         List<Relation> objects = new ArrayList<>();
 
         Relation object = new Relation();
@@ -216,15 +305,118 @@ public class GameMappingTest {
         object.getCountries().add(FRA_OE);
         object.getCountries().add(PRU_OE);
 
+        FRA_OE.setEconomicalSheets(createEconomicalSheetEntities());
+
         object.setEvents(createEventsEntities());
 
-        object.setPlayers(createPlayersEntities());
 
-        object.setRelations(createRelationsEntities(object.getPlayers().get(0), object.getPlayers().get(0), object.getPlayers().get(0)));
+        object.setRelations(createRelationsEntities(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksEntities());
 
         return object;
+    }
+
+    private List<EconomicalSheetEntity> createEconomicalSheetEntities() {
+        List<EconomicalSheetEntity> objects = new ArrayList<>();
+
+        EconomicalSheetEntity object = new EconomicalSheetEntity();
+        object.setId(1L);
+        object.setTurn(1);
+        objects.add(object);
+
+        object = new EconomicalSheetEntity();
+        object.setId(2L);
+        object.setTurn(2);
+        object.setActCampExpense(3);
+        object.setWoodSlaves(4);
+        object.setWealth(5);
+        object.setVassalIncome(6);
+        object.setUnitPurchExpense(7);
+        object.setUnitMaintExpense(8);
+        object.setTradeIncome(9);
+        object.setTradeCenterLoss(10);
+        object.setTradeCenterIncome(11);
+        object.setTpIncome(12);
+        object.setSubsidies(13);
+        object.setStab(14);
+        object.setSpecialIncome(15);
+        object.setRtStart(16);
+        object.setRtPeace(17);
+        object.setRtEvents(18);
+        object.setRtEnd(19);
+        object.setActCampExpense(20);
+        object.setAdminActExpense(21);
+        object.setAdminReactExpense(22);
+        object.setAdmTotalExpense(23);
+        object.setColIncome(24);
+        object.setDiploActions(25);
+        object.setDiploReactions(26);
+        object.setDomTradeIncome(27);
+        object.setEventIncome(28);
+        object.setExcRecruitExpense(29);
+        object.setExcTaxes(30);
+        object.setExcTaxesMod(31);
+        object.setExoResIncome(32);
+        object.setExpenses(33);
+        object.setFleetLevelIncome(34);
+        object.setFleetMonopIncome(35);
+        object.setFortMaintExpense(36);
+        object.setFortPurchExpense(37);
+        object.setForTradeIncome(38);
+        object.setGoldIncome(39);
+        object.setGoldRotw(40);
+        object.setGrossIncome(41);
+        object.setIncome(42);
+        object.setIndustrialIncome(43);
+        object.setInflation(44);
+        object.setInterBankrupt(45);
+        object.setInterestExpense(46);
+        object.setInterLoan(47);
+        object.setInterLoanInterests(48);
+        object.setInterLoanNew(49);
+        object.setInterLoanRefund(50);
+        object.setLandIncome(51);
+        object.setLoans(52);
+        object.setLostIncome(53);
+        object.setMajCampExpense(54);
+        object.setMandRefundExpense(55);
+        object.setMaxInterLoan(56);
+        object.setMaxNatLoan(57);
+        object.setMilitaryExpense(58);
+        object.setMissMaintExpense(59);
+        object.setMnuIncome(60);
+        object.setMultCampExpense(61);
+        object.setNatLoan(62);
+        object.setNatLoanBankrupt(63);
+        object.setNatLoanEnd(64);
+        object.setNatLoanInterest(65);
+        object.setNatLoanNew(66);
+        object.setNatLoanRefund(67);
+        object.setNatLoanStart(68);
+        object.setNavalRefitExpense(69);
+        object.setOptRefundExpense(70);
+        object.setOtherExpense(71);
+        object.setPassCampExpense(72);
+        object.setPeace(73);
+        object.setPeriodWealth(74);
+        object.setPillages(75);
+        object.setPraesidioExpense(76);
+        object.setPrestigeIncome(77);
+        object.setPrestigeSpent(78);
+        object.setPrestigeVP(79);
+        object.setProvincesIncome(80);
+        object.setRegularIncome(81);
+        object.setRemainingExpenses(82);
+        object.setRotwIncome(83);
+        object.setRtAftExch(84);
+        object.setRtBalance(85);
+        object.setRtBefExch(86);
+        object.setRtCollapse(87);
+        object.setRtDiplo(88);
+        objects.add(object);
+
+        return objects;
     }
 
     private List<PoliticalEventEntity> createEventsEntities() {
@@ -246,24 +438,7 @@ public class GameMappingTest {
         return objects;
     }
 
-    private List<PlayerEntity> createPlayersEntities() {
-        List<PlayerEntity> objects = new ArrayList<>();
-
-        PlayerEntity object = new PlayerEntity();
-        object.setId(1L);
-        object.setCountry(FRA_OE);
-        objects.add(object);
-        object = new PlayerEntity();
-        object.setId(2L);
-        objects.add(object);
-        object = new PlayerEntity();
-        object.setId(3L);
-        objects.add(object);
-
-        return objects;
-    }
-
-    private List<RelationEntity> createRelationsEntities(PlayerEntity first, PlayerEntity second, PlayerEntity third) {
+    private List<RelationEntity> createRelationsEntities(PlayableCountryEntity first, PlayableCountryEntity second, PlayableCountryEntity third) {
         List<RelationEntity> objects = new ArrayList<>();
 
         RelationEntity object = new RelationEntity();

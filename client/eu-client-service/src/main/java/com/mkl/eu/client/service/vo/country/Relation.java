@@ -1,4 +1,4 @@
-package com.mkl.eu.client.service.vo.player;
+package com.mkl.eu.client.service.vo.country;
 
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
@@ -10,29 +10,29 @@ import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
  */
 public class Relation extends EuObject {
     /** Owner of the relation (the one who responsible of it). */
-    private Player first;
+    private PlayableCountry first;
     /** The other player of the relation (may be multiple ?). */
-    private Player second;
+    private PlayableCountry second;
     /** Type of the relation. */
     private RelationTypeEnum type;
 
     /** @return the first. */
-    public Player getFirst() {
+    public PlayableCountry getFirst() {
         return first;
     }
 
     /** @param first the first to set. */
-    public void setFirst(Player first) {
+    public void setFirst(PlayableCountry first) {
         this.first = first;
     }
 
     /** @return the second. */
-    public Player getSecond() {
+    public PlayableCountry getSecond() {
         return second;
     }
 
     /** @param second the second to set. */
-    public void setSecond(Player second) {
+    public void setSecond(PlayableCountry second) {
         this.second = second;
     }
 

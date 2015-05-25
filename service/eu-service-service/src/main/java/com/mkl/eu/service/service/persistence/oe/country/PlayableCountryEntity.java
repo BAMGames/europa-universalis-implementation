@@ -2,9 +2,11 @@ package com.mkl.eu.service.service.persistence.oe.country;
 
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Country (major or former major or future major one).
@@ -20,6 +22,12 @@ public class PlayableCountryEntity implements IEntity, Serializable {
      * Name of the country.
      */
     private String name;
+    /** Name of the player. External functional id. */
+    private String username;
+    /**
+     * Economical sheet by turn of the country.
+     */
+    private List<EconomicalSheetEntity> economicalSheets;
     /** Game of the entity. */
     private GameEntity game;
 
@@ -50,6 +58,28 @@ public class PlayableCountryEntity implements IEntity, Serializable {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /** @return the username. */
+    @Column(name = "USERNAME")
+    public String getUsername() {
+        return username;
+    }
+
+    /** @param username the username to set. */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /** @return the economicalSheets. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<EconomicalSheetEntity> getEconomicalSheets() {
+        return economicalSheets;
+    }
+
+    /** @param economicalSheets the economicalSheets to set. */
+    public void setEconomicalSheets(List<EconomicalSheetEntity> economicalSheets) {
+        this.economicalSheets = economicalSheets;
     }
 
     /** @return the game. */

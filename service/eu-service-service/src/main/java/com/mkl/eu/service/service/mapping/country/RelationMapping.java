@@ -1,10 +1,9 @@
-package com.mkl.eu.service.service.mapping.player;
+package com.mkl.eu.service.service.mapping.country;
 
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
-import com.mkl.eu.client.service.vo.player.Player;
+import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
-import com.mkl.eu.service.service.mapping.country.CountryMapping;
-import com.mkl.eu.service.service.persistence.oe.player.PlayerEntity;
+import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,15 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Mapping between VO and OE for a Player.
+ * Mapping between VO and OE for a Relation.
  *
  * @author MKL.
  */
 @Component
-public class PlayerMapping extends AbstractMapping {
+public class RelationMapping extends AbstractMapping {
     /** Mapping for a country. */
     @Autowired
-    private CountryMapping countryMapping;
+    private PlayableCountryMapping playableCountryMapping;
 
     /**
      * OEs to VOs.
@@ -30,15 +29,15 @@ public class PlayerMapping extends AbstractMapping {
      * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    public List<Player> oesToVos(List<PlayerEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    public List<Relation> oesToVos(List<RelationEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
         if (sources == null) {
             return null;
         }
 
-        List<Player> targets = new ArrayList<>();
+        List<Relation> targets = new ArrayList<>();
 
-        for (PlayerEntity source : sources) {
-            Player target = storeVo(Player.class, source, objectsCreated, this::oeToVo);
+        for (RelationEntity source : sources) {
+            Relation target = storeVo(Relation.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }
@@ -54,15 +53,17 @@ public class PlayerMapping extends AbstractMapping {
      * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    public Player oeToVo(PlayerEntity source, Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    public Relation oeToVo(RelationEntity source, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
         if (source == null) {
             return null;
         }
 
-        Player target = new Player();
+        Relation target = new Relation();
 
         target.setId(source.getId());
-        target.setCountry(storeVo(PlayableCountry.class, source.getCountry(), objectsCreated, countryMapping::oeToVo));
+        target.setType(source.getType());
+        target.setFirst(storeVo(PlayableCountry.class, source.getFirst(), objectsCreated, playableCountryMapping::oeToVo));
+        target.setSecond(storeVo(PlayableCountry.class, source.getSecond(), objectsCreated, playableCountryMapping::oeToVo));
 
         return target;
     }

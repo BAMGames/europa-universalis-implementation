@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.persistence.oe.player;
+package com.mkl.eu.service.service.persistence.oe.country;
 
 import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -18,9 +18,9 @@ public class RelationEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
     /** Owner of the relation (the one who responsible of it). */
-    private PlayerEntity first;
+    private PlayableCountryEntity first;
     /** The other player of the relation (may be multiple ?). */
-    private PlayerEntity second;
+    private PlayableCountryEntity second;
     /** Type of the relation. */
     private RelationTypeEnum type;
     /** Game of the entity. */
@@ -42,25 +42,25 @@ public class RelationEntity implements IEntity, Serializable {
 
     /** @return the first. */
     @ManyToOne
-    @JoinColumn(name = "ID_PLAYER_FIRST", nullable = true)
-    public PlayerEntity getFirst() {
+    @JoinColumn(name = "ID_COUNTRY_FIRST", nullable = true)
+    public PlayableCountryEntity getFirst() {
         return first;
     }
 
     /** @param first the first to set. */
-    public void setFirst(PlayerEntity first) {
+    public void setFirst(PlayableCountryEntity first) {
         this.first = first;
     }
 
     /** @return the second. */
     @ManyToOne
-    @JoinColumn(name = "ID_PLAYER_SECOND", nullable = true)
-    public PlayerEntity getSecond() {
+    @JoinColumn(name = "ID_COUNTRY_SECOND", nullable = true)
+    public PlayableCountryEntity getSecond() {
         return second;
     }
 
     /** @param second the second to set. */
-    public void setSecond(PlayerEntity second) {
+    public void setSecond(PlayableCountryEntity second) {
         this.second = second;
     }
 

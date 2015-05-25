@@ -18,6 +18,8 @@ public class PlayableCountry extends EuObject {
      * Name of the country.
      */
     private String name;
+    /** Name of the player. External functional id. */
+    private String username;
     /**
      * Monarchs (past and present) of the country.
      */
@@ -51,6 +53,16 @@ public class PlayableCountry extends EuObject {
      */
     public String getName() {
         return name;
+    }
+
+    /** @return the username. */
+    public String getUsername() {
+        return username;
+    }
+
+    /** @param username the username to set. */
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     /**

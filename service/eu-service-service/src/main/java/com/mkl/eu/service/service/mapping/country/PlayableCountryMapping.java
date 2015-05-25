@@ -2,7 +2,9 @@ package com.mkl.eu.service.service.mapping.country;
 
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
+import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -15,7 +17,10 @@ import java.util.Map;
  * @author MKL.
  */
 @Component
-public class CountryMapping extends AbstractMapping {
+public class PlayableCountryMapping extends AbstractMapping {
+    /** Mapping for an economical sheet. */
+    @Autowired
+    private EconomicalSheetMapping economicalSheetMapping;
 
     /**
      * OEs to VOs.
@@ -45,9 +50,10 @@ public class CountryMapping extends AbstractMapping {
      * OE to VO.
      *
      * @param source object source.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    public PlayableCountry oeToVo(PlayableCountryEntity source) {
+    public PlayableCountry oeToVo(PlayableCountryEntity source, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
         if (source == null) {
             return null;
         }
@@ -56,6 +62,8 @@ public class CountryMapping extends AbstractMapping {
 
         target.setId(source.getId());
         target.setName(source.getName());
+        target.setUsername(source.getUsername());
+        target.setEconomicalSheets(economicalSheetMapping.oesToVos(source.getEconomicalSheets(), objectsCreated));
 
         return target;
     }

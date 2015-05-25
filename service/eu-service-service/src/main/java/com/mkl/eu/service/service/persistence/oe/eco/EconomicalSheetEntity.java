@@ -1,13 +1,23 @@
-package com.mkl.eu.client.service.vo.eco;
+package com.mkl.eu.service.service.persistence.oe.eco;
 
-import com.mkl.eu.client.service.vo.EuObject;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * Economical sheet of a given player at a given turn.
  *
  * @author MKL
  */
-public class EconomicalSheet extends EuObject {
+@Entity
+@Table(name = "ECONOMICAL_SHEET")
+public class EconomicalSheetEntity implements IEntity, Serializable {
+    /** Id. */
+    private Long id;
+    /** Owner of the sheet. */
+    private PlayableCountryEntity country;
     /** Turn of the sheet. */
     private Integer turn;
 
@@ -237,7 +247,34 @@ public class EconomicalSheet extends EuObject {
     /** Total expenses. Summary of all the expenses. Line 48 of sheet B. */
     private Integer expenses;
 
+    /** @return the id. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
+    public Long getId() {
+        return id;
+    }
+
+    /** @param id the id to set. */
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /** @return the country. */
+    @ManyToOne
+    @JoinColumn(name = "ID_COUNTRY")
+    public PlayableCountryEntity getCountry() {
+        return country;
+    }
+
+    /** @param country the country to set. */
+    public void setCountry(PlayableCountryEntity country) {
+        this.country = country;
+    }
+
     /** @return the turn. */
+    @Column(name = "TURN")
     public Integer getTurn() {
         return turn;
     }
@@ -248,6 +285,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtStart. */
+    @Column(name = "RT_START")
     public Integer getRtStart() {
         return rtStart;
     }
@@ -258,6 +296,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtEvents. */
+    @Column(name = "RT_EVENTS")
     public Integer getRtEvents() {
         return rtEvents;
     }
@@ -268,6 +307,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the loans. */
+    @Column(name = "LOANS")
     public Integer getLoans() {
         return loans;
     }
@@ -278,6 +318,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the woodSlaves. */
+    @Column(name = "WOOD_SLAVES")
     public Integer getWoodSlaves() {
         return woodSlaves;
     }
@@ -288,6 +329,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the diploActions. */
+    @Column(name = "DIPLO_ACTIONS")
     public Integer getDiploActions() {
         return diploActions;
     }
@@ -298,6 +340,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the diploReactions. */
+    @Column(name = "DIPLO_REACTIONS")
     public Integer getDiploReactions() {
         return diploReactions;
     }
@@ -308,6 +351,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the subsidies. */
+    @Column(name = "SUBSIDIES")
     public Integer getSubsidies() {
         return subsidies;
     }
@@ -318,6 +362,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtDiplo. */
+    @Column(name = "RT_DIPLO")
     public Integer getRtDiplo() {
         return rtDiplo;
     }
@@ -328,6 +373,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the pillages. */
+    @Column(name = "PILLAGES")
     public Integer getPillages() {
         return pillages;
     }
@@ -338,6 +384,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the goldRotw. */
+    @Column(name = "GOLD_ROTW")
     public Integer getGoldRotw() {
         return goldRotw;
     }
@@ -348,6 +395,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the excTaxes. */
+    @Column(name = "EXC_TAXES")
     public Integer getExcTaxes() {
         return excTaxes;
     }
@@ -358,6 +406,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtBefExch. */
+    @Column(name = "RT_BEF_EXCH")
     public Integer getRtBefExch() {
         return rtBefExch;
     }
@@ -368,6 +417,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the regularIncome. */
+    @Column(name = "REGULAR_INCOME")
     public Integer getRegularIncome() {
         return regularIncome;
     }
@@ -378,6 +428,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the prestigeIncome. */
+    @Column(name = "PRESTIGE_INCOME")
     public Integer getPrestigeIncome() {
         return prestigeIncome;
     }
@@ -388,6 +439,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the maxNatLoan. */
+    @Column(name = "MAX_NAT_LOAN")
     public Integer getMaxNatLoan() {
         return maxNatLoan;
     }
@@ -398,6 +450,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the maxInterLoan. */
+    @Column(name = "MAX_INTER_LOAN")
     public Integer getMaxInterLoan() {
         return maxInterLoan;
     }
@@ -408,6 +461,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the remainingExpenses. */
+    @Column(name = "REMAINING_EXPENSES")
     public Integer getRemainingExpenses() {
         return remainingExpenses;
     }
@@ -418,6 +472,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the prestigeSpent. */
+    @Column(name = "PRESTIGE_SPENT")
     public Integer getPrestigeSpent() {
         return prestigeSpent;
     }
@@ -428,6 +483,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoan. */
+    @Column(name = "NAT_LOAN")
     public Integer getNatLoan() {
         return natLoan;
     }
@@ -438,6 +494,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the interLoan. */
+    @Column(name = "INTER_LOAN")
     public Integer getInterLoan() {
         return interLoan;
     }
@@ -448,6 +505,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtBalance. */
+    @Column(name = "RT_BALANCE")
     public Integer getRtBalance() {
         return rtBalance;
     }
@@ -458,6 +516,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtAftExch. */
+    @Column(name = "RT_AFT_EXCH")
     public Integer getRtAftExch() {
         return rtAftExch;
     }
@@ -468,6 +527,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the prestigeVP. */
+    @Column(name = "PRESTIGE_VP")
     public Integer getPrestigeVP() {
         return prestigeVP;
     }
@@ -478,6 +538,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the wealth. */
+    @Column(name = "WEALTH")
     public Integer getWealth() {
         return wealth;
     }
@@ -488,6 +549,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the periodWealth. */
+    @Column(name = "PERIOD_WEALTH")
     public Integer getPeriodWealth() {
         return periodWealth;
     }
@@ -498,6 +560,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the stab. */
+    @Column(name = "STAB")
     public Integer getStab() {
         return stab;
     }
@@ -508,6 +571,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the peace. */
+    @Column(name = "PEACE")
     public Integer getPeace() {
         return peace;
     }
@@ -518,6 +582,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtPeace. */
+    @Column(name = "RT_PEACE")
     public Integer getRtPeace() {
         return rtPeace;
     }
@@ -528,6 +593,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the inflation. */
+    @Column(name = "INFLATION")
     public Integer getInflation() {
         return inflation;
     }
@@ -538,6 +604,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtEnd. */
+    @Column(name = "RT_ENT")
     public Integer getRtEnd() {
         return rtEnd;
     }
@@ -548,6 +615,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the interLoanNew. */
+    @Column(name = "INTER_LOAN_NEW")
     public Integer getInterLoanNew() {
         return interLoanNew;
     }
@@ -558,6 +626,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the interLoanInterests. */
+    @Column(name = "INTER_LOAN_INTERESTS")
     public Integer getInterLoanInterests() {
         return interLoanInterests;
     }
@@ -568,6 +637,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the interLoanRefund. */
+    @Column(name = "INTER_LOAN_REFUND")
     public Integer getInterLoanRefund() {
         return interLoanRefund;
     }
@@ -578,6 +648,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the interBankrupt. */
+    @Column(name = "INTER_BANKRUPT")
     public Integer getInterBankrupt() {
         return interBankrupt;
     }
@@ -588,6 +659,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoanStart. */
+    @Column(name = "NAT_LOAN_START")
     public Integer getNatLoanStart() {
         return natLoanStart;
     }
@@ -598,6 +670,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoanInterest. */
+    @Column(name = "NAT_LOAN_INTERESTS")
     public Integer getNatLoanInterest() {
         return natLoanInterest;
     }
@@ -608,6 +681,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoanBankrupt. */
+    @Column(name = "NAT_LOAN_BANKRUPT")
     public Integer getNatLoanBankrupt() {
         return natLoanBankrupt;
     }
@@ -618,6 +692,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoanRefund. */
+    @Column(name = "NAT_LOAN_REFUND")
     public Integer getNatLoanRefund() {
         return natLoanRefund;
     }
@@ -628,6 +703,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoanNew. */
+    @Column(name = "NAT_LOAN_NEW")
     public Integer getNatLoanNew() {
         return natLoanNew;
     }
@@ -638,6 +714,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the natLoanEnd. */
+    @Column(name = "NAT_LOAN_END")
     public Integer getNatLoanEnd() {
         return natLoanEnd;
     }
@@ -648,6 +725,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the provincesIncome. */
+    @Column(name = "PROVINCES_INCOME")
     public Integer getProvincesIncome() {
         return provincesIncome;
     }
@@ -658,6 +736,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the vassalIncome. */
+    @Column(name = "VASSAL_INCOME")
     public Integer getVassalIncome() {
         return vassalIncome;
     }
@@ -668,6 +747,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the lostIncome. */
+    @Column(name = "LOST_INCOME")
     public Integer getLostIncome() {
         return lostIncome;
     }
@@ -678,6 +758,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the eventLandIncome. */
+    @Column(name = "EVENT_LAND_INCOME")
     public Integer getEventLandIncome() {
         return eventLandIncome;
     }
@@ -688,6 +769,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the landIncome. */
+    @Column(name = "LAND_INCOME")
     public Integer getLandIncome() {
         return landIncome;
     }
@@ -698,6 +780,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the mnuIncome. */
+    @Column(name = "MNU_INCOME")
     public Integer getMnuIncome() {
         return mnuIncome;
     }
@@ -708,6 +791,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the goldIncome. */
+    @Column(name = "GOLD_INCOME")
     public Integer getGoldIncome() {
         return goldIncome;
     }
@@ -718,6 +802,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the industrialIncome. */
+    @Column(name = "INDUSTRIAL_INCOME")
     public Integer getIndustrialIncome() {
         return industrialIncome;
     }
@@ -728,6 +813,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the domTradeIncome. */
+    @Column(name = "DOM_TRADE_INCOME")
     public Integer getDomTradeIncome() {
         return domTradeIncome;
     }
@@ -738,6 +824,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the forTradeIncome. */
+    @Column(name = "FOR_TRADE_INCOME")
     public Integer getForTradeIncome() {
         return forTradeIncome;
     }
@@ -748,6 +835,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the fleetLevelIncome. */
+    @Column(name = "FLEET_LEVEL_INCOME")
     public Integer getFleetLevelIncome() {
         return fleetLevelIncome;
     }
@@ -758,6 +846,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the fleetMonopIncome. */
+    @Column(name = "FLEET_MONOP_INCOME")
     public Integer getFleetMonopIncome() {
         return fleetMonopIncome;
     }
@@ -768,6 +857,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the tradeCenterIncome. */
+    @Column(name = "TRADE_CENTER_INCOME")
     public Integer getTradeCenterIncome() {
         return tradeCenterIncome;
     }
@@ -778,6 +868,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the tradeCenterLoss. */
+    @Column(name = "TRADE_CENTER_LOSS")
     public Integer getTradeCenterLoss() {
         return tradeCenterLoss;
     }
@@ -788,6 +879,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the tradeIncome. */
+    @Column(name = "TRADE_INCOME")
     public Integer getTradeIncome() {
         return tradeIncome;
     }
@@ -798,6 +890,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the colIncome. */
+    @Column(name = "COL_INCOME")
     public Integer getColIncome() {
         return colIncome;
     }
@@ -808,6 +901,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the tpIncome. */
+    @Column(name = "TP_INCOME")
     public Integer getTpIncome() {
         return tpIncome;
     }
@@ -818,6 +912,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the exoResIncome. */
+    @Column(name = "EXO_RES_INCOME")
     public Integer getExoResIncome() {
         return exoResIncome;
     }
@@ -828,6 +923,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rotwIncome. */
+    @Column(name = "ROTW_INCOME")
     public Integer getRotwIncome() {
         return rotwIncome;
     }
@@ -838,6 +934,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the specialIncome. */
+    @Column(name = "SPECIAL_INCOME")
     public Integer getSpecialIncome() {
         return specialIncome;
     }
@@ -848,6 +945,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the income. */
+    @Column(name = "INCOME")
     public Integer getIncome() {
         return income;
     }
@@ -858,6 +956,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the eventIncome. */
+    @Column(name = "EVENT_INCOME")
     public Integer getEventIncome() {
         return eventIncome;
     }
@@ -868,6 +967,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the grossIncome. */
+    @Column(name = "GROSS_INCOME")
     public Integer getGrossIncome() {
         return grossIncome;
     }
@@ -878,6 +978,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the interestExpense. */
+    @Column(name = "INTEREST_EXPENSE")
     public Integer getInterestExpense() {
         return interestExpense;
     }
@@ -888,6 +989,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the mandRefundExpense. */
+    @Column(name = "MAND_REFUND_EXPENSE")
     public Integer getMandRefundExpense() {
         return mandRefundExpense;
     }
@@ -898,6 +1000,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the rtCollapse. */
+    @Column(name = "RT_COLLAPSE")
     public Integer getRtCollapse() {
         return rtCollapse;
     }
@@ -908,6 +1011,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the optRefundExpense. */
+    @Column(name = "OPT_REFUND_EXPENSE")
     public Integer getOptRefundExpense() {
         return optRefundExpense;
     }
@@ -918,6 +1022,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the unitMaintExpense. */
+    @Column(name = "UNIT_MAINT_EXPENSE")
     public Integer getUnitMaintExpense() {
         return unitMaintExpense;
     }
@@ -928,6 +1033,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the fortMaintExpense. */
+    @Column(name = "FORT_MAINT_EXPENSE")
     public Integer getFortMaintExpense() {
         return fortMaintExpense;
     }
@@ -938,6 +1044,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the missMaintExpense. */
+    @Column(name = "MISS_MAINT_EXPENSE")
     public Integer getMissMaintExpense() {
         return missMaintExpense;
     }
@@ -948,6 +1055,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the unitPurchExpense. */
+    @Column(name = "UNIT_PURCH_EXPENSE")
     public Integer getUnitPurchExpense() {
         return unitPurchExpense;
     }
@@ -958,6 +1066,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the fortPurchExpense. */
+    @Column(name = "FORT_PURCH_EXPENSE")
     public Integer getFortPurchExpense() {
         return fortPurchExpense;
     }
@@ -968,6 +1077,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the adminActExpense. */
+    @Column(name = "ADMIN_ACT_EXPENSE")
     public Integer getAdminActExpense() {
         return adminActExpense;
     }
@@ -978,6 +1088,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the adminReactExpense. */
+    @Column(name = "ADMIN_REACT_EXPENSE")
     public Integer getAdminReactExpense() {
         return adminReactExpense;
     }
@@ -988,6 +1099,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the otherExpense. */
+    @Column(name = "OTHER_EXPENSE")
     public Integer getOtherExpense() {
         return otherExpense;
     }
@@ -998,6 +1110,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the admTotalExpense. */
+    @Column(name = "ADM_TOTAL_EXPENSE")
     public Integer getAdmTotalExpense() {
         return admTotalExpense;
     }
@@ -1008,6 +1121,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the excTaxesMod. */
+    @Column(name = "EXC_TAXES_MOD")
     public Integer getExcTaxesMod() {
         return excTaxesMod;
     }
@@ -1018,6 +1132,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the passCampExpense. */
+    @Column(name = "PASS_CAMP_EXPENSE")
     public Integer getPassCampExpense() {
         return passCampExpense;
     }
@@ -1028,6 +1143,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the actCampExpense. */
+    @Column(name = "ACT_CAMP_EXPENSE")
     public Integer getActCampExpense() {
         return actCampExpense;
     }
@@ -1038,6 +1154,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the majCampExpense. */
+    @Column(name = "MAJ_CAMP_EXPENSE")
     public Integer getMajCampExpense() {
         return majCampExpense;
     }
@@ -1048,6 +1165,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the multCampExpense. */
+    @Column(name = "MULT_CAMP_EXPENSE")
     public Integer getMultCampExpense() {
         return multCampExpense;
     }
@@ -1058,6 +1176,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the excRecruitExpense. */
+    @Column(name = "EXC_RECRUIT_EXPENSE")
     public Integer getExcRecruitExpense() {
         return excRecruitExpense;
     }
@@ -1068,6 +1187,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the navalRefitExpense. */
+    @Column(name = "NAVAL_REFIT_EXPENSE")
     public Integer getNavalRefitExpense() {
         return navalRefitExpense;
     }
@@ -1078,6 +1198,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the praesidioExpense. */
+    @Column(name = "PRAESIDIO_EXPENSE")
     public Integer getPraesidioExpense() {
         return praesidioExpense;
     }
@@ -1088,6 +1209,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the militaryExpense. */
+    @Column(name = "MILITARY_EXPENSE")
     public Integer getMilitaryExpense() {
         return militaryExpense;
     }
@@ -1098,6 +1220,7 @@ public class EconomicalSheet extends EuObject {
     }
 
     /** @return the expenses. */
+    @Column(name = "EXPENSES")
     public Integer getExpenses() {
         return expenses;
     }

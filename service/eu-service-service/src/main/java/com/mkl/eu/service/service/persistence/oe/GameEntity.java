@@ -3,9 +3,8 @@ package com.mkl.eu.service.service.persistence.oe;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
-import com.mkl.eu.service.service.persistence.oe.player.PlayerEntity;
-import com.mkl.eu.service.service.persistence.oe.player.RelationEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -22,8 +21,6 @@ import java.util.List;
 public class GameEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
-    /** Players of the game. */
-    private List<PlayerEntity> players = new ArrayList<>();
     /** Countries of the game. */
     private List<PlayableCountryEntity> countries = new ArrayList<>();
     /** Relations between the countries. */
@@ -51,17 +48,6 @@ public class GameEntity implements IEntity, Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    /** @return the players. */
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<PlayerEntity> getPlayers() {
-        return players;
-    }
-
-    /** @param players the players to set. */
-    public void setPlayers(List<PlayerEntity> players) {
-        this.players = players;
     }
 
     /** @return the countries. */

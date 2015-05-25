@@ -2,10 +2,9 @@ package com.mkl.eu.client.service.vo;
 
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
+import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
-import com.mkl.eu.client.service.vo.player.Player;
-import com.mkl.eu.client.service.vo.player.Relation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +15,6 @@ import java.util.List;
  * @author MKL
  */
 public class Game extends EuObject {
-    /** Players of the game. */
-    private List<Player> players = new ArrayList<>();
     /** Stacks of countries of the game. */
     private List<PlayableCountry> countries = new ArrayList<>();
     /** Relations between the countries. */
@@ -32,16 +29,6 @@ public class Game extends EuObject {
     private GameStatusEnum status;
     /** Version of the game. */
     private long version;
-
-    /** @return the players. */
-    public List<Player> getPlayers() {
-        return players;
-    }
-
-    /** @param players the players to set. */
-    public void setPlayers(List<Player> players) {
-        this.players = players;
-    }
 
     /** @return the countries. */
     public List<PlayableCountry> getCountries() {
