@@ -40,11 +40,11 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     private Integer subsidies;
     /** Royal treasure after diplomacy. Line 8 of sheet A. */
     private Integer rtDiplo;
-    /** Pilages and privateers. Line 9 of sheet A. */
+    /** Pillages and privateers. Line 9 of sheet A. */
     private Integer pillages;
     /** Gold from ROTW and convoys. Line 10 of sheet A. */
     private Integer goldRotw;
-    /** Exceptionl taxes. Line 12 of sheet A. */
+    /** Exceptional taxes. Line 12 of sheet A. */
     private Integer excTaxes;
     /** Royal treasure before Exchequer. Line 13 of sheet A. */
     private Integer rtBefExch;
@@ -177,7 +177,7 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
      *                                        Other Income                                                   *
      *********************************************************************************************************/
 
-    /** Special income (Portugal in annexion for Spain for example). Line 22 of sheet B. */
+    /** Special income (Portugal in annexation for Spain for example). Line 22 of sheet B. */
     private Integer specialIncome;
     /** Sum of the other summaries income. Line 23 of sheet B. */
     private Integer income;
@@ -215,7 +215,7 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     private Integer fortPurchExpense;
     /** Administrative actions. Line 35 of sheet B. */
     private Integer adminActExpense;
-    /** Adminitrative reactions. Line 36 of sheet B. */
+    /** Administrative reactions. Line 36 of sheet B. */
     private Integer adminReactExpense;
     /** Other expenses. Line 37 of sheet B. */
     private Integer otherExpense;
@@ -236,7 +236,7 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     private Integer majCampExpense;
     /** Multiple campaigns. Line 43 of sheet B. */
     private Integer multCampExpense;
-    /** Exceptional recruitments. Line 44 of sheet B. */
+    /** Exceptional recruitment. Line 44 of sheet B. */
     private Integer excRecruitExpense;
     /** Naval refit. Line 45 of sheet B. */
     private Integer navalRefitExpense;
