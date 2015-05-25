@@ -179,8 +179,8 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 CounterMarker counter = stacks.get(i).getCounters().get(j);
 
                 float degree = 360 * i / stacks.size();
-                float x0 = (float) (xy[0] + Math.sin(Math.toRadians(degree)) * relativeSize);
-                float y0 = (float) (xy[1] - Math.cos(Math.toRadians(degree)) * relativeSize);
+                float x0 = (float) (xy[0] - relativeSize / 2 + Math.sin(Math.toRadians(degree)) * relativeSize);
+                float y0 = (float) (xy[1] - relativeSize / 2 - Math.cos(Math.toRadians(degree)) * relativeSize);
                 pg.image(counter.getImage(), x0 + relativeSize * j / 10
                         , y0 + relativeSize * j / 10, relativeSize, relativeSize);
             }
@@ -516,5 +516,60 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             }
         }
         super.setProperties(properties);
+    }
+
+    public static void main(String[] args) {
+        List<List<Integer>> possibilities = new ArrayList<>();
+        List<Integer> vars = new ArrayList<>();
+        for (int i = 1; i <= 9; i++) {
+            vars.add(i);
+        }
+
+        getPossibilities(vars, new ArrayList<>(), possibilities);
+        int nbResult = 0;
+        for (List<Integer> possibility : possibilities) {
+            int compute = compute(possibility);
+            if (compute == 66) {
+                nbResult++;
+                System.out.println(possibility);
+            }
+        }
+        System.out.println(nbResult);
+    }
+
+    private static void getPossibilities(List<Integer> vars, List<Integer> actual, List<List<Integer>> results) {
+        if (vars.isEmpty()) {
+            results.add(actual);
+            return;
+        }
+        for (Integer c : vars) {
+            List<Integer> newVars = new ArrayList<>(vars);
+            newVars.remove(c);
+            List<Integer> newActual = new ArrayList<>(actual);
+            newActual.add(c);
+            getPossibilities(newVars, newActual, results);
+        }
+    }
+
+    private static int compute(List<Integer> args) {
+        int result = args.get(0);
+
+        if ((13 * args.get(1)) % args.get(2) != 0) {
+            return 0;
+        }
+
+        result += 13 * args.get(1) / args.get(2);
+        result += args.get(3);
+        result += 12 * args.get(4);
+        result += -args.get(5) - 11;
+
+        if ((args.get(6) * args.get(7)) % args.get(8) != 0) {
+            return 0;
+        }
+
+        result += args.get(6) * args.get(7) / args.get(8);
+        result -= 10;
+
+        return result;
     }
 }

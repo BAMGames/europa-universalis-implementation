@@ -116,90 +116,94 @@ INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
 VALUES (25, 1, 'B_PH_6G');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
 VALUES (25, 25, 'PRODUCTS_OF_ORIENT_PRICE', NULL);
+INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
+VALUES (26, 1, 'B_PROD30_1');
+INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
+VALUES (26, 26, 'FISH_PRODUCTION', NULL);
 
 -- England
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (26, 1, 'B_STAB_1');
+VALUES (101, 1, 'B_STAB_1');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (26, 26, 'STABILITY', 'angleterre');
+VALUES (101, 101, 'STABILITY', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (27, 1, 'eUladh');
+VALUES (102, 1, 'eUladh');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (27, 27, 'OWN', 'angleterre');
+VALUES (102, 102, 'OWN', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (28, 1, 'eConnacht');
+VALUES (103, 1, 'eConnacht');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (28, 28, 'OWN', 'angleterre');
+VALUES (103, 103, 'OWN', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (29, 1, 'eBrega');
+VALUES (104, 1, 'eBrega');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (29, 29, 'OWN', 'angleterre');
+VALUES (104, 104, 'OWN', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (30, 1, 'eLaighean');
+VALUES (105, 1, 'eLaighean');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (30, 30, 'OWN', 'angleterre');
+VALUES (105, 105, 'OWN', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (31, 1, 'eMumhan');
+VALUES (106, 1, 'eMumhan');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (31, 31, 'OWN', 'angleterre');
+VALUES (106, 106, 'OWN', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (32, 1, 'ePicardie');
+VALUES (107, 1, 'ePicardie');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (32, 32, 'FORTRESS_2', 'angleterre');
+VALUES (107, 107, 'FORTRESS_2', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (33, 1, 'B_DE_angleterre-VA');
+VALUES (108, 1, 'B_DE_angleterre-VA');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (33, 33, 'DIPLOMACY', 'ecosse');
+VALUES (108, 108, 'DIPLOMACY', 'ecosse');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (34, 1, 'eMidlands');
+VALUES (109, 1, 'eMidlands');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (34, 34, 'MNU_METAL_MINUS', 'angleterre');
+VALUES (109, 109, 'MNU_METAL_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (35, 1, 'eEast Anglia');
+VALUES (110, 1, 'eEast Anglia');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (35, 35, 'MNU_CLOTHES_MINUS', 'angleterre');
+VALUES (110, 110, 'MNU_CLOTHES_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (36, 1, 'eWessex');
+VALUES (111, 1, 'eWessex');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (36, 36, 'MNU_FISH_MINUS', 'angleterre');
+VALUES (111, 111, 'MNU_FISH_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (37, 1, 'ZPangleterre');
+VALUES (112, 1, 'ZPangleterre');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (37, 37, 'TRADING_FLEET_MINUS', 'angleterre');
+VALUES (112, 112, 'TRADING_FLEET_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (38, 1, 'ZMNord');
+VALUES (113, 1, 'ZMNord');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (38, 38, 'TRADING_FLEET_MINUS', 'angleterre');
+VALUES (113, 113, 'TRADING_FLEET_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (39, 1, 'ZPBaltique');
+VALUES (114, 1, 'ZPBaltique');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (39, 39, 'TRADING_FLEET_MINUS', 'angleterre');
+VALUES (114, 114, 'TRADING_FLEET_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (40, 1, 'ZMCanarias');
+VALUES (115, 1, 'ZMCanarias');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (40, 40, 'TRADING_FLEET_MINUS', 'angleterre');
+VALUES (115, 115, 'TRADING_FLEET_MINUS', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (41, 1, 'B_TECH_5');
+VALUES (116, 1, 'B_TECH_5');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (41, 41, 'TECH_LAND', 'angleterre');
+VALUES (116, 116, 'TECH_LAND', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (42, 1, 'B_TECH_9');
+VALUES (117, 1, 'B_TECH_9');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (42, 42, 'TECH_NAVAL', 'angleterre');
+VALUES (117, 117, 'TECH_NAVAL', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (43, 1, 'eEast Anglia');
+VALUES (118, 1, 'eEast Anglia');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (43, 43, 'ARMY_MINUS', 'angleterre');
+VALUES (118, 118, 'ARMY_MINUS', 'angleterre');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (44, 43, 'LAND_DETACHMENT', 'angleterre');
+VALUES (119, 118, 'LAND_DETACHMENT', 'angleterre');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
-VALUES (44, 1, 'eEast Anglia');
+VALUES (119, 1, 'eEast Anglia');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (45, 44, 'FLEET_MINUS', 'angleterre');
+VALUES (120, 119, 'FLEET_MINUS', 'angleterre');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (46, 44, 'NAVAL_DETACHMENT', 'angleterre');
+VALUES (121, 119, 'NAVAL_DETACHMENT', 'angleterre');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (47, 44, 'NAVAL_TRANSPORT', 'angleterre');
+VALUES (122, 119, 'NAVAL_TRANSPORT', 'angleterre');
 
 
 -- France
@@ -236,7 +240,7 @@ VALUES (208, 1, 'ZMCanarias');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
 VALUES (208, 208, 'TRADING_FLEET_MINUS', 'france');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (209, 42, 'TECH_LAND', 'france');
+VALUES (209, 117, 'TECH_LAND', 'france');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
 VALUES (210, 1, 'B_TECH_7');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
@@ -317,7 +321,7 @@ VALUES (315, 315, 'TRADING_FLEET_MINUS', 'espagne');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
 VALUES (316, 210, 'TECH_LAND', 'espagne');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (317, 42, 'TECH_NAVAL', 'espagne');
+VALUES (317, 117, 'TECH_NAVAL', 'espagne');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
 VALUES (318, 1, 'eAndalucia');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
@@ -576,9 +580,9 @@ VALUES (815, 1, 'eVeneto');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
 VALUES (815, 815, 'TRADE_CENTER_MEDITERRANEAN', NULL);
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (816, 41, 'TECH_LAND', 'venise');
+VALUES (816, 116, 'TECH_LAND', 'venise');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
-VALUES (817, 42, 'TECH_NAVAL', 'venise');
+VALUES (817, 117, 'TECH_NAVAL', 'venise');
 INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
 VALUES (816, 1, 'eVeneto');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
