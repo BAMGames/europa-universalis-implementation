@@ -1,7 +1,9 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.game.MoveStackRequest;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
@@ -293,8 +295,10 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
                 Long idGame = MapConfiguration.getIdGame();
                 try {
-                    DiffResponse response = gameService.moveStack(idGame, MapConfiguration.getVersionGame(),
-                            stack.getId(), border.getProvince().getId());
+                    AuthentRequest<MoveStackRequest> request = new AuthentRequest<>();
+                    request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
+                            stack.getId(), border.getProvince().getId()));
+                    DiffResponse response = gameService.moveStack(request);
                     DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                     processDiffEvent(diff);
                 } catch (Exception e) {
@@ -448,8 +452,10 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     if (isNeighbour(dragged.getProvince(), drop)) {
                         Long idGame = MapConfiguration.getIdGame();
                         try {
-                            DiffResponse response = gameService.moveStack(idGame, MapConfiguration.getVersionGame(),
-                                    dragged.getId(), drop.getId());
+                            AuthentRequest<MoveStackRequest> request = new AuthentRequest<>();
+                            request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
+                                    dragged.getId(), drop.getId()));
+                            DiffResponse response = gameService.moveStack(request);
                             DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                             processDiffEvent(diff);
                         } catch (Exception e) {

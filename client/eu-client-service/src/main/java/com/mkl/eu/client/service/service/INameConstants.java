@@ -12,6 +12,8 @@ public interface INameConstants {
     String PARAMETER_LOAD_GAME = "loadGame";
     /** Name of the parameter updateGame. */
     String PARAMETER_UPDATE_GAME = "updateGame";
+    /** Name of the parameter moveStack. */
+    String PARAMETER_MOVE_STACK = "moveStack";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */

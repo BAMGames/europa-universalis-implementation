@@ -2,7 +2,7 @@ package com.mkl.eu.front.client.map.handler.keyboard;
 
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
+import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;

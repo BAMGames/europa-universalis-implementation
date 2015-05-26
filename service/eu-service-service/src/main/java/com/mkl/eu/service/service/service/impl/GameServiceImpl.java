@@ -5,8 +5,9 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
-import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.MoveStackRequest;
+import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -107,37 +108,47 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) throws FunctionalException {
+    public DiffResponse moveStack(AuthentRequest<MoveStackRequest> moveStack) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK).setParams(METHOD_UPDATE_GAME));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveStack.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_UPDATE_GAME));
         // TODO authorization
+
+        Long idGame = moveStack.getRequest().getIdGame();
+        Long versionGame = moveStack.getRequest().getVersionGame();
+        Long idStack = moveStack.getRequest().getIdStack();
+        String provinceTo = moveStack.getRequest().getProvinceTo();
+
         failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK));
         failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK));
         failIfNull(new CheckForThrow<>().setTest(idStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK));
         failIfEmpty(new CheckForThrow<String>().setTest(provinceTo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK));
 
         GameEntity game = gameDao.lock(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK, idGame));
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK, versionGame, game.getVersion()));
+                .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK, versionGame, game.getVersion()));
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
         Optional<StackEntity> stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(stackOpt.isPresent()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK, idStack));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK, idStack));
 
         StackEntity stack = stackOpt.get();
 
         AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
 
         failIfNull(new CheckForThrow<>().setTest(province).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo));
 
         AbstractProvinceEntity provinceStack = provinceDao.getProvinceByName(stack.getProvince());
         boolean isNear = false;
@@ -146,7 +157,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         }
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(isNear).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_NOT_NEIGHBOR).setName(PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince()));
+                .setMsgFormat(MSG_NOT_NEIGHBOR).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince()));
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());

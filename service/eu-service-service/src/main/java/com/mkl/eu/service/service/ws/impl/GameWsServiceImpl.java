@@ -4,8 +4,9 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
-import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.MoveStackRequest;
+import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,8 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Long idGame, Long versionGame, Long idStack, String provinceTo) throws FunctionalException, TechnicalException {
-        return gameService.moveStack(idGame, versionGame, idStack, provinceTo);
+    public DiffResponse moveStack(AuthentRequest<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException {
+        return gameService.moveStack(moveStack);
     }
 
     /** {@inheritDoc} */

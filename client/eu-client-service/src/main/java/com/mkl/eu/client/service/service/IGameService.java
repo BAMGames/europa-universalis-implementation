@@ -3,8 +3,9 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
-import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
-import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.MoveStackRequest;
+import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -25,7 +26,7 @@ public interface IGameService extends INameConstants {
      * @param loadGame info of the game to load.
      * @return the game.
      * @throws FunctionalException functional exception.
-     * @throws TechnicalException technical exception.
+     * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE_GAME)
     Game loadGame(@WebParam(name = PARAMETER_LOAD_GAME) AuthentRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException;
@@ -36,7 +37,7 @@ public interface IGameService extends INameConstants {
      * The service will return all the diffs concernend by this game and whose
      * version is greater than (not equal) the given version.
      *
-     * @param updateGame     info of the game to update.
+     * @param updateGame info of the game to update.
      * @return the diffs.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
@@ -47,19 +48,13 @@ public interface IGameService extends INameConstants {
     /**
      * Move a stack on the board.
      *
-     * @param idGame      id of the game.
-     * @param versionGame version of the game.
-     * @param idStack     id of the stack to move.
-     * @param provinceTo  province where the stack should move.
+     * @param moveStack info of the stack to move.
      * @return the diffs involved by this service.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse moveStack(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
-                           @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
-                           @WebParam(name = PARAMETER_ID_STACK) Long idStack,
-                           @WebParam(name = PARAMETER_PROVINCE_TO) String provinceTo) throws FunctionalException, TechnicalException;
+    DiffResponse moveStack(@WebParam(name = PARAMETER_MOVE_STACK) AuthentRequest<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException;
 
     /**
      * Move a counter from a stack to another..

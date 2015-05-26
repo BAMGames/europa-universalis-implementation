@@ -3,7 +3,7 @@ package com.mkl.eu.front.client.main;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;

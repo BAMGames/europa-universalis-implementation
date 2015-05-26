@@ -1,7 +1,9 @@
 package com.mkl.eu.front.client.map.component;
 
+import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.game.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
@@ -312,8 +314,10 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
                 Long idGame = MapConfiguration.getIdGame();
                 try {
-                    DiffResponse response = gameService.moveStack(idGame, MapConfiguration.getVersionGame(),
-                            stack.getId(), border.getProvince().getId());
+                    AuthentRequest<MoveStackRequest> request = new AuthentRequest<>();
+                    request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
+                            stack.getId(), border.getProvince().getId()));
+                    DiffResponse response = gameService.moveStack(request);
                     DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                     processDiffEvent(diff);
                 } catch (Exception e) {

@@ -1,4 +1,4 @@
-package com.mkl.eu.client.service.service.wrapper;
+package com.mkl.eu.client.service.service.game;
 
 /**
  * Request for updateGame service.
