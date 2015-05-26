@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
+import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -35,15 +36,13 @@ public interface IGameService extends INameConstants {
      * The service will return all the diffs concernend by this game and whose
      * version is greater than (not equal) the given version.
      *
-     * @param idGame      of the game too update.
-     * @param versionGame previous version of the game.
+     * @param updateGame     info of the game to update.
      * @return the diffs.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse updateGame(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
-                            @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame) throws FunctionalException, TechnicalException;
+    DiffResponse updateGame(@WebParam(name = PARAMETER_UPDATE_GAME) AuthentRequest<UpdateGameRequest> updateGame) throws FunctionalException, TechnicalException;
 
     /**
      * Move a stack on the board.

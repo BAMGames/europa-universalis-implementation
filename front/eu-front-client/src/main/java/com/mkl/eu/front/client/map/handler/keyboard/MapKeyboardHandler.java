@@ -1,6 +1,8 @@
 package com.mkl.eu.front.client.map.handler.keyboard;
 
+import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
@@ -60,7 +62,9 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
         } else if (keyCode == 85) {
             Long idGame = MapConfiguration.getIdGame();
             try {
-                DiffResponse response = gameService.updateGame(idGame, MapConfiguration.getVersionGame());
+                AuthentRequest<UpdateGameRequest> request = new AuthentRequest<>();
+                request.setRequest(new UpdateGameRequest(idGame, MapConfiguration.getVersionGame()));
+                DiffResponse response = gameService.updateGame(request);
                 DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                 processDiffEvent(diff);
             } catch (Exception e) {

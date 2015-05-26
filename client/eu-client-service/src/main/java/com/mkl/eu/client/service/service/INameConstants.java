@@ -6,8 +6,12 @@ package com.mkl.eu.client.service.service;
  * @author MKL.
  */
 public interface INameConstants {
+    /** Name of the parameter request. */
+    String PARAMETER_REQUEST = "request";
     /** Name of the parameter loadGame. */
     String PARAMETER_LOAD_GAME = "loadGame";
+    /** Name of the parameter updateGame. */
+    String PARAMETER_UPDATE_GAME = "updateGame";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */

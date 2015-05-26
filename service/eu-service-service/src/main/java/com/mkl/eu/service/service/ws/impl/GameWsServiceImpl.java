@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
+import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,8 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Long idGame, Long versionGame) throws FunctionalException, TechnicalException {
-        return gameService.updateGame(idGame, versionGame);
+    public DiffResponse updateGame(AuthentRequest<UpdateGameRequest> updateGame) throws FunctionalException, TechnicalException {
+        return gameService.updateGame(updateGame);
     }
 
     /** {@inheritDoc} */

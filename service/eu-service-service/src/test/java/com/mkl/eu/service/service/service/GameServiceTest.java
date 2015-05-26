@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
+import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
@@ -89,11 +90,11 @@ public class GameServiceTest {
             Assert.assertEquals("loadGame.request", e.getParams()[0]);
         }
 
-        request.setRequest(new LoadGameRequest(null));
+        request.setRequest(new LoadGameRequest());
 
         try {
             gameService.loadGame(request);
-            Assert.fail("Should break because loadGame.request is null");
+            Assert.fail("Should break because loadGame.request.idGame is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
             Assert.assertEquals("loadGame.request.idGame", e.getParams()[0]);
@@ -102,8 +103,46 @@ public class GameServiceTest {
 
     @Test
     public void testUpdateGame() throws Exception {
-        Long idGame = 12L;
-        Long versionGame = 1L;
+
+        try {
+            gameService.updateGame(null);
+            Assert.fail("Should break because updateGame is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("updateGame", e.getParams()[0]);
+        }
+
+        AuthentRequest<UpdateGameRequest> request = new AuthentRequest<>();
+
+        try {
+            gameService.updateGame(request);
+            Assert.fail("Should break because updateGame.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("updateGame.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new UpdateGameRequest());
+
+        try {
+            gameService.updateGame(request);
+            Assert.fail("Should break because updateGame.request.idGame is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("updateGame.request.idGame", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdGame(12L);
+
+        try {
+            gameService.updateGame(request);
+            Assert.fail("Should break because updateGame.request.versionGame is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("updateGame.request.versionGame", e.getParams()[0]);
+        }
+
+        request.getRequest().setVersionGame(1L);
 
         List<DiffEntity> diffs = new ArrayList<>();
         DiffEntity diff1 = new DiffEntity();
@@ -130,7 +169,7 @@ public class GameServiceTest {
 
         when(diffMapping.oesToVos(anyObject())).thenReturn(diffVos);
 
-        DiffResponse response = gameService.updateGame(idGame, versionGame);
+        DiffResponse response = gameService.updateGame(request);
 
         InOrder inOrder = inOrder(diffDao, diffMapping);
 
@@ -143,7 +182,7 @@ public class GameServiceTest {
         diff2.setVersionGame(7L);
         diff4.setVersionGame(7L);
 
-        response = gameService.updateGame(idGame, versionGame);
+        response = gameService.updateGame(request);
 
         inOrder = inOrder(diffDao, diffMapping);
 
@@ -153,7 +192,10 @@ public class GameServiceTest {
         Assert.assertEquals(7L, response.getVersionGame().longValue());
         Assert.assertEquals(diffVos, response.getDiffs());
 
-        response = gameService.updateGame(1L, 12L);
+        request.getRequest().setIdGame(1L);
+        request.getRequest().setVersionGame(12L);
+
+        response = gameService.updateGame(request);
 
         Assert.assertEquals(12L, response.getVersionGame().longValue());
     }

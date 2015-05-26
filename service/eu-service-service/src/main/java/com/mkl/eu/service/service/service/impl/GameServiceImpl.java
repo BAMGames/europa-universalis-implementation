@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
+import com.mkl.eu.client.service.service.wrapper.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -69,9 +70,9 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME).setParams(METHOD_LOAD_GAME));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME + ".request").setParams(METHOD_LOAD_GAME));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST).setParams(METHOD_LOAD_GAME));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest().getIdGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME + ".request.idGame").setParams(METHOD_LOAD_GAME));
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_LOAD_GAME));
 
         GameEntity game = gameDao.read(loadGame.getRequest().getIdGame());
         return gameMapping.oeToVo(game);
@@ -79,13 +80,17 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Long idGame, Long versionGame) throws FunctionalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ID_GAME).setParams(METHOD_UPDATE_GAME));
-        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VERSION_GAME).setParams(METHOD_UPDATE_GAME));
+    public DiffResponse updateGame(AuthentRequest<UpdateGameRequest> updateGame) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(updateGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_UPDATE_GAME).setParams(METHOD_UPDATE_GAME));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(updateGame.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_UPDATE_GAME, PARAMETER_REQUEST).setParams(METHOD_UPDATE_GAME));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(updateGame.getRequest().getIdGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_UPDATE_GAME, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_UPDATE_GAME));
+        failIfNull(new CheckForThrow<>().setTest(updateGame.getRequest().getVersionGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_UPDATE_GAME, PARAMETER_REQUEST, PARAMETER_VERSION_GAME).setParams(METHOD_UPDATE_GAME));
 
-        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
+        List<DiffEntity> diffs = diffDao.getDiffsSince(updateGame.getRequest().getIdGame(), updateGame.getRequest().getVersionGame());
         List<Diff> diffVos = diffMapping.oesToVos(diffs);
 
         DiffResponse response = new DiffResponse();
@@ -94,7 +99,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
             response.setVersionGame(diffs.stream().max((o1, o2) -> (int) (o1.getVersionGame() - o2.getVersionGame())).get().getVersionGame());
         } else {
             // if no diff, game is up to date and has the right version
-            response.setVersionGame(versionGame);
+            response.setVersionGame(updateGame.getRequest().getVersionGame());
         }
 
         return response;

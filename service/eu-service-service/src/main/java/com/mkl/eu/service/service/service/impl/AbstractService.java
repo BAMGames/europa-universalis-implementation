@@ -113,6 +113,12 @@ public abstract class AbstractService {
             return this;
         }
 
+        /** @param names the name to set. */
+        public CheckForThrow<T> setName(String... names) {
+            this.name = String.join(".", names);
+            return this;
+        }
+
         /** @return the codeError. */
         public String getCodeError() {
             return codeError;
