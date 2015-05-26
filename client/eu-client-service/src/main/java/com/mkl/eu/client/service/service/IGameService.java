@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.MoveCounterRequest;
 import com.mkl.eu.client.service.service.game.MoveStackRequest;
 import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
@@ -59,17 +60,11 @@ public interface IGameService extends INameConstants {
     /**
      * Move a counter from a stack to another..
      *
-     * @param idGame      id of the game.
-     * @param versionGame version of the game.
-     * @param idCounter   id of the counter to move.
-     * @param idStack     id of the stack where the counter will move to. Can be <code>null</code> for creation of a stack.
+     * @param moveCounter info of the counter to move.
      * @return the diffs involved by this service.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse moveCounter(@WebParam(name = PARAMETER_ID_GAME) Long idGame,
-                             @WebParam(name = PARAMETER_VERSION_GAME) Long versionGame,
-                             @WebParam(name = PARAMETER_ID_COUNTER) Long idCounter,
-                             @WebParam(name = PARAMETER_ID_STACK) Long idStack) throws FunctionalException, TechnicalException;
+    DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) AuthentRequest<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException;
 }

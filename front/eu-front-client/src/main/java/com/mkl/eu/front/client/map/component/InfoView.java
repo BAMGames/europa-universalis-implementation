@@ -3,6 +3,7 @@ package com.mkl.eu.front.client.map.component;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.game.MoveCounterRequest;
 import com.mkl.eu.client.service.service.game.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
@@ -376,12 +377,13 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                     if (drop != dragged.getOwner()) {
                         Long idGame = MapConfiguration.getIdGame();
                         try {
-                            Long idStack = null;
+                            AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
+                            request.setRequest(new MoveCounterRequest(idGame, MapConfiguration.getVersionGame(),
+                                    dragged.getId()));
                             if (drop != null) {
-                                idStack = drop.getId();
+                                request.getRequest().setIdStack(drop.getId());
                             }
-                            DiffResponse response = gameService.moveCounter(idGame, MapConfiguration.getVersionGame(),
-                                    dragged.getId(), idStack);
+                            DiffResponse response = gameService.moveCounter(request);
                             DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                             processDiffEvent(diff);
                         } catch (Exception e) {

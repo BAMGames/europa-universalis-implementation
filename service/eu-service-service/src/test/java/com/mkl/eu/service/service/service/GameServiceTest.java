@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.MoveCounterRequest;
 import com.mkl.eu.client.service.service.game.MoveStackRequest;
 import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
@@ -431,41 +432,63 @@ public class GameServiceTest {
 
     @Test
     public void testMoveCounterFailSimple() {
-        Long idGame = 12L;
-        Long versionGame = 1L;
-        Long idCounter = 4L;
-        Long idStack = 8L;
+        try {
+            gameService.moveCounter(null);
+            Assert.fail("Should break because moveCounter is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("moveCounter", e.getParams()[0]);
+        }
+
+        AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
 
         try {
-            gameService.moveCounter(null, null, null, null);
+            gameService.moveCounter(request);
+            Assert.fail("Should break because moveCounter.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("moveCounter.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new MoveCounterRequest());
+
+        try {
+            gameService.moveCounter(request);
             Assert.fail("Should break because idGame is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("idGame", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.idGame", e.getParams()[0]);
         }
 
+        request.getRequest().setIdGame(12L);
+
         try {
-            gameService.moveCounter(idGame, null, null, null);
+            gameService.moveCounter(request);
             Assert.fail("Should break because versionGame is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("versionGame", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.versionGame", e.getParams()[0]);
         }
 
+        request.getRequest().setVersionGame(1L);
+
         try {
-            gameService.moveCounter(idGame, versionGame, null, null);
+            gameService.moveCounter(request);
             Assert.fail("Should break because idCounter is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("idCounter", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.idCounter", e.getParams()[0]);
         }
 
+        request.getRequest().setIdCounter(4L);
+        request.getRequest().setIdStack(8L);
+
         try {
-            gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+            gameService.moveCounter(request);
             Assert.fail("Should break because game does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("idGame", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.idGame", e.getParams()[0]);
         }
 
         GameEntity game = new GameEntity();
@@ -474,20 +497,22 @@ public class GameServiceTest {
         when(gameDao.lock(12L)).thenReturn(game);
 
         try {
-            gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+            gameService.moveCounter(request);
             Assert.fail("Should break because versions does not match");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("versionGame", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.versionGame", e.getParams()[0]);
         }
     }
 
     @Test
     public void testMoveCounterFailComplex() {
-        Long idGame = 12L;
-        Long versionGame = 1L;
-        Long idCounter = 13L;
-        Long idStack = 8L;
+        AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
+        request.setRequest(new MoveCounterRequest());
+        request.getRequest().setIdGame(12L);
+        request.getRequest().setVersionGame(1L);
+        request.getRequest().setIdCounter(13L);
+        request.getRequest().setIdStack(8L);
 
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setId(257L);
@@ -517,38 +542,42 @@ public class GameServiceTest {
         when(gameDao.lock(12L)).thenReturn(game);
 
         try {
-            gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+            gameService.moveCounter(request);
             Assert.fail("Should break because counter does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("idCounter", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.idCounter", e.getParams()[0]);
         }
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
 
         try {
-            gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+            gameService.moveCounter(request);
             Assert.fail("Should break because trying to move the counter in another province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("idStack", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.idStack", e.getParams()[0]);
         }
 
+        request.getRequest().setIdStack(9L);
+
         try {
-            gameService.moveCounter(idGame, versionGame, idCounter, 9L);
+            gameService.moveCounter(request);
             Assert.fail("Should break because trying to move the counter in the same stack");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("idStack", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.request.idStack", e.getParams()[0]);
         }
     }
 
     @Test
     public void testMoveCounterSuccess() throws Exception {
-        Long idGame = 12L;
-        Long versionGame = 1L;
-        Long idCounter = 13L;
-        Long idStack = 8L;
+        AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
+        request.setRequest(new MoveCounterRequest());
+        request.getRequest().setIdGame(12L);
+        request.getRequest().setVersionGame(1L);
+        request.getRequest().setIdCounter(13L);
+        request.getRequest().setIdStack(8L);
 
         GameEntity game = new GameEntity();
         game.setId(12L);
@@ -590,7 +619,7 @@ public class GameServiceTest {
 
         when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
 
-        DiffResponse response = gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+        DiffResponse response = gameService.moveCounter(request);
 
         InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
 
@@ -621,10 +650,11 @@ public class GameServiceTest {
 
     @Test
     public void testMoveCounterInNewStackSuccess() throws Exception {
-        Long idGame = 12L;
-        Long versionGame = 1L;
-        Long idCounter = 13L;
-        Long idStack = null;
+        AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
+        request.setRequest(new MoveCounterRequest());
+        request.getRequest().setIdGame(12L);
+        request.getRequest().setVersionGame(1L);
+        request.getRequest().setIdCounter(13L);
 
         GameEntity game = new GameEntity();
         game.setId(12L);
@@ -667,7 +697,7 @@ public class GameServiceTest {
 
         when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
 
-        DiffResponse response = gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+        DiffResponse response = gameService.moveCounter(request);
 
         InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
 

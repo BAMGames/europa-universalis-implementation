@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.MoveCounterRequest;
 import com.mkl.eu.client.service.service.game.MoveStackRequest;
 import com.mkl.eu.client.service.service.game.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
@@ -47,7 +48,7 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveCounter(Long idGame, Long versionGame, Long idCounter, Long idStack) throws FunctionalException, TechnicalException {
-        return gameService.moveCounter(idGame, versionGame, idCounter, idStack);
+    public DiffResponse moveCounter(AuthentRequest<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException {
+        return gameService.moveCounter(moveCounter);
     }
 }
