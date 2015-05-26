@@ -2,6 +2,8 @@ package com.mkl.eu.client.service.service;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -19,12 +21,13 @@ public interface IGameService extends INameConstants {
     /**
      * Load a game given its id.
      *
-     * @param idGame of the game too load.
+     * @param loadGame info of the game to load.
      * @return the game.
+     * @throws FunctionalException functional exception.
      * @throws TechnicalException technical exception.
      */
     @WebResult(name = RESPONSE_GAME)
-    Game loadGame(@WebParam(name = PARAMETER_ID_GAME) Long idGame) throws TechnicalException;
+    Game loadGame(@WebParam(name = PARAMETER_LOAD_GAME) AuthentRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException;
 
     /**
      * Get all diffs since last client version of the game.

@@ -1,6 +1,9 @@
 package com.mkl.eu.front.client.main;
 
+import com.mkl.eu.client.common.exception.FunctionalException;
+import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -46,12 +49,16 @@ public class Main extends JFrame implements IDiffListener {
 
     /**
      * Initialize the component.
+     *
+     * @throws FunctionalException functional exception.
      */
     @PostConstruct
-    public void init() {
+    public void init() throws FunctionalException {
         map.addDiffListener(this);
 //        game = mockGame();
-        game = gameService.loadGame(1L);
+        AuthentRequest<LoadGameRequest> loadGame = new AuthentRequest<>();
+        loadGame.setRequest(new LoadGameRequest(1L));
+        game = gameService.loadGame(loadGame);
         MapConfiguration.setIdGame(game.getId());
         MapConfiguration.setVersionGame(game.getVersion());
         map.setGame(game);

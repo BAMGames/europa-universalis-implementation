@@ -2,6 +2,8 @@ package com.mkl.eu.service.service.service;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
@@ -66,6 +68,37 @@ public class GameServiceTest {
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
+
+    @Test
+    public void testLoadGame() throws Exception {
+        try {
+            gameService.loadGame(null);
+            Assert.fail("Should break because loadGame is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadGame", e.getParams()[0]);
+        }
+
+        AuthentRequest<LoadGameRequest> request = new AuthentRequest<>();
+
+        try {
+            gameService.loadGame(request);
+            Assert.fail("Should break because loadGame.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadGame.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new LoadGameRequest(null));
+
+        try {
+            gameService.loadGame(request);
+            Assert.fail("Should break because loadGame.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadGame.request.idGame", e.getParams()[0]);
+        }
+    }
 
     @Test
     public void testUpdateGame() throws Exception {

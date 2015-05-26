@@ -3,7 +3,9 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -63,8 +65,15 @@ public class GameServiceImpl extends AbstractService implements IGameService {
 
     /** {@inheritDoc} */
     @Override
-    public Game loadGame(Long id) {
-        GameEntity game = gameDao.read(id);
+    public Game loadGame(AuthentRequest<LoadGameRequest> loadGame) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME).setParams(METHOD_LOAD_GAME));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME + ".request").setParams(METHOD_LOAD_GAME));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest().getIdGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME + ".request.idGame").setParams(METHOD_LOAD_GAME));
+
+        GameEntity game = gameDao.read(loadGame.getRequest().getIdGame());
         return gameMapping.oeToVo(game);
     }
 

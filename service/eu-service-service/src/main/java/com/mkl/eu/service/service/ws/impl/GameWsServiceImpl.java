@@ -2,7 +2,9 @@ package com.mkl.eu.service.service.ws.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.vo.AuthentRequest;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.service.wrapper.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +27,8 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
 
     /** {@inheritDoc} */
     @Override
-    public Game loadGame(Long idGame) throws TechnicalException {
-        return gameService.loadGame(idGame);
+    public Game loadGame(AuthentRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException {
+        return gameService.loadGame(loadGame);
     }
 
     /** {@inheritDoc} */

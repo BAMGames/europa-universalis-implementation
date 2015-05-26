@@ -6,6 +6,8 @@ package com.mkl.eu.client.service.service;
  * @author MKL.
  */
 public interface INameConstants {
+    /** Name of the parameter loadGame. */
+    String PARAMETER_LOAD_GAME = "loadGame";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */
@@ -34,4 +36,6 @@ public interface INameConstants {
     String METHOD_CREATE_COUNTER = "createCounter";
     /** Name of the method updateGame. */
     String METHOD_UPDATE_GAME = "updateGame";
+    /** Name of the method loadGame. */
+    String METHOD_LOAD_GAME = "loadGame";
 }
