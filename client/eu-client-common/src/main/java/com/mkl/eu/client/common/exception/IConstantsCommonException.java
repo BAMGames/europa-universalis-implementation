@@ -107,7 +107,7 @@ public interface IConstantsCommonException {
      * Parameters:
      * <ul>
      * <li>0: Action being performed (or object being updated).</li>
-     * <li>1: if of the user.</li>
+     * <li>1: username of the user.</li>
      * </ul>
      * </p>
      */

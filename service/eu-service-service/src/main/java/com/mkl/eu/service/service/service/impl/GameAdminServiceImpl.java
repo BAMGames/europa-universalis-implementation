@@ -78,7 +78,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         GameEntity game = gameDao.lock(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_CREATE_COUNTER, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ID_GAME).setParams(METHOD_CREATE_COUNTER, idGame));
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_CREATE_COUNTER, versionGame, game.getVersion()));
 
@@ -87,13 +87,13 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         CountryEntity country = countryDao.getCountryByName(counter.getCountry());
 
         failIfNull(new CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_COUNTER + ".country")
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_COUNTER + ".country")
                 .setParams(METHOD_CREATE_COUNTER, counter.getCountry()));
 
         AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
 
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, province));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, province));
 
         StackEntity stack = new StackEntity();
         stack.setProvince(province);
@@ -170,7 +170,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         GameEntity game = gameDao.lock(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_GAME).setParams(METHOD_REMOVE_COUNTER, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ID_GAME).setParams(METHOD_REMOVE_COUNTER, idGame));
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_VERSION_GAME).setParams(METHOD_REMOVE_COUNTER, versionGame, game.getVersion()));
 
@@ -190,7 +190,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         }
 
         failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER, idGame));
 
         StackEntity stack = counter.getOwner();
         stack.getCounters().remove(counter);

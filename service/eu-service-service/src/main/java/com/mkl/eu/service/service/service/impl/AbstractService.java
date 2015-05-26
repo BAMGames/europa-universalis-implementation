@@ -18,7 +18,7 @@ public abstract class AbstractService {
     /** Error message when a parameter is missing. */
     public static final String MSG_MISSING_PARAMETER = "{1}: {0} missing.";
     /** Error message when an object is not found (in database mostly). */
-    public static final String MSG_OBJECT_NOT_FOUNT = "{1}: {0} {2} does not exist.";
+    public static final String MSG_OBJECT_NOT_FOUND = "{1}: {0} {2} does not exist.";
     /** Error message when the game version is incorrect (greater than the one in database). */
     public static final String MSG_VERSION_INCORRECT = "{1}: {0} {2} is greater than actual ({3}).";
     /** Error message when a province is not the neighbor of another (assuming it should have been). */
@@ -27,6 +27,8 @@ public abstract class AbstractService {
     public static final String MSG_NOT_SAME_PROVINCE = "{1}: {0} / The action should be in {2} but was in {3}.";
     /** Error message when an action should be done in a different stack. */
     public static final String MSG_NOT_SAME_STACK = "{1}: {0} / The stack should be another one.";
+    /** Error message when an object is not found (in database mostly). */
+    public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action.";
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.

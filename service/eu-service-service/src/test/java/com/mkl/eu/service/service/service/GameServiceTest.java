@@ -20,6 +20,7 @@ import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
@@ -537,7 +538,12 @@ public class GameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
+        counter.setCountry("FRA");
         game.getStacks().add(stack);
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setName("FRA");
+        country.setUsername("toto");
+        game.getCountries().add(country);
 
         when(gameDao.lock(12L)).thenReturn(game);
 
@@ -550,6 +556,16 @@ public class GameServiceTest {
         }
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
+
+        try {
+            gameService.moveCounter(request);
+            Assert.fail("Should break because username has not the right to move this counter");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("username", e.getParams()[0]);
+        }
+
+        request.setUsername("toto");
 
         try {
             gameService.moveCounter(request);
@@ -573,6 +589,7 @@ public class GameServiceTest {
     @Test
     public void testMoveCounterSuccess() throws Exception {
         AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
+        request.setUsername("toto");
         request.setRequest(new MoveCounterRequest());
         request.getRequest().setIdGame(12L);
         request.getRequest().setVersionGame(1L);
@@ -594,9 +611,14 @@ public class GameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
+        counter.setCountry("FRA");
         stack.getCounters().add(counter);
         stack.getCounters().add(new CounterEntity());
         game.getStacks().add(stack);
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setName("FRA");
+        country.setUsername("toto");
+        game.getCountries().add(country);
 
         when(gameDao.lock(12L)).thenReturn(game);
 

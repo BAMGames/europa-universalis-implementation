@@ -24,6 +24,7 @@ import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
@@ -133,7 +134,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         GameEntity game = gameDao.lock(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_MOVE_STACK, idGame));
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_STACK, versionGame, game.getVersion()));
 
@@ -142,14 +143,14 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         Optional<StackEntity> stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(stackOpt.isPresent()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK, idStack));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK, idStack));
 
         StackEntity stack = stackOpt.get();
 
         AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
 
         failIfNull(new CheckForThrow<>().setTest(province).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo));
 
         AbstractProvinceEntity provinceStack = provinceDao.getProvinceByName(stack.getProvince());
         boolean isNear = false;
@@ -198,7 +199,6 @@ public class GameServiceImpl extends AbstractService implements IGameService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER).setParams(METHOD_UPDATE_GAME));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(moveCounter.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST).setParams(METHOD_UPDATE_GAME));
-        // TODO authorization
 
         Long idGame = moveCounter.getRequest().getIdGame();
         Long versionGame = moveCounter.getRequest().getVersionGame();
@@ -215,7 +215,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         GameEntity game = gameDao.lock(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_MOVE_COUNTER, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_MOVE_COUNTER, idGame));
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_VERSION_INCORRECT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_VERSION_GAME).setParams(METHOD_MOVE_COUNTER, versionGame, game.getVersion()));
 
@@ -224,7 +224,17 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         CounterEntity counter = counterDao.getCounter(idCounter, idGame);
 
         failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUNT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER, idGame));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER, idGame));
+
+        Optional<PlayableCountryEntity> country = game.getCountries().stream().filter(x -> StringUtils.equals(counter.getCountry(), x.getName())).findFirst();
+        if (country.isPresent()) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(moveCounter.getUsername(), country.get().getUsername()))
+                    .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername()));
+
+        } else {
+            // TODO manage minor countries
+        }
 
         Optional<StackEntity> stackOpt = null;
         if (idStack != null) {
