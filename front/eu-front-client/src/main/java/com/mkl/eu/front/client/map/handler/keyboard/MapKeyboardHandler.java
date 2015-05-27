@@ -8,6 +8,7 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.map.MapConfiguration;
+import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
 import org.slf4j.Logger;
@@ -27,6 +28,8 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
     private List<IDiffListener> diffListeners = new ArrayList<>();
     /** Game service. */
     private IGameService gameService;
+    /** Component holding the authentication information. */
+    private AuthentHolder authentHolder;
 
     /**
      * Creates a KeyboardHandler for the given maps.
@@ -34,9 +37,10 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
      * @param p    The PApplet.
      * @param maps One or more maps.
      */
-    public MapKeyboardHandler(PApplet p, IGameService gameService, UnfoldingMap... maps) {
+    public MapKeyboardHandler(PApplet p, IGameService gameService, AuthentHolder authentHolder, UnfoldingMap... maps) {
         super(p, maps);
         this.gameService = gameService;
+        this.authentHolder = authentHolder;
     }
 
     /**
@@ -62,7 +66,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
         } else if (keyCode == 85) {
             Long idGame = MapConfiguration.getIdGame();
             try {
-                AuthentRequest<UpdateGameRequest> request = new AuthentRequest<>();
+                AuthentRequest<UpdateGameRequest> request = authentHolder.createRequest();
                 request.setRequest(new UpdateGameRequest(idGame, MapConfiguration.getVersionGame()));
                 DiffResponse response = gameService.updateGame(request);
                 DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());

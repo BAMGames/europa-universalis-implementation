@@ -19,6 +19,7 @@ import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
+import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -57,6 +58,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
+    /** Component holding the authentication information. */
+    @Autowired
+    private AuthentHolder authentHolder;
     /** Selected marker. */
     private Marker selectedMarker;
     /** The stack being dragged. */
@@ -295,7 +299,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
                 Long idGame = MapConfiguration.getIdGame();
                 try {
-                    AuthentRequest<MoveStackRequest> request = new AuthentRequest<>();
+                    AuthentRequest<MoveStackRequest> request = authentHolder.createRequest();
                     request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
                             stack.getId(), border.getProvince().getId()));
                     DiffResponse response = gameService.moveStack(request);
@@ -452,7 +456,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     if (isNeighbour(dragged.getProvince(), drop)) {
                         Long idGame = MapConfiguration.getIdGame();
                         try {
-                            AuthentRequest<MoveStackRequest> request = new AuthentRequest<>();
+                            AuthentRequest<MoveStackRequest> request = authentHolder.createRequest();
                             request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
                                     dragged.getId(), drop.getId()));
                             DiffResponse response = gameService.moveStack(request);

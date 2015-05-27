@@ -15,6 +15,7 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.map.MapConfiguration;
+import com.mkl.eu.front.client.vo.AuthentHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,9 @@ public class Main extends JFrame implements IDiffListener {
     /** PApplet for the intercative map. */
     @Autowired
     private InteractiveMap map;
+    /** Component holding the authentication information. */
+    @Autowired
+    private AuthentHolder authentHolder;
     /** Game displayed. */
     private Game game;
 
@@ -56,7 +60,7 @@ public class Main extends JFrame implements IDiffListener {
     public void init() throws FunctionalException {
         map.addDiffListener(this);
 //        game = mockGame();
-        AuthentRequest<LoadGameRequest> loadGame = new AuthentRequest<>();
+        AuthentRequest<LoadGameRequest> loadGame = authentHolder.createRequest();
         loadGame.setRequest(new LoadGameRequest(1L));
         game = gameService.loadGame(loadGame);
         MapConfiguration.setIdGame(game.getId());

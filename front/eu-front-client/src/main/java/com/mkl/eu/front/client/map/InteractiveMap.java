@@ -18,6 +18,7 @@ import com.mkl.eu.front.client.map.handler.mouse.MapMouseHandler;
 import com.mkl.eu.front.client.map.handler.mouse.MultipleMapMouseHandler;
 import com.mkl.eu.front.client.map.marker.*;
 import com.mkl.eu.front.client.map.provider.EUProvider;
+import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.events.*;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -52,6 +53,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     /** Game service. */
     @Autowired
     private IGameService gameService;
+    /** Component holding the authentication information. */
+    @Autowired
+    private AuthentHolder authentHolder;
     /** Interactive map. */
     private UnfoldingMap mapDetail;
 
@@ -114,7 +118,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         info.init(805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
-        MapKeyboardHandler keyboardHandler = new MapKeyboardHandler(this, gameService, mapDetail);
+        MapKeyboardHandler keyboardHandler = new MapKeyboardHandler(this, gameService, authentHolder, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, markerManager, mapDetail);
         new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
         InfoViewMouseHandler infoHandler = new InfoViewMouseHandler(this, info, mapDetail);

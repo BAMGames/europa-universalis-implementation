@@ -17,6 +17,7 @@ import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
 import com.mkl.eu.front.client.map.marker.*;
+import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -71,6 +72,9 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
+    /** Component holding the authentication information. */
+    @Autowired
+    private AuthentHolder authentHolder;
     /** The counter being dragged. */
     private CounterMarker dragged;
     /** The new location of the dragged object. */
@@ -315,7 +319,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
                 Long idGame = MapConfiguration.getIdGame();
                 try {
-                    AuthentRequest<MoveStackRequest> request = new AuthentRequest<>();
+                    AuthentRequest<MoveStackRequest> request = authentHolder.createRequest();
                     request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
                             stack.getId(), border.getProvince().getId()));
                     DiffResponse response = gameService.moveStack(request);
@@ -377,7 +381,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                     if (drop != dragged.getOwner()) {
                         Long idGame = MapConfiguration.getIdGame();
                         try {
-                            AuthentRequest<MoveCounterRequest> request = new AuthentRequest<>();
+                            AuthentRequest<MoveCounterRequest> request = authentHolder.createRequest();
                             request.setRequest(new MoveCounterRequest(idGame, MapConfiguration.getVersionGame(),
                                     dragged.getId()));
                             if (drop != null) {

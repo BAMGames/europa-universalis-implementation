@@ -230,7 +230,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         if (country.isPresent()) {
             failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(moveCounter.getUsername(), country.get().getUsername()))
                     .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername()));
+                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername(), country.get().getUsername()));
 
         } else {
             List<String> patrons = counterDao.getPatrons(counter.getCountry(), idGame);
@@ -239,7 +239,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
                 if (country.isPresent()) {
                     failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(moveCounter.getUsername(), country.get().getUsername()))
                             .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                            .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername()));
+                            .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername(), country.get().getUsername()));
 
                 }
             } else {

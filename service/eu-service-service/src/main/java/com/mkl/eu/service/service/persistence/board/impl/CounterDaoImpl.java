@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.board.impl;
 
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
@@ -47,9 +48,11 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
         List<String> countries;
         Criteria criteria = getSession().createCriteria(CounterEntity.class);
 
-        criteria.add(Restrictions.or(Restrictions.eq("type", "DIPLOMACY"), Restrictions.eq("type", "DIPLOMACY_WAR")));
+        criteria.add(Restrictions.or(Restrictions.eq("type", CounterFaceTypeEnum.DIPLOMACY), Restrictions.eq("type", CounterFaceTypeEnum.DIPLOMACY_WAR)));
         criteria.add(Restrictions.eq("country", country));
-        criteria.add(Restrictions.eq("owner.game.id", idGame));
+
+        Criteria criteriaStack = criteria.createCriteria("owner", "owner");
+        criteriaStack.add(Restrictions.eq("game.id", idGame));
 
         CounterEntity counter = (CounterEntity) criteria.uniqueResult();
         if (counter != null) {
@@ -62,9 +65,11 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
         } else {
             criteria = getSession().createCriteria(CounterEntity.class);
 
-            criteria.add(Restrictions.or(Restrictions.eq("type", "ROTW_RELATION"), Restrictions.eq("type", "ROTW_ALLIANCE")));
+            criteria.add(Restrictions.or(Restrictions.eq("type", CounterFaceTypeEnum.ROTW_RELATION), Restrictions.eq("type", CounterFaceTypeEnum.ROTW_ALLIANCE)));
             criteria.add(Restrictions.eq("owner.province", "B_DR_" + country));
-            criteria.add(Restrictions.eq("owner.game.id", idGame));
+
+            criteriaStack = criteria.createCriteria("owner", "owner");
+            criteriaStack.add(Restrictions.eq("game.id", idGame));
 
             @SuppressWarnings("unchecked") List<CounterEntity> counters = criteria.list();
 

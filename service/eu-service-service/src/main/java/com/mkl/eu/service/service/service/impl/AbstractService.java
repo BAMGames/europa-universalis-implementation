@@ -27,8 +27,8 @@ public abstract class AbstractService {
     public static final String MSG_NOT_SAME_PROVINCE = "{1}: {0} / The action should be in {2} but was in {3}.";
     /** Error message when an action should be done in a different stack. */
     public static final String MSG_NOT_SAME_STACK = "{1}: {0} / The stack should be another one.";
-    /** Error message when an object is not found (in database mostly). */
-    public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action.";
+    /** Error message when an action is not authorized. */
+    public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action. Should be {3}.";
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.
