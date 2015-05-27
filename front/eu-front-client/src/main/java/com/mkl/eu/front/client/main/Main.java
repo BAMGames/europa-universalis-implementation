@@ -2,8 +2,8 @@ package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
-import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -39,9 +39,9 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 public class Main extends JFrame implements IDiffListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    /** Game service. */
+    /** Board service. */
     @Autowired
-    private IGameService gameService;
+    private IBoardService boardService;
     /** PApplet for the intercative map. */
     @Autowired
     private InteractiveMap map;
@@ -62,7 +62,7 @@ public class Main extends JFrame implements IDiffListener {
 //        game = mockGame();
         AuthentRequest<LoadGameRequest> loadGame = authentHolder.createRequest();
         loadGame.setRequest(new LoadGameRequest(1L));
-        game = gameService.loadGame(loadGame);
+        game = boardService.loadGame(loadGame);
         MapConfiguration.setIdGame(game.getId());
         MapConfiguration.setVersionGame(game.getVersion());
         map.setGame(game);

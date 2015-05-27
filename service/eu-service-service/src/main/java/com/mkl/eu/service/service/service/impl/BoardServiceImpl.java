@@ -4,11 +4,11 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
-import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.game.LoadGameRequest;
-import com.mkl.eu.client.service.service.game.MoveCounterRequest;
-import com.mkl.eu.client.service.service.game.MoveStackRequest;
-import com.mkl.eu.client.service.service.game.UpdateGameRequest;
+import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.board.MoveCounterRequest;
+import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.board.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -38,13 +38,13 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of the Game Service.
+ * Implementation of the Board Service.
  *
  * @author MKL.
  */
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
-public class GameServiceImpl extends AbstractService implements IGameService {
+public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Game DAO. */
     @Autowired
     private IGameDao gameDao;

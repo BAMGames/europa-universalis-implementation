@@ -6,9 +6,9 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 
-    <jaxws:client id="gameClient"
-                  serviceClass="com.mkl.eu.client.service.service.IGameService"
-                  address="http://localhost:8080/eu/services/GameService?wsdl"/>
+    <jaxws:client id="boardClient"
+                  serviceClass="com.mkl.eu.client.service.service.IBoardService"
+                  address="http://localhost:8080/eu/services/BoardService?wsdl"/>
 
     <jaxws:client id="gameAdminClient"
                   serviceClass="com.mkl.eu.client.service.service.IGameAdminService"

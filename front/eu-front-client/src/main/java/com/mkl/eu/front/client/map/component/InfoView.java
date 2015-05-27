@@ -1,10 +1,10 @@
 package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
-import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.game.MoveCounterRequest;
-import com.mkl.eu.client.service.service.game.MoveStackRequest;
+import com.mkl.eu.client.service.service.board.MoveCounterRequest;
+import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
@@ -44,9 +44,9 @@ import java.util.List;
 public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
-    /** Game Service. */
+    /** Board Service. */
     @Autowired
-    private IGameService gameService;
+    private IBoardService boardService;
     /** Game Admin Service. */
     @Autowired
     private IGameAdminService gameAdminService;
@@ -322,7 +322,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                     AuthentRequest<MoveStackRequest> request = authentHolder.createRequest();
                     request.setRequest(new MoveStackRequest(idGame, MapConfiguration.getVersionGame(),
                             stack.getId(), border.getProvince().getId()));
-                    DiffResponse response = gameService.moveStack(request);
+                    DiffResponse response = boardService.moveStack(request);
                     DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                     processDiffEvent(diff);
                 } catch (Exception e) {
@@ -387,7 +387,7 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                             if (drop != null) {
                                 request.getRequest().setIdStack(drop.getId());
                             }
-                            DiffResponse response = gameService.moveCounter(request);
+                            DiffResponse response = boardService.moveCounter(request);
                             DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                             processDiffEvent(diff);
                         } catch (Exception e) {

@@ -3,10 +3,10 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentRequest;
-import com.mkl.eu.client.service.service.game.LoadGameRequest;
-import com.mkl.eu.client.service.service.game.MoveCounterRequest;
-import com.mkl.eu.client.service.service.game.MoveStackRequest;
-import com.mkl.eu.client.service.service.game.UpdateGameRequest;
+import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.board.MoveCounterRequest;
+import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.board.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -20,7 +20,7 @@ import javax.jws.WebService;
  * @author MKL.
  */
 @WebService
-public interface IGameService extends INameConstants {
+public interface IBoardService extends INameConstants {
     /**
      * Load a game given its id.
      *
