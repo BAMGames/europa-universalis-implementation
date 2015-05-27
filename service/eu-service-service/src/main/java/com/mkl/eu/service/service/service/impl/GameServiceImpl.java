@@ -233,7 +233,18 @@ public class GameServiceImpl extends AbstractService implements IGameService {
                     .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername()));
 
         } else {
-            // TODO manage minor countries
+            List<String> patrons = counterDao.getPatrons(counter.getCountry(), idGame);
+            if (patrons.size() == 1) {
+                country = game.getCountries().stream().filter(x -> StringUtils.equals(patrons.get(0), x.getName())).findFirst();
+                if (country.isPresent()) {
+                    failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(moveCounter.getUsername(), country.get().getUsername()))
+                            .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                            .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getUsername()));
+
+                }
+            } else {
+                // TODO manage minor countries in war with no or multiple patrons
+            }
         }
 
         Optional<StackEntity> stackOpt = null;

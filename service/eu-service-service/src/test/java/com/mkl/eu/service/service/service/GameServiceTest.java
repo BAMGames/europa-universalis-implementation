@@ -538,10 +538,10 @@ public class GameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
-        counter.setCountry("FRA");
+        counter.setCountry("france");
         game.getStacks().add(stack);
         PlayableCountryEntity country = new PlayableCountryEntity();
-        country.setName("FRA");
+        country.setName("france");
         country.setUsername("toto");
         game.getCountries().add(country);
 
@@ -556,6 +556,20 @@ public class GameServiceTest {
         }
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
+
+        try {
+            gameService.moveCounter(request);
+            Assert.fail("Should break because username has not the right to move this counter");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("username", e.getParams()[0]);
+        }
+
+        counter.setCountry("genes");
+
+        List<String> patrons = new ArrayList<>();
+        patrons.add("france");
+        when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
 
         try {
             gameService.moveCounter(request);
@@ -611,14 +625,17 @@ public class GameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
-        counter.setCountry("FRA");
+        counter.setCountry("genes");
         stack.getCounters().add(counter);
         stack.getCounters().add(new CounterEntity());
         game.getStacks().add(stack);
         PlayableCountryEntity country = new PlayableCountryEntity();
-        country.setName("FRA");
+        country.setName("france");
         country.setUsername("toto");
         game.getCountries().add(country);
+
+        List<String> patrons = new ArrayList<>();
+        patrons.add("france");
 
         when(gameDao.lock(12L)).thenReturn(game);
 
@@ -629,6 +646,8 @@ public class GameServiceTest {
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
+
+        when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
 
         when(diffDao.create(anyObject())).thenAnswer(invocation -> {
             diffEntity = (DiffEntity) invocation.getArguments()[0];
@@ -648,6 +667,7 @@ public class GameServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(counterDao).getCounter(13L, 12L);
+        inOrder.verify(counterDao).getPatrons("genes", 12L);
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(gameDao).update(game, false);
         inOrder.verify(diffMapping).oesToVos(anyObject());

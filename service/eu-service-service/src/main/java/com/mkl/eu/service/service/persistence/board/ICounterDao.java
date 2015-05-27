@@ -3,6 +3,8 @@ package com.mkl.eu.service.service.persistence.board;
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 
+import java.util.List;
+
 /**
  * Interface of the Counter DAO.
  *
@@ -17,4 +19,13 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
      * @return the counter if it exists.
      */
     CounterEntity getCounter(Long idCounter, Long idGame);
+
+    /**
+     * Returns the patrons (can be multiple for rotw countries) of the country.
+     *
+     * @param country to check.
+     * @param idGame  id of the game.
+     * @return the patrons of the country.
+     */
+    List<String> getPatrons(String country, Long idGame);
 }
