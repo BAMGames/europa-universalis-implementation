@@ -18,6 +18,10 @@ public interface INameConstants {
     String PARAMETER_MOVE_STACK = "moveStack";
     /** Name of the parameter moveCounter. */
     String PARAMETER_MOVE_COUNTER = "moveCounter";
+    /** Name of the parameter createRoom. */
+    String PARAMETER_CREATE_ROOM = "createRoom";
+    /** Name of the parameter createRoom. */
+    String PARAMETER_SPEAK_IN_ROOM = "speakInRoom";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */
