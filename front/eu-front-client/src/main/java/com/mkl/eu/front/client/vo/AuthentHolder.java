@@ -1,6 +1,7 @@
 package com.mkl.eu.front.client.vo;
 
-import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.common.vo.AuthentInfo;
+import com.mkl.eu.client.common.vo.SimpleRequest;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,17 +37,13 @@ public class AuthentHolder {
     }
 
     /**
-     * Creates a request with username and password filled.
+     * Fill the authent info of a request.
      *
      * @param <T> type of the request.
-     * @return the filled request.
      */
-    public <T> AuthentRequest<T> createRequest() {
-        AuthentRequest<T> request = new AuthentRequest<>();
-
-        request.setUsername(username);
-        request.setPassword(password);
-
-        return request;
+    public <T> void fillAuthentInfo(SimpleRequest<T> request) {
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername(username);
+        request.getAuthent().setPassword(password);
     }
 }

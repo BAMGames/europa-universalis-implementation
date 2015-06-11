@@ -2,12 +2,12 @@ package com.mkl.eu.service.service.ws.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
-import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.service.board.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,25 +30,25 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
 
     /** {@inheritDoc} */
     @Override
-    public Game loadGame(AuthentRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException {
+    public Game loadGame(SimpleRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException {
         return gameService.loadGame(loadGame);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(AuthentRequest<UpdateGameRequest> updateGame) throws FunctionalException, TechnicalException {
+    public DiffResponse updateGame(Request<Void> updateGame) throws FunctionalException, TechnicalException {
         return gameService.updateGame(updateGame);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(AuthentRequest<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException {
+    public DiffResponse moveStack(Request<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException {
         return gameService.moveStack(moveStack);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveCounter(AuthentRequest<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException {
+    public DiffResponse moveCounter(Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException {
         return gameService.moveCounter(moveCounter);
     }
 }

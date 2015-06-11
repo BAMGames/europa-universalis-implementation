@@ -1,27 +1,15 @@
 package com.mkl.eu.client.common.vo;
 
 /**
- * Request Wrapper with authentication info.
+ * Information on authentication.
  *
  * @author MKL.
  */
-public class AuthentRequest<T> {
-    /** The wrapped request. */
-    private T request;
+public class AuthentInfo {
     /** Username doing the request. */
     private String username;
     /** Password linked to the username. */
     private String password;
-
-    /** @return the request. */
-    public T getRequest() {
-        return request;
-    }
-
-    /** @param request the request to set. */
-    public void setRequest(T request) {
-        this.request = request;
-    }
 
     /** @return the username. */
     public String getUsername() {

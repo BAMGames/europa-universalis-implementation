@@ -2,11 +2,11 @@ package com.mkl.eu.client.service.service;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
-import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.service.board.UpdateGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -30,7 +30,7 @@ public interface IBoardService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE_GAME)
-    Game loadGame(@WebParam(name = PARAMETER_LOAD_GAME) AuthentRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException;
+    Game loadGame(@WebParam(name = PARAMETER_LOAD_GAME) SimpleRequest<LoadGameRequest> loadGame) throws FunctionalException, TechnicalException;
 
     /**
      * Get all diffs since last client version of the game.
@@ -44,7 +44,7 @@ public interface IBoardService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse updateGame(@WebParam(name = PARAMETER_UPDATE_GAME) AuthentRequest<UpdateGameRequest> updateGame) throws FunctionalException, TechnicalException;
+    DiffResponse updateGame(@WebParam(name = PARAMETER_UPDATE_GAME) Request<Void> updateGame) throws FunctionalException, TechnicalException;
 
     /**
      * Move a stack on the board.
@@ -55,7 +55,7 @@ public interface IBoardService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse moveStack(@WebParam(name = PARAMETER_MOVE_STACK) AuthentRequest<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException;
+    DiffResponse moveStack(@WebParam(name = PARAMETER_MOVE_STACK) Request<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException;
 
     /**
      * Move a counter from a stack to another..
@@ -66,5 +66,5 @@ public interface IBoardService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) AuthentRequest<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException;
+    DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException;
 }

@@ -1,5 +1,8 @@
 package com.mkl.eu.front.client.map;
 
+import com.mkl.eu.client.common.vo.GameInfo;
+import com.mkl.eu.client.common.vo.Request;
+
 /**
  * Configuration of the map.
  *
@@ -48,5 +51,16 @@ public final class MapConfiguration {
     /** @param versionGame the versionGame to set. */
     public static void setVersionGame(Long versionGame) {
         MapConfiguration.versionGame = versionGame;
+    }
+
+    /**
+     * Fill the game info of a request.
+     *
+     * @param <T> type of the request.
+     */
+    public static <T> void fillGameInfo(Request<T> request) {
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(idGame);
+        request.getGame().setVersionGame(versionGame);
     }
 }

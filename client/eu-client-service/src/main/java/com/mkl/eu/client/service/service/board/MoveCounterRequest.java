@@ -6,10 +6,6 @@ package com.mkl.eu.client.service.service.board;
  * @author MKL.
  */
 public class MoveCounterRequest {
-    /** Id of the game. */
-    private Long idGame;
-    /** Vrsion of the game. */
-    private Long versionGame;
     /** Id of the counter to move. */
     private Long idCounter;
     /** Id of the stack where the counter will move to. Can be <code>null</code> for creation of a stack. */
@@ -24,34 +20,10 @@ public class MoveCounterRequest {
     /**
      * Constructor.
      *
-     * @param idGame      the idGame to set.
-     * @param versionGame the versionGame to set.
      * @param idCounter   the idCounter to set.
      */
-    public MoveCounterRequest(Long idGame, Long versionGame, Long idCounter) {
-        this.idGame = idGame;
-        this.versionGame = versionGame;
+    public MoveCounterRequest(Long idCounter) {
         this.idCounter = idCounter;
-    }
-
-    /** @return the idGame. */
-    public Long getIdGame() {
-        return idGame;
-    }
-
-    /** @param idGame the idGame to set. */
-    public void setIdGame(Long idGame) {
-        this.idGame = idGame;
-    }
-
-    /** @return the versionGame. */
-    public Long getVersionGame() {
-        return versionGame;
-    }
-
-    /** @param versionGame the versionGame to set. */
-    public void setVersionGame(Long versionGame) {
-        this.versionGame = versionGame;
     }
 
     /** @return the idCounter. */

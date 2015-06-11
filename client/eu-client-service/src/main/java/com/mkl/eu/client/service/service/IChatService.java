@@ -2,7 +2,7 @@ package com.mkl.eu.client.service.service;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
-import com.mkl.eu.client.common.vo.AuthentRequest;
+import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -25,7 +25,7 @@ public interface IChatService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse createRoom(@WebParam(name = PARAMETER_CREATE_ROOM) AuthentRequest<CreateRoomRequest> createRoom) throws FunctionalException, TechnicalException;
+    DiffResponse createRoom(@WebParam(name = PARAMETER_CREATE_ROOM) Request<CreateRoomRequest> createRoom) throws FunctionalException, TechnicalException;
 
     ;
 
@@ -39,5 +39,5 @@ public interface IChatService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse speakInRoom(@WebParam(name = PARAMETER_SPEAK_IN_ROOM) AuthentRequest<SpeakInRoomRequest> speakInRoom) throws FunctionalException, TechnicalException;
+    DiffResponse speakInRoom(@WebParam(name = PARAMETER_SPEAK_IN_ROOM) Request<SpeakInRoomRequest> speakInRoom) throws FunctionalException, TechnicalException;
 }
