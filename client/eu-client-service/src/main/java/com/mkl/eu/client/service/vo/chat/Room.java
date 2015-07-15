@@ -22,6 +22,8 @@ public class Room extends EuObject {
     private List<PlayableCountry> countries = new ArrayList<>();
     /** Flag saying that the room is visible in the interface. Always <code>true</code> for global. */
     private boolean visible;
+    /** Flag saying that the player is still in the room and can speak in it. */
+    private boolean present;
     /** Messages said in the room. */
     private List<Message> messages = new ArrayList<>();
 
@@ -63,6 +65,16 @@ public class Room extends EuObject {
     /** @param visible the visible to set. */
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    /** @return the present. */
+    public boolean isPresent() {
+        return present;
+    }
+
+    /** @param present the present to set. */
+    public void setPresent(boolean present) {
+        this.present = present;
     }
 
     /** @return the messages. */

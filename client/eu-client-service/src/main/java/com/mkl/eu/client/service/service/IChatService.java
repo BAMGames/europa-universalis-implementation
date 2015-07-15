@@ -27,9 +27,6 @@ public interface IChatService extends INameConstants {
     @WebResult(name = RESPONSE)
     DiffResponse createRoom(@WebParam(name = PARAMETER_CREATE_ROOM) Request<CreateRoomRequest> createRoom) throws FunctionalException, TechnicalException;
 
-    ;
-
-
     /**
      * Speak in a room.
      *

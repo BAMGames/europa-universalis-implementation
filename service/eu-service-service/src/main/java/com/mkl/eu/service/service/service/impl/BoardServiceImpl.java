@@ -3,6 +3,8 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
@@ -11,20 +13,26 @@ import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
+import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
+import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
@@ -62,9 +70,15 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
+    /** Chat DAO. */
+    @Autowired
+    private IChatDao chatDao;
     /** Game mapping. */
     @Autowired
     private GameMapping gameMapping;
+    /** Chat mapping. */
+    @Autowired
+    private ChatMapping chatMapping;
     /** Diff mapping. */
     @Autowired
     private DiffMapping diffMapping;
@@ -79,8 +93,37 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest().getIdGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_LOAD_GAME));
 
-        GameEntity game = gameDao.read(loadGame.getRequest().getIdGame());
-        return gameMapping.oeToVo(game);
+        if (loadGame.getAuthent() == null) {
+            loadGame.setAuthent(AuthentInfo.ANONYMOUS);
+        }
+
+        Long idGame = loadGame.getRequest().getIdGame();
+        Long idCountry = loadGame.getRequest().getIdCountry();
+
+        GameEntity game = gameDao.read(idGame);
+
+        boolean isCountryOk = idCountry == null;
+        if (!isCountryOk) {
+            PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), x -> x.getId().equals(idCountry));
+            isCountryOk = country != null && StringUtils.equals(loadGame.getAuthent().getUsername(), country.getUsername());
+        }
+
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(isCountryOk).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat("{1}: {0} ({2}) is not in game or is not played by {3}.").setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_LOAD_GAME, idCountry, loadGame.getAuthent().getUsername()));
+
+        Game returnValue = gameMapping.oeToVo(game);
+
+        List<MessageGlobalEntity> globalMessages = chatDao.getGlobalMessages(idGame);
+        List<ChatEntity> messages = null;
+        List<RoomEntity> rooms = null;
+        if (idCountry != null) {
+            rooms = chatDao.getRooms(idGame, idCountry);
+            messages = chatDao.getMessages(idGame, idCountry);
+        }
+        Chat chat = chatMapping.getChat(globalMessages, rooms, messages, idCountry);
+        returnValue.setChat(chat);
+
+        return returnValue;
     }
 
     /** {@inheritDoc} */

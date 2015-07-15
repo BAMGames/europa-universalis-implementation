@@ -6,20 +6,8 @@ package com.mkl.eu.client.service.service.chat;
  * @author MKL.
  */
 public class CreateRoomRequest {
-    /** Id of the game. */
-    private Long idGame;
     /** Name of the room to create. */
     private String name;
-
-    /** @return the idGame. */
-    public Long getIdGame() {
-        return idGame;
-    }
-
-    /** @param idGame the idGame to set. */
-    public void setIdGame(Long idGame) {
-        this.idGame = idGame;
-    }
 
     /** @return the name. */
     public String getName() {

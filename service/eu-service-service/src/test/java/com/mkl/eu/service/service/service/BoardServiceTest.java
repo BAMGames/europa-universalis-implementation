@@ -8,19 +8,27 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.service.service.mapping.GameMapping;
+import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
+import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
@@ -67,7 +75,16 @@ public class BoardServiceTest {
     private IStackDao stackDao;
 
     @Mock
+    private IChatDao chatDao;
+
+    @Mock
     private IDiffDao diffDao;
+
+    @Mock
+    private GameMapping gameMapping;
+
+    @Mock
+    private ChatMapping chatMapping;
 
     @Mock
     private DiffMapping diffMapping;
@@ -104,6 +121,58 @@ public class BoardServiceTest {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
             Assert.assertEquals("loadGame.request.idGame", e.getParams()[0]);
         }
+
+        Long idGame = 12L;
+        Long idCountry = 13L;
+
+        request.getRequest().setIdGame(idGame);
+
+        GameEntity gameOe = new GameEntity();
+        Game gameVo = new Game();
+        List<MessageGlobalEntity> globalMessages = new ArrayList<>();
+        List<RoomEntity> rooms = new ArrayList<>();
+        List<ChatEntity> messages = new ArrayList<>();
+
+        when(gameDao.read(idGame)).thenReturn(gameOe);
+        when(gameMapping.oeToVo(gameOe)).thenReturn(gameVo);
+        when(chatDao.getGlobalMessages(idGame)).thenReturn(globalMessages);
+        when(chatDao.getRooms(idGame, idCountry)).thenReturn(rooms);
+        when(chatDao.getMessages(idGame, idCountry)).thenReturn(messages);
+        when(chatMapping.getChat(globalMessages, rooms, messages, idCountry)).thenReturn(new Chat());
+
+        boardService.loadGame(request);
+
+        InOrder inOrder = inOrder(gameDao, gameMapping, chatDao, chatMapping);
+        inOrder.verify(gameDao).read(idGame);
+        inOrder.verify(gameMapping).oeToVo(gameOe);
+        inOrder.verify(chatDao).getGlobalMessages(idGame);
+        inOrder.verify(chatMapping).getChat(globalMessages, null, null, null);
+
+        request.getRequest().setIdCountry(idCountry);
+
+        try {
+            boardService.loadGame(request);
+            Assert.fail("Should break because loadGame.request.idCountry is incorrect");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("loadGame.request.idCountry", e.getParams()[0]);
+        }
+
+        request.setAuthent(new AuthentInfo("toto", null));
+
+        gameOe.getCountries().add(new PlayableCountryEntity());
+        gameOe.getCountries().get(0).setId(idCountry);
+        gameOe.getCountries().get(0).setUsername("toto");
+
+        boardService.loadGame(request);
+
+        inOrder = inOrder(gameDao, gameMapping, chatDao, chatMapping);
+        inOrder.verify(gameDao).read(idGame);
+        inOrder.verify(gameMapping).oeToVo(gameOe);
+        inOrder.verify(chatDao).getGlobalMessages(idGame);
+        inOrder.verify(chatDao).getRooms(idGame, idCountry);
+        inOrder.verify(chatDao).getMessages(idGame, idCountry);
+        inOrder.verify(chatMapping).getChat(globalMessages, rooms, messages, idCountry);
     }
 
     @Test

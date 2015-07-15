@@ -6,22 +6,10 @@ package com.mkl.eu.client.service.service.chat;
  * @author MKL.
  */
 public class SpeakInRoomRequest {
-    /** Id of the game. */
-    private Long idGame;
     /** Id of the room to speak in. */
     private Long idRoom;
     /** Message to send. */
     private String message;
-
-    /** @return the idGame. */
-    public Long getIdGame() {
-        return idGame;
-    }
-
-    /** @param idGame the idGame to set. */
-    public void setIdGame(Long idGame) {
-        this.idGame = idGame;
-    }
 
     /** @return the idRoom. */
     public Long getIdRoom() {

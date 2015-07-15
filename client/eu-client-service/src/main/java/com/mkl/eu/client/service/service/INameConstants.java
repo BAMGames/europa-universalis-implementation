@@ -34,8 +34,10 @@ public interface INameConstants {
     String PARAMETER_VERSION_GAME = "versionGame";
     /** Name of the parameter idStack. */
     String PARAMETER_ID_STACK = "idStack";
-    /** Name of the parameter idStack. */
+    /** Name of the parameter idCounter. */
     String PARAMETER_ID_COUNTER = "idCounter";
+    /** Name of the parameter idCountry. */
+    String PARAMETER_ID_COUNTRY = "idCountry";
     /** Name of the parameter provinceTo. */
     String PARAMETER_PROVINCE_TO = "provinceTo";
     /** Name of the parameter province. */
