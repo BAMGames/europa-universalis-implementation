@@ -16,6 +16,8 @@ public interface INameConstants {
     String PARAMETER_CHAT = "chat";
     /** Name of the parameter username. */
     String PARAMETER_USERNAME = "username";
+    /** Name of the parameter findGames. */
+    String PARAMETER_FIND_GAMES = "findGames";
     /** Name of the parameter loadGame. */
     String PARAMETER_LOAD_GAME = "loadGame";
     /** Name of the parameter updateGame. */
@@ -48,6 +50,8 @@ public interface INameConstants {
     String RESPONSE = "response";
     /** Name of a response of type game. */
     String RESPONSE_GAME = "game";
+    /** Name of a response of type games. */
+    String RESPONSE_GAMES = "games";
     /** Name of the method moveStack. */
     String METHOD_MOVE_STACK = "moveStack";
     /** Name of the method moveStack. */
@@ -60,4 +64,6 @@ public interface INameConstants {
     String METHOD_UPDATE_GAME = "updateGame";
     /** Name of the method loadGame. */
     String METHOD_LOAD_GAME = "loadGame";
+    /** Name of the method findGames. */
+    String METHOD_FIND_GAMES = "findGames";
 }

@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.service.service.mapping.board.StackMapping;
 import com.mkl.eu.service.service.mapping.country.PlayableCountryMapping;
 import com.mkl.eu.service.service.mapping.country.RelationMapping;
@@ -59,6 +60,26 @@ public class GameMapping {
         target.setRelations(relationMapping.oesToVos(source.getRelations(), objectsCreated));
 
         target.setStacks(stackMapping.oesToVos(source.getStacks(), objectsCreated));
+
+        return target;
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public GameLight oeToVoLight(GameEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        GameLight target = new GameLight();
+
+        target.setId(source.getId());
+        target.setStatus(source.getStatus());
+        target.setTurn(source.getTurn());
 
         return target;
     }

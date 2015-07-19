@@ -1,6 +1,9 @@
 package com.mkl.eu.service.service.persistence;
 
+import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+
+import java.util.List;
 
 /**
  * Interface of the Game DAO.
@@ -22,4 +25,12 @@ public interface IGameDao extends IGenericDao<GameEntity, Long> {
      * @param game to lock.
      */
     void lock(GameEntity game);
+
+    /**
+     * Find games given criteria.
+     *
+     * @param findGames criteria to use for the search.
+     * @return the games matching the criteria.
+     */
+    List<GameEntity> findGames(FindGamesRequest findGames);
 }

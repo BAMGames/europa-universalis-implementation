@@ -9,10 +9,12 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -44,8 +46,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the Board Service.
@@ -82,6 +86,44 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Diff mapping. */
     @Autowired
     private DiffMapping diffMapping;
+
+    /** {@inheritDoc} */
+    @Override
+    public List<GameLight> findGames(SimpleRequest<FindGamesRequest> findGames) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(findGames).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_FIND_GAMES).setParams(METHOD_FIND_GAMES));
+
+        // anonymous and logged users have the same level of information so no check on authent.
+
+        List<GameEntity> gameEntities = gameDao.findGames(findGames.getRequest());
+
+        List<GameLight> games = new ArrayList<>();
+        for (GameEntity gameEntity : gameEntities) {
+            boolean parsed = false;
+            if (findGames.getRequest() != null
+                    && !StringUtils.isEmpty(findGames.getRequest().getUsername())
+                    && !StringUtils.equals(AuthentInfo.USERNAME_ANONYMOUS, findGames.getRequest().getUsername())) {
+                List<PlayableCountryEntity> countries = gameEntity.getCountries().stream().filter(playableCountryEntity -> StringUtils.equals(playableCountryEntity.getUsername(), findGames.getRequest().getUsername())).collect(Collectors.toList());
+                if (!countries.isEmpty()) {
+                    for (PlayableCountryEntity country : countries) {
+                        GameLight game = gameMapping.oeToVoLight(gameEntity);
+                        games.add(game);
+                        game.setCountry(country.getName());
+                        game.setUnreadMessages(chatDao.getUnreadMessagesNumber(gameEntity.getId(), country.getId()));
+                        game.setActive(false);
+                    }
+                    parsed = true;
+                }
+            }
+
+            if (!parsed) {
+                GameLight game = gameMapping.oeToVoLight(gameEntity);
+                games.add(game);
+            }
+        }
+
+        return games;
+    }
 
     /** {@inheritDoc} */
     @Override

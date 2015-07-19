@@ -6,6 +6,7 @@ import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
@@ -65,5 +66,23 @@ public class ChatDaoImpl extends GenericDaoImpl<ChatEntity, Long> implements ICh
 
         //noinspection unchecked
         return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public long getUnreadMessagesNumber(Long idGame, Long idCountry) {
+        Criteria criteria = getSession().createCriteria(ChatEntity.class);
+
+        criteria.add(Restrictions.eq("receiver.id", idCountry));
+        criteria.add(Restrictions.isNull("dateRead"));
+
+        Criteria criteriaRoom = criteria.createCriteria("room", "room");
+
+        criteriaRoom.add(Restrictions.eq("game.id", idGame));
+
+        criteria.setProjection(Projections.rowCount());
+
+        //noinspection unchecked
+        return (long) criteria.uniqueResult();
     }
 }
