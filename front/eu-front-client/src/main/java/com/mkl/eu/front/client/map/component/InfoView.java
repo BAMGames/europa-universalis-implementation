@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -41,6 +42,7 @@ import java.util.List;
  * @author MKL
  */
 @Component
+@Scope(value = "prototype")
 public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
@@ -61,7 +63,6 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** Size of a counter. */
     private static final float SIZE = 30;
     /** PApplet for drawing purpose. */
-    @Autowired
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
     @Autowired
@@ -93,6 +94,15 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     private ContextualMenu menu;
     /** Listeners for diffs event. */
     private List<IDiffListener> diffListeners = new ArrayList<>();
+
+    /**
+     * Constructor.
+     *
+     * @param pApplet the pApplet to draw.
+     */
+    public InfoView(PApplet pApplet) {
+        this.pApplet = pApplet;
+    }
 
     /**
      * Constructor.

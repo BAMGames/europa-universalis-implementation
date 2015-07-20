@@ -10,7 +10,7 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -26,14 +26,23 @@ import java.util.Map;
  * @author MKL
  */
 @Component
+@Scope(value = "prototype")
 public class MarkerUtils {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MarkerUtils.class);
     /** PApplet. */
-    @Autowired
     private PApplet pApplet;
     /** Cache of the images for the counters. Used to not load several times the same image. first key: country, second key: type. */
     private Map<String, Map<String, PImage>> countersImage = new HashMap<>();
+
+    /**
+     * Constructor.
+     *
+     * @param pApplet the pApplet to set.
+     */
+    public MarkerUtils(PApplet pApplet) {
+        this.pApplet = pApplet;
+    }
 
     /**
      * Create the Markers from various sources.

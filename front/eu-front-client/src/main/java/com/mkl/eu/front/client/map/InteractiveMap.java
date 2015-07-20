@@ -26,10 +26,14 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +45,14 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  *
  * @author MKL
  */
-public class InteractiveMap extends PApplet implements MapEventListener, IDiffListenerContainer {
+@Component
+@Scope(value = "prototype")
+public class InteractiveMap extends PApplet implements MapEventListener, IDiffListenerContainer, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
+    /** Spring application context. */
+    private ApplicationContext context;
     /** Utility for markers. */
-    @Autowired
     private MarkerUtils markerUtils;
     /** Marker manager. */
     @Autowired
@@ -65,7 +72,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     /** Interactive finder box atop the overview map. */
     private ViewportRect viewportRect;
     /** Information panel of the selected province. */
-    @Autowired
     private InfoView info;
     /** Markers of the loaded game. */
     private Map<String, Marker> countryMarkers;
@@ -73,6 +79,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     private Game game;
     /** Components that listener to diffs. */
     private List<IDiffListenerContainer> components = new ArrayList<>();
+    /** List of diffs listeners. */
+    private List<IDiffListener> diffListeners = new ArrayList<>();
 
     /**
      * Main method.
@@ -88,17 +96,19 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
      *
      * @return instance.
      */
-    public static InteractiveMap createInstance() {
-        InteractiveMap mine = new InteractiveMap();
-        mine.init();
-        return mine;
+    public InteractiveMap(Game game) {
+        this.game = game;
+        init();
     }
 
-    /**
-     * Initialization.
-     */
-    @PostConstruct
-    public void initialize() {
+    /** Set up the map and the markers. */
+    public void setup() {
+        size(1000, 600, OPENGL);
+
+        if (frame != null) {
+            frame.setResizable(true);
+        }
+
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         // Too many inaccessible field to enable tween and no loop.
         mapDetail.setTweening(true);
@@ -115,6 +125,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
 
         mapDetail.addMarkerManager(markerManager);
 
+        info = context.getBean(InfoView.class, this);
         info.init(805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
@@ -142,23 +153,14 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         components.add(markerManager);
         components.add(info);
         components.add(keyboardHandler);
-    }
 
-    /**
-     * Store the markers of the given game.
-     *
-     * @param game to load.
-     */
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    /** Set up the map and the markers. */
-    public void setup() {
-        size(1000, 600, OPENGL);
-        if (frame != null) {
-            frame.setResizable(true);
+        for (IDiffListener diffListener : diffListeners) {
+            markerManager.addDiffListener(diffListener);
+            info.addDiffListener(diffListener);
+            keyboardHandler.addDiffListener(diffListener);
         }
+
+        markerUtils = context.getBean(MarkerUtils.class, this);
 
         countryMarkers = markerUtils.createMarkers(game);
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
@@ -199,8 +201,11 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
      * @param diffListener to add.
      */
     public void addDiffListener(IDiffListener diffListener) {
-        for (IDiffListenerContainer component : components) {
-            component.addDiffListener(diffListener);
+        if (!diffListeners.contains(diffListener)) {
+            diffListeners.add(diffListener);
+            for (IDiffListenerContainer component : components) {
+                component.addDiffListener(diffListener);
+            }
         }
     }
 
@@ -472,5 +477,11 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         } else {
             LOGGER.error("Missing stack for destroy stack generic event.");
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
     }
 }
