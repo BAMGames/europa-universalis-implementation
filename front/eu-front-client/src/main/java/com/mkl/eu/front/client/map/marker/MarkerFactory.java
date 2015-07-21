@@ -37,7 +37,7 @@ import java.util.Map;
  * By default, this factory creates the simple markers provided by Unfolding, such as {@link SimplePointMarker}.
  * </p>
  * <p>
- * Forking from UnfoldingMaps because MultiPolygon can't be overwriten.
+ * Forking from UnfoldingMaps because MultiPolygon can't be overwritten.
  */
 public class MarkerFactory {
     /** Logger. */
