@@ -21,15 +21,14 @@ import java.util.List;
  * @author MKL
  */
 public abstract class GenericDaoImpl<T extends IEntity, PK extends Serializable> implements IGenericDao<T, PK> {
-
     /**
      * Logger.
      */
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GenericDaoImpl.class);
+    protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GenericDaoImpl.class);
     /** Message : update. */
     private static final String MSG_UPDATE = "Error during update :";
     /** Message : error during update. */
-    private static final String MSG_ERROR_UPDATE = "An error occured during the update";
+    private static final String MSG_ERROR_UPDATE = "An error occurred during the update";
     /** Message : delete. */
     private static final String MSG_DELETE = "Error during delete :";
     /**
@@ -67,7 +66,7 @@ public abstract class GenericDaoImpl<T extends IEntity, PK extends Serializable>
             getSession().save(o);
         } catch (HibernateException e) {
             LOG.error("Error during create :" + e.getMessage());
-            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "Une erreur est survenue durant la creation de l'objet en base", e, o.getId());
+            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, o.getId());
         }
         return o;
     }
@@ -84,7 +83,7 @@ public abstract class GenericDaoImpl<T extends IEntity, PK extends Serializable>
                 res.add((T) getSession().save(o));
             } catch (HibernateException e) {
                 LOG.error("Error during create all :" + e.getMessage());
-                throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "Une erreur est survenue durant la creation de l'objet en base", e, o.getId());
+                throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, o.getId());
             }
         }
         return res;
