@@ -5,7 +5,6 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.AuthentInfo;
-import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
@@ -23,12 +22,9 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
-import com.mkl.eu.service.service.mapping.diff.DiffMapping;
-import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -59,9 +55,6 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class BoardServiceImpl extends AbstractService implements IBoardService {
-    /** Game DAO. */
-    @Autowired
-    private IGameDao gameDao;
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
@@ -71,9 +64,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
-    /** Diff DAO. */
-    @Autowired
-    private IDiffDao diffDao;
     /** Chat DAO. */
     @Autowired
     private IChatDao chatDao;
@@ -83,9 +73,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Chat mapping. */
     @Autowired
     private ChatMapping chatMapping;
-    /** Diff mapping. */
-    @Autowired
-    private DiffMapping diffMapping;
 
     /** {@inheritDoc} */
     @Override
@@ -108,6 +95,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     for (PlayableCountryEntity country : countries) {
                         GameLight game = gameMapping.oeToVoLight(gameEntity);
                         games.add(game);
+                        game.setIdCountry(country.getId());
                         game.setCountry(country.getName());
                         game.setUnreadMessages(chatDao.getUnreadMessagesNumber(gameEntity.getId(), country.getId()));
                         game.setActive(false);
@@ -258,39 +246,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         response.setVersionGame(game.getVersion());
 
         return response;
-    }
-
-    /**
-     * Check that game info are properly assigned, retrieve the game and its diffs and return it.
-     *
-     * @param gameInfo to check.
-     * @param method   calling this. For logging purpose.
-     * @param param    name of the param holding the gameInfo. For logging purpose.
-     * @return the game and its diffs.
-     * @throws FunctionalException functional exception.
-     */
-    protected GameDiffsInfo checkGameAndGetDiffs(GameInfo gameInfo, String method, String param) throws FunctionalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(gameInfo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME).setParams(method));
-
-        Long idGame = gameInfo.getIdGame();
-        Long versionGame = gameInfo.getVersionGame();
-
-        failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME, PARAMETER_ID_GAME).setParams(method));
-        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method));
-
-        GameEntity game = gameDao.lock(idGame);
-
-        failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(param, PARAMETER_GAME, PARAMETER_ID_GAME).setParams(method, idGame));
-        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_VERSION_INCORRECT).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method, versionGame, game.getVersion()));
-
-        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
-
-        return new GameDiffsInfo(game, diffs);
     }
 
     /** {@inheritDoc} */

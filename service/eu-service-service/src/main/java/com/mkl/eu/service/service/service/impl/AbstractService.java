@@ -1,18 +1,29 @@
 package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.vo.GameInfo;
+import com.mkl.eu.client.service.service.INameConstants;
+import com.mkl.eu.service.service.mapping.diff.DiffMapping;
+import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.diff.IDiffDao;
+import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * Abstract service, parent of services who want some utility methods.
  *
  * @author MKL.
  */
-public abstract class AbstractService {
+public abstract class AbstractService implements INameConstants {
     /** Logger. */
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
     /** Error message when a parameter is missing. */
@@ -29,6 +40,15 @@ public abstract class AbstractService {
     public static final String MSG_NOT_SAME_STACK = "{1}: {0} / The stack should be another one.";
     /** Error message when an action is not authorized. */
     public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action. Should be {3}.";
+    /** Game DAO. */
+    @Autowired
+    protected IGameDao gameDao;
+    /** Diff DAO. */
+    @Autowired
+    protected IDiffDao diffDao;
+    /** Diff mapping. */
+    @Autowired
+    protected DiffMapping diffMapping;
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.
@@ -76,6 +96,39 @@ public abstract class AbstractService {
         String msg = MessageFormat.format(check.getMsgFormat(), args);
         LOGGER.error(msg);
         throw new FunctionalException(check.getCodeError(), msg, null, check.getName());
+    }
+
+    /**
+     * Check that game info are properly assigned, retrieve the game and its diffs and return it.
+     *
+     * @param gameInfo to check.
+     * @param method   calling this. For logging purpose.
+     * @param param    name of the param holding the gameInfo. For logging purpose.
+     * @return the game and its diffs.
+     * @throws FunctionalException functional exception.
+     */
+    protected GameDiffsInfo checkGameAndGetDiffs(GameInfo gameInfo, String method, String param) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(gameInfo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME).setParams(method));
+
+        Long idGame = gameInfo.getIdGame();
+        Long versionGame = gameInfo.getVersionGame();
+
+        failIfNull(new CheckForThrow<>().setTest(idGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME, PARAMETER_ID_GAME).setParams(method));
+        failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method));
+
+        GameEntity game = gameDao.lock(idGame);
+
+        failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(param, PARAMETER_GAME, PARAMETER_ID_GAME).setParams(method, idGame));
+        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_VERSION_INCORRECT).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method, versionGame, game.getVersion()));
+
+        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
+
+        return new GameDiffsInfo(game, diffs);
     }
 
     /**

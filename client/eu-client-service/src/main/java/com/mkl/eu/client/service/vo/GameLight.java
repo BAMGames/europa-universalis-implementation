@@ -8,6 +8,8 @@ import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
  * @author MKL
  */
 public class GameLight extends EuObject {
+    /** Id of the country played (can be <code>null</code> given the search). */
+    private Long idCountry;
     /** Name of the country played (can be <code>null</code> given the search). */
     private String country;
     /** Number of unread messages (not including global messages). */
@@ -18,6 +20,16 @@ public class GameLight extends EuObject {
     private GameStatusEnum status;
     /** Flag saying that the game is waiting for the player action. */
     private boolean active;
+
+    /** @return the idCountry. */
+    public Long getIdCountry() {
+        return idCountry;
+    }
+
+    /** @param idCountry the idCountry to set. */
+    public void setIdCountry(Long idCountry) {
+        this.idCountry = idCountry;
+    }
 
     /** @return the country. */
     public String getCountry() {
