@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -55,7 +56,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     /** Utility for markers. */
     private MarkerUtils markerUtils;
     /** Marker manager. */
-    @Autowired
     private MyMarkerManager markerManager;
     /** Game service. */
     @Autowired
@@ -77,6 +77,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     private Map<String, Marker> countryMarkers;
     /** Game. */
     private Game game;
+    /** Game configuration. */
+    private GameConfiguration gameConfig;
     /** Components that listener to diffs. */
     private List<IDiffListenerContainer> components = new ArrayList<>();
     /** List of diffs listeners. */
@@ -96,8 +98,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
      *
      * @return instance.
      */
-    public InteractiveMap(Game game) {
+    public InteractiveMap(Game game, GameConfiguration gameConfig) {
         this.game = game;
+        this.gameConfig = gameConfig;
         init();
     }
 
@@ -108,6 +111,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         if (frame != null) {
             frame.setResizable(true);
         }
+
+        markerManager = context.getBean(MyMarkerManager.class, gameConfig);
 
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         // Too many inaccessible field to enable tween and no loop.
@@ -125,11 +130,11 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
 
         mapDetail.addMarkerManager(markerManager);
 
-        info = context.getBean(InfoView.class, this);
+        info = context.getBean(InfoView.class, this, markerManager, gameConfig);
         info.init(805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();
-        MapKeyboardHandler keyboardHandler = new MapKeyboardHandler(this, gameService, authentHolder, mapDetail);
+        MapKeyboardHandler keyboardHandler = new MapKeyboardHandler(this, gameService, authentHolder, gameConfig, mapDetail);
         MapMouseHandler mouseHandler = new MapMouseHandler(this, markerManager, mapDetail);
         new MultipleMapMouseHandler(this, mapOverviewStatic, viewportRect, mapDetail);
         InfoViewMouseHandler infoHandler = new InfoViewMouseHandler(this, info, mapDetail);

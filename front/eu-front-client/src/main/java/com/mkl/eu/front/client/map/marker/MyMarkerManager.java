@@ -11,8 +11,8 @@ import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
-import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -43,6 +44,7 @@ import java.util.List;
  * @author MKL
  */
 @Component
+@Scope(value = "prototype")
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
@@ -79,6 +81,17 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private ContextualMenu menu;
     /** Listeners for diffs event. */
     private List<IDiffListener> diffListeners = new ArrayList<>();
+    /** Game configuration. */
+    private GameConfiguration gameConfig;
+
+    /**
+     * Constructor.
+     *
+     * @param gameConfig the gameConfig to set.
+     */
+    public MyMarkerManager(GameConfiguration gameConfig) {
+        this.gameConfig = gameConfig;
+    }
 
     /** {@inheritDoc} */
     public void draw() {
@@ -297,11 +310,11 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                 label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                Long idGame = MapConfiguration.getIdGame();
+                Long idGame = gameConfig.getIdGame();
                 try {
                     Request<MoveStackRequest> request = new Request<>();
                     authentHolder.fillAuthentInfo(request);
-                    MapConfiguration.fillGameInfo(request);
+                    gameConfig.fillGameInfo(request);
                     request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
                     DiffResponse response = boardService.moveStack(request);
                     DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
@@ -329,9 +342,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         CounterForCreation counter = new CounterForCreation();
         counter.setCountry("france");
         counter.setType(type);
-        Long idGame = MapConfiguration.getIdGame();
+        Long idGame = gameConfig.getIdGame();
         try {
-            DiffResponse response = gameAdminService.createCounter(idGame, MapConfiguration.getVersionGame(), counter, province.getId());
+            DiffResponse response = gameAdminService.createCounter(idGame, gameConfig.getVersionGame(), counter, province.getId());
             DiffEvent event = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
             processDiffEvent(event);
         } catch (Exception e) {
@@ -455,11 +468,11 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     IMapMarker drop = getDrop(dragEvent.getX(), dragEvent.getY());
 
                     if (isNeighbour(dragged.getProvince(), drop)) {
-                        Long idGame = MapConfiguration.getIdGame();
+                        Long idGame = gameConfig.getIdGame();
                         try {
                             Request<MoveStackRequest> request = new Request<>();
                             authentHolder.fillAuthentInfo(request);
-                            MapConfiguration.fillGameInfo(request);
+                            gameConfig.fillGameInfo(request);
                             request.setRequest(new MoveStackRequest(dragged.getId(), drop.getId()));
                             DiffResponse response = boardService.moveStack(request);
                             DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());

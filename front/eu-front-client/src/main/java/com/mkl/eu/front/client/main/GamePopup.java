@@ -12,10 +12,10 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
+import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
-import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -68,18 +68,22 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private IBoardService boardService;
     /** PApplet for the intercative map. */
     private InteractiveMap map;
+    /** Window containing all the chat. */
+    private ChatWindow chatWindow;
     /** Component holding the authentication information. */
     @Autowired
     private AuthentHolder authentHolder;
     /** Game displayed. */
     private Game game;
-    /** Id to store between constructor and Spring init PostConstruct. */
-    private Long id;
+    /** Game config to store between constructor and Spring init PostConstruct and to spread to other UIs. */
+    private GameConfiguration gameConfig;
     /** List of JFrame opened by this popup in order to spread a close. */
     private java.util.List<JFrame> frames = new ArrayList<>();
 
-    public GamePopup(Long id) {
-        this.id = id;
+    public GamePopup(Long idGame, Long idCountry) {
+        gameConfig = new GameConfiguration();
+        gameConfig.setIdGame(idGame);
+        gameConfig.setIdCountry(idCountry);
     }
 
     /**
@@ -91,6 +95,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     public void init() throws FunctionalException {
         initGame();
         initMap();
+        initChat();
         initUI();
     }
 
@@ -102,20 +107,26 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private void initGame() throws FunctionalException {
         SimpleRequest<LoadGameRequest> request = new Request<>();
         authentHolder.fillAuthentInfo(request);
-        request.setRequest(new LoadGameRequest(id));
+        request.setRequest(new LoadGameRequest(gameConfig.getIdGame(), gameConfig.getIdCountry()));
 
         game = boardService.loadGame(request);
+        gameConfig.setVersionGame(game.getVersion());
     }
 
     /**
      * Initialize the interactive map.
      */
     private void initMap() {
-        map = context.getBean(InteractiveMap.class, game);
+        map = context.getBean(InteractiveMap.class, game, gameConfig);
         map.addDiffListener(this);
+    }
 
-        MapConfiguration.setIdGame(game.getId());
-        MapConfiguration.setVersionGame(game.getVersion());
+    /**
+     * Initialize the chat window.
+     */
+    private void initChat() {
+        chatWindow = context.getBean(ChatWindow.class, game.getChat(), gameConfig);
+        chatWindow.addDiffListener(this);
     }
 
     /**
@@ -150,6 +161,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         grid.add(mapBtn, 0, 1, 1, 1);
 
         Button chatBtn = new Button(message.getMessage("game.popup.chat", null, globalConfiguration.getLocale()));
+        chatBtn.setOnAction(event -> {
+            if (!chatWindow.isShowing()) {
+                chatWindow.show();
+            }
+        });
         grid.add(chatBtn, 0, 2, 1, 1);
 
         Scene dialogScene = new Scene(grid, 300, 200);
@@ -164,7 +180,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     public synchronized void update(DiffEvent event) {
         if (event.getIdGame().equals(game.getId())) {
             for (Diff diff : event.getDiffs()) {
-                if (MapConfiguration.getVersionGame() > diff.getVersionGame()) {
+                if (gameConfig.getVersionGame() > diff.getVersionGame()) {
                     continue;
                 }
                 switch (diff.getTypeObject()) {
@@ -181,7 +197,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             }
 
             game.setVersion(event.getNewVersion());
-            MapConfiguration.setVersionGame(event.getNewVersion());
+            gameConfig.setVersionGame(event.getNewVersion());
         }
     }
 
@@ -432,5 +448,6 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     public void handle(WindowEvent event) {
         frames.forEach(frame -> frame.dispatchEvent(new java.awt.event.WindowEvent(frame, java.awt.event.WindowEvent.WINDOW_CLOSING)));
         map.destroy();
+        chatWindow.hide();
     }
 }

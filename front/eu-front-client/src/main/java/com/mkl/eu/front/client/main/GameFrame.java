@@ -15,7 +15,6 @@ import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
-import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -56,6 +55,8 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
     private AuthentHolder authentHolder;
     /** Game displayed. */
     private Game game;
+    /** Game configuration. */
+    private GameConfiguration gameConfig;
 
     /**
      * Initialize the component.
@@ -67,15 +68,16 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
 //        game = mockGame();
         SimpleRequest<LoadGameRequest> request = new Request<>();
         authentHolder.fillAuthentInfo(request);
-        request.setRequest(new LoadGameRequest(1L));
+        request.setRequest(new LoadGameRequest(1L, 1L));
 
         game = boardService.loadGame(request);
 
-        map = context.getBean(InteractiveMap.class, game);
-        map.addDiffListener(this);
+        gameConfig = new GameConfiguration();
+        gameConfig.setIdGame(game.getId());
+        gameConfig.setVersionGame(game.getVersion());
 
-        MapConfiguration.setIdGame(game.getId());
-        MapConfiguration.setVersionGame(game.getVersion());
+        map = context.getBean(InteractiveMap.class, game, gameConfig);
+        map.addDiffListener(this);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
@@ -89,7 +91,7 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
     public synchronized void update(DiffEvent event) {
         if (event.getIdGame().equals(game.getId())) {
             for (Diff diff : event.getDiffs()) {
-                if (MapConfiguration.getVersionGame() > diff.getVersionGame()) {
+                if (gameConfig.getVersionGame() > diff.getVersionGame()) {
                     continue;
                 }
                 switch (diff.getTypeObject()) {
@@ -106,7 +108,7 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
             }
 
             game.setVersion(event.getNewVersion());
-            MapConfiguration.setVersionGame(event.getNewVersion());
+            gameConfig.setVersionGame(event.getNewVersion());
         }
     }
 

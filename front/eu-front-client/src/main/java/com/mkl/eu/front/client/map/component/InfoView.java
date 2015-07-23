@@ -6,11 +6,11 @@ import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
-import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -33,9 +33,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Information panel.
  *
@@ -43,7 +40,7 @@ import java.util.List;
  */
 @Component
 @Scope(value = "prototype")
-public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
+public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
     /** Board Service. */
@@ -65,7 +62,6 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     /** PApplet for drawing purpose. */
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
-    @Autowired
     private MyMarkerManager markerManager;
     /** Internationalisation. */
     @Autowired
@@ -92,25 +88,29 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
     private Object contextualized;
     /** Contextual menu. */
     private ContextualMenu menu;
-    /** Listeners for diffs event. */
-    private List<IDiffListener> diffListeners = new ArrayList<>();
+    /** Game configuration. */
+    private GameConfiguration gameConfig;
 
     /**
      * Constructor.
      *
-     * @param pApplet the pApplet to draw.
+     * @param pApplet       the pApplet to draw.
+     * @param markerManager the markerManager to set.
+     * @param gameConfig    the gameConfig to set.
      */
-    public InfoView(PApplet pApplet) {
+    public InfoView(PApplet pApplet, MyMarkerManager markerManager, GameConfiguration gameConfig) {
         this.pApplet = pApplet;
+        this.markerManager = markerManager;
+        this.gameConfig = gameConfig;
     }
 
     /**
      * Constructor.
      *
-     * @param x       X coordinate.
-     * @param y       Y coordinate.
-     * @param w       Width.
-     * @param h       Height.
+     * @param x X coordinate.
+     * @param y Y coordinate.
+     * @param w Width.
+     * @param h Height.
      */
     public void init(float x, float y, float w, float h) {
         this.x = x;
@@ -293,9 +293,9 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.disband", null, globalConfiguration.getLocale()), event -> {
-            Long idGame = MapConfiguration.getIdGame();
+            Long idGame = gameConfig.getIdGame();
             try {
-                DiffResponse response = gameAdminService.removeCounter(idGame, MapConfiguration.getVersionGame(),
+                DiffResponse response = gameAdminService.removeCounter(idGame, gameConfig.getVersionGame(),
                         counter.getId());
                 DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                 processDiffEvent(diff);
@@ -327,11 +327,11 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                 label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                Long idGame = MapConfiguration.getIdGame();
+                Long idGame = gameConfig.getIdGame();
                 try {
                     Request<MoveStackRequest> request = new Request<>();
                     authentHolder.fillAuthentInfo(request);
-                    MapConfiguration.fillGameInfo(request);
+                    gameConfig.fillGameInfo(request);
                     request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
                     DiffResponse response = boardService.moveStack(request);
                     DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
@@ -390,11 +390,11 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
 
 
                     if (drop != dragged.getOwner()) {
-                        Long idGame = MapConfiguration.getIdGame();
+                        Long idGame = gameConfig.getIdGame();
                         try {
                             Request<MoveCounterRequest> request = new Request<>();
                             authentHolder.fillAuthentInfo(request);
-                            MapConfiguration.fillGameInfo(request);
+                            gameConfig.fillGameInfo(request);
                             request.setRequest(new MoveCounterRequest(dragged.getId()));
                             if (drop != null) {
                                 request.getRequest().setIdStack(drop.getId());
@@ -414,28 +414,6 @@ public class InfoView implements IDragAndDropAware<CounterMarker, StackMarker>, 
                 default:
                     break;
             }
-        }
-    }
-
-    /**
-     * Add a diff listener.
-     *
-     * @param diffListener to add.
-     */
-    public void addDiffListener(IDiffListener diffListener) {
-        if (!diffListeners.contains(diffListener)) {
-            diffListeners.add(diffListener);
-        }
-    }
-
-    /**
-     * Process a DiffEvent.
-     *
-     * @param event to process.
-     */
-    private void processDiffEvent(DiffEvent event) {
-        for (IDiffListener diffListener : diffListeners) {
-            diffListener.update(event);
         }
     }
 }

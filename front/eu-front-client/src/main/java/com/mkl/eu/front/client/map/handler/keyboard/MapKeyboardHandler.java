@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.UnfoldingMap;
@@ -29,6 +30,8 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
     private IBoardService boardService;
     /** Component holding the authentication information. */
     private AuthentHolder authentHolder;
+    /** Game configuration. */
+    private GameConfiguration gameConfig;
 
     /**
      * Creates a KeyboardHandler for the given maps.
@@ -36,10 +39,11 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
      * @param p    The PApplet.
      * @param maps One or more maps.
      */
-    public MapKeyboardHandler(PApplet p, IBoardService boardService, AuthentHolder authentHolder, UnfoldingMap... maps) {
+    public MapKeyboardHandler(PApplet p, IBoardService boardService, AuthentHolder authentHolder, GameConfiguration gameConfig, UnfoldingMap... maps) {
         super(p, maps);
         this.boardService = boardService;
         this.authentHolder = authentHolder;
+        this.gameConfig = gameConfig;
     }
 
     /**
@@ -63,11 +67,11 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
                 map.setTweening(!map.isTweening());
             }
         } else if (keyCode == 85) {
-            Long idGame = MapConfiguration.getIdGame();
+            Long idGame = gameConfig.getIdGame();
             try {
                 Request<Void> request = new Request<>();
                 authentHolder.fillAuthentInfo(request);
-                MapConfiguration.fillGameInfo(request);
+                gameConfig.fillGameInfo(request);
                 DiffResponse response = boardService.updateGame(request);
                 DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
                 processDiffEvent(diff);

@@ -90,7 +90,7 @@ public class EUApplication extends Application {
 
             Button loadBtn = new Button(message.getMessage("game.load", null, globalConfiguration.getLocale()));
             loadBtn.setOnAction(event -> {
-                GamePopup popup = context.getBean(GamePopup.class, game.getId());
+                GamePopup popup = context.getBean(GamePopup.class, game.getId(), game.getIdCountry());
                 gamePopups.add(popup);
             });
             grid.add(loadBtn, 3, i, 1, 1);
