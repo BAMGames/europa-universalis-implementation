@@ -4,11 +4,12 @@ import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.RoomGlobalEntity;
 
 import java.util.List;
 
 /**
- * Interface of the Room DAO.
+ * Interface of the Chat DAO.
  *
  * @author MKL.
  */
@@ -48,4 +49,35 @@ public interface IChatDao extends IGenericDao<ChatEntity, Long> {
      * @return the number of unread message of the country.
      */
     long getUnreadMessagesNumber(Long idGame, Long idCountry);
+
+    /**
+     * Returns the global room of a game.
+     *
+     * @param idGame id of the game.
+     * @return the global room of a game.
+     */
+    RoomGlobalEntity getRoomGlobal(Long idGame);
+
+    /**
+     * Returns the room of a game by its id.
+     *
+     * @param idGame id of the game.
+     * @param idRoom id of the room.
+     * @return the room of a game by its id.
+     */
+    RoomEntity getRoom(Long idGame, Long idRoom);
+
+    /**
+     * Inserts a message global.
+     *
+     * @param message message to insert.
+     */
+    void createMessage(MessageGlobalEntity message);
+
+    /**
+     * Inserts a list of messages.
+     *
+     * @param messages messages to insert.
+     */
+    void createMessage(List<ChatEntity> messages);
 }

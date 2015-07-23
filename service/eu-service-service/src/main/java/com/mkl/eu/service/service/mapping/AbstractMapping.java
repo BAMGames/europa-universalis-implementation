@@ -43,7 +43,7 @@ public abstract class AbstractMapping {
      * @return the VO mapped from the source.
      */
     @SuppressWarnings("unchecked")
-    protected <T extends EuObject, U extends IEntity, V extends Class<T>> T storeVo(V classKey, U source, Map<Class<?>, Map<Long, Object>> objectsCreated, ITransformationWithCache<U, T> function) {
+    protected <T extends EuObject, U extends IEntity, V extends Class<? extends T>> T storeVo(V classKey, U source, Map<Class<?>, Map<Long, Object>> objectsCreated, ITransformationWithCache<U, T> function) {
         return storeVo(classKey, source, objectsCreated, null, function);
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractMapping {
      * @return the VO mapped from the source.
      */
     @SuppressWarnings("unchecked")
-    private <T extends EuObject, U extends IEntity, V extends Class<T>> T storeVo(V classKey, U source, Map<Class<?>, Map<Long, Object>> objectsCreated, ITransformation<U, T> function, ITransformationWithCache<U, T> functionCache) {
+    private <T extends EuObject, U extends IEntity, V extends Class<? extends T>> T storeVo(V classKey, U source, Map<Class<?>, Map<Long, Object>> objectsCreated, ITransformation<U, T> function, ITransformationWithCache<U, T> functionCache) {
         T target;
         if (source != null && objectsCreated.get(classKey) != null && objectsCreated.get(classKey).containsKey(source.getId())) {
             target = (T) objectsCreated.get(classKey).get(source.getId());

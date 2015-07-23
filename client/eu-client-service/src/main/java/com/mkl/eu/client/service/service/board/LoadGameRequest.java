@@ -22,8 +22,9 @@ public class LoadGameRequest {
      *
      * @param idGame the idGame to set.
      */
-    public LoadGameRequest(Long idGame) {
+    public LoadGameRequest(Long idGame, Long idCountry) {
         this.idGame = idGame;
+        this.idCountry = idCountry;
     }
 
     /** @return the idGame. */

@@ -110,7 +110,7 @@ public class ChatMapping extends AbstractMapping {
         List<Message> targets = new ArrayList<>();
 
         for (AbstractMessageEntity source : sources) {
-            Message target = storeVo(Message.class, source, objectsCreated, this::oeToVo);
+            Message target = storeVo(InnerMessage.class, source, objectsCreated, this::oeToVo);
             if (target != null) {
                 targets.add(target);
             }
@@ -166,5 +166,12 @@ public class ChatMapping extends AbstractMapping {
         }
 
         return target;
+    }
+
+    /**
+     * Class extending Message but different of message to avoid collision between normal messages and global messages.
+     */
+    private static class InnerMessage extends Message {
+
     }
 }

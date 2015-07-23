@@ -2,6 +2,8 @@ package com.mkl.eu.service.service.persistence.oe.chat;
 
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -81,6 +83,7 @@ public class ChatEntity implements IEntity, Serializable {
     /** @return the message. */
     @ManyToOne
     @JoinColumn(name = "ID_C_MESSAGE")
+    @Cascade(CascadeType.SAVE_UPDATE)
     public MessageEntity getMessage() {
         return message;
     }

@@ -1,11 +1,15 @@
 package com.mkl.eu.service.service.persistence.chat.impl;
 
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.RoomGlobalEntity;
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -13,7 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Implementation of the Room DAO.
+ * Implementation of the Chat DAO.
  *
  * @author MKL.
  */
@@ -84,5 +88,50 @@ public class ChatDaoImpl extends GenericDaoImpl<ChatEntity, Long> implements ICh
 
         //noinspection unchecked
         return (long) criteria.uniqueResult();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RoomGlobalEntity getRoomGlobal(Long idGame) {
+        Criteria criteria = getSession().createCriteria(RoomGlobalEntity.class);
+
+        criteria.add(Restrictions.eq("game.id", idGame));
+
+        return (RoomGlobalEntity) criteria.uniqueResult();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RoomEntity getRoom(Long idGame, Long idRoom) {
+        Criteria criteria = getSession().createCriteria(RoomEntity.class);
+
+        criteria.add(Restrictions.eq("id", idRoom));
+        criteria.add(Restrictions.eq("game.id", idGame));
+
+        return (RoomEntity) criteria.uniqueResult();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void createMessage(MessageGlobalEntity message) {
+        try {
+            getSession().persist(message);
+        } catch (HibernateException e) {
+            LOG.error("Error during create :" + e.getMessage());
+            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, message.getId());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void createMessage(List<ChatEntity> messages) {
+        for (ChatEntity o : messages) {
+            try {
+                getSession().save(o);
+            } catch (HibernateException e) {
+                LOG.error("Error during create all :" + e.getMessage());
+                throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, o.getId());
+            }
+        }
     }
 }

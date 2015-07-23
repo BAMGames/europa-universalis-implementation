@@ -9,12 +9,14 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
 import javax.jws.WebResult;
+import javax.jws.WebService;
 
 /**
  * Interface for the chat service.
  *
  * @author MKL.
  */
+@WebService
 public interface IChatService extends INameConstants {
     /**
      * Create a room.

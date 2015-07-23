@@ -10,9 +10,6 @@ import java.time.ZonedDateTime;
 
 /**
  * Abstract entity that holds the common column of various message entities.
- * The ids are shared between the MessageEntity and MessageGlobalEntity and it
- * is intended to do so. Do not insert a MessageEntity and a MessageGlobalEntity
- * with the same id or the mapping will fail.
  *
  * @author MKL.
  */

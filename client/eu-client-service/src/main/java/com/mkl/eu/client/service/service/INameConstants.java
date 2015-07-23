@@ -46,6 +46,8 @@ public interface INameConstants {
     String PARAMETER_PROVINCE = "province";
     /** Name of the parameter counter. */
     String PARAMETER_COUNTER = "counter";
+    /** Name of the parameter message. */
+    String PARAMETER_MESSAGE = "message";
     /** Name of a response. */
     String RESPONSE = "response";
     /** Name of a response of type game. */
@@ -66,4 +68,6 @@ public interface INameConstants {
     String METHOD_LOAD_GAME = "loadGame";
     /** Name of the method findGames. */
     String METHOD_FIND_GAMES = "findGames";
+    /** Name of the method speakInRoom. */
+    String METHOD_SPEAK_IN_ROOM = "speakInRoom";
 }
