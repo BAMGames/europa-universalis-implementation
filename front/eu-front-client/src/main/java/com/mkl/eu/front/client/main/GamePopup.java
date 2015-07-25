@@ -1,6 +1,7 @@
 package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
@@ -8,6 +9,10 @@ import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
+import com.mkl.eu.client.service.vo.chat.Message;
+import com.mkl.eu.client.service.vo.chat.MessageDiff;
+import com.mkl.eu.client.service.vo.chat.Room;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
@@ -42,6 +47,7 @@ import javax.annotation.PostConstruct;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -111,6 +117,18 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
 
         game = boardService.loadGame(request);
         gameConfig.setVersionGame(game.getVersion());
+        Optional<Message> opt = game.getChat().getGlobalMessages().stream().max((o1, o2) -> (int) (o1.getId() - o2.getId()));
+        if (opt.isPresent()) {
+            gameConfig.setMaxIdGlobalMessage(opt.get().getId());
+        }
+        Long maxIdMessage = null;
+        for (Room room : game.getChat().getRooms()) {
+            opt = room.getMessages().stream().max((o1, o2) -> (int) (o1.getId() - o2.getId()));
+            if (opt.isPresent() && (maxIdMessage == null || opt.get().getId() > maxIdMessage)) {
+                maxIdMessage = opt.get().getId();
+            }
+        }
+        gameConfig.setMaxIdMessage(maxIdMessage);
     }
 
     /**
@@ -179,7 +197,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     @Override
     public synchronized void update(DiffEvent event) {
         if (event.getIdGame().equals(game.getId())) {
-            for (Diff diff : event.getDiffs()) {
+            for (Diff diff : event.getResponse().getDiffs()) {
                 if (gameConfig.getVersionGame() > diff.getVersionGame()) {
                     continue;
                 }
@@ -196,8 +214,36 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 map.update(diff);
             }
 
-            game.setVersion(event.getNewVersion());
-            gameConfig.setVersionGame(event.getNewVersion());
+            event.getResponse().getMessages().forEach(message -> {
+                Message msg = new Message();
+                msg.setId(message.getId());
+                msg.setMessage(message.getMessage());
+                msg.setDateRead(message.getDateRead());
+                msg.setDateSent(message.getDateSent());
+                PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> message.getIdSender().equals(playableCountry.getId()));
+                msg.setSender(country);
+                if (message.getIdRoom() == null) {
+                    game.getChat().getGlobalMessages().add(msg);
+                } else {
+                    Room room = CommonUtil.findFirst(game.getChat().getRooms(), room1 -> message.getIdRoom().equals(room1.getId()));
+                    if (room != null) {
+                        room.getMessages().add(msg);
+                    }
+                }
+            });
+
+            chatWindow.update(event.getResponse().getMessages(), game.getCountries());
+
+            game.setVersion(event.getResponse().getVersionGame());
+            gameConfig.setVersionGame(event.getResponse().getVersionGame());
+            Optional<MessageDiff> opt = event.getResponse().getMessages().stream().filter(messageDiff -> messageDiff.getIdRoom() == null).max((o1, o2) -> (int) (o1.getId() - o2.getId()));
+            if (opt.isPresent()) {
+                gameConfig.setMaxIdGlobalMessage(opt.get().getId());
+            }
+            opt = event.getResponse().getMessages().stream().filter(messageDiff -> messageDiff.getIdRoom() != null).max((o1, o2) -> (int) (o1.getId() - o2.getId()));
+            if (opt.isPresent()) {
+                gameConfig.setMaxIdMessage(opt.get().getId());
+            }
         }
     }
 

@@ -80,4 +80,24 @@ public interface IChatDao extends IGenericDao<ChatEntity, Long> {
      * @param messages messages to insert.
      */
     void createMessage(List<ChatEntity> messages);
+
+    /**
+     * Retrieves all the non global messages for a given game and a given country whose ID are greater than lastId.
+     *
+     * @param idGame    id of the game.
+     * @param idCountry id of the country.
+     * @param lastId    id of the last message received.
+     * @return all the non global messages for a given game and a given country whose ID are greater than lastId.
+     */
+    List<ChatEntity> getMessagesSince(Long idGame, Long idCountry, Long lastId);
+
+
+    /**
+     * Retrieves all the global messages for a given game whose ID are greater than lastId.
+     *
+     * @param idGame id of the game.
+     * @param lastId id of the last message received.
+     * @return all the global messages for a given game whose ID are greater than lastId.
+     */
+    List<MessageGlobalEntity> getMessagesGlobalSince(Long idGame, Long lastId);
 }

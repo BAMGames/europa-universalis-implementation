@@ -134,4 +134,33 @@ public class ChatDaoImpl extends GenericDaoImpl<ChatEntity, Long> implements ICh
             }
         }
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ChatEntity> getMessagesSince(Long idGame, Long idCountry, Long lastId) {
+        Criteria criteria = getSession().createCriteria(ChatEntity.class);
+
+        criteria.createAlias("room", "room");
+
+        criteria.add(Restrictions.eq("room.game.id", idGame));
+        criteria.add(Restrictions.eq("receiver.id", idCountry));
+        criteria.add(Restrictions.gt("id", lastId));
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<MessageGlobalEntity> getMessagesGlobalSince(Long idGame, Long lastId) {
+        Criteria criteria = getSession().createCriteria(MessageGlobalEntity.class);
+
+        criteria.createAlias("room", "room");
+
+        criteria.add(Restrictions.eq("room.game.id", idGame));
+        criteria.add(Restrictions.gt("id", lastId));
+
+        //noinspection unchecked
+        return criteria.list();
+    }
 }

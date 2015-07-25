@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.main;
 
+import com.mkl.eu.client.common.vo.ChatInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 
@@ -15,6 +16,10 @@ public class GameConfiguration {
     private Long versionGame;
     /** Id of the country loading the game. */
     private Long idCountry;
+    /** Maximum of the ids for the global messages. */
+    private Long maxIdGlobalMessage;
+    /** Maximum of the ids for the non global messages. */
+    private Long maxIdMessage;
 
     /** @return the idGame. */
     public Long getIdGame() {
@@ -46,6 +51,26 @@ public class GameConfiguration {
         this.idCountry = idCountry;
     }
 
+    /** @return the maxIdGlobalMessage. */
+    public Long getMaxIdGlobalMessage() {
+        return maxIdGlobalMessage;
+    }
+
+    /** @param maxIdGlobalMessage the maxIdGlobalMessage to set. */
+    public void setMaxIdGlobalMessage(Long maxIdGlobalMessage) {
+        this.maxIdGlobalMessage = maxIdGlobalMessage;
+    }
+
+    /** @return the maxIdMessage. */
+    public Long getMaxIdMessage() {
+        return maxIdMessage;
+    }
+
+    /** @param maxIdMessage the maxIdMessage to set. */
+    public void setMaxIdMessage(Long maxIdMessage) {
+        this.maxIdMessage = maxIdMessage;
+    }
+
     /**
      * Fill the game info of a request.
      *
@@ -55,5 +80,16 @@ public class GameConfiguration {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(idGame);
         request.getGame().setVersionGame(versionGame);
+    }
+
+    /**
+     * Fill the chat info of a request.
+     *
+     * @param <T> type of the request.
+     */
+    public <T> void fillChatInfo(Request<T> request) {
+        request.setChat(new ChatInfo());
+        request.getChat().setMaxIdGlobalMessage(maxIdGlobalMessage);
+        request.getChat().setMaxIdMessage(maxIdMessage);
     }
 }

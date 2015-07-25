@@ -1,10 +1,12 @@
 package com.mkl.eu.front.client.chat;
 
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.chat.Message;
+import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -24,6 +26,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Window containing all the chats between players.
@@ -63,6 +67,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     private GameConfiguration gameConfig;
     /** Stage of the window. */
     private Stage stage;
+    /** The TabPane to update it later. */
+    private TabPane tabPane;
 
     /**
      * Constructor.
@@ -84,13 +90,36 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
         BorderPane border = new BorderPane();
 
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
 
         tabPane.getTabs().add(createRoom(null, message.getMessage("chat.global", null, globalConfiguration.getLocale()),
                 chat.getGlobalMessages(), null));
         for (Room room : chat.getRooms()) {
             tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()));
         }
+
+        Tab tabNew = new Tab("+");
+        tabNew.setClosable(false);
+        tabPane.getTabs().add(tabNew);
+        tabPane.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                            if (newValue == tabNew) {
+                                LOGGER.info("On a essaye de creer une room");
+                                tabPane.getSelectionModel()
+                                        .select(oldValue);
+                                TextInputDialog dialog = new TextInputDialog();
+                                dialog.setTitle("Title");
+                                dialog.setHeaderText("Header");
+                                dialog.setContentText("content");
+
+                                Optional<String> result = dialog.showAndWait();
+                                if (result.isPresent()) {
+                                    LOGGER.info("Creation de room de nom : " + result.get());
+                                }
+                            }
+                        }
+                );
 
         border.setCenter(tabPane);
 
@@ -101,6 +130,13 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
     private Tab createRoom(Long idRoom, String name, List<Message> messages, List<PlayableCountry> countries) {
         Tab tab = new Tab(name);
+        String id = null;
+        if (idRoom != null) {
+            id = Long.toString(idRoom);
+        } else {
+            tab.setClosable(false);
+        }
+        tab.setId(id);
         BorderPane layout = new BorderPane();
         layout.setPadding(new Insets(15, 12, 15, 12));
         ListView<Message> roomContent = new ListView<>();
@@ -154,12 +190,13 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             Request<SpeakInRoomRequest> request = new Request<>();
             authentHolder.fillAuthentInfo(request);
             gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
             request.setRequest(new SpeakInRoomRequest(idRoom, msg, gameConfig.getIdCountry()));
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = chatService.speakInRoom(request);
                 input.clear();
-                DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
                 LOGGER.error("Error when moving stack.", e);
@@ -198,13 +235,51 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         return this.stage.isShowing();
     }
 
+    /**
+     * Update the messages in the chat.
+     *
+     * @param messages new messages.
+     */
+    public synchronized void update(List<MessageDiff> messages, List<PlayableCountry> countries) {
+        messages.forEach(message -> {
+            Message msg = new Message();
+            msg.setId(message.getId());
+            msg.setMessage(message.getMessage());
+            msg.setDateRead(message.getDateRead());
+            msg.setDateSent(message.getDateSent());
+            PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> message.getIdSender().equals(playableCountry.getId()));
+            msg.setSender(country);
+
+            final String idRoom;
+            if (message.getIdRoom() != null) {
+                idRoom = Long.toString(message.getIdRoom());
+            } else {
+                idRoom = null;
+            }
+            Tab tab = CommonUtil.findFirst(tabPane.getTabs(),
+                    tab1 -> StringUtils.equals(idRoom, tab1.getId()));
+            if (tab != null) {
+                if (tab.getContent() instanceof BorderPane) {
+                    BorderPane border = ((BorderPane) tab.getContent());
+                    if (border.getCenter() instanceof ListView) {
+                        //noinspection unchecked
+                        ListView<Message> listView = (ListView<Message>) border.getCenter();
+                        listView.getItems().add(msg);
+                    }
+                }
+            } else {
+                LOGGER.error("New message in unknown tab.");
+            }
+        });
+    }
+
     private static class MessageChat extends ListCell<Message> {
         /** {@inheritDoc} */
         @Override
         protected void updateItem(Message item, boolean empty) {
             super.updateItem(item, empty);
             if (item != null) {
-                Label label = new Label(item.getDateSent().format(DateTimeFormatter.ISO_ZONED_DATE_TIME) + " <" + item.getSender().getName() + "> " + item.getMessage());
+                Label label = new Label(item.getDateSent().format(DateTimeFormatter.ISO_LOCAL_TIME) + " <" + item.getSender().getName() + "> " + item.getMessage());
                 setGraphic(label);
             } else {
                 setGraphic(null);

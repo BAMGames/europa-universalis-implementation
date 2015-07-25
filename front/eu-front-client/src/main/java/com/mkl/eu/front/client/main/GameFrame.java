@@ -90,7 +90,7 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
     @Override
     public synchronized void update(DiffEvent event) {
         if (event.getIdGame().equals(game.getId())) {
-            for (Diff diff : event.getDiffs()) {
+            for (Diff diff : event.getResponse().getDiffs()) {
                 if (gameConfig.getVersionGame() > diff.getVersionGame()) {
                     continue;
                 }
@@ -107,8 +107,8 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
                 map.update(diff);
             }
 
-            game.setVersion(event.getNewVersion());
-            gameConfig.setVersionGame(event.getNewVersion());
+            game.setVersion(event.getResponse().getVersionGame());
+            gameConfig.setVersionGame(event.getResponse().getVersionGame());
         }
     }
 

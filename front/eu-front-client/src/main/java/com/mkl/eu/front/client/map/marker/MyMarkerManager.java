@@ -315,9 +315,10 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     Request<MoveStackRequest> request = new Request<>();
                     authentHolder.fillAuthentInfo(request);
                     gameConfig.fillGameInfo(request);
+                    gameConfig.fillChatInfo(request);
                     request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
                     DiffResponse response = boardService.moveStack(request);
-                    DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                    DiffEvent diff = new DiffEvent(response, idGame);
                     processDiffEvent(diff);
                 } catch (Exception e) {
                     LOGGER.error("Error when moving stack.", e);
@@ -345,7 +346,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         Long idGame = gameConfig.getIdGame();
         try {
             DiffResponse response = gameAdminService.createCounter(idGame, gameConfig.getVersionGame(), counter, province.getId());
-            DiffEvent event = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+            DiffEvent event = new DiffEvent(response, idGame);
             processDiffEvent(event);
         } catch (Exception e) {
             LOGGER.error("Error when creating counter.", e);
@@ -473,9 +474,10 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                             Request<MoveStackRequest> request = new Request<>();
                             authentHolder.fillAuthentInfo(request);
                             gameConfig.fillGameInfo(request);
+                            gameConfig.fillChatInfo(request);
                             request.setRequest(new MoveStackRequest(dragged.getId(), drop.getId()));
                             DiffResponse response = boardService.moveStack(request);
-                            DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                            DiffEvent diff = new DiffEvent(response, idGame);
                             processDiffEvent(diff);
                         } catch (Exception e) {
                             LOGGER.error("Error when moving stack.", e);

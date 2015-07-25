@@ -8,7 +8,6 @@ import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.oe.chat.*;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
@@ -30,9 +29,6 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class ChatServiceImpl extends AbstractService implements IChatService {
-    /** Chat DAO. */
-    @Autowired
-    private IChatDao chatDao;
     /** PlayablleCountry DAO. */
     @Autowired
     private IPlayableCountryDao playableCountryDao;
@@ -99,6 +95,8 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(gameDiffs.getDiffs()));
         response.setVersionGame(gameDiffs.getGame().getVersion());
+
+        response.setMessages(getMessagesSince(speakInRoom.getGame().getIdGame(), speakInRoom.getRequest().getIdCountry(), speakInRoom.getChat()));
 
         return response;
     }

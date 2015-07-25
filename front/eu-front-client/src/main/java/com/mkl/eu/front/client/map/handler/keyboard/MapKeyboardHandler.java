@@ -72,8 +72,9 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
                 Request<Void> request = new Request<>();
                 authentHolder.fillAuthentInfo(request);
                 gameConfig.fillGameInfo(request);
+                gameConfig.fillChatInfo(request);
                 DiffResponse response = boardService.updateGame(request);
-                DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
                 LOGGER.error("Error when updating game.", e);

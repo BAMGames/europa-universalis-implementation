@@ -297,7 +297,7 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
             try {
                 DiffResponse response = gameAdminService.removeCounter(idGame, gameConfig.getVersionGame(),
                         counter.getId());
-                DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
                 LOGGER.error("Error when moving stack.", e);
@@ -332,9 +332,10 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
                     Request<MoveStackRequest> request = new Request<>();
                     authentHolder.fillAuthentInfo(request);
                     gameConfig.fillGameInfo(request);
+                    gameConfig.fillChatInfo(request);
                     request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
                     DiffResponse response = boardService.moveStack(request);
-                    DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                    DiffEvent diff = new DiffEvent(response, idGame);
                     processDiffEvent(diff);
                 } catch (Exception e) {
                     LOGGER.error("Error when moving stack.", e);
@@ -395,12 +396,13 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
                             Request<MoveCounterRequest> request = new Request<>();
                             authentHolder.fillAuthentInfo(request);
                             gameConfig.fillGameInfo(request);
+                            gameConfig.fillChatInfo(request);
                             request.setRequest(new MoveCounterRequest(dragged.getId()));
                             if (drop != null) {
                                 request.getRequest().setIdStack(drop.getId());
                             }
                             DiffResponse response = boardService.moveCounter(request);
-                            DiffEvent diff = new DiffEvent(response.getDiffs(), idGame, response.getVersionGame());
+                            DiffEvent diff = new DiffEvent(response, idGame);
                             processDiffEvent(diff);
                         } catch (Exception e) {
                             LOGGER.error("Error when moving stack.", e);

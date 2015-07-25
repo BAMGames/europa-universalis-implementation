@@ -2,12 +2,18 @@ package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.vo.ChatInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.service.service.INameConstants;
+import com.mkl.eu.client.service.vo.chat.MessageDiff;
+import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +22,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract service, parent of services who want some utility methods.
@@ -46,9 +55,15 @@ public abstract class AbstractService implements INameConstants {
     /** Diff DAO. */
     @Autowired
     protected IDiffDao diffDao;
+    /** Chat DAO. */
+    @Autowired
+    protected IChatDao chatDao;
     /** Diff mapping. */
     @Autowired
     protected DiffMapping diffMapping;
+    /** Chat mapping. */
+    @Autowired
+    private ChatMapping chatMapping;
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.
@@ -129,6 +144,30 @@ public abstract class AbstractService implements INameConstants {
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
         return new GameDiffsInfo(game, diffs);
+    }
+
+    /**
+     * Retrieve all the message (global and non global) since the last time specified in the chatInfo for a given game and a given country.
+     *
+     * @param idGame    id of the game.
+     * @param idCountry id of the country for the non global messages (can be <code>null</code>).
+     * @param chatInfo  information on the last message received.
+     * @return all the message (global and non global) since the last time specified in the chatInfo for a given game and a given country.
+     */
+    protected List<MessageDiff> getMessagesSince(Long idGame, Long idCountry, ChatInfo chatInfo) {
+        List<MessageDiff> messages = new ArrayList<>();
+
+        if (chatInfo != null && chatInfo.getMaxIdGlobalMessage() != null && chatInfo.getMaxIdMessage() != null) {
+            List<ChatEntity> chatEntities = chatDao.getMessagesSince(idGame, idCountry, chatInfo.getMaxIdMessage());
+            List<MessageGlobalEntity> messageEntities = chatDao.getMessagesGlobalSince(idGame, chatInfo.getMaxIdGlobalMessage());
+
+
+            Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+            messages.addAll(chatMapping.oesToVosChatSince(chatEntities, objectsCreated));
+            messages.addAll(chatMapping.oesToVosMessageSince(messageEntities, objectsCreated));
+        }
+
+        return messages;
     }
 
     /**

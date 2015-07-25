@@ -26,7 +26,7 @@ public abstract class AbstractMapping {
      * @return the VO mapped from the source.
      */
     @SuppressWarnings("unchecked")
-    protected <T extends EuObject, U extends IEntity, V extends Class<T>> T storeVo(V classKey, U source, Map<Class<?>, Map<Long, Object>> objectsCreated, ITransformation<U, T> function) {
+    protected <T extends EuObject, U extends IEntity, V extends Class<? extends T>> T storeVo(V classKey, U source, Map<Class<?>, Map<Long, Object>> objectsCreated, ITransformation<U, T> function) {
         return storeVo(classKey, source, objectsCreated, function, null);
     }
 
