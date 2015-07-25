@@ -105,17 +105,17 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 .selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
                             if (newValue == tabNew) {
-                                LOGGER.info("On a essaye de creer une room");
                                 tabPane.getSelectionModel()
                                         .select(oldValue);
                                 TextInputDialog dialog = new TextInputDialog();
-                                dialog.setTitle("Title");
-                                dialog.setHeaderText("Header");
-                                dialog.setContentText("content");
+                                dialog.setTitle("chat.room.new.title");
+                                dialog.setHeaderText("chat.room.new.header");
+                                dialog.setContentText("chat.room.new.content");
 
                                 Optional<String> result = dialog.showAndWait();
                                 if (result.isPresent()) {
                                     LOGGER.info("Creation de room de nom : " + result.get());
+                                    // TODO call chat service createRoom
                                 }
                             }
                         }
@@ -133,6 +133,11 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         String id = null;
         if (idRoom != null) {
             id = Long.toString(idRoom);
+            tab.setOnCloseRequest(event1 -> {
+                event1.consume();
+                LOGGER.info("On veut fermer la room " + tab.getText());
+                // TODO call chat service closeRoom
+            });
         } else {
             tab.setClosable(false);
         }
@@ -171,7 +176,29 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             ListView<PlayableCountry> countriesView = new ListView<>();
             ObservableList<PlayableCountry> countriesContent = FXCollections.observableArrayList(countries);
             countriesView.setItems(countriesContent);
-            countriesView.setCellFactory(param -> new CountryCell());
+
+            countriesView.setCellFactory(param -> {
+                ListCell<PlayableCountry> cell = new CountryCell();
+
+                MenuItem itemKick = new MenuItem(message.getMessage("chat.room.kick", null, globalConfiguration.getLocale()));
+                itemKick.setOnAction(event -> {
+                    PlayableCountry country = cell.getItem();
+                    if (country != null) {
+                        LOGGER.info("On veut kick " + country.getName());
+                        // TODO call chat service kick
+                    }
+                });
+                MenuItem itemInvite = new MenuItem(message.getMessage("chat.room.invite", null, globalConfiguration.getLocale()));
+                itemInvite.setOnAction(event -> {
+                    PlayableCountry country = cell.getItem();
+                    LOGGER.info("On veut invite");
+                    // TODO call chat service invite
+                });
+                ContextMenu menu = new ContextMenu(itemKick, itemInvite);
+                cell.setContextMenu(menu);
+
+                return cell;
+            });
             layout.setRight(countriesView);
         }
 
@@ -273,6 +300,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         });
     }
 
+    /**
+     * Cell of a ListView for a Message (list of messages in the room).
+     */
     private static class MessageChat extends ListCell<Message> {
         /** {@inheritDoc} */
         @Override
@@ -287,7 +317,11 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         }
     }
 
+    /**
+     * Cell of a ListView for a PlayableCountry (list of country present in the room).
+     */
     private static class CountryCell extends ListCell<PlayableCountry> {
+
         /** {@inheritDoc} */
         @Override
         protected void updateItem(PlayableCountry item, boolean empty) {
