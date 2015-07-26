@@ -21,6 +21,8 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -35,9 +37,14 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Window containing all the chats between players.
@@ -121,6 +128,38 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                         }
                 );
 
+        Tab tabVisible = new Tab();
+        Image img = null;
+        try {
+            img = new Image(new FileInputStream(new File("data/img/eye-icon.png")), 16, 16, true, false);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        ImageView eyeIcon = new ImageView(img);
+        tabVisible.setGraphic(eyeIcon);
+        tabVisible.setClosable(false);
+        tabPane.getTabs().add(tabVisible);
+        tabPane.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                            if (newValue == tabVisible) {
+                                tabPane.getSelectionModel()
+                                        .select(oldValue);
+                                List<RoomSelect> choices = chat.getRooms().stream().filter(room -> !room.isVisible()).map(RoomSelect::new).collect(Collectors.toList());
+                                ChoiceDialog<RoomSelect> dialog = new ChoiceDialog<>(null, choices);
+                                dialog.setTitle("chat.room.visible.title");
+                                dialog.setHeaderText("chat.room.visible.header");
+                                dialog.setContentText("chat.room.visible.content");
+
+                                Optional<RoomSelect> result = dialog.showAndWait();
+                                if (result.isPresent()) {
+                                    LOGGER.info("On veut revoir la room : " + result.get().getRoom().getName());
+                                    // TODO call chat service toggle
+                                }
+                            }
+                        }
+                );
+
         border.setCenter(tabPane);
 
         Scene scene = new Scene(border, 800, 600);
@@ -136,7 +175,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             tab.setOnCloseRequest(event1 -> {
                 event1.consume();
                 LOGGER.info("On veut fermer la room " + tab.getText());
-                // TODO call chat service closeRoom
+                // TODO call chat service toggle
             });
         } else {
             tab.setClosable(false);
@@ -146,6 +185,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         layout.setPadding(new Insets(15, 12, 15, 12));
         ListView<Message> roomContent = new ListView<>();
         ObservableList<Message> messagesContent = FXCollections.observableArrayList(messages);
+        Collections.reverse(messagesContent);
         roomContent.setItems(messagesContent);
         roomContent.setCellFactory(param -> new MessageChat());
         roomContent.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -291,7 +331,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                     if (border.getCenter() instanceof ListView) {
                         //noinspection unchecked
                         ListView<Message> listView = (ListView<Message>) border.getCenter();
-                        listView.getItems().add(msg);
+                        listView.getItems().add(0, msg);
                     }
                 }
             } else {
@@ -310,8 +350,11 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             super.updateItem(item, empty);
             if (item != null) {
                 Label label = new Label(item.getDateSent().format(DateTimeFormatter.ISO_LOCAL_TIME) + " <" + item.getSender().getName() + "> " + item.getMessage());
+                Tooltip tooltip = new Tooltip(item.getDateSent().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                setTooltip(tooltip);
                 setGraphic(label);
             } else {
+                setTooltip(null);
                 setGraphic(null);
             }
         }
@@ -332,6 +375,34 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             } else {
                 setGraphic(null);
             }
+        }
+    }
+
+    /**
+     * Component for a Select box containing rooms.
+     */
+    private static class RoomSelect {
+        /** Real room. */
+        private Room room;
+
+        /**
+         * Constructor.
+         *
+         * @param room the room to set.
+         */
+        public RoomSelect(Room room) {
+            this.room = room;
+        }
+
+        /** @return the room. */
+        public Room getRoom() {
+            return room;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String toString() {
+            return room.getName();
         }
     }
 }
