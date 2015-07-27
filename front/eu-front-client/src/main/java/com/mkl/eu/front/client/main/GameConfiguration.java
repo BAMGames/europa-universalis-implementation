@@ -91,5 +91,6 @@ public class GameConfiguration {
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdGlobalMessage(maxIdGlobalMessage);
         request.getChat().setMaxIdMessage(maxIdMessage);
+        request.getChat().setIdCountry(idCountry);
     }
 }

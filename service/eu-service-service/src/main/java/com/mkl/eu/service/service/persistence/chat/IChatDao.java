@@ -95,7 +95,7 @@ public interface IChatDao extends IGenericDao<RoomEntity, Long> {
      *
      * @param idGame    id of the game.
      * @param idCountry id of the country.
-     * @param lastId    id of the last message received.
+     * @param lastId    id of the last message received, <code>null</code> to receive all messages.
      * @return all the non global messages for a given game and a given country whose ID are greater than lastId.
      */
     List<ChatEntity> getMessagesSince(Long idGame, Long idCountry, Long lastId);
@@ -105,7 +105,7 @@ public interface IChatDao extends IGenericDao<RoomEntity, Long> {
      * Retrieves all the global messages for a given game whose ID are greater than lastId.
      *
      * @param idGame id of the game.
-     * @param lastId id of the last message received.
+     * @param lastId id of the last message received, <code>null</code> to receive all messages.
      * @return all the global messages for a given game whose ID are greater than lastId.
      */
     List<MessageGlobalEntity> getMessagesGlobalSince(Long idGame, Long lastId);

@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
+import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -39,4 +40,15 @@ public interface IChatService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse speakInRoom(@WebParam(name = PARAMETER_SPEAK_IN_ROOM) Request<SpeakInRoomRequest> speakInRoom) throws FunctionalException, TechnicalException;
+
+    /**
+     * Toggle a room (set it visible / invisible) for the user asking for it.
+     *
+     * @param toggleRoom info about the room to toggle.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse toggleRoom(@WebParam(name = PARAMETER_TOGGLE_ROOM) Request<ToggleRoomRequest> toggleRoom) throws FunctionalException, TechnicalException;
 }

@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
+import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,5 +36,11 @@ public class ChatWsServiceImpl extends SpringBeanAutowiringSupport implements IC
     @Override
     public DiffResponse speakInRoom(Request<SpeakInRoomRequest> speakInRoom) throws FunctionalException, TechnicalException {
         return chatService.speakInRoom(speakInRoom);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse toggleRoom(Request<ToggleRoomRequest> toggleRoom) throws FunctionalException, TechnicalException {
+        return chatService.toggleRoom(toggleRoom);
     }
 }

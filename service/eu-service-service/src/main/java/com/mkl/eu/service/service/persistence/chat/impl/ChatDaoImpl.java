@@ -155,7 +155,9 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
 
         criteria.add(Restrictions.eq("room.game.id", idGame));
         criteria.add(Restrictions.eq("receiver.id", idCountry));
-        criteria.add(Restrictions.gt("id", lastId));
+        if (lastId != null) {
+            criteria.add(Restrictions.gt("id", lastId));
+        }
 
         //noinspection unchecked
         return criteria.list();
@@ -169,7 +171,9 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
         criteria.createAlias("room", "room");
 
         criteria.add(Restrictions.eq("room.game.id", idGame));
-        criteria.add(Restrictions.gt("id", lastId));
+        if (lastId != null) {
+            criteria.add(Restrictions.gt("id", lastId));
+        }
 
         //noinspection unchecked
         return criteria.list();

@@ -3,10 +3,12 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
+import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
@@ -176,6 +178,50 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         response.setVersionGame(gameDiffs.getGame().getVersion());
 
         response.setMessages(getMessagesSince(speakInRoom.getGame().getIdGame(), speakInRoom.getChat()));
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse toggleRoom(Request<ToggleRoomRequest> toggleRoom) throws FunctionalException, TechnicalException {
+        // TODO check idCountry and authent in request AND chatInfo
+        // TODO check if the user is present in room
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(toggleRoom).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM).setParams(METHOD_TOGGLE_ROOM));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(toggleRoom.getGame(), METHOD_TOGGLE_ROOM, PARAMETER_TOGGLE_ROOM);
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(toggleRoom.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST).setParams(METHOD_TOGGLE_ROOM));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(toggleRoom.getRequest().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_TOGGLE_ROOM));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(toggleRoom.getRequest().getIdRoom()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_ROOM).setParams(METHOD_TOGGLE_ROOM));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(toggleRoom.getRequest().isVisible()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_VISIBLE).setParams(METHOD_TOGGLE_ROOM));
+
+        PlayableCountryEntity sender = playableCountryDao.load(toggleRoom.getRequest().getIdCountry());
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(sender).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_TOGGLE_ROOM, toggleRoom.getRequest().getIdCountry()));
+
+        RoomEntity room = chatDao.getRoom(toggleRoom.getGame().getIdGame(), toggleRoom.getRequest().getIdRoom());
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(room).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_ROOM).setParams(METHOD_TOGGLE_ROOM, toggleRoom.getRequest().getIdRoom()));
+
+        PresentEntity present = CommonUtil.findFirst(room.getPresents(), presentEntity -> toggleRoom.getRequest().getIdCountry().equals(presentEntity.getCountry().getId()));
+
+        if (present != null) {
+            present.setVisible(toggleRoom.getRequest().isVisible());
+        }
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(gameDiffs.getDiffs()));
+        response.setVersionGame(gameDiffs.getGame().getVersion());
+
+        response.setMessages(getMessagesSince(toggleRoom.getGame().getIdGame(), toggleRoom.getChat()));
 
         return response;
     }

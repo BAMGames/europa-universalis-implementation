@@ -1,22 +1,22 @@
 package com.mkl.eu.client.service.service.chat;
 
 /**
- * Request for speakInRoom service.
+ * Request for toggleRoom service.
  *
  * @author MKL.
  */
-public class SpeakInRoomRequest {
+public class ToggleRoomRequest {
     /** Id of the room to speak in. */
     private Long idRoom;
-    /** Message to send. */
-    private String message;
+    /** Flag saying that the user wants to set it visible or not. */
+    private Boolean visible;
     /** Id of the country sending the message. */
     private Long idCountry;
 
     /**
      * Constructor for jaxb.
      */
-    public SpeakInRoomRequest() {
+    public ToggleRoomRequest() {
 
     }
 
@@ -24,12 +24,12 @@ public class SpeakInRoomRequest {
      * Constructor.
      *
      * @param idRoom    the idRoom to set.
-     * @param message   the message to set.
+     * @param visible   the visible to set.
      * @param idCountry the idCountry to set.
      */
-    public SpeakInRoomRequest(Long idRoom, String message, Long idCountry) {
+    public ToggleRoomRequest(Long idRoom, Boolean visible, Long idCountry) {
         this.idRoom = idRoom;
-        this.message = message;
+        this.visible = visible;
         this.idCountry = idCountry;
     }
 
@@ -43,14 +43,14 @@ public class SpeakInRoomRequest {
         this.idRoom = idRoom;
     }
 
-    /** @return the message. */
-    public String getMessage() {
-        return message;
+    /** @return the visible. */
+    public Boolean isVisible() {
+        return visible;
     }
 
-    /** @param message the message to set. */
-    public void setMessage(String message) {
-        this.message = message;
+    /** @param visible the visible to set. */
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
     }
 
     /** @return the idCountry. */

@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
+import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.chat.Message;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
@@ -45,7 +46,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,6 +54,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
 /**
  * Window containing all the chats between players.
+ * TODO add a status tab with the diffs and an error tab with the volatile logs.
  *
  * @author MKL.
  */
@@ -107,9 +108,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
         tabPane.getTabs().add(createRoom(null, message.getMessage("chat.global", null, globalConfiguration.getLocale()),
                 chat.getGlobalMessages(), null));
-        for (Room room : chat.getRooms()) {
-            tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()));
-        }
+        chat.getRooms().stream().filter(Room::isVisible).forEach(
+                room -> tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()))
+        );
 
         Tab tabNew = new Tab("+");
         tabNew.setClosable(false);
@@ -138,7 +139,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                         DiffEvent diff = new DiffEvent(response, idGame);
                                         processDiffEvent(diff);
                                     } catch (Exception e) {
-                                        LOGGER.error("Error when moving stack.", e);
+                                        LOGGER.error("Error when creating room.", e);
                                         // TODO exception handling
                                     }
                                 }
@@ -171,8 +172,24 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
                                 Optional<RoomSelect> result = dialog.showAndWait();
                                 if (result.isPresent()) {
-                                    LOGGER.info("On veut revoir la room : " + result.get().getRoom().getName());
-                                    // TODO call chat service toggle
+                                    Room room = result.get().getRoom();
+                                    Request<ToggleRoomRequest> request = new Request<>();
+                                    authentHolder.fillAuthentInfo(request);
+                                    gameConfig.fillGameInfo(request);
+                                    gameConfig.fillChatInfo(request);
+                                    request.setRequest(new ToggleRoomRequest(room.getId(), true, gameConfig.getIdCountry()));
+                                    Long idGame = gameConfig.getIdGame();
+                                    try {
+                                        DiffResponse response = chatService.toggleRoom(request);
+                                        DiffEvent diff = new DiffEvent(response, idGame);
+                                        processDiffEvent(diff);
+
+                                        room.setVisible(true);
+                                        tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()));
+                                    } catch (Exception e) {
+                                        LOGGER.error("Error when toggling room.", e);
+                                        // TODO exception handling
+                                    }
                                 }
                             }
                         }
@@ -200,9 +217,25 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         if (idRoom != null) {
             id = Long.toString(idRoom);
             tab.setOnCloseRequest(event1 -> {
-                event1.consume();
-                LOGGER.info("On veut fermer la room " + tab.getText());
-                // TODO call chat service toggle
+                Room room = CommonUtil.findFirst(chat.getRooms(), room1 -> idRoom.equals(room1.getId()));
+                Request<ToggleRoomRequest> request = new Request<>();
+                authentHolder.fillAuthentInfo(request);
+                gameConfig.fillGameInfo(request);
+                gameConfig.fillChatInfo(request);
+                request.setRequest(new ToggleRoomRequest(room.getId(), false, gameConfig.getIdCountry()));
+                Long idGame = gameConfig.getIdGame();
+                try {
+                    DiffResponse response = chatService.toggleRoom(request);
+                    DiffEvent diff = new DiffEvent(response, idGame);
+                    processDiffEvent(diff);
+
+                    room.setVisible(false);
+                } catch (Exception e) {
+                    LOGGER.error("Error when toggling room.", e);
+                    // TODO exception handling
+                    // if it fails, we keep the tab open
+                    event1.consume();
+                }
             });
         } else {
             tab.setClosable(false);
@@ -212,8 +245,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         layout.setPadding(new Insets(15, 12, 15, 12));
         ListView<Message> roomContent = new ListView<>();
         ObservableList<Message> messagesContent = FXCollections.observableArrayList(messages);
-        Collections.reverse(messagesContent);
         roomContent.setItems(messagesContent);
+        roomContent.scrollTo(messagesContent.size());
         roomContent.setCellFactory(param -> new MessageChat());
         roomContent.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         roomContent.setMaxWidth(Double.MAX_VALUE);
@@ -293,7 +326,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
-                LOGGER.error("Error when moving stack.", e);
+                LOGGER.error("Error when speaking in room.", e);
                 // TODO exception handling
             }
             input.requestFocus();
@@ -358,7 +391,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                     if (border.getCenter() instanceof ListView) {
                         //noinspection unchecked
                         ListView<Message> listView = (ListView<Message>) border.getCenter();
-                        listView.getItems().add(0, msg);
+                        listView.getItems().add(msg);
+                        listView.scrollTo(listView.getItems().size());
                     }
                 }
             } else {

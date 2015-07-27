@@ -30,6 +30,8 @@ public interface INameConstants {
     String PARAMETER_CREATE_ROOM = "createRoom";
     /** Name of the parameter createRoom. */
     String PARAMETER_SPEAK_IN_ROOM = "speakInRoom";
+    /** Name of the parameter toggleRoom. */
+    String PARAMETER_TOGGLE_ROOM = "toggleRoom";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */
@@ -40,6 +42,8 @@ public interface INameConstants {
     String PARAMETER_ID_COUNTER = "idCounter";
     /** Name of the parameter idCountry. */
     String PARAMETER_ID_COUNTRY = "idCountry";
+    /** Name of the parameter idRoom. */
+    String PARAMETER_ID_ROOM = "idRoom";
     /** Name of the parameter provinceTo. */
     String PARAMETER_PROVINCE_TO = "provinceTo";
     /** Name of the parameter province. */
@@ -50,6 +54,8 @@ public interface INameConstants {
     String PARAMETER_MESSAGE = "message";
     /** Name of the parameter name. */
     String PARAMETER_NAME = "name";
+    /** Name of the parameter visible. */
+    String PARAMETER_VISIBLE = "visible";
     /** Name of a response. */
     String RESPONSE = "response";
     /** Name of a response of type game. */
@@ -74,4 +80,6 @@ public interface INameConstants {
     String METHOD_SPEAK_IN_ROOM = "speakInRoom";
     /** Name of the method createRoom. */
     String METHOD_CREATE_ROOM = "createRoom";
+    /** Name of the method toggleRoom. */
+    String METHOD_TOGGLE_ROOM = "toggleRoom";
 }
