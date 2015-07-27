@@ -22,12 +22,12 @@ import java.util.List;
  * @author MKL.
  */
 @Repository
-public class ChatDaoImpl extends GenericDaoImpl<ChatEntity, Long> implements IChatDao {
+public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements IChatDao {
     /**
      * Constructor.
      */
     public ChatDaoImpl() {
-        super(ChatEntity.class);
+        super(RoomEntity.class);
     }
 
     /** {@inheritDoc} */
@@ -106,6 +106,17 @@ public class ChatDaoImpl extends GenericDaoImpl<ChatEntity, Long> implements ICh
         Criteria criteria = getSession().createCriteria(RoomEntity.class);
 
         criteria.add(Restrictions.eq("id", idRoom));
+        criteria.add(Restrictions.eq("game.id", idGame));
+
+        return (RoomEntity) criteria.uniqueResult();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RoomEntity getRoom(Long idGame, String name) {
+        Criteria criteria = getSession().createCriteria(RoomEntity.class);
+
+        criteria.add(Restrictions.eq("name", name));
         criteria.add(Restrictions.eq("game.id", idGame));
 
         return (RoomEntity) criteria.uniqueResult();

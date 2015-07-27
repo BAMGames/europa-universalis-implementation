@@ -76,6 +76,16 @@ public abstract class AbstractService implements INameConstants {
     }
 
     /**
+     * Will throw a FunctionalException if the test is not <code>null</code>.
+     * @throws FunctionalException the exception.
+     */
+    protected void failIfNotNull(CheckForThrow check) throws FunctionalException {
+        if (check.getTest() != null) {
+            fail(check);
+        }
+    }
+
+    /**
      * Will throw a FunctionalException if the test is <code>null</code> or empty.
      * @throws FunctionalException the exception.
      */
@@ -150,15 +160,14 @@ public abstract class AbstractService implements INameConstants {
      * Retrieve all the message (global and non global) since the last time specified in the chatInfo for a given game and a given country.
      *
      * @param idGame    id of the game.
-     * @param idCountry id of the country for the non global messages (can be <code>null</code>).
      * @param chatInfo  information on the last message received.
      * @return all the message (global and non global) since the last time specified in the chatInfo for a given game and a given country.
      */
-    protected List<MessageDiff> getMessagesSince(Long idGame, Long idCountry, ChatInfo chatInfo) {
+    protected List<MessageDiff> getMessagesSince(Long idGame, ChatInfo chatInfo) {
         List<MessageDiff> messages = new ArrayList<>();
 
-        if (chatInfo != null && chatInfo.getMaxIdGlobalMessage() != null && chatInfo.getMaxIdMessage() != null) {
-            List<ChatEntity> chatEntities = chatDao.getMessagesSince(idGame, idCountry, chatInfo.getMaxIdMessage());
+        if (chatInfo != null && chatInfo.getMaxIdGlobalMessage() != null && chatInfo.getMaxIdMessage() != null && chatInfo.getIdCountry() != null) {
+            List<ChatEntity> chatEntities = chatDao.getMessagesSince(idGame, chatInfo.getIdCountry(), chatInfo.getMaxIdMessage());
             List<MessageGlobalEntity> messageEntities = chatDao.getMessagesGlobalSince(idGame, chatInfo.getMaxIdGlobalMessage());
 
 

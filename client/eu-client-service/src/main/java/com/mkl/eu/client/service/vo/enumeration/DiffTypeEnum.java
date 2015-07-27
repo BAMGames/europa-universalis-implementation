@@ -21,6 +21,12 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#STACK for the id of the stack (can be a new one)</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#ROOM in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#NAME for the name of the room</li>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY for the id of the owner</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     ADD,

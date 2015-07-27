@@ -3,13 +3,17 @@ package com.mkl.eu.front.client.chat;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IChatService;
+import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.chat.Message;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
+import com.mkl.eu.client.service.vo.diff.Diff;
+import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -45,6 +49,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
 /**
  * Window containing all the chats between players.
@@ -121,8 +127,20 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
                                 Optional<String> result = dialog.showAndWait();
                                 if (result.isPresent()) {
-                                    LOGGER.info("Creation de room de nom : " + result.get());
-                                    // TODO call chat service createRoom
+                                    Request<CreateRoomRequest> request = new Request<>();
+                                    authentHolder.fillAuthentInfo(request);
+                                    gameConfig.fillGameInfo(request);
+                                    gameConfig.fillChatInfo(request);
+                                    request.setRequest(new CreateRoomRequest(result.get(), gameConfig.getIdCountry()));
+                                    Long idGame = gameConfig.getIdGame();
+                                    try {
+                                        DiffResponse response = chatService.createRoom(request);
+                                        DiffEvent diff = new DiffEvent(response, idGame);
+                                        processDiffEvent(diff);
+                                    } catch (Exception e) {
+                                        LOGGER.error("Error when moving stack.", e);
+                                        // TODO exception handling
+                                    }
                                 }
                             }
                         }
@@ -167,6 +185,15 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         stage.setOnCloseRequest(event -> hide());
     }
 
+    /**
+     * Create a tab containing a room. Can be global room or not.
+     *
+     * @param idRoom    id if the room if not global.
+     * @param name      name of the room.
+     * @param messages  messages in the room seen by the user.
+     * @param countries countries in the room at the present time.
+     * @return a tab containing a room. Can be global room or not.
+     */
     private Tab createRoom(Long idRoom, String name, List<Message> messages, List<PlayableCountry> countries) {
         Tab tab = new Tab(name);
         String id = null;
@@ -338,6 +365,57 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 LOGGER.error("New message in unknown tab.");
             }
         });
+    }
+
+    /**
+     * Update the Map given the diff.
+     *
+     * @param diff that will update the map.
+     */
+    public void update(Diff diff) {
+        switch (diff.getTypeObject()) {
+            case ROOM:
+                updateRoom(diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process a room diff event.
+     *
+     * @param diff involving a room.
+     */
+    private void updateRoom(Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                addRoom(diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the add room diff event.
+     *
+     * @param diff involving a add room.
+     */
+    private void addRoom(Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.NAME);
+        if (attribute == null) {
+            LOGGER.error("Missing name in room add event.");
+            return;
+        }
+
+        Room room = CommonUtil.findFirst(chat.getRooms(), room1 -> StringUtils.equals(attribute.getValue(), room1.getName()));
+        if (room == null) {
+            LOGGER.error("Room does not exist.");
+            return;
+        }
+
+        tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()));
     }
 
     /**

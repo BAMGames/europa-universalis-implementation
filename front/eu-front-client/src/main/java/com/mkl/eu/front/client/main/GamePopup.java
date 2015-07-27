@@ -208,10 +208,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                     case STACK:
                         updateStack(game, diff);
                         break;
+                    case ROOM:
+                        updateRoom(game, diff);
+                        break;
                     default:
                         break;
                 }
                 map.update(diff);
+                chatWindow.update(diff);
             }
 
             event.getResponse().getMessages().forEach(message -> {
@@ -480,6 +484,55 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             game.getStacks().remove(stack);
         } else {
             LOGGER.error("Missing stack for destroy stack generic event.");
+        }
+    }
+
+    /**
+     * Process a room diff event.
+     *
+     * @param game to update.
+     * @param diff involving a room.
+     */
+    private void updateRoom(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                addRoom(game, diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the add room diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add room.
+     */
+    private void addRoom(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+
+            if (idCountry.equals(gameConfig.getIdCountry())) {
+                Room room = new Room();
+                room.setId(diff.getIdObject());
+                attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.NAME);
+                if (attribute != null) {
+                    room.setName(attribute.getValue());
+                } else {
+                    LOGGER.error("Missing name in room add event.");
+                }
+                room.setVisible(true);
+                room.setPresent(true);
+                PlayableCountry country = findFirst(game.getCountries(), country1 -> idCountry.equals(country1.getId()));
+                room.setOwner(country);
+                room.getCountries().add(country);
+
+                game.getChat().getRooms().add(room);
+            }
+        } else {
+            LOGGER.error("Missing country id in counter add event.");
         }
     }
 

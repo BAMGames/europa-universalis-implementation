@@ -9,5 +9,7 @@ public enum DiffTypeObjectEnum {
     /** Counter. */
     COUNTER,
     /** Stack. */
-    STACK;
+    STACK,
+    /** Room. */
+    ROOM;
 }

@@ -48,6 +48,8 @@ public interface INameConstants {
     String PARAMETER_COUNTER = "counter";
     /** Name of the parameter message. */
     String PARAMETER_MESSAGE = "message";
+    /** Name of the parameter name. */
+    String PARAMETER_NAME = "name";
     /** Name of a response. */
     String RESPONSE = "response";
     /** Name of a response of type game. */
@@ -70,4 +72,6 @@ public interface INameConstants {
     String METHOD_FIND_GAMES = "findGames";
     /** Name of the method speakInRoom. */
     String METHOD_SPEAK_IN_ROOM = "speakInRoom";
+    /** Name of the method createRoom. */
+    String METHOD_CREATE_ROOM = "createRoom";
 }

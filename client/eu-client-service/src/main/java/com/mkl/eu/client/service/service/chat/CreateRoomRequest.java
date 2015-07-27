@@ -8,6 +8,26 @@ package com.mkl.eu.client.service.service.chat;
 public class CreateRoomRequest {
     /** Name of the room to create. */
     private String name;
+    /** Id of the country creating the room. */
+    private Long idCountry;
+
+    /**
+     * Constructor for jaxb.
+     */
+    public CreateRoomRequest() {
+
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param name      the name to set.
+     * @param idCountry the name to set.
+     */
+    public CreateRoomRequest(String name, Long idCountry) {
+        this.name = name;
+        this.idCountry = idCountry;
+    }
 
     /** @return the name. */
     public String getName() {
@@ -17,5 +37,15 @@ public class CreateRoomRequest {
     /** @param name the name to set. */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /** @return the idCountry. */
+    public Long getIdCountry() {
+        return idCountry;
+    }
+
+    /** @param idCountry the idCountry to set. */
+    public void setIdCountry(Long idCountry) {
+        this.idCountry = idCountry;
     }
 }

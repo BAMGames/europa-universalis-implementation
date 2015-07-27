@@ -25,5 +25,9 @@ public enum DiffAttributeTypeEnum {
     /** Type of the  principal object. */
     TYPE,
     /** Country of the principal object. */
-    COUNTRY;
+    COUNTRY,
+    /** Name of the principal object. */
+    NAME,
+    /** Id of the playable country of the principal object (owner). */
+    ID_COUNTRY;
 }

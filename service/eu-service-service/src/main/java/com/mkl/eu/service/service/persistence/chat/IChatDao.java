@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author MKL.
  */
-public interface IChatDao extends IGenericDao<ChatEntity, Long> {
+public interface IChatDao extends IGenericDao<RoomEntity, Long> {
     /**
      * Retrieve the messages that can be seen by the country for a game.
      *
@@ -66,6 +66,15 @@ public interface IChatDao extends IGenericDao<ChatEntity, Long> {
      * @return the room of a game by its id.
      */
     RoomEntity getRoom(Long idGame, Long idRoom);
+
+    /**
+     * Returns the room of a game by its name.
+     *
+     * @param idGame id of the game.
+     * @param name   name of the room.
+     * @return the room of a game by its name.
+     */
+    RoomEntity getRoom(Long idGame, String name);
 
     /**
      * Inserts a message global.
