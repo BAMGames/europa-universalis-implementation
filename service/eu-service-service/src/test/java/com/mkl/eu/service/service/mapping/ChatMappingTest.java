@@ -131,7 +131,7 @@ public class ChatMappingTest {
 
         present = new PresentEntity();
         present.setCountry(PRU_OE);
-        present.setPresent(true);
+        present.setPresent(false);
         present.setVisible(false);
         presents.add(present);
 
@@ -242,7 +242,7 @@ public class ChatMappingTest {
         room.setOwner(FRA_VO);
         room.setCountries(countries);
         room.setVisible(visible);
-        room.setPresent(true);
+        room.setPresent(visible);
         rooms.add(room);
         Message message = new Message();
         message.setId(1L);
@@ -258,7 +258,7 @@ public class ChatMappingTest {
         room.setOwner(PRU_VO);
         room.setCountries(countries);
         room.setVisible(visible);
-        room.setPresent(true);
+        room.setPresent(visible);
         rooms.add(room);
 
         room = new Room();

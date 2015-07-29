@@ -51,7 +51,6 @@ public class ChatMapping extends AbstractMapping {
         if (messages != null && idCountry != null) {
             for (RoomEntity roomEntity : rooms) {
                 Room room = oeToVo(roomEntity, objectsCreated, idCountry);
-                room.setPresent(true);
                 chat.getRooms().add(room);
             }
 
@@ -164,6 +163,7 @@ public class ChatMapping extends AbstractMapping {
         PresentEntity present = CommonUtil.findFirst(source.getPresents(), presentEntity -> presentEntity.getCountry().getId().equals(idCountry));
         if (present != null) {
             target.setVisible(present.isVisible());
+            target.setPresent(present.isPresent());
         }
 
         return target;
