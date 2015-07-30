@@ -4,10 +4,7 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IChatService;
-import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
-import com.mkl.eu.client.service.service.chat.InviteKickRoomRequest;
-import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
-import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
+import com.mkl.eu.client.service.service.chat.*;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.chat.Message;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
@@ -48,8 +45,11 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.MessageFormat;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -123,6 +123,45 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         chat.getRooms().stream().filter(Room::isVisible).forEach(
                 room -> tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()))
         );
+
+        tabPane.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                            ListView<Message> messages = getCenterListView(newValue);
+                            Long idRoom = null;
+                            try {
+                                idRoom = Long.parseLong(newValue.getId());
+                            } catch (NumberFormatException e) {
+                                // room is not private
+                            }
+                            if (messages != null && idRoom != null) {
+                                long unreadMsg = messages.getItems().stream().filter(message1 -> message1.getDateRead() == null).count();
+
+                                if (unreadMsg > 0) {
+                                    Long maxId = messages.getItems().stream().max((o1, o2) -> Long.compare(o1.getId(), o2.getId())).get().getId();
+                                    Request<ReadRoomRequest> request = new Request<>();
+                                    authentHolder.fillAuthentInfo(request);
+                                    gameConfig.fillGameInfo(request);
+                                    gameConfig.fillChatInfo(request);
+                                    request.setRequest(new ReadRoomRequest(idRoom, maxId));
+                                    Long idGame = gameConfig.getIdGame();
+                                    try {
+                                        DiffResponse response = chatService.readRoom(request);
+
+                                        messages.getItems().stream().forEach(message1 -> message1.setDateRead(ZonedDateTime.now()));
+
+                                        updateRoomName(newValue, idRoom);
+
+                                        DiffEvent diff = new DiffEvent(response, idGame);
+                                        processDiffEvent(diff);
+                                    } catch (Exception e) {
+                                        LOGGER.error("Error when creating room.", e);
+                                        // TODO exception handling
+                                    }
+                                }
+                            }
+                        }
+                );
 
         Tab tabNew = new Tab("+");
         tabNew.setClosable(false);
@@ -245,6 +284,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
      */
     private Tab createRoom(Long idRoom, String name, List<Message> messages, List<PlayableCountry> countries, boolean present) {
         Tab tab = new Tab(name);
+        updateRoomName(tab, idRoom);
         String id = null;
         if (idRoom != null) {
             id = Long.toString(idRoom);
@@ -407,6 +447,25 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * Update the text header of the tab according the the room name and the number of unread messages.
+     *
+     * @param tab    to update.
+     * @param idRoom id of the room.
+     */
+    private void updateRoomName(Tab tab, Long idRoom) {
+        Room room = CommonUtil.findFirst(chat.getRooms(), room1 -> Objects.equals(idRoom, room1.getId()));
+        if (tab != null && room != null) {
+            String label = room.getName();
+            long unreadMsg = room.getMessages().stream().filter(message1 -> message1.getDateRead() == null).count();
+            if (unreadMsg > 0) {
+                label = MessageFormat.format("{0} ({1})", room.getName(), unreadMsg);
+            }
+
+            tab.setText(label);
+        }
+    }
+
+    /**
      * Show this popup.
      */
     public void show() {
@@ -453,6 +512,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             ListView<Message> listView = getCenterListView(tab);
             if (listView != null) {
                 listView.getItems().add(msg);
+                updateRoomName(tab, message.getIdRoom());
                 listView.scrollTo(listView.getItems().size());
             } else {
                 LOGGER.error("New message in unknown tab.");

@@ -55,4 +55,10 @@ public class ChatWsServiceImpl extends SpringBeanAutowiringSupport implements IC
     public Room loadRoom(SimpleRequest<LoadRoomRequest> loadRoom) throws FunctionalException, TechnicalException {
         return chatService.loadRoom(loadRoom);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse readRoom(Request<ReadRoomRequest> readRoom) throws FunctionalException, TechnicalException {
+        return chatService.readRoom(readRoom);
+    }
 }

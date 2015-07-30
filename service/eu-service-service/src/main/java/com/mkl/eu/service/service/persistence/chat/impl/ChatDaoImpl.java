@@ -7,10 +7,12 @@ import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.chat.*;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
@@ -185,5 +187,18 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
             LOG.error("Error during create :" + e.getMessage());
             throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, present.getId());
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int readMessagesInRoom(Long idRoom, Long idCountry, Long maxId) {
+        Query query = getSession().createQuery("update ChatEntity set dateRead = :dateRead" +
+                " where room.id = :idRoom and receiver.id = :idCountry and id <= :maxId");
+        query.setParameter("idRoom", idRoom);
+        query.setParameter("idCountry", idCountry);
+        query.setParameter("maxId", maxId);
+        query.setParameter("dateRead", ZonedDateTime.now());
+
+        return query.executeUpdate();
     }
 }

@@ -36,6 +36,8 @@ public interface INameConstants {
     String PARAMETER_INVITE_KICK_ROOM = "inviteKickRoom";
     /** Name of the parameter loadRoom. */
     String PARAMETER_LOAD_ROOM = "loadRoom";
+    /** Name of the parameter readRoom. */
+    String PARAMETER_READ_ROOM = "readRoom";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */
@@ -92,4 +94,6 @@ public interface INameConstants {
     String METHOD_INVITE_KICK_ROOM = "inviteKickRoom";
     /** Name of the method loadRoom. */
     String METHOD_LOAD_ROOM = "loadRoom";
+    /** Name of the method readRoom. */
+    String METHOD_READ_ROOM = "readRoom";
 }

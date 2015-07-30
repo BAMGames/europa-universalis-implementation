@@ -113,4 +113,14 @@ public interface IChatDao extends IGenericDao<RoomEntity, Long> {
      * @param present present to insert.
      */
     void createPresent(PresentEntity present);
+
+    /**
+     * Read the messages in the room.
+     *
+     * @param idRoom    id of the room.
+     * @param idCountry id of the player to mark messages.
+     * @param maxId     maximum of messages id to mark as read.
+     * @return the number of messages read.
+     */
+    int readMessagesInRoom(Long idRoom, Long idCountry, Long maxId);
 }

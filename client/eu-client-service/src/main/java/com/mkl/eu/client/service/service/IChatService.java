@@ -63,7 +63,6 @@ public interface IChatService extends INameConstants {
     @WebResult(name = RESPONSE)
     DiffResponse inviteKickRoom(@WebParam(name = PARAMETER_INVITE_KICK_ROOM) Request<InviteKickRoomRequest> inviteKickRoom) throws FunctionalException, TechnicalException;
 
-
     /**
      * Load a room. Often used after an invite.
      *
@@ -73,5 +72,16 @@ public interface IChatService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    Room loadRoom(@WebParam(name = PARAMETER_TOGGLE_ROOM) SimpleRequest<LoadRoomRequest> loadRoom) throws FunctionalException, TechnicalException;
+    Room loadRoom(@WebParam(name = PARAMETER_LOAD_GAME) SimpleRequest<LoadRoomRequest> loadRoom) throws FunctionalException, TechnicalException;
+
+    /**
+     * Read all the messages in a room.
+     *
+     * @param readRoom info about the room to mark all message read.
+     * @return the room.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse readRoom(@WebParam(name = PARAMETER_READ_ROOM) Request<ReadRoomRequest> readRoom) throws FunctionalException, TechnicalException;
 }
