@@ -157,7 +157,7 @@ public class ChatMapping extends AbstractMapping {
 
         target.setId(source.getId());
         target.setName(source.getName());
-        List<PlayableCountryEntity> countries = source.getPresents().stream().map(PresentEntity::getCountry).collect(Collectors.toList());
+        List<PlayableCountryEntity> countries = source.getPresents().stream().filter(PresentEntity::isPresent).map(PresentEntity::getCountry).collect(Collectors.toList());
         target.setCountries(playableCountryMapping.oesToVos(countries, objectsCreated));
         target.setOwner(storeVo(PlayableCountry.class, source.getOwner(), objectsCreated, playableCountryMapping::oeToVo));
         PresentEntity present = CommonUtil.findFirst(source.getPresents(), presentEntity -> presentEntity.getCountry().getId().equals(idCountry));

@@ -234,7 +234,6 @@ public class ChatMappingTest {
         List<Room> rooms = new ArrayList<>();
         List<PlayableCountry> countries = new ArrayList<>();
         countries.add(FRA_VO);
-        countries.add(PRU_VO);
 
         Room room = new Room();
         room.setId(1L);
