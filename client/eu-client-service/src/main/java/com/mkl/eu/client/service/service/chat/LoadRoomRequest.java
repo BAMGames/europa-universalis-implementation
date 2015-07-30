@@ -1,31 +1,35 @@
-package com.mkl.eu.client.service.service.board;
+package com.mkl.eu.client.service.service.chat;
 
 /**
- * Sub request for loadGame service.
+ * Sub request for loadRoom service.
  *
  * @author MKL.
  */
-public class LoadGameRequest {
-    /** Id of the game to load. */
+public class LoadRoomRequest {
+    /** Id of the game. */
     private Long idGame;
-    /** Id of the country loading the game. */
+    /** Id of the country requesting the room. */
     private Long idCountry;
+    /** Id of the room to load. */
+    private Long idRoom;
 
     /**
      * Constructor for jaxb.
      */
-    public LoadGameRequest() {
+    public LoadRoomRequest() {
     }
 
     /**
      * Constructor.
      *
-     * @param idGame the idGame to set.
+     * @param idGame    the idGame to set.
      * @param idCountry the idCountry to set.
+     * @param idRoom    the idRoom to set.
      */
-    public LoadGameRequest(Long idGame, Long idCountry) {
+    public LoadRoomRequest(Long idGame, Long idCountry, Long idRoom) {
         this.idGame = idGame;
         this.idCountry = idCountry;
+        this.idRoom = idRoom;
     }
 
     /** @return the idGame. */
@@ -46,5 +50,15 @@ public class LoadGameRequest {
     /** @param idCountry the idCountry to set. */
     public void setIdCountry(Long idCountry) {
         this.idCountry = idCountry;
+    }
+
+    /** @return the idRoom. */
+    public Long getIdRoom() {
+        return idRoom;
+    }
+
+    /** @param idRoom the idRoom to set. */
+    public void setIdRoom(Long idRoom) {
+        this.idRoom = idRoom;
     }
 }

@@ -3,10 +3,10 @@ package com.mkl.eu.service.service.ws.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IChatService;
-import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
-import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
-import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
+import com.mkl.eu.client.service.service.chat.*;
+import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,5 +42,17 @@ public class ChatWsServiceImpl extends SpringBeanAutowiringSupport implements IC
     @Override
     public DiffResponse toggleRoom(Request<ToggleRoomRequest> toggleRoom) throws FunctionalException, TechnicalException {
         return chatService.toggleRoom(toggleRoom);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse inviteKickRoom(Request<InviteKickRoomRequest> inviteKickRoom) throws FunctionalException, TechnicalException {
+        return chatService.inviteKickRoom(inviteKickRoom);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Room loadRoom(SimpleRequest<LoadRoomRequest> loadRoom) throws FunctionalException, TechnicalException {
+        return chatService.loadRoom(loadRoom);
     }
 }

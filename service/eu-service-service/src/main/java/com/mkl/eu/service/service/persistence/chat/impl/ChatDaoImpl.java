@@ -4,10 +4,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
-import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
-import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
-import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
-import com.mkl.eu.service.service.persistence.oe.chat.RoomGlobalEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.*;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Projections;
@@ -177,5 +174,16 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
 
         //noinspection unchecked
         return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void createPresent(PresentEntity present) {
+        try {
+            getSession().persist(present);
+        } catch (HibernateException e) {
+            LOG.error("Error during create :" + e.getMessage());
+            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, present.getId());
+        }
     }
 }

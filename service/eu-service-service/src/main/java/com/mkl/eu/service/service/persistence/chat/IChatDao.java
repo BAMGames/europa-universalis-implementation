@@ -1,10 +1,7 @@
 package com.mkl.eu.service.service.persistence.chat;
 
 import com.mkl.eu.service.service.persistence.IGenericDao;
-import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
-import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
-import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
-import com.mkl.eu.service.service.persistence.oe.chat.RoomGlobalEntity;
+import com.mkl.eu.service.service.persistence.oe.chat.*;
 
 import java.util.List;
 
@@ -109,4 +106,11 @@ public interface IChatDao extends IGenericDao<RoomEntity, Long> {
      * @return all the global messages for a given game whose ID are greater than lastId.
      */
     List<MessageGlobalEntity> getMessagesGlobalSince(Long idGame, Long lastId);
+
+    /**
+     * Inserts a presentEntity (invite in a room).
+     *
+     * @param present present to insert.
+     */
+    void createPresent(PresentEntity present);
 }

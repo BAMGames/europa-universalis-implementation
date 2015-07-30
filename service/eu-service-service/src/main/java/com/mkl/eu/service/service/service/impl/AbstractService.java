@@ -2,8 +2,8 @@ package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
-import com.mkl.eu.client.common.vo.ChatInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
+import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.INameConstants;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
@@ -63,10 +63,11 @@ public abstract class AbstractService implements INameConstants {
     protected DiffMapping diffMapping;
     /** Chat mapping. */
     @Autowired
-    private ChatMapping chatMapping;
+    protected ChatMapping chatMapping;
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.
+     *
      * @throws FunctionalException the exception.
      */
     protected void failIfNull(CheckForThrow check) throws FunctionalException {
@@ -77,6 +78,7 @@ public abstract class AbstractService implements INameConstants {
 
     /**
      * Will throw a FunctionalException if the test is not <code>null</code>.
+     *
      * @throws FunctionalException the exception.
      */
     protected void failIfNotNull(CheckForThrow check) throws FunctionalException {
@@ -87,6 +89,7 @@ public abstract class AbstractService implements INameConstants {
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code> or empty.
+     *
      * @throws FunctionalException the exception.
      */
     protected void failIfEmpty(CheckForThrow<String> check) throws FunctionalException {
@@ -97,6 +100,7 @@ public abstract class AbstractService implements INameConstants {
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.
+     *
      * @throws FunctionalException the exception.
      */
     protected void failIfFalse(CheckForThrow<Boolean> check) throws FunctionalException {
@@ -107,6 +111,7 @@ public abstract class AbstractService implements INameConstants {
 
     /**
      * Log and throws a FunctionalException.
+     *
      * @throws FunctionalException the exception.
      */
     private void fail(CheckForThrow check) throws FunctionalException {
@@ -159,16 +164,16 @@ public abstract class AbstractService implements INameConstants {
     /**
      * Retrieve all the message (global and non global) since the last time specified in the chatInfo for a given game and a given country.
      *
-     * @param idGame    id of the game.
-     * @param chatInfo  information on the last message received.
+     * @param request the request containing all the info needed.
+     * @param <T>     type of request.
      * @return all the message (global and non global) since the last time specified in the chatInfo for a given game and a given country.
      */
-    protected List<MessageDiff> getMessagesSince(Long idGame, ChatInfo chatInfo) {
+    protected <T> List<MessageDiff> getMessagesSince(Request<T> request) {
         List<MessageDiff> messages = new ArrayList<>();
 
-        if (chatInfo != null && chatInfo.getIdCountry() != null) {
-            List<ChatEntity> chatEntities = chatDao.getMessagesSince(idGame, chatInfo.getIdCountry(), chatInfo.getMaxIdMessage());
-            List<MessageGlobalEntity> messageEntities = chatDao.getMessagesGlobalSince(idGame, chatInfo.getMaxIdGlobalMessage());
+        if (request != null && request.getGame() != null && request.getChat() != null) {
+            List<ChatEntity> chatEntities = chatDao.getMessagesSince(request.getGame().getIdGame(), request.getChat().getIdCountry(), request.getChat().getMaxIdMessage());
+            List<MessageGlobalEntity> messageEntities = chatDao.getMessagesGlobalSince(request.getGame().getIdGame(), request.getChat().getMaxIdGlobalMessage());
 
 
             Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();

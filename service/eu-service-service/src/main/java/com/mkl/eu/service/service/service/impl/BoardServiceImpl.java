@@ -76,21 +76,21 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
     /** {@inheritDoc} */
     @Override
-    public List<GameLight> findGames(SimpleRequest<FindGamesRequest> findGames) throws FunctionalException, TechnicalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(findGames).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+    public List<GameLight> findGames(SimpleRequest<FindGamesRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_FIND_GAMES).setParams(METHOD_FIND_GAMES));
 
         // anonymous and logged users have the same level of information so no check on authent.
 
-        List<GameEntity> gameEntities = gameDao.findGames(findGames.getRequest());
+        List<GameEntity> gameEntities = gameDao.findGames(request.getRequest());
 
         List<GameLight> games = new ArrayList<>();
         for (GameEntity gameEntity : gameEntities) {
             boolean parsed = false;
-            if (findGames.getRequest() != null
-                    && !StringUtils.isEmpty(findGames.getRequest().getUsername())
-                    && !StringUtils.equals(AuthentInfo.USERNAME_ANONYMOUS, findGames.getRequest().getUsername())) {
-                List<PlayableCountryEntity> countries = gameEntity.getCountries().stream().filter(playableCountryEntity -> StringUtils.equals(playableCountryEntity.getUsername(), findGames.getRequest().getUsername())).collect(Collectors.toList());
+            if (request.getRequest() != null
+                    && !StringUtils.isEmpty(request.getRequest().getUsername())
+                    && !StringUtils.equals(AuthentInfo.USERNAME_ANONYMOUS, request.getRequest().getUsername())) {
+                List<PlayableCountryEntity> countries = gameEntity.getCountries().stream().filter(playableCountryEntity -> StringUtils.equals(playableCountryEntity.getUsername(), request.getRequest().getUsername())).collect(Collectors.toList());
                 if (!countries.isEmpty()) {
                     for (PlayableCountryEntity country : countries) {
                         GameLight game = gameMapping.oeToVoLight(gameEntity);
@@ -115,31 +115,31 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
     /** {@inheritDoc} */
     @Override
-    public Game loadGame(SimpleRequest<LoadGameRequest> loadGame) throws FunctionalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+    public Game loadGame(SimpleRequest<LoadGameRequest> request) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME).setParams(METHOD_LOAD_GAME));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST).setParams(METHOD_LOAD_GAME));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(loadGame.getRequest().getIdGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdGame()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_GAME).setParams(METHOD_LOAD_GAME));
 
-        if (loadGame.getAuthent() == null) {
-            loadGame.setAuthent(AuthentInfo.ANONYMOUS);
+        if (request.getAuthent() == null) {
+            request.setAuthent(AuthentInfo.ANONYMOUS);
         }
 
-        Long idGame = loadGame.getRequest().getIdGame();
-        Long idCountry = loadGame.getRequest().getIdCountry();
+        Long idGame = request.getRequest().getIdGame();
+        Long idCountry = request.getRequest().getIdCountry();
 
         GameEntity game = gameDao.read(idGame);
 
         boolean isCountryOk = idCountry == null;
         if (!isCountryOk) {
             PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), x -> x.getId().equals(idCountry));
-            isCountryOk = country != null && StringUtils.equals(loadGame.getAuthent().getUsername(), country.getUsername());
+            isCountryOk = country != null && StringUtils.equals(request.getAuthent().getUsername(), country.getUsername());
         }
 
         failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(isCountryOk).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat("{1}: {0} ({2}) is not in game or is not played by {3}.").setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_LOAD_GAME, idCountry, loadGame.getAuthent().getUsername()));
+                .setMsgFormat("{1}: {0} ({2}) is not in game or is not played by {3}.").setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_LOAD_GAME, idCountry, request.getAuthent().getUsername()));
 
         Game returnValue = gameMapping.oeToVo(game);
 
@@ -158,11 +158,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse updateGame(Request<Void> updateGame) throws FunctionalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(updateGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+    public DiffResponse updateGame(Request<Void> request) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_UPDATE_GAME).setParams(METHOD_UPDATE_GAME));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(updateGame.getGame(), METHOD_UPDATE_GAME, PARAMETER_UPDATE_GAME);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_UPDATE_GAME, PARAMETER_UPDATE_GAME);
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         List<Diff> diffVos = diffMapping.oesToVos(diffs);
@@ -171,24 +171,26 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         response.setDiffs(diffVos);
         response.setVersionGame(gameDiffs.getGame().getVersion());
 
+        response.setMessages(getMessagesSince(request));
+
         return response;
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Request<MoveStackRequest> moveStack) throws FunctionalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+    public DiffResponse moveStack(Request<MoveStackRequest> request) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK).setParams(METHOD_MOVE_STACK));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(moveStack.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
 
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveStack.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_MOVE_STACK));
         // TODO authorization
 
-        Long idStack = moveStack.getRequest().getIdStack();
-        String provinceTo = moveStack.getRequest().getProvinceTo();
+        Long idStack = request.getRequest().getIdStack();
+        String provinceTo = request.getRequest().getProvinceTo();
 
         failIfNull(new CheckForThrow<>().setTest(idStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK));
@@ -245,25 +247,27 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         response.setDiffs(diffMapping.oesToVos(diffs));
         response.setVersionGame(game.getVersion());
 
+        response.setMessages(getMessagesSince(request));
+
         return response;
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveCounter(Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException {
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveCounter).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+    public DiffResponse moveCounter(Request<MoveCounterRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER).setParams(METHOD_MOVE_COUNTER));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveCounter.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT).setParams(METHOD_MOVE_COUNTER));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(moveCounter.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
 
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(moveCounter.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST).setParams(METHOD_MOVE_COUNTER));
 
-        Long idCounter = moveCounter.getRequest().getIdCounter();
-        Long idStack = moveCounter.getRequest().getIdStack();
+        Long idCounter = request.getRequest().getIdCounter();
+        Long idStack = request.getRequest().getIdStack();
 
         failIfNull(new CheckForThrow<>().setTest(idCounter).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER));
@@ -275,18 +279,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         Optional<PlayableCountryEntity> country = game.getCountries().stream().filter(x -> StringUtils.equals(counter.getCountry(), x.getName())).findFirst();
         if (country.isPresent()) {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(moveCounter.getAuthent().getUsername(), country.get().getUsername()))
+            failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.get().getUsername()))
                     .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getAuthent().getUsername(), country.get().getUsername()));
+                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), country.get().getUsername()));
 
         } else {
             List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
             if (patrons.size() == 1) {
                 country = game.getCountries().stream().filter(x -> StringUtils.equals(patrons.get(0), x.getName())).findFirst();
                 if (country.isPresent()) {
-                    failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(moveCounter.getAuthent().getUsername(), country.get().getUsername()))
+                    failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.get().getUsername()))
                             .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                            .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, moveCounter.getAuthent().getUsername(), country.get().getUsername()));
+                            .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), country.get().getUsername()));
 
                 }
             } else {
@@ -373,6 +377,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));
         response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
 
         return response;
     }

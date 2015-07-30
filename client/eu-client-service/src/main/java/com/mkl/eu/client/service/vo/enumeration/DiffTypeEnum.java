@@ -69,5 +69,21 @@ public enum DiffTypeEnum {
      * </li>
      * </ul>
      */
-    MOVE
+    MOVE,
+    /**
+     * <p>
+     * Link something.
+     * </p>
+     * <p>
+     * Can be used with:
+     * <ul>
+     * <li>DiffTypeObjectEnum#ROOM in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which playable country is invited/kicked in the room.</li>
+     * <li>DiffAttributeTypeEnum#INVITE a flag to know if it is an invite/kick.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     */
+    LINK
 }

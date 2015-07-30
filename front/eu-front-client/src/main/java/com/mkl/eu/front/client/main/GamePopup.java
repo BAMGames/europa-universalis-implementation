@@ -5,7 +5,9 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -72,6 +74,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     /** Board service. */
     @Autowired
     private IBoardService boardService;
+    /** Chat service. */
+    @Autowired
+    private IChatService chatService;
     /** PApplet for the intercative map. */
     private InteractiveMap map;
     /** Window containing all the chat. */
@@ -143,7 +148,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      * Initialize the chat window.
      */
     private void initChat() {
-        chatWindow = context.getBean(ChatWindow.class, game.getChat(), gameConfig);
+        chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
         chatWindow.addDiffListener(this);
     }
 
@@ -236,7 +241,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 }
             });
 
-            chatWindow.update(event.getResponse().getMessages(), game.getCountries());
+            chatWindow.update(event.getResponse().getMessages());
 
             game.setVersion(event.getResponse().getVersionGame());
             gameConfig.setVersionGame(event.getResponse().getVersionGame());
@@ -498,6 +503,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case ADD:
                 addRoom(game, diff);
                 break;
+            case LINK:
+                inviteKickRoom(game, diff);
+                break;
             default:
                 break;
         }
@@ -530,6 +538,57 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 room.getCountries().add(country);
 
                 game.getChat().getRooms().add(room);
+            }
+        } else {
+            LOGGER.error("Missing country id in counter add event.");
+        }
+    }
+
+    /**
+     * Process the link room diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add room.
+     */
+    private void inviteKickRoom(Game game, Diff diff) {
+        boolean invite = false;
+        Long idRoom = diff.getIdObject();
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.INVITE);
+        if (attribute != null) {
+            invite = Boolean.parseBoolean(attribute.getValue());
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+
+            if (idCountry.equals(gameConfig.getIdCountry())) {
+
+                Room room = CommonUtil.findFirst(game.getChat().getRooms(), room1 -> idRoom.equals(room1.getId()));
+                if (room == null) {
+                    SimpleRequest<LoadRoomRequest> request = new SimpleRequest<>();
+                    authentHolder.fillAuthentInfo(request);
+                    request.setRequest(new LoadRoomRequest(gameConfig.getIdGame(), gameConfig.getIdCountry(), idRoom));
+                    try {
+                        room = chatService.loadRoom(request);
+                        game.getChat().getRooms().add(room);
+                    } catch (FunctionalException e) {
+                        LOGGER.error("Can't load room.", e);
+                    }
+
+                    return;
+                } else {
+                    room.setPresent(invite);
+                }
+            }
+            Room room = CommonUtil.findFirst(game.getChat().getRooms(), room1 -> idRoom.equals(room1.getId()));
+            PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> idCountry.equals(playableCountry.getId()));
+            if (room != null && country != null) {
+                if (invite) {
+                    room.getCountries().add(country);
+                } else {
+                    room.getCountries().remove(country);
+                }
             }
         } else {
             LOGGER.error("Missing country id in counter add event.");

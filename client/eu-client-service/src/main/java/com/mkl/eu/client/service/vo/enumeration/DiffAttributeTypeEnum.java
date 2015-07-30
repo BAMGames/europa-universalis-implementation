@@ -29,5 +29,7 @@ public enum DiffAttributeTypeEnum {
     /** Name of the principal object. */
     NAME,
     /** Id of the playable country of the principal object (owner). */
-    ID_COUNTRY;
+    ID_COUNTRY,
+    /** Flag saying that it is an invite (if not, it is a kick). */
+    INVITE
 }

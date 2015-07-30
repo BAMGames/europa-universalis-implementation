@@ -2,8 +2,10 @@ package com.mkl.eu.front.client.chat;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
+import com.mkl.eu.client.service.service.chat.InviteKickRoomRequest;
 import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
 import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
 import com.mkl.eu.client.service.vo.chat.Chat;
@@ -24,6 +26,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -48,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
@@ -66,6 +70,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     /** Chat service. */
     @Autowired
     private IChatService chatService;
+    /** Board service. */
+    @Autowired
+    private IBoardService boardService;
     /** Internationalisation. */
     @Autowired
     private MessageSource message;
@@ -77,6 +84,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     private AuthentHolder authentHolder;
     /** Chat containing rooms and global messages. */
     private Chat chat;
+    /** Countries in the game. */
+    private List<PlayableCountry> countries;
     /** Game configuration. */
     private GameConfiguration gameConfig;
     /** Stage of the window. */
@@ -87,10 +96,13 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     /**
      * Constructor.
      *
-     * @param chat the chat to set.
+     * @param chat       the chat to set.
+     * @param countries  the countries to set.
+     * @param gameConfig the gameConfig to set.
      */
-    public ChatWindow(Chat chat, GameConfiguration gameConfig) {
+    public ChatWindow(Chat chat, List<PlayableCountry> countries, GameConfiguration gameConfig) {
         this.chat = chat;
+        this.countries = countries;
         this.gameConfig = gameConfig;
     }
 
@@ -107,9 +119,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         tabPane = new TabPane();
 
         tabPane.getTabs().add(createRoom(null, message.getMessage("chat.global", null, globalConfiguration.getLocale()),
-                chat.getGlobalMessages(), null));
+                chat.getGlobalMessages(), null, true));
         chat.getRooms().stream().filter(Room::isVisible).forEach(
-                room -> tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()))
+                room -> tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()))
         );
 
         Tab tabNew = new Tab("+");
@@ -122,9 +134,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                 tabPane.getSelectionModel()
                                         .select(oldValue);
                                 TextInputDialog dialog = new TextInputDialog();
-                                dialog.setTitle("chat.room.new.title");
-                                dialog.setHeaderText("chat.room.new.header");
-                                dialog.setContentText("chat.room.new.content");
+                                dialog.setTitle(message.getMessage("chat.room.new.title", null, globalConfiguration.getLocale()));
+                                dialog.setHeaderText(message.getMessage("chat.room.new.header", null, globalConfiguration.getLocale()));
+                                dialog.setContentText(message.getMessage("chat.room.new.content", null, globalConfiguration.getLocale()));
 
                                 Optional<String> result = dialog.showAndWait();
                                 if (result.isPresent()) {
@@ -164,15 +176,15 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                             if (newValue == tabVisible) {
                                 tabPane.getSelectionModel()
                                         .select(oldValue);
-                                List<RoomSelect> choices = chat.getRooms().stream().filter(room -> !room.isVisible()).map(RoomSelect::new).collect(Collectors.toList());
-                                ChoiceDialog<RoomSelect> dialog = new ChoiceDialog<>(null, choices);
-                                dialog.setTitle("chat.room.visible.title");
-                                dialog.setHeaderText("chat.room.visible.header");
-                                dialog.setContentText("chat.room.visible.content");
+                                List<CustomSelect<Room>> choices = chat.getRooms().stream().filter(room -> !room.isVisible()).map(room1 -> new CustomSelect<>(room1, Room::getName)).collect(Collectors.toList());
+                                ChoiceDialog<CustomSelect<Room>> dialog = new ChoiceDialog<>(null, choices);
+                                dialog.setTitle(message.getMessage("chat.room.visible.title", null, globalConfiguration.getLocale()));
+                                dialog.setHeaderText(message.getMessage("chat.room.visible.header", null, globalConfiguration.getLocale()));
+                                dialog.setContentText(message.getMessage("chat.room.visible.content", null, globalConfiguration.getLocale()));
 
-                                Optional<RoomSelect> result = dialog.showAndWait();
+                                Optional<CustomSelect<Room>> result = dialog.showAndWait();
                                 if (result.isPresent()) {
-                                    Room room = result.get().getRoom();
+                                    Room room = result.get().getObj();
                                     Request<ToggleRoomRequest> request = new Request<>();
                                     authentHolder.fillAuthentInfo(request);
                                     gameConfig.fillGameInfo(request);
@@ -185,7 +197,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                         processDiffEvent(diff);
 
                                         room.setVisible(true);
-                                        tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()));
+                                        tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()));
                                     } catch (Exception e) {
                                         LOGGER.error("Error when toggling room.", e);
                                         // TODO exception handling
@@ -194,6 +206,25 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                             }
                         }
                 );
+
+        tabPane.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.U) {
+                Request<Void> request = new Request<>();
+                authentHolder.fillAuthentInfo(request);
+                gameConfig.fillGameInfo(request);
+                gameConfig.fillChatInfo(request);
+                Long idGame = gameConfig.getIdGame();
+                try {
+                    DiffResponse response = boardService.updateGame(request);
+                    DiffEvent diff = new DiffEvent(response, idGame);
+                    processDiffEvent(diff);
+
+                } catch (Exception e) {
+                    LOGGER.error("Error when toggling room.", e);
+                    // TODO exception handling
+                }
+            }
+        });
 
         border.setCenter(tabPane);
 
@@ -209,9 +240,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
      * @param name      name of the room.
      * @param messages  messages in the room seen by the user.
      * @param countries countries in the room at the present time.
+     * @param present   if the user is still present in the room. Always <code>true</code> in global room.
      * @return a tab containing a room. Can be global room or not.
      */
-    private Tab createRoom(Long idRoom, String name, List<Message> messages, List<PlayableCountry> countries) {
+    private Tab createRoom(Long idRoom, String name, List<Message> messages, List<PlayableCountry> countries, boolean present) {
         Tab tab = new Tab(name);
         String id = null;
         if (idRoom != null) {
@@ -284,15 +316,47 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 itemKick.setOnAction(event -> {
                     PlayableCountry country = cell.getItem();
                     if (country != null) {
-                        LOGGER.info("On veut kick " + country.getName());
-                        // TODO call chat service kick
+                        Request<InviteKickRoomRequest> request = new Request<>();
+                        authentHolder.fillAuthentInfo(request);
+                        gameConfig.fillGameInfo(request);
+                        gameConfig.fillChatInfo(request);
+                        request.setRequest(new InviteKickRoomRequest(idRoom, false, cell.getItem().getId()));
+                        Long idGame = gameConfig.getIdGame();
+                        try {
+                            DiffResponse response = chatService.inviteKickRoom(request);
+                            DiffEvent diff = new DiffEvent(response, idGame);
+                            processDiffEvent(diff);
+                        } catch (Exception e) {
+                            LOGGER.error("Error when speaking in room.", e);
+                            // TODO exception handling
+                        }
                     }
                 });
                 MenuItem itemInvite = new MenuItem(message.getMessage("chat.room.invite", null, globalConfiguration.getLocale()));
                 itemInvite.setOnAction(event -> {
-                    PlayableCountry country = cell.getItem();
-                    LOGGER.info("On veut invite");
-                    // TODO call chat service invite
+                    List<CustomSelect<PlayableCountry>> choices = this.countries.stream().filter(playableCountry -> !countriesView.getItems().contains(playableCountry)).map(country -> new CustomSelect<>(country, PlayableCountry::getName)).collect(Collectors.toList());
+                    ChoiceDialog<CustomSelect<PlayableCountry>> dialog = new ChoiceDialog<>(null, choices);
+                    dialog.setTitle(message.getMessage("chat.room.invite.title", null, globalConfiguration.getLocale()));
+                    dialog.setHeaderText(message.getMessage("chat.room.invite.header", null, globalConfiguration.getLocale()));
+                    dialog.setContentText(message.getMessage("chat.room.invite.content", null, globalConfiguration.getLocale()));
+
+                    Optional<CustomSelect<PlayableCountry>> result = dialog.showAndWait();
+                    if (result.isPresent()) {
+                        Request<InviteKickRoomRequest> request = new Request<>();
+                        authentHolder.fillAuthentInfo(request);
+                        gameConfig.fillGameInfo(request);
+                        gameConfig.fillChatInfo(request);
+                        request.setRequest(new InviteKickRoomRequest(idRoom, true, result.get().getObj().getId()));
+                        Long idGame = gameConfig.getIdGame();
+                        try {
+                            DiffResponse response = chatService.inviteKickRoom(request);
+                            DiffEvent diff = new DiffEvent(response, idGame);
+                            processDiffEvent(diff);
+                        } catch (Exception e) {
+                            LOGGER.error("Error when speaking in room.", e);
+                            // TODO exception handling
+                        }
+                    }
                 });
                 ContextMenu menu = new ContextMenu(itemKick, itemInvite);
                 cell.setContextMenu(menu);
@@ -307,6 +371,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         input.setMaxWidth(Double.MAX_VALUE);
         hbox.getChildren().add(input);
         Button submitBtn = new Button(message.getMessage("chat.submit", null, globalConfiguration.getLocale()));
+        submitBtn.setDisable(!present);
         input.setOnKeyPressed(event -> {
             if (KeyCode.ENTER.equals(event.getCode())) {
                 submitBtn.fire();
@@ -367,7 +432,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
      *
      * @param messages new messages.
      */
-    public synchronized void update(List<MessageDiff> messages, List<PlayableCountry> countries) {
+    public synchronized void update(List<MessageDiff> messages) {
         messages.forEach(message -> {
             Message msg = new Message();
             msg.setId(message.getId());
@@ -385,16 +450,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             }
             Tab tab = CommonUtil.findFirst(tabPane.getTabs(),
                     tab1 -> StringUtils.equals(idRoom, tab1.getId()));
-            if (tab != null) {
-                if (tab.getContent() instanceof BorderPane) {
-                    BorderPane border = ((BorderPane) tab.getContent());
-                    if (border.getCenter() instanceof ListView) {
-                        //noinspection unchecked
-                        ListView<Message> listView = (ListView<Message>) border.getCenter();
-                        listView.getItems().add(msg);
-                        listView.scrollTo(listView.getItems().size());
-                    }
-                }
+            ListView<Message> listView = getCenterListView(tab);
+            if (listView != null) {
+                listView.getItems().add(msg);
+                listView.scrollTo(listView.getItems().size());
             } else {
                 LOGGER.error("New message in unknown tab.");
             }
@@ -426,6 +485,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             case ADD:
                 addRoom(diff);
                 break;
+            case LINK:
+                inviteKickRoom(diff);
+                break;
             default:
                 break;
         }
@@ -449,7 +511,128 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             return;
         }
 
-        tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries()));
+        tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()));
+    }
+
+    /**
+     * Process the link room diff event.
+     *
+     * @param diff involving a add room.
+     */
+    private void inviteKickRoom(Diff diff) {
+        boolean invite = false;
+        Long idRoom = diff.getIdObject();
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.INVITE);
+        if (attribute != null) {
+            invite = Boolean.parseBoolean(attribute.getValue());
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+            Room room = CommonUtil.findFirst(chat.getRooms(), room1 -> idRoom.equals(room1.getId()));
+            if (room == null) {
+                LOGGER.error("Room '{}' not found.", idRoom);
+                return;
+            }
+            PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> idCountry.equals(playableCountry.getId()));
+            if (country == null) {
+                LOGGER.error("Country '{}' not found.", idCountry);
+                return;
+            }
+
+            Tab tab = CommonUtil.findFirst(tabPane.getTabs(),
+                    tab1 -> StringUtils.equals(Long.toString(idRoom), tab1.getId()));
+
+            if (idCountry.equals(gameConfig.getIdCountry())) {
+                if (tab == null && invite) {
+                    tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()));
+                    return;
+                } else if (tab != null) {
+                    Button submitBtn = getSubmitButton(tab);
+                    if (submitBtn != null) {
+                        submitBtn.setDisable(!invite);
+                    }
+                }
+            }
+
+            ListView<PlayableCountry> countryListView = getRightListView(tab);
+            if (countryListView != null) {
+                if (invite) {
+                    countryListView.getItems().add(country);
+                } else {
+                    countryListView.getItems().remove(country);
+                }
+            }
+        } else {
+            LOGGER.error("Missing country id in counter add event.");
+        }
+    }
+
+    /**
+     * Retrieves the center ListView of a tab.
+     *
+     * @param tab the tab.
+     * @return the center ListView of a tab.
+     */
+    private ListView<Message> getCenterListView(Tab tab) {
+        ListView<Message> listView = null;
+
+        if (tab.getContent() instanceof BorderPane) {
+            BorderPane border = ((BorderPane) tab.getContent());
+            if (border.getCenter() instanceof ListView) {
+                //noinspection unchecked
+                listView = (ListView<Message>) border.getCenter();
+            }
+        }
+
+        return listView;
+    }
+
+    /**
+     * Retrieves the right ListView of a tab.
+     *
+     * @param tab the tab.
+     * @return the right ListView of a tab.
+     */
+    private ListView<PlayableCountry> getRightListView(Tab tab) {
+        ListView<PlayableCountry> listView = null;
+
+        if (tab.getContent() instanceof BorderPane) {
+            BorderPane border = ((BorderPane) tab.getContent());
+            if (border.getRight() instanceof ListView) {
+                //noinspection unchecked
+                listView = (ListView<PlayableCountry>) border.getRight();
+            }
+        }
+
+        return listView;
+    }
+
+    /**
+     * Retrieves the submit button at the bottom of the tab.
+     *
+     * @param tab the tab.
+     * @return the submit button at the bottom of the tab.
+     */
+    private Button getSubmitButton(Tab tab) {
+        Button btn = null;
+
+        if (tab != null && tab.getContent() instanceof BorderPane) {
+            BorderPane border = ((BorderPane) tab.getContent());
+            if (border.getBottom() instanceof HBox) {
+                HBox hbox = (HBox) border.getBottom();
+
+                for (Node node : hbox.getChildren()) {
+                    if (node instanceof Button) {
+                        btn = (Button) node;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return btn;
     }
 
     /**
@@ -491,30 +674,34 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Component for a Select box containing rooms.
+     * Component for a Select box whose toString() function is inadequate.
      */
-    private static class RoomSelect {
-        /** Real room. */
-        private Room room;
+    private static class CustomSelect<T> {
+        /** Real object. */
+        private T obj;
+        /** Function to apply to the object to display the object. T -> String */
+        private Function<T, String> function;
 
         /**
          * Constructor.
          *
-         * @param room the room to set.
+         * @param obj      the obj to set.
+         * @param function the function to set.
          */
-        public RoomSelect(Room room) {
-            this.room = room;
+        public CustomSelect(T obj, Function<T, String> function) {
+            this.obj = obj;
+            this.function = function;
         }
 
-        /** @return the room. */
-        public Room getRoom() {
-            return room;
+        /** @return the obj. */
+        public T getObj() {
+            return obj;
         }
 
         /** {@inheritDoc} */
         @Override
         public String toString() {
-            return room.getName();
+            return function.apply(obj);
         }
     }
 }
