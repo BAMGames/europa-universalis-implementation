@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.vo.diff;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author MKL.
  */
-public class Diff {
+public class Diff implements Serializable {
     /** Version of the game affected by this diff. */
     private Long versionGame;
     /** Type of the diff (ADD, REMOVE, MOVE, ...). */

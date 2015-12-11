@@ -35,6 +35,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
+import com.mkl.eu.service.service.socket.SocketHandler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,6 +89,9 @@ public class BoardServiceTest {
 
     @Mock
     private DiffMapping diffMapping;
+
+    @Mock
+    private SocketHandler socketHandler;
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
@@ -486,13 +490,14 @@ public class BoardServiceTest {
 
         DiffResponse response = boardService.moveStack(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, socketHandler, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("IdF");
         inOrder.verify(provinceDao).getProvinceByName("pecs");
         inOrder.verify(diffDao).create(anyObject());
+        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -765,13 +770,14 @@ public class BoardServiceTest {
 
         DiffResponse response = boardService.moveCounter(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, counterDao, stackDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(counterDao).getCounter(13L, 12L);
         inOrder.verify(counterDao).getPatrons("genes", 12L);
         inOrder.verify(diffDao).create(anyObject());
+        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(gameDao).update(game, false);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 

@@ -8,6 +8,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.chat.*;
+import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
@@ -39,7 +40,7 @@ import java.util.Map;
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class ChatServiceImpl extends AbstractService implements IChatService {
     /** Error message when an object is not found (in database mostly). */
-    public static final String MSG_ROOM_ALREADY_EXIST = "{1}: {0} a room with name '{2}' already exists.";
+    public static final String MSG_ROOM_ALREADY_EXIST = "{1}: {0} a room with name \"{2}\" already exists.";
     /** PlayablleCountry DAO. */
     @Autowired
     private IPlayableCountryDao playableCountryDao;
@@ -69,7 +70,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         RoomEntity room = chatDao.getRoom(request.getGame().getIdGame(), name);
 
         failIfNotNull(new AbstractService.CheckForThrow<>().setTest(room).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_ROOM_ALREADY_EXIST).setName(PARAMETER_CREATE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_CREATE_ROOM, name));
+                .setMsgFormat(MSG_ROOM_ALREADY_EXIST).setName(PARAMETER_CREATE_ROOM, PARAMETER_REQUEST, PARAMETER_NAME).setParams(METHOD_CREATE_ROOM, name));
 
         GameEntity game = gameDiffs.getGame();
         room = new RoomEntity();
@@ -103,7 +104,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         diffAttributes.setValue(owner.getId().toString());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
-        diffDao.create(diff);
+        createDiff(diff);
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         diffs.add(diff);
@@ -139,6 +140,13 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(sender).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_SPEAK_IN_ROOM, request.getRequest().getIdCountry()));
 
+        List<Long> idCountries = new ArrayList<>();
+        MessageDiff msg = new MessageDiff();
+        msg.setIdRoom(request.getRequest().getIdRoom());
+        msg.setMessage(request.getRequest().getMessage());
+        msg.setDateSent(ZonedDateTime.now());
+        msg.setIdSender(sender.getId());
+
         if (request.getRequest().getIdRoom() == null) {
             RoomGlobalEntity room = chatDao.getRoomGlobal(request.getGame().getIdGame());
             MessageGlobalEntity message = new MessageGlobalEntity();
@@ -161,6 +169,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
                 if (!present.isPresent()) {
                     continue;
                 }
+                idCountries.add(present.getCountry().getId());
                 ChatEntity chat = new ChatEntity();
                 chat.setMessage(message);
                 chat.setReceiver(present.getCountry());
@@ -174,6 +183,8 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
 
             chatDao.createMessage(messages);
         }
+
+        push(msg, request.getGame().getIdGame(), idCountries);
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(gameDiffs.getDiffs()));
@@ -241,6 +252,10 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_REQUEST).setParams(METHOD_INVITE_KICK_ROOM));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getChat()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_CHAT).setParams(METHOD_INVITE_KICK_ROOM));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getChat().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_CHAT, PARAMETER_ID_COUNTRY).setParams(METHOD_INVITE_KICK_ROOM));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_INVITE_KICK_ROOM));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdRoom()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
@@ -305,7 +320,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
             diffAttributes.setValue(Boolean.toString(request.getRequest().isInvite()));
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
-            diffDao.create(diff);
+            createDiff(diff);
 
             diffs.add(diff);
         }

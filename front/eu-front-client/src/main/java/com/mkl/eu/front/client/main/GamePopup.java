@@ -23,6 +23,7 @@ import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
+import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -81,6 +82,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private InteractiveMap map;
     /** Window containing all the chat. */
     private ChatWindow chatWindow;
+    /** Socket listening to server diff on this game. */
+    private ClientSocket client;
     /** Component holding the authentication information. */
     @Autowired
     private AuthentHolder authentHolder;
@@ -134,6 +137,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             }
         }
         gameConfig.setMaxIdMessage(maxIdMessage);
+
+        client = context.getBean(ClientSocket.class, gameConfig);
+        client.addDiffListener(this);
+
+        new Thread(client).start();
     }
 
     /**
@@ -203,7 +211,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     public synchronized void update(DiffEvent event) {
         if (event.getIdGame().equals(game.getId())) {
             for (Diff diff : event.getResponse().getDiffs()) {
-                if (gameConfig.getVersionGame() > diff.getVersionGame()) {
+                if (gameConfig.getVersionGame() >= diff.getVersionGame()) {
                     continue;
                 }
                 switch (diff.getTypeObject()) {
@@ -607,5 +615,6 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         frames.forEach(frame -> frame.dispatchEvent(new java.awt.event.WindowEvent(frame, java.awt.event.WindowEvent.WINDOW_CLOSING)));
         map.destroy();
         chatWindow.hide();
+        client.setTerminate(true);
     }
 }

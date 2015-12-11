@@ -6,6 +6,8 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.INameConstants;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
+import com.mkl.eu.client.service.vo.diff.Diff;
+import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
@@ -16,6 +18,7 @@ import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,12 +52,15 @@ public abstract class AbstractService implements INameConstants {
     public static final String MSG_NOT_SAME_STACK = "{1}: {0} / The stack should be another one.";
     /** Error message when an action is not authorized. */
     public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action. Should be {3}.";
+    /** Socket Handler. */
+    @Autowired
+    private SocketHandler socketHandler;
     /** Game DAO. */
     @Autowired
     protected IGameDao gameDao;
     /** Diff DAO. */
     @Autowired
-    protected IDiffDao diffDao;
+    private IDiffDao diffDao;
     /** Chat DAO. */
     @Autowired
     protected IChatDao chatDao;
@@ -159,6 +165,45 @@ public abstract class AbstractService implements INameConstants {
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
         return new GameDiffsInfo(game, diffs);
+    }
+
+    /**
+     * Creates and push a diff.
+     *
+     * @param diff to create and push.
+     */
+    protected void createDiff(DiffEntity diff) {
+        diffDao.create(diff);
+
+        push(diff);
+    }
+
+    /**
+     * Push a diff to all clients listening to this game.
+     *
+     * @param diffEntity to push.
+     */
+    protected void push(DiffEntity diffEntity) {
+        DiffResponse response = new DiffResponse();
+        Diff diff = diffMapping.oeToVo(diffEntity);
+        response.getDiffs().add(diff);
+        response.setVersionGame(diffEntity.getVersionGame());
+
+        socketHandler.push(diffEntity.getIdGame(), response, null);
+    }
+
+    /**
+     * Push a message to all clients listening to this game.
+     *
+     * @param message     to be pushed.
+     * @param idGame      id of the game.
+     * @param idCountries list of countries that will receive the message.
+     */
+    protected void push(MessageDiff message, Long idGame, List<Long> idCountries) {
+        DiffResponse response = new DiffResponse();
+        response.getMessages().add(message);
+
+        socketHandler.push(idGame, response, idCountries);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.vo.diff;
 
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  *
  * @author MKL.
  */
-public class DiffResponse {
+public class DiffResponse implements Serializable {
     /** New version of the game. */
     private Long versionGame;
     /** Diff involved in the modification. */

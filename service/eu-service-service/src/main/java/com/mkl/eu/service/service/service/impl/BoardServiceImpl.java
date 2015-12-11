@@ -235,7 +235,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
-        diffDao.create(diff);
+        createDiff(diff);
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         diffs.add(diff);
@@ -358,7 +358,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             diff.getAttributes().add(diffAttributes);
         }
 
-        diffDao.create(diff);
+        createDiff(diff);
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         diffs.add(diff);

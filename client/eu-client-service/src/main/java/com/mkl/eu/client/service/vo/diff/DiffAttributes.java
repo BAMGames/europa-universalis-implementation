@@ -2,12 +2,14 @@ package com.mkl.eu.client.service.vo.diff;
 
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 
+import java.io.Serializable;
+
 /**
  * Attribute of a diff.
  *
  * @author MKL.
  */
-public class DiffAttributes {
+public class DiffAttributes implements Serializable {
     /** Type of the diff attribute. */
     private DiffAttributeTypeEnum type;
     /** Value of the diff attribute. */

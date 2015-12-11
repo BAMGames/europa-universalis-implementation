@@ -5,6 +5,7 @@ import com.mkl.eu.service.service.persistence.oe.IEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public class RoomGlobalEntity implements IEntity, Serializable {
     /** Game owner of the entity. */
     private GameEntity game;
     /** List of messages sent in the room. */
-    private List<MessageGlobalEntity> messages;
+    private List<MessageGlobalEntity> messages = new ArrayList<>();
 
     /** @return the id. */
     @Id
