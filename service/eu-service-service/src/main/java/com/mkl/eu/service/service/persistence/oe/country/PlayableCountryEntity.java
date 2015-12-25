@@ -24,6 +24,14 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     private String name;
     /** Name of the player. External functional id. */
     private String username;
+    /** DTI of the country. */
+    private int dti;
+    /** Max DTI of the country. */
+    private int dtiMax;
+    /** FTI of the country. */
+    private int fti;
+    /** Max FTI of the country. */
+    private int ftiMax;
     /**
      * Economical sheet by turn of the country.
      */
@@ -69,6 +77,50 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     /** @param username the username to set. */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    /** @return the dti. */
+    @Column(name = "DTI")
+    public int getDti() {
+        return dti;
+    }
+
+    /** @param dti the dti to set. */
+    public void setDti(int dti) {
+        this.dti = dti;
+    }
+
+    /** @return the dtiMax. */
+    @Column(name = "DTI_MAX")
+    public int getDtiMax() {
+        return dtiMax;
+    }
+
+    /** @param dtiMax the dtiMax to set. */
+    public void setDtiMax(int dtiMax) {
+        this.dtiMax = dtiMax;
+    }
+
+    /** @return the fti. */
+    @Column(name = "FTI")
+    public int getFti() {
+        return fti;
+    }
+
+    /** @param fti the fti to set. */
+    public void setFti(int fti) {
+        this.fti = fti;
+    }
+
+    /** @return the ftiMax. */
+    @Column(name = "FTI_MAX")
+    public int getFtiMax() {
+        return ftiMax;
+    }
+
+    /** @param ftiMax the ftiMax to set. */
+    public void setFtiMax(int ftiMax) {
+        this.ftiMax = ftiMax;
     }
 
     /** @return the economicalSheets. */

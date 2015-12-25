@@ -20,6 +20,14 @@ public class PlayableCountry extends EuObject {
     private String name;
     /** Name of the player. External functional id. */
     private String username;
+    /** DTI of the country. */
+    private int dti;
+    /** Max DTI of the country. */
+    private int dtiMax;
+    /** FTI of the country. */
+    private int fti;
+    /** Max FTI of the country. */
+    private int ftiMax;
     /**
      * Monarchs (past and present) of the country.
      */

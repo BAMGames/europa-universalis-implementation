@@ -17,4 +17,8 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
     <jaxws:client id="chatClient"
                   serviceClass="com.mkl.eu.client.service.service.IChatService"
                   address="http://localhost:8080/eu/services/ChatService?wsdl"/>
+
+    <jaxws:client id="tablesClient"
+                  serviceClass="com.mkl.eu.client.service.service.ITablesService"
+                  address="http://localhost:8080/eu/services/TablesService?wsdl"/>
 </beans>

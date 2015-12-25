@@ -3,8 +3,10 @@ package com.mkl.eu.front.client.main;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.ITablesService;
 import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.vo.GameLight;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -34,6 +36,8 @@ public class EUApplication extends Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(EUApplication.class);
     /** Board service. */
     private IBoardService boardService;
+    /** Tables service. */
+    private ITablesService tablesService;
     /** Internationalisation. */
     private MessageSource message;
     /** Configuration of the application. */
@@ -46,6 +50,7 @@ public class EUApplication extends Application {
     public void start(Stage primaryStage) throws FunctionalException {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/mkl/eu/front/client/eu-front-client-applicationContext.xml");
         boardService = context.getBean(IBoardService.class);
+        tablesService = context.getBean(ITablesService.class);
         message = context.getBean(MessageSource.class);
         globalConfiguration = context.getBean(GlobalConfiguration.class);
 
@@ -70,6 +75,9 @@ public class EUApplication extends Application {
         findGames.setRequest(new FindGamesRequest());
         findGames.getRequest().setUsername("Sato");
         List<GameLight> games = boardService.findGames(findGames);
+
+
+        Tables tables = tablesService.getTables();
 
         for (int i = 0; i < games.size(); i++) {
             GameLight game = games.get(i);

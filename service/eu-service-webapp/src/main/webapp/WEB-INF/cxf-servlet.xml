@@ -12,4 +12,7 @@
     <jaxws:endpoint id="chatService"
                     implementor="com.mkl.eu.service.service.ws.impl.ChatWsServiceImpl"
                     address="/ChatService"/>
+    <jaxws:endpoint id="tablesService"
+                    implementor="com.mkl.eu.service.service.ws.impl.TablesWsServiceImpl"
+                    address="/TablesService"/>
 </beans>

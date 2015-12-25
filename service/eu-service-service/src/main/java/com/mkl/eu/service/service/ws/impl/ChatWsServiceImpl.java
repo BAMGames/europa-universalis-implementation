@@ -15,7 +15,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import javax.jws.WebService;
 
 /**
- * Description of file.
+ * Separation from ChatService because cxf can't handle @Transactional.
  *
  * @author MKL.
  */
