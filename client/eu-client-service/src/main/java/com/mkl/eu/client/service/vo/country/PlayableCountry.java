@@ -73,6 +73,46 @@ public class PlayableCountry extends EuObject {
         this.username = username;
     }
 
+    /** @return the dti. */
+    public int getDti() {
+        return dti;
+    }
+
+    /** @param dti the dti to set. */
+    public void setDti(int dti) {
+        this.dti = dti;
+    }
+
+    /** @return the dtiMax. */
+    public int getDtiMax() {
+        return dtiMax;
+    }
+
+    /** @param dtiMax the dtiMax to set. */
+    public void setDtiMax(int dtiMax) {
+        this.dtiMax = dtiMax;
+    }
+
+    /** @return the fti. */
+    public int getFti() {
+        return fti;
+    }
+
+    /** @param fti the fti to set. */
+    public void setFti(int fti) {
+        this.fti = fti;
+    }
+
+    /** @return the ftiMax. */
+    public int getFtiMax() {
+        return ftiMax;
+    }
+
+    /** @param ftiMax the ftiMax to set. */
+    public void setFtiMax(int ftiMax) {
+        this.ftiMax = ftiMax;
+    }
+
     /**
      * @return the monarchs.
      */
