@@ -54,6 +54,7 @@ public class EUApplication extends Application {
         message = context.getBean(MessageSource.class);
         globalConfiguration = context.getBean(GlobalConfiguration.class);
 
+//        primaryStage.getIcons().add(new Image("file:resources/images/address_book_32.png"));
 
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);

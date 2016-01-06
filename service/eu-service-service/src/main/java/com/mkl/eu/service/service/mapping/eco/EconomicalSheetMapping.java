@@ -1,11 +1,13 @@
 package com.mkl.eu.service.service.mapping.eco;
 
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -143,6 +145,52 @@ public class EconomicalSheetMapping extends AbstractMapping {
         target.setVassalIncome(source.getVassalIncome());
         target.setWealth(source.getWealth());
         target.setWoodSlaves(source.getWoodSlaves());
+
+        return target;
+    }
+
+    /**
+     * OEs to VOs.
+     *
+     * @param sources object source.
+     * @return object mapped.
+     */
+    public List<EconomicalSheetCountry> oesToVosCountry(List<EconomicalSheetEntity> sources) {
+        if (sources == null) {
+            return null;
+        }
+
+        List<EconomicalSheetCountry> targets = new ArrayList<>();
+
+        Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+
+        for (EconomicalSheetEntity source : sources) {
+            EconomicalSheetCountry target = oeToVoCountry(source, objectsCreated);
+            if (target != null) {
+                targets.add(target);
+            }
+        }
+
+        return targets;
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source         object source.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
+     * @return object mapped.
+     */
+    public EconomicalSheetCountry oeToVoCountry(EconomicalSheetEntity source, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
+        if (source == null) {
+            return null;
+        }
+
+        EconomicalSheetCountry target = new EconomicalSheetCountry();
+        target.setSheet(oeToVo(source, objectsCreated));
+        if (source.getCountry() != null) {
+            target.setIdCountry(source.getCountry().getId());
+        }
 
         return target;
     }

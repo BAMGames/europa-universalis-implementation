@@ -12,6 +12,9 @@
     <jaxws:endpoint id="chatService"
                     implementor="com.mkl.eu.service.service.ws.impl.ChatWsServiceImpl"
                     address="/ChatService"/>
+    <jaxws:endpoint id="economicService"
+                    implementor="com.mkl.eu.service.service.ws.impl.EconomicWsServiceImpl"
+                    address="/EconomicService"/>
     <jaxws:endpoint id="tablesService"
                     implementor="com.mkl.eu.service.service.ws.impl.TablesWsServiceImpl"
                     address="/TablesService"/>

@@ -85,5 +85,22 @@ public enum DiffTypeEnum {
      * </li>
      * </ul>
      */
-    LINK
+    LINK,
+    /**
+     * <p>
+     * Invalidate something.
+     * </p>
+     * <p>
+     * Can be used with:
+     * <ul>
+     * <li>DiffTypeObjectEnum#ECO_SHEET in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which playable country sheet is invalidated.
+     * Can be <code>null</code> in which case it means that all countries are invalidated.</li>
+     * <li>DiffAttributeTypeEnum#TURN to know the turn of the sheets that are invalidated.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     */
+    INVALIDATE
 }

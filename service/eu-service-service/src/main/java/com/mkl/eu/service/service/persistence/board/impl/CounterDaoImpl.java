@@ -78,4 +78,25 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
         return countries;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getVassals(String country, Long idGame) {
+        List<String> countries = new ArrayList<>();
+        Criteria criteria = getSession().createCriteria(CounterEntity.class);
+
+        criteria.add(Restrictions.or(Restrictions.eq("type", CounterFaceTypeEnum.DIPLOMACY), Restrictions.eq("type", CounterFaceTypeEnum.DIPLOMACY_WAR)));
+
+        Criteria criteriaStack = criteria.createCriteria("owner", "owner");
+        criteriaStack.add(Restrictions.eq("game.id", idGame));
+        criteriaStack.add(Restrictions.or(Restrictions.eq("province", "B_DE_" + country + "-VA"), Restrictions.eq("province", "B_DE_" + country + "-AN")));
+
+        @SuppressWarnings("unchecked") List<CounterEntity> counters = (List<CounterEntity>) criteria.list();
+
+        if (counters != null) {
+            countries.addAll(counters.stream().map(CounterEntity::getCountry).collect(Collectors.toList()));
+        }
+
+        return countries;
+    }
 }

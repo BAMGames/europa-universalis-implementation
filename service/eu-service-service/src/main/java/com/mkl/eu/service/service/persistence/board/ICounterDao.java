@@ -28,4 +28,13 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
      * @return the patrons of the country.
      */
     List<String> getPatrons(String country, Long idGame);
+
+    /**
+     * Returns the vassals (and annexed) minors of a country.
+     *
+     * @param country owner of the vassals/annexed.
+     * @param idGame  id of the game.
+     * @return the vassals of the country.
+     */
+    List<String> getVassals(String country, Long idGame);
 }

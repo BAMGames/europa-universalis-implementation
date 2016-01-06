@@ -39,7 +39,7 @@ public class PlayableCountry extends EuObject {
     /**
      * Economical sheet by turn of the country.
      */
-    private List<EconomicalSheet> economicalSheets;
+    private List<EconomicalSheet> economicalSheets = new ArrayList<>();
     /**
      * Administrative actions by turn of the country.
      */

@@ -11,5 +11,7 @@ public enum DiffTypeObjectEnum {
     /** Stack. */
     STACK,
     /** Room. */
-    ROOM;
+    ROOM,
+    /** Economical sheet. */
+    ECO_SHEET;
 }

@@ -6,8 +6,11 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IChatService;
+import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -20,6 +23,7 @@ import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.chat.ChatWindow;
+import com.mkl.eu.front.client.eco.EcoWindow;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.map.InteractiveMap;
@@ -78,10 +82,15 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     /** Chat service. */
     @Autowired
     private IChatService chatService;
+    /** Economic service. */
+    @Autowired
+    private IEconomicService economicService;
     /** PApplet for the intercative map. */
     private InteractiveMap map;
     /** Window containing all the chat. */
     private ChatWindow chatWindow;
+    /** Window containing the economics. */
+    private EcoWindow ecoWindow;
     /** Socket listening to server diff on this game. */
     private ClientSocket client;
     /** Component holding the authentication information. */
@@ -110,6 +119,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         initGame();
         initMap();
         initChat();
+        initEcos();
         initUI();
     }
 
@@ -161,6 +171,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
+     * Initialize the chat window.
+     */
+    private void initEcos() {
+        ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), gameConfig);
+        ecoWindow.addDiffListener(this);
+    }
+
+    /**
      * Initialize all the UIs on the popup.
      */
     private void initUI() {
@@ -199,6 +217,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         });
         grid.add(chatBtn, 0, 2, 1, 1);
 
+        Button ecoBtn = new Button(message.getMessage("game.popup.eco", null, globalConfiguration.getLocale()));
+        ecoBtn.setOnAction(event -> {
+            if (!ecoWindow.isShowing()) {
+                ecoWindow.show();
+            }
+        });
+        grid.add(ecoBtn, 0, 3, 1, 1);
+
         Scene dialogScene = new Scene(grid, 300, 200);
         dialog.setScene(dialogScene);
         dialog.show();
@@ -224,11 +250,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                     case ROOM:
                         updateRoom(game, diff);
                         break;
+                    case ECO_SHEET:
+                        updateEcoSheet(game, diff);
                     default:
                         break;
                 }
                 map.update(diff);
                 chatWindow.update(diff);
+                ecoWindow.update(diff);
             }
 
             event.getResponse().getMessages().forEach(message -> {
@@ -600,6 +629,66 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             }
         } else {
             LOGGER.error("Missing country id in counter add event.");
+        }
+    }
+
+    /**
+     * Process a eco sheet diff event.
+     *
+     * @param game to update.
+     * @param diff involving a room.
+     */
+    private void updateEcoSheet(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case INVALIDATE:
+                invalidateSheet(game, diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the invalide sheet diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add room.
+     */
+    private void invalidateSheet(Game game, Diff diff) {
+        Long idCountry = null;
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null && !StringUtils.isEmpty(attribute.getValue())) {
+            idCountry = Long.parseLong(attribute.getValue());
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TURN);
+        if (attribute != null) {
+            Integer turn = Integer.parseInt(attribute.getValue());
+            SimpleRequest<LoadEcoSheetsRequest> request = new SimpleRequest<>();
+            authentHolder.fillAuthentInfo(request);
+            request.setRequest(new LoadEcoSheetsRequest(gameConfig.getIdGame(), idCountry, turn));
+            try {
+                java.util.List<EconomicalSheetCountry> sheets = economicService.loadEcnomicSheets(request);
+
+                for (EconomicalSheetCountry sheet : sheets) {
+                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> sheet.getIdCountry().equals(playableCountry.getId()));
+                    if (country != null) {
+                        int index = country.getEconomicalSheets().indexOf(
+                                CommonUtil.findFirst(country.getEconomicalSheets(), o -> o.getId().equals(sheet.getSheet().getId())));
+                        if (index != -1) {
+                            country.getEconomicalSheets().set(index, sheet.getSheet());
+                        } else {
+                            country.getEconomicalSheets().add(sheet.getSheet());
+                        }
+                    }
+                }
+            } catch (FunctionalException e) {
+                LOGGER.error("Can't load economic sheets.", e);
+            }
+
+            return;
+        } else {
+            LOGGER.error("Missing turn in invalidate sheet event.");
         }
     }
 

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="income.NationalProvinces">
+        <![CDATA[
+			select
+				p.NAME as PROVINCE,
+				peu.INCOME as INCOME
+			from r_province_eu peu
+				inner join r_province p on peu.id = p.id
+			where R_COUNTRY = ':countryName'
+				and  p.name not in
+					(select
+						s.R_PROVINCE
+					from counter c
+						inner join stack s on c.ID_STACK = s.id
+					where c.R_COUNTRY <> ':countryName'
+						and s.ID_GAME = :idGame
+						and (c.TYPE = 'OWN' or c.type = 'CONTROL')
+					)
+			;
+		]]>
+    </entry>
+    <entry key="income.OwnedProvinces">
+        <![CDATA[
+			select
+				s.R_PROVINCE as PROVINCE,
+				peu.income as INCOME
+			from counter c
+				inner join stack s on c.ID_STACK = s.id
+				inner join r_province p on p.name = s.r_province
+				inner join r_province_eu peu on peu.id = p.id
+			where c.R_COUNTRY = ':countryName'
+				and s.ID_GAME = :idGame
+				and c.type = 'OWN'
+				and s.R_PROVINCE not in
+					(select
+						s2.R_PROVINCE
+					from counter c2
+						inner join stack s2 on c2.ID_STACK = s2.id
+					where c2.R_COUNTRY <> ':countryName'
+						and s2.ID_GAME = :idGame
+						and c2.type = 'CONTROL'
+					)
+			;
+		]]>
+    </entry>
+    <entry key="income.PillagedProvinces">
+        <![CDATA[
+			select
+				s.R_PROVINCE as PROVINCE
+			from counter c
+				inner join stack s on c.ID_STACK = s.id
+			where (c.TYPE = 'REVOLT_MINUS'
+					OR c.TYPE = 'REVOLT_PLUS'
+					OR c.TYPE = 'PILLAGE_MINUS'
+					OR c.TYPE = 'PILLAGE_PLUS'
+					OR c.TYPE = 'SIEGEWORK_MINUS')
+				AND s.ID_GAME = :idGame
+				AND s.R_PROVINCE in :provinceNames
+			;
+		]]>
+    </entry>
+</properties>

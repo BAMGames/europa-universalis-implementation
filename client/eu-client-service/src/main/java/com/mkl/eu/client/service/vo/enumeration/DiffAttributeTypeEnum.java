@@ -31,5 +31,7 @@ public enum DiffAttributeTypeEnum {
     /** Id of the playable country of the principal object (owner). */
     ID_COUNTRY,
     /** Flag saying that it is an invite (if not, it is a kick). */
-    INVITE
+    INVITE,
+    /** Turn of the game. */
+    TURN
 }
