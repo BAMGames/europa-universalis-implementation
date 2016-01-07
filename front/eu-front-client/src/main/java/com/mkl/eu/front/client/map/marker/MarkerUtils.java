@@ -58,6 +58,7 @@ public class MarkerUtils {
         xstream.processAnnotations(Border.class);
 
         // TODO configure
+        //noinspection unchecked
         List<Border> borders = (List<Border>) xstream.fromXML(new File("data/map/v2/borders.xml"));
         MarkerFactory markerFactory = new MarkerFactory();
         markerFactory.setPolygonClass(ProvinceMarker.class);

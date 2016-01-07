@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.eco.impl;
 
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
@@ -78,7 +79,7 @@ public class EconomicalSheetDaoImpl extends GenericDaoImpl<EconomicalSheetEntity
 
     /** {@inheritDoc} */
     @Override
-    public List<EconomicalSheetEntity> loadSheets(Long idGame, Long idCountry, Integer turn) {
+    public List<EconomicalSheetEntity> loadSheets(Long idCountry, Integer turn, Long idGame) {
         Criteria criteria = getSession().createCriteria(EconomicalSheetEntity.class);
 
         criteria.add(Restrictions.eq("turn", turn));
@@ -91,5 +92,38 @@ public class EconomicalSheetDaoImpl extends GenericDaoImpl<EconomicalSheetEntity
 
         //noinspection unchecked
         return (List<EconomicalSheetEntity>) criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer getMnuIncome(String name, List<String> pillagedProvinces, Long idGame) {
+        String sql = queryProps.getProperty("income.mnu");
+
+        String provinceNames = pillagedProvinces.stream().collect(Collectors.joining("','", "('", "')"));
+        sql = sql.replace(":provinceNames", provinceNames);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        sql = sql.replace(":countryName", name);
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer getGoldIncome(List<String> provinces, Long idGame) {
+        String sql = queryProps.getProperty("income.innergold");
+
+        String provinceNames = provinces.stream().collect(Collectors.joining("','", "('", "')"));
+        sql = sql.replace(":provinceNames", provinceNames);
+
+        Integer innerGold = jdbcTemplate.queryForObject(sql, Integer.class);
+
+        sql = queryProps.getProperty("income.outergold");
+
+        sql = sql.replace(":provinceNames", provinceNames);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        Integer outerGold = jdbcTemplate.queryForObject(sql, Integer.class);
+
+        return CommonUtil.add(innerGold, outerGold);
     }
 }

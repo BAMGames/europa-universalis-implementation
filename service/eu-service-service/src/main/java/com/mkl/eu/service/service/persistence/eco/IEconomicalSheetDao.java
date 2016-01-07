@@ -33,10 +33,29 @@ public interface IEconomicalSheetDao extends IGenericDao<EconomicalSheetEntity, 
     /**
      * Load the sheets of the given turn, country and turn.
      *
-     * @param idGame    id of the game.
      * @param idCountry id of the country. Can be <code>null</code>.
      * @param turn      turn of the game.
+     * @param idGame    id of the game.
      * @return the sheets.
      */
-    List<EconomicalSheetEntity> loadSheets(Long idGame, Long idCountry, Integer turn);
+    List<EconomicalSheetEntity> loadSheets(Long idCountry, Integer turn, Long idGame);
+
+    /**
+     * Returns the mnu income of the country.
+     *
+     * @param name              name of the country.
+     * @param pillagedProvinces pillaged provinces of the country.
+     * @param idGame            id of the game.
+     * @return the mnu income of the country.
+     */
+    Integer getMnuIncome(String name, List<String> pillagedProvinces, Long idGame);
+
+    /**
+     * Returns the european gold income of the country.
+     *
+     * @param provinces provinces owned and not pillaged by the country.
+     * @param idGame    id of the game.
+     * @return the european gold income of the country.
+     */
+    Integer getGoldIncome(List<String> provinces, Long idGame);
 }

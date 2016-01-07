@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -46,6 +47,8 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 public class EcoWindow extends AbstractDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(EcoWindow.class);
+    /** Table config for sheet B. */
+    private static final List<TableConfig<EconomicalSheet>> config;
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
@@ -68,6 +71,20 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private ChoiceBox<PlayableCountry> choiceB;
     /** TableView for the sheets B. */
     private TableView<List<String>> tableB;
+
+    static {
+        config = new ArrayList<>();
+        int index = -1;
+        config.add(new TableConfig<>("eco.sheetB.#", "eco.sheetB.turnNumber", ++index, sheet -> toString(sheet.getTurn())));
+        config.add(new TableConfig<>("1", "eco.sheetB.provinceIncome", ++index, sheet -> toString(sheet.getProvincesIncome())));
+        config.add(new TableConfig<>("2", "eco.sheetB.vassalIncome", ++index, sheet -> toString(sheet.getVassalIncome())));
+        config.add(new TableConfig<>("3", "eco.sheetB.pillages", ++index, sheet -> toString(sheet.getPillages())));
+        config.add(new TableConfig<>("4", "eco.sheetB.eventLandIncome", ++index, sheet -> toString(sheet.getEventLandIncome())));
+        config.add(new TableConfig<>("5", "eco.sheetB.landIncome", ++index, sheet -> toString(sheet.getLandIncome())));
+        config.add(new TableConfig<>("6", "eco.sheetB.mnuIncome", ++index, sheet -> toString(sheet.getMnuIncome())));
+        config.add(new TableConfig<>("7", "eco.sheetB.goldIncome", ++index, sheet -> toString(sheet.getGoldIncome())));
+        config.add(new TableConfig<>("8", "eco.sheetB.industrialIncome", ++index, sheet -> toString(sheet.getIndustrialIncome())));
+    }
 
     /**
      * Constructor.
@@ -176,7 +193,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
 
         choiceB.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
-                populateTable(tableB, newValue);
+                populateTable(tableB, newValue, config);
             }
         });
         choiceB.getSelectionModel().select(country);
@@ -184,7 +201,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         return tab;
     }
 
-    private void populateTable(TableView<List<String>> table, PlayableCountry country) {
+    private void populateTable(TableView<List<String>> table, PlayableCountry country, List<TableConfig<EconomicalSheet>> config) {
         table.getColumns().clear();
 
         if (country == null) {
@@ -192,32 +209,16 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         }
 
         List<List<String>> datas = new ArrayList<>();
-        datas.add(new ArrayList<>());
-        datas.get(0).add(message.getMessage("eco.sheetB.#", null, globalConfiguration.getLocale()));
-        datas.get(0).add(message.getMessage("eco.sheetB.turnNumber", null, globalConfiguration.getLocale()));
-        datas.add(new ArrayList<>());
-        datas.get(1).add("1");
-        datas.get(1).add(message.getMessage("eco.sheetB.provinceIncome", null, globalConfiguration.getLocale()));
-        datas.add(new ArrayList<>());
-        datas.get(2).add("2");
-        datas.get(2).add(message.getMessage("eco.sheetB.vassalIncome", null, globalConfiguration.getLocale()));
-        datas.add(new ArrayList<>());
-        datas.get(3).add("3");
-        datas.get(3).add(message.getMessage("eco.sheetB.pillages", null, globalConfiguration.getLocale()));
-        datas.add(new ArrayList<>());
-        datas.get(4).add("4");
-        datas.get(4).add(message.getMessage("eco.sheetB.eventLandIncome", null, globalConfiguration.getLocale()));
-        datas.add(new ArrayList<>());
-        datas.get(5).add("5");
-        datas.get(5).add(message.getMessage("eco.sheetB.landIncome", null, globalConfiguration.getLocale()));
+        for (TableConfig<EconomicalSheet> configItem : config) {
+            datas.add(new ArrayList<>());
+            datas.get(configItem.getIndex()).add(message.getMessage(configItem.getMessageColumn1(), null, globalConfiguration.getLocale()));
+            datas.get(configItem.getIndex()).add(message.getMessage(configItem.getMessageColumn2(), null, globalConfiguration.getLocale()));
+        }
 
         for (EconomicalSheet sheet : country.getEconomicalSheets()) {
-            datas.get(0).add(toString(sheet.getTurn()));
-            datas.get(1).add(toString(sheet.getProvincesIncome()));
-            datas.get(2).add(toString(sheet.getVassalIncome()));
-            datas.get(3).add(toString(sheet.getPillages()));
-            datas.get(4).add(toString(sheet.getEventLandIncome()));
-            datas.get(5).add(toString(sheet.getLandIncome()));
+            for (TableConfig<EconomicalSheet> configItem : config) {
+                datas.get(configItem.getIndex()).add(configItem.getFunction().apply(sheet));
+            }
         }
 
         TableColumn<List<String>, String> column = new TableColumn<>("");
@@ -233,7 +234,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         table.getColumns().add(column);
 
         for (int i = 0; i < country.getEconomicalSheets().size(); i++) {
-            column = new TableColumn<>("");
+            column = new TableColumn<>(country.getEconomicalSheets().get(i).getTurn().toString());
             column.setPrefWidth(50);
             column.setSortable(false);
             final int index = i + 2;
@@ -250,7 +251,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
      * @param i to format in String.
      * @return the String value of an integer.
      */
-    private String toString(Integer i) {
+    private static String toString(Integer i) {
         return i == null ? "" : Integer.toString(i);
     }
 
@@ -322,7 +323,58 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             idSelectedCountry = choiceB.getSelectionModel().getSelectedItem().getId();
         }
         if (idCountry == null || idCountry.equals(idSelectedCountry)) {
-            populateTable(tableB, choiceB.getSelectionModel().getSelectedItem());
+            populateTable(tableB, choiceB.getSelectionModel().getSelectedItem(), config);
+        }
+    }
+
+    /**
+     * Config used to display the economical sheet in a table view.
+     *
+     * @param <V> Should be EconomicalSheet but generic in case of.
+     */
+    private static class TableConfig<V> {
+        /** Message code for the first colum. */
+        private String messageColumn1;
+        /** Message code for the second colum. */
+        private String messageColumn2;
+        /** Index of this config. */
+        private int index;
+        /** Function to apply to the economical sheet to retrieve the info. */
+        private Function<V, String> function;
+
+        /**
+         * Constructor.
+         *
+         * @param messageColumn1 the messageColumn1 to set.
+         * @param messageColumn2 the messageColumn2 to set.
+         * @param index          the index to set.
+         * @param function       the function to set.
+         */
+        public TableConfig(String messageColumn1, String messageColumn2, int index, Function<V, String> function) {
+            this.messageColumn1 = messageColumn1;
+            this.messageColumn2 = messageColumn2;
+            this.index = index;
+            this.function = function;
+        }
+
+        /** @return the function. */
+        public Function<V, String> getFunction() {
+            return function;
+        }
+
+        /** @return the messageColumn1. */
+        public String getMessageColumn1() {
+            return messageColumn1;
+        }
+
+        /** @return the messageColumn2. */
+        public String getMessageColumn2() {
+            return messageColumn2;
+        }
+
+        /** @return the index. */
+        public int getIndex() {
+            return index;
         }
     }
 }

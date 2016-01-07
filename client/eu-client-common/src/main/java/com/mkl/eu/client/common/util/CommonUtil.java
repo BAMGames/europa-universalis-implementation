@@ -34,4 +34,24 @@ public final class CommonUtil {
 
         return returnValue;
     }
+
+    /**
+     * Add several Integer that can be <code>null</code>.
+     *
+     * @param numbers to add.
+     * @return the sum of the numbers.
+     */
+    public static Integer add(Integer... numbers) {
+        Integer sum = null;
+
+        for (Integer number : numbers) {
+            if (sum == null) {
+                sum = number;
+            } else if (number != null) {
+                sum = sum + number;
+            }
+        }
+
+        return sum;
+    }
 }

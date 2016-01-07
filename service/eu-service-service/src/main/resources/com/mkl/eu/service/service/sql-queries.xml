@@ -61,4 +61,37 @@
 			;
 		]]>
     </entry>
+	<entry key="income.mnu">
+		<![CDATA[
+			select
+				sum(m.value)
+			from counter c
+				inner join stack s on c.ID_STACK = s.ID
+				inner join t_mnu m on m.COUNTRY = c.R_COUNTRY and m.TYPE = c.TYPE
+			where s.ID_GAME = :idGame
+				AND c.R_COUNTRY = ':countryName'
+				AND s.R_PROVINCE not in :provinceNames
+			;
+		]]>
+	</entry>
+	<entry key="income.innergold">
+		<![CDATA[
+			select
+				sum(t.value)
+			from t_gold t
+			where t.PROVINCE in :provinceNames;
+		]]>
+	</entry>
+	<entry key="income.outergold">
+		<![CDATA[
+			select
+				20 * count(*)
+			from counter c
+				inner join stack s on c.ID_STACK = s.ID
+			where s.ID_GAME = :idGame
+				AND s.R_PROVINCE in :provinceNames
+				AND c.TYPE = 'GOLD_MINE'
+			;
+		]]>
+	</entry>
 </properties>

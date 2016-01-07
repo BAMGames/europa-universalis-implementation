@@ -58,9 +58,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_ECO_SHEETS, PARAMETER_REQUEST).setParams(METHOD_LOAD_ECO_SHEETS));
 
         List<EconomicalSheetEntity> sheetEntities = economicalSheetDao.loadSheets(
-                request.getRequest().getIdGame(),
                 request.getRequest().getIdCountry(),
-                request.getRequest().getTurn());
+                request.getRequest().getTurn(),
+                request.getRequest().getIdGame());
 
         return ecoSheetsMapping.oesToVosCountry(sheetEntities);
     }
@@ -114,45 +114,35 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             country.getEconomicalSheets().add(sheet);
         }
 
-        Map<String, Integer> provinces = economicalSheetDao.getOwnedAndControlledProvinces(country.getName(), game.getId());
+        Long idGame = game.getId();
+        String name = country.getName();
+
+        Map<String, Integer> provinces = economicalSheetDao.getOwnedAndControlledProvinces(name, idGame);
         sheet.setProvincesIncome(provinces.values().stream().collect(Collectors.summingInt(value -> value)));
 
         Map<String, Integer> vassalProvinces = new HashMap<>();
-        List<String> vassals = counterDao.getVassals(country.getName(), game.getId());
+        List<String> vassals = counterDao.getVassals(name, idGame);
         for (String vassal : vassals) {
-            vassalProvinces.putAll(economicalSheetDao.getOwnedAndControlledProvinces(vassal, game.getId()));
+            vassalProvinces.putAll(economicalSheetDao.getOwnedAndControlledProvinces(vassal, idGame));
         }
         sheet.setVassalIncome(vassalProvinces.values().stream().collect(Collectors.summingInt(value -> value)));
 
         List<String> provinceNames = new ArrayList<>();
         provinceNames.addAll(provinces.keySet());
         provinceNames.addAll(vassalProvinces.keySet());
-        List<String> pillagedProvinces = economicalSheetDao.getPillagedProvinces(provinceNames, game.getId());
+        List<String> pillagedProvinces = economicalSheetDao.getPillagedProvinces(provinceNames, idGame);
 
         Integer pillagedIncome = pillagedProvinces.stream().collect(Collectors.summingInt(provinces::get));
 
         sheet.setPillages(pillagedIncome);
 
-        sheet.setLandIncome(add(sheet.getProvincesIncome(), sheet.getVassalIncome(), sheet.getPillages(), sheet.getEventLandIncome()));
-    }
+        sheet.setLandIncome(CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome(), sheet.getPillages(), sheet.getEventLandIncome()));
 
-    /**
-     * Add several Integer that can be <code>null</code>.
-     *
-     * @param numbers to add.
-     * @return the sum of the numbers.
-     */
-    private Integer add(Integer... numbers) {
-        Integer sum = null;
+        sheet.setMnuIncome(economicalSheetDao.getMnuIncome(name, pillagedProvinces, idGame));
 
-        for (Integer number : numbers) {
-            if (sum == null) {
-                sum = number;
-            } else if (number != null) {
-                sum = sum + number;
-            }
-        }
+        List<String> provincesOwnedNotPilaged = provinces.keySet().stream().filter(s -> !pillagedProvinces.contains(s)).collect(Collectors.toList());
+        sheet.setGoldIncome(economicalSheetDao.getGoldIncome(provincesOwnedNotPilaged, idGame));
 
-        return sum;
+        sheet.setIndustrialIncome(CommonUtil.add(sheet.getMnuIncome(), sheet.getGoldIncome()));
     }
 }
