@@ -126,4 +126,26 @@ public class EconomicalSheetDaoImpl extends GenericDaoImpl<EconomicalSheetEntity
 
         return CommonUtil.add(innerGold, outerGold);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer getFleetLevelIncome(String name, Long idGame) {
+        String sql = queryProps.getProperty("income.tflevels");
+
+        sql = sql.replace(":countryName", name);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer getFleetLevelMonopoly(String name, Long idGame) {
+        String sql = queryProps.getProperty("income.tfmonop");
+
+        sql = sql.replace(":countryName", name);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
 }

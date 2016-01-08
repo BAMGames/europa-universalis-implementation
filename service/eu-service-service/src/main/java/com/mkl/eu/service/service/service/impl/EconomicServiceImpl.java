@@ -21,6 +21,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** EconomicalSheet DAO. */
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
+    /** Tables DAO. */
+    @Autowired
+    private ITablesDao tablesDao;
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
@@ -144,5 +148,20 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         sheet.setGoldIncome(economicalSheetDao.getGoldIncome(provincesOwnedNotPilaged, idGame));
 
         sheet.setIndustrialIncome(CommonUtil.add(sheet.getMnuIncome(), sheet.getGoldIncome()));
+
+        sheet.setDomTradeIncome(tablesDao.getTradeIncome(CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome()), country.getDti(), false));
+
+        // TODO needs War to know the blocked trade
+        sheet.setForTradeIncome(tablesDao.getTradeIncome(0, country.getFti(), true));
+
+        sheet.setFleetLevelIncome(economicalSheetDao.getFleetLevelIncome(name, idGame));
+
+        sheet.setFleetMonopIncome(economicalSheetDao.getFleetLevelMonopoly(name, idGame));
+
+        Integer sum = CommonUtil.add(sheet.getDomTradeIncome(), sheet.getForTradeIncome(), sheet.getFleetLevelIncome(), sheet.getFleetMonopIncome(), sheet.getTradeCenterIncome());
+        if (sheet.getTradeCenterLoss() != null) {
+            sum -= sheet.getTradeCenterLoss();
+        }
+        sheet.setTradeIncome(sum);
     }
 }

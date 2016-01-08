@@ -58,4 +58,22 @@ public interface IEconomicalSheetDao extends IGenericDao<EconomicalSheetEntity, 
      * @return the european gold income of the country.
      */
     Integer getGoldIncome(List<String> provinces, Long idGame);
+
+    /**
+     * Returns the fleet (STZ + CTZ) level income.
+     *
+     * @param name   of the country.
+     * @param idGame id of the game.
+     * @return the fleet (STZ + CTZ) level income.
+     */
+    Integer getFleetLevelIncome(String name, Long idGame);
+
+    /**
+     * Returns the fleet (STZ + CTZ) monopoly income.
+     *
+     * @param name   of the country.
+     * @param idGame id of the game.
+     * @return the fleet (STZ + CTZ) level income.
+     */
+    Integer getFleetLevelMonopoly(String name, Long idGame);
 }
