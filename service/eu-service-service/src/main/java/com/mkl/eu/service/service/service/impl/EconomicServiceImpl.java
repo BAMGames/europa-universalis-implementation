@@ -10,6 +10,7 @@ import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
@@ -74,8 +75,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     public DiffResponse computeEconomicalSheets(Long idGame) {
         GameEntity game = gameDao.lock(idGame);
 
+        Map<String, List<CounterFaceTypeEnum>> tradeCenters = economicalSheetDao.getTradeCenters(game.getId());
+
         for (PlayableCountryEntity country : game.getCountries()) {
-            computeEconomicalSheet(country, game);
+            computeEconomicalSheet(country, game, tradeCenters);
         }
 
         DiffEntity diff = new DiffEntity();
@@ -103,10 +106,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /**
      * Compute the economical sheet of a country for the turn of the game.
      *
-     * @param country the country.
-     * @param game    the game.
+     * @param country      the country.
+     * @param game         the game.
+     * @param tradeCenters the trade centers and their owners.
      */
-    private void computeEconomicalSheet(PlayableCountryEntity country, GameEntity game) {
+    private void computeEconomicalSheet(PlayableCountryEntity country, GameEntity game, Map<String, List<CounterFaceTypeEnum>> tradeCenters) {
         EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(game.getTurn()));
         if (sheet == null) {
             sheet = new EconomicalSheetEntity();
@@ -157,6 +161,22 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         sheet.setFleetLevelIncome(economicalSheetDao.getFleetLevelIncome(name, idGame));
 
         sheet.setFleetMonopIncome(economicalSheetDao.getFleetLevelMonopoly(name, idGame));
+
+        Integer tradeCentersIncome = 0;
+
+        if (tradeCenters.get(name) != null) {
+            for (CounterFaceTypeEnum tradeCenter : tradeCenters.get(name)) {
+                if (tradeCenter == CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC) {
+                    tradeCentersIncome += 100;
+                } else if (tradeCenter == CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN) {
+                    tradeCentersIncome += 100;
+                } else if (tradeCenter == CounterFaceTypeEnum.TRADE_CENTER_INDIAN) {
+                    tradeCentersIncome += 50;
+                }
+            }
+        }
+
+        sheet.setTradeCenterIncome(tradeCentersIncome);
 
         Integer sum = CommonUtil.add(sheet.getDomTradeIncome(), sheet.getForTradeIncome(), sheet.getFleetLevelIncome(), sheet.getFleetMonopIncome(), sheet.getTradeCenterIncome());
         if (sheet.getTradeCenterLoss() != null) {

@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.persistence.eco.impl;
 
 import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
@@ -147,5 +148,25 @@ public class EconomicalSheetDaoImpl extends GenericDaoImpl<EconomicalSheetEntity
         sql = sql.replace(":idGame", Long.toString(idGame));
 
         return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, List<CounterFaceTypeEnum>> getTradeCenters(Long idGame) {
+        Map<String, List<CounterFaceTypeEnum>> tradeCenters = new HashMap<>();
+
+        String sql = queryProps.getProperty("counter.tradeCenter");
+
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+        results.stream().forEach(input -> {
+            String country = (String) input.get("COUNTRY");
+            if (!tradeCenters.containsKey(country)) {
+                tradeCenters.put(country, new ArrayList<>());
+            }
+            tradeCenters.get(country).add(CounterFaceTypeEnum.valueOf((String) input.get("TYPE")));
+        });
+
+        return tradeCenters;
     }
 }

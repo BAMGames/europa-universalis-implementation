@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.eco;
 
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 
@@ -76,4 +77,12 @@ public interface IEconomicalSheetDao extends IGenericDao<EconomicalSheetEntity, 
      * @return the fleet (STZ + CTZ) level income.
      */
     Integer getFleetLevelMonopoly(String name, Long idGame);
+
+    /**
+     * Returns the trade centers by country.
+     *
+     * @param idGame id of the game.
+     * @return the trade centers by country.
+     */
+    Map<String, List<CounterFaceTypeEnum>> getTradeCenters(Long idGame);
 }

@@ -121,4 +121,18 @@
 		;
 		]]>
 	</entry>
+	<entry key="counter.tradeCenter">
+		<![CDATA[
+			select
+				c.TYPE as TYPE,
+				peu.R_COUNTRY as COUNTRY
+			from counter c
+				inner join stack s on c.ID_STACK = s.ID
+				inner join r_province p on s.R_PROVINCE = p.NAME
+				inner join r_province_eu peu on p.ID = peu.ID
+			where type like 'TRADE_CENTER%'
+				AND s.ID_GAME = :idGame;
+		;
+		]]>
+	</entry>
 </properties>
