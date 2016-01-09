@@ -5,6 +5,8 @@ import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -168,5 +171,38 @@ public class EconomicalSheetDaoImpl extends GenericDaoImpl<EconomicalSheetEntity
         });
 
         return tradeCenters;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Pair<Integer, Integer> getColTpIncome(String name, Long idGame) {
+        MutablePair<Integer, Integer> income = new MutablePair<>();
+
+        String sql = queryProps.getProperty("income.colTp");
+
+        sql = sql.replace(":countryName", name);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+        results.stream().forEach(input -> {
+            Boolean isCol = (Boolean) input.get("COL");
+            if (isCol) {
+                income.setLeft(((BigDecimal) input.get("INCOME")).intValue());
+            } else {
+                income.setRight(((BigDecimal) input.get("INCOME")).intValue());
+            }
+        });
+
+        return income;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer getExoResIncome(String name, Long idGame) {
+        String sql = queryProps.getProperty("income.exoRes");
+
+        sql = sql.replace(":countryName", name);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 }

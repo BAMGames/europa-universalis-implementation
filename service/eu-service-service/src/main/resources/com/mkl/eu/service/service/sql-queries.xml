@@ -67,7 +67,7 @@
 				sum(m.value)
 			from counter c
 				inner join stack s on c.ID_STACK = s.ID
-				inner join t_mnu m on m.COUNTRY = c.R_COUNTRY and m.TYPE = c.TYPE
+				inner join t_mnu m on m.R_COUNTRY = c.R_COUNTRY and m.TYPE = c.TYPE
 			where s.ID_GAME = :idGame
 				AND c.R_COUNTRY = ':countryName'
 				AND s.R_PROVINCE not in :provinceNames
@@ -101,7 +101,7 @@
 			from trade_fleet tf
 				inner join r_province p on tf.R_PROVINCE = p.NAME
 				inner join R_PROVINCE_TZ tz on tz.ID = p.ID
-			where tf.COUNTRY = ':countryName'
+			where tf.R_COUNTRY = ':countryName'
 				AND tf.ID_GAME = :idGame
 		;
 		]]>
@@ -116,7 +116,7 @@
 			from trade_fleet tf
 				inner join r_province p on tf.R_PROVINCE = p.NAME
 				inner join R_PROVINCE_TZ tz on tz.ID = p.ID
-			where tf.COUNTRY = ':countryName'
+			where tf.R_COUNTRY = ':countryName'
 				AND tf.ID_GAME = :idGame
 		;
 		]]>
@@ -131,7 +131,46 @@
 				inner join r_province p on s.R_PROVINCE = p.NAME
 				inner join r_province_eu peu on p.ID = peu.ID
 			where type like 'TRADE_CENTER%'
-				AND s.ID_GAME = :idGame;
+				AND s.ID_GAME = :idGame
+		;
+		]]>
+	</entry>
+	<entry key="income.colTp">
+		<![CDATA[
+			select
+				c.COLONY as COL,
+				sum(
+					IF(c.COLONY,
+						LEVEL + IF(LEVEL >=4, 2, IF(LEVEL >= 1, 1, 0)) * r.INCOME,
+						IF(LEVEL >= 4,
+							2,
+							IF(LEVEL >=1, 1, .0)))) as INCOME
+			from colony c
+				inner join r_region r on c.R_REGION = r.NAME
+				inner join counter c0 on c.ID_COUNTER = c0.ID
+				inner join stack s on c0.ID_STACK = s.id
+			where c0.R_COUNTRY = ':countryName'
+				and s.ID_GAME = :idGame
+			group by c.COLONY
+		;
+		]]>
+	</entry>
+	<entry key="income.exoRes">
+		<![CDATA[
+			select
+				sum(price)
+			from (
+  				select
+  					sum(er.NUMBER) * substr(s.R_PROVINCE, 6, 1) as price
+  				from exotic_resources er
+  					inner join colony c on er.ID_COLONY = c.ID
+  					inner join counter c0 on c.ID_COUNTER = c0.ID
+  					inner join counter c1 on c1.type = concat(er.RESOURCE, '_PRICE')
+  					inner join stack s on c1.ID_STACK = s.ID
+  				where c0.R_COUNTRY = ':countryName'
+  					and s.ID_GAME = :idGame
+  				group by er.RESOURCE, s.R_PROVINCE
+			) as t
 		;
 		]]>
 	</entry>

@@ -216,21 +216,21 @@ public enum CounterFaceTypeEnum {
     // EXOTIC RESSOURCES //
 
     /** Exotic resource price of spice. */
-    SPICES_PRICE,
+    SP_PRICE,
     /** Exotic resource production of spice. */
-    SPICES_PRODUCTION,
+    SP_PRODUCTION,
     /** Exotic resource price of sugar. */
-    SUGAR_PRICE,
+    SU_PRICE,
     /** Exotic resource production of sugar. */
-    SUGAR_PRODUCTION,
+    SU_PRODUCTION,
     /** Exotic resource price of fish. */
     FISH_PRICE,
     /** Exotic resource production of fish. */
     FISH_PRODUCTION,
     /** Exotic resource price of products of america. */
-    PRODUCTS_OF_AMERICA_PRICE,
+    PA_PRICE,
     /** Exotic resource production of products of america. */
-    PRODUCTS_OF_AMERICA_PRODUCTION,
+    PA_PRODUCTION,
     /** Exotic resource price of silk. */
     SILK_PRICE,
     /** Exotic resource production of silk. */
@@ -240,21 +240,21 @@ public enum CounterFaceTypeEnum {
     /** Exotic resource production of salt. */
     SALT_PRODUCTION,
     /** Exotic resource price of cotton. */
-    COTTON_PRICE,
+    CO_PRICE,
     /** Exotic resource production of cotton. */
-    COTTON_PRODUCTION,
+    CO_PRODUCTION,
     /** Exotic resource price of furs. */
-    FURS_PRICE,
+    FUR_PRICE,
     /** Exotic resource production of furs. */
-    FURS_PRODUCTION,
+    FUR_PRODUCTION,
     /** Exotic resource price of products of orient. */
-    PRODUCTS_OF_ORIENT_PRICE,
+    PO_PRICE,
     /** Exotic resource production of products of orient. */
-    PRODUCTS_OF_ORIENT_PRODUCTION,
+    PO_PRODUCTION,
     /** Exotic resource price of slave. */
-    SLAVES_PRICE,
+    SL_PRICE,
     /** Exotic resource production of slave. */
-    SLAVES_PRODUCTION,
+    SL_PRODUCTION,
     /** Inflation counter. */
     INFLATION,
     /** Inflation counter with gold from America. */

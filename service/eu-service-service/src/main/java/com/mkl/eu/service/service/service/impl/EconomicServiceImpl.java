@@ -23,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -183,5 +184,16 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             sum -= sheet.getTradeCenterLoss();
         }
         sheet.setTradeIncome(sum);
+
+        Pair<Integer, Integer> colTpIncome = economicalSheetDao.getColTpIncome(name, idGame);
+        sheet.setColIncome(colTpIncome.getLeft());
+        sheet.setTpIncome(colTpIncome.getRight());
+        sheet.setExoResIncome(economicalSheetDao.getExoResIncome(name, idGame));
+
+        sheet.setRotwIncome(CommonUtil.add(sheet.getColIncome(), sheet.getTpIncome(), sheet.getExoResIncome()));
+
+        sheet.setIncome(CommonUtil.add(sheet.getLandIncome(), sheet.getIndustrialIncome(), sheet.getTradeIncome(), sheet.getRotwIncome(), sheet.getSpecialIncome()));
+
+        sheet.setGrossIncome(CommonUtil.add(sheet.getIncome(), sheet.getEventIncome()));
     }
 }

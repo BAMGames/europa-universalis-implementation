@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.persistence.eco;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -85,4 +86,22 @@ public interface IEconomicalSheetDao extends IGenericDao<EconomicalSheetEntity, 
      * @return the trade centers by country.
      */
     Map<String, List<CounterFaceTypeEnum>> getTradeCenters(Long idGame);
+
+    /**
+     * Returns the colony income in the left element and the trading post income in the right element.
+     *
+     * @param name   of the country.
+     * @param idGame id of the game.
+     * @return the colony and trading post income.
+     */
+    Pair<Integer, Integer> getColTpIncome(String name, Long idGame);
+
+    /**
+     * Return the exotic resources income.
+     *
+     * @param name   of the country.
+     * @param idGame id of the game.
+     * @return the exotic resources income.
+     */
+    Integer getExoResIncome(String name, Long idGame);
 }

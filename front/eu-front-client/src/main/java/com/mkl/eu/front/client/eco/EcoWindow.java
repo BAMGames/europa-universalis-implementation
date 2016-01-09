@@ -92,6 +92,15 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         config.add(new TableConfig<>("14", "eco.sheetB.tradeCenterIncome", ++index, sheet -> toString(sheet.getTradeCenterIncome())));
         config.add(new TableConfig<>("15", "eco.sheetB.tradeCenterLoss", ++index, sheet -> toString(sheet.getTradeCenterLoss())));
         config.add(new TableConfig<>("16", "eco.sheetB.tradeIncome", ++index, sheet -> toString(sheet.getTradeIncome())));
+        config.add(new TableConfig<>("17", "eco.sheetB.colIncome", ++index, sheet -> toString(sheet.getColIncome())));
+        config.add(new TableConfig<>("18", "eco.sheetB.tpIncome", ++index, sheet -> toString(sheet.getTpIncome())));
+        config.add(new TableConfig<>("19", "eco.sheetB.exoResIncome", ++index, sheet -> toString(sheet.getExoResIncome())));
+        config.add(new TableConfig<>("20", "eco.sheetB.monopolies", ++index, sheet -> ""));
+        config.add(new TableConfig<>("21", "eco.sheetB.rotwIncome", ++index, sheet -> toString(sheet.getRotwIncome())));
+        config.add(new TableConfig<>("22", "eco.sheetB.specialIncome", ++index, sheet -> toString(sheet.getSpecialIncome())));
+        config.add(new TableConfig<>("23", "eco.sheetB.income", ++index, sheet -> toString(sheet.getIncome())));
+        config.add(new TableConfig<>("24", "eco.sheetB.eventIncome", ++index, sheet -> toString(sheet.getEventIncome())));
+        config.add(new TableConfig<>("25", "eco.sheetB.grossIncome", ++index, sheet -> toString(sheet.getGrossIncome())));
     }
 
     /**
