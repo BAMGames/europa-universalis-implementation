@@ -10,16 +10,32 @@ public enum ForceTypeEnum {
     ARMY_PLUS,
     /** A-. */
     ARMY_MINUS,
+    /** A+ Timar. */
+    ARMY_TIMAR_PLUS,
+    /** A- Timar. */
+    ARMY_TIMAR_MINUS,
     /** F+. */
     FLEET_PLUS,
     /** F-. */
     FLEET_MINUS,
+    /** F- Galley. */
+    FLEET_GALLEY_MINUS,
     /** LD. */
     LD,
     /** ND. */
     ND,
+    /** LD TIMAR. */
+    LDT,
+    /** NWD. */
+    NWD,
+    /** NGD. */
+    NGD,
+    /** NTD. */
+    NTD,
     /** LD or ND. */
     LDND,
+    /** LDe. */
+    LDE,
     /** NDe. */
     DE,
     /** P+. */
