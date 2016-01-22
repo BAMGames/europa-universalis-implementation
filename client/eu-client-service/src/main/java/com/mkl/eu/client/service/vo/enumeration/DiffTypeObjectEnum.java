@@ -13,5 +13,7 @@ public enum DiffTypeObjectEnum {
     /** Room. */
     ROOM,
     /** Economical sheet. */
-    ECO_SHEET;
+    ECO_SHEET,
+    /** Administrative action. */
+    ADM_ACT
 }

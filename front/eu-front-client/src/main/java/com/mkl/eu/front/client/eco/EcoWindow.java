@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.eco;
 
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
@@ -120,13 +121,15 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     @PostConstruct
     public void init() {
         stage = new Stage();
+        stage.setTitle(message.getMessage("eco.title", null, globalConfiguration.getLocale()));
         stage.initModality(Modality.WINDOW_MODAL);
 
         BorderPane border = new BorderPane();
 
         TabPane tabPane = new TabPane();
-        tabPane.getTabs().add(createSheetA(null));
-        tabPane.getTabs().add(createSheetB(null));
+        PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
+        tabPane.getTabs().add(createSheetA(country));
+        tabPane.getTabs().add(createSheetB(country));
 
         border.setCenter(tabPane);
 
@@ -294,9 +297,9 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Update the Map given the diff.
+     * Update the window given the diff.
      *
-     * @param diff that will update the map.
+     * @param diff that will update the window.
      */
     public void update(Diff diff) {
         switch (diff.getTypeObject()) {
@@ -309,9 +312,9 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Process a eco sheet diff event.
+     * Process an economical sheet diff event.
      *
-     * @param diff involving a room.
+     * @param diff involving an economical sheet.
      */
     private void updateEcoSheet(Diff diff) {
         switch (diff.getType()) {
@@ -324,9 +327,9 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Process the invalide sheet diff event.
+     * Process the invalidate sheet diff event.
      *
-     * @param diff involving a add room.
+     * @param diff involving an invalidate sheet.
      */
     private void invalidateSheet(Diff diff) {
         Long idCountry = null;

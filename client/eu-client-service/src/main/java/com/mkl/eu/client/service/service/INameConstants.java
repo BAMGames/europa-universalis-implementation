@@ -40,6 +40,10 @@ public interface INameConstants {
     String PARAMETER_READ_ROOM = "readRoom";
     /** Name of the parameter loadEcoSheets. */
     String PARAMETER_LOAD_ECO_SHEETS = "loadEcoSheets";
+    /** Name of the parameter addAdminAction. */
+    String PARAMETER_ADD_ADM_ACT = "addAdminAction";
+    /** Name of the parameter removeAdminAction. */
+    String PARAMETER_REMOVE_ADM_ACT = "removeAdminAction";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */
@@ -66,6 +70,12 @@ public interface INameConstants {
     String PARAMETER_VISIBLE = "visible";
     /** Name of the parameter invite. */
     String PARAMETER_INVITE = "invite";
+    /** Name of the parameter type. */
+    String PARAMETER_TYPE = "type";
+    /** Name of the parameter idObject. */
+    String PARAMETER_ID_OBJECT = "idObject";
+    /** Name of the parameter idAdmAct. */
+    String PARAMETER_ID_ADM_ACT = "idAdmAct";
     /** Name of a response. */
     String RESPONSE = "response";
     /** Name of a response of type game. */
@@ -100,4 +110,8 @@ public interface INameConstants {
     String METHOD_READ_ROOM = "readRoom";
     /** Name of the method loadEcoSheets. */
     String METHOD_LOAD_ECO_SHEETS = "loadEcoSheets";
+    /** Name of the method addAdminAction. */
+    String METHOD_ADD_ADM_ACT = "addAdminAction";
+    /** Name of the method removeAdminAction. */
+    String METHOD_REMOVE_ADM_ACT = "removeAdminAction";
 }

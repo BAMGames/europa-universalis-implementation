@@ -36,10 +36,11 @@ public class GameMapping {
     /**
      * OE to VO.
      *
-     * @param source object source.
+     * @param source    object source.
+     * @param idCountry id of the country of the user doing the request.
      * @return object mapped.
      */
-    public Game oeToVo(GameEntity source) {
+    public Game oeToVo(GameEntity source, Long idCountry) {
         if (source == null) {
             return null;
         }
@@ -53,7 +54,7 @@ public class GameMapping {
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
 
-        target.setCountries(playableCountryMapping.oesToVos(source.getCountries(), objectsCreated));
+        target.setCountries(playableCountryMapping.oesToVos(source.getCountries(), idCountry, objectsCreated));
 
         target.setEvents(politicalEventMapping.oesToVos(source.getEvents(), objectsCreated));
 

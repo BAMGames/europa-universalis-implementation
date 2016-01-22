@@ -27,6 +27,14 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#ID_COUNTRY for the id of the owner</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#ADM_ACT in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY for the id of the owner</li>
+     * <li>DiffAttributeTypeEnum#TURN for the turn of the action</li>
+     * <li>DiffAttributeTypeEnum#TYPE for the type of the action</li>
+     * <li>DiffAttributeTypeEnum#ID_OBJECT for the id of an eventual object</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     ADD,
@@ -41,6 +49,12 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffAttributeTypeEnum#PROVINCE where the remove is done</li>
      * <li>DiffAttributeTypeEnum#STACK_DEL (if the stack owning the counter has no counter anymore) - optional attribute</li>
+     * </ul>
+     * </li>
+     * <li>DiffTypeObjectEnum#ADM_ACT in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY for the id of the owner</li>
+     * <li>DiffAttributeTypeEnum#TYPE for the type of the action</li>
      * </ul>
      * </li>
      * </ul>

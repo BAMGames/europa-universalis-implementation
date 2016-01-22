@@ -1,11 +1,15 @@
 package com.mkl.eu.service.service.persistence.tables.impl;
 
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
+import com.mkl.eu.service.service.persistence.oe.tables.BasicForceTableEntity;
 import com.mkl.eu.service.service.persistence.oe.tables.TradeIncomeEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.UnitEntity;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * Implementation of the Tables DAO.
@@ -35,5 +39,23 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
 
         //noinspection unchecked
         return ((TradeIncomeEntity) criteria.uniqueResult()).getValue();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<BasicForceTableEntity> getBasicForces() {
+        Criteria criteria = getSession().createCriteria(BasicForceTableEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<UnitEntity> getUnits() {
+        Criteria criteria = getSession().createCriteria(UnitEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
     }
 }

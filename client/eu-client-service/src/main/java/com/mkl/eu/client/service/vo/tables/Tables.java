@@ -13,6 +13,12 @@ public class Tables {
     private List<TradeIncome> foreignTrades = new ArrayList<>();
     /** Domestic trade incomes. */
     private List<TradeIncome> domesticTrades = new ArrayList<>();
+    /** Periods of the game. */
+//    private List<Period>
+    /** Basic forces of major powers. */
+    private List<BasicForce> basicForces = new ArrayList<>();
+    /** Unit purchase and maintenance costs of major poxers. */
+    private List<Unit> units = new ArrayList<>();
 
     /** @return the foreignTrades. */
     public List<TradeIncome> getForeignTrades() {
@@ -32,5 +38,25 @@ public class Tables {
     /** @param domesticTrades the domesticTrades to set. */
     public void setDomesticTrades(List<TradeIncome> domesticTrades) {
         this.domesticTrades = domesticTrades;
+    }
+
+    /** @return the basicForces. */
+    public List<BasicForce> getBasicForces() {
+        return basicForces;
+    }
+
+    /** @param basicForces the basicForces to set. */
+    public void setBasicForces(List<BasicForce> basicForces) {
+        this.basicForces = basicForces;
+    }
+
+    /** @return the units. */
+    public List<Unit> getUnits() {
+        return units;
+    }
+
+    /** @param units the units to set. */
+    public void setUnits(List<Unit> units) {
+        this.units = units;
     }
 }

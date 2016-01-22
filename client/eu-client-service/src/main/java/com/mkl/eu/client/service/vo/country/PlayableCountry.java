@@ -28,6 +28,10 @@ public class PlayableCountry extends EuObject {
     private int fti;
     /** Max FTI of the country. */
     private int ftiMax;
+    /** Current land technology of the country. */
+    private String landTech;
+    /** Current naval technology of the country. */
+    private String navalTech;
     /**
      * Monarchs (past and present) of the country.
      */
@@ -43,11 +47,11 @@ public class PlayableCountry extends EuObject {
     /**
      * Administrative actions by turn of the country.
      */
-    private List<AdministrativeAction> administrativeActions;
+    private List<AdministrativeAction> administrativeActions = new ArrayList<>();
     /**
      * Economical events by turn of the country.
      */
-    private List<EconomicalEvent> economicalEvents;
+    private List<EconomicalEvent> economicalEvents = new ArrayList<>();
 
     /**
      * @param name the name to set.
@@ -111,6 +115,26 @@ public class PlayableCountry extends EuObject {
     /** @param ftiMax the ftiMax to set. */
     public void setFtiMax(int ftiMax) {
         this.ftiMax = ftiMax;
+    }
+
+    /** @return the landTech. */
+    public String getLandTech() {
+        return landTech;
+    }
+
+    /** @param landTech the landTech to set. */
+    public void setLandTech(String landTech) {
+        this.landTech = landTech;
+    }
+
+    /** @return the navalTech. */
+    public String getNavalTech() {
+        return navalTech;
+    }
+
+    /** @param navalTech the navalTech to set. */
+    public void setNavalTech(String navalTech) {
+        this.navalTech = navalTech;
     }
 
     /**

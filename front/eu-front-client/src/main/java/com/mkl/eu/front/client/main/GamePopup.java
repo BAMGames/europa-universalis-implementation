@@ -20,9 +20,13 @@ import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
+import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
+import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.chat.ChatWindow;
+import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
@@ -91,6 +95,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private ChatWindow chatWindow;
     /** Window containing the economics. */
     private EcoWindow ecoWindow;
+    /** Window containing the administrative actions. */
+    private AdminActionsWindow adminActionsWindow;
     /** Socket listening to server diff on this game. */
     private ClientSocket client;
     /** Component holding the authentication information. */
@@ -171,11 +177,13 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
-     * Initialize the chat window.
+     * Initialize the eco window.
      */
     private void initEcos() {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), gameConfig);
         ecoWindow.addDiffListener(this);
+        adminActionsWindow = context.getBean(AdminActionsWindow.class, game, gameConfig);
+        adminActionsWindow.addDiffListener(this);
     }
 
     /**
@@ -183,6 +191,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     private void initUI() {
         Stage dialog = new Stage();
+        dialog.setTitle(message.getMessage("game.popup.title", null, globalConfiguration.getLocale()));
         dialog.initModality(Modality.WINDOW_MODAL);
 
         GridPane grid = new GridPane();
@@ -225,6 +234,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         });
         grid.add(ecoBtn, 0, 3, 1, 1);
 
+        Button admActBtn = new Button(message.getMessage("game.popup.admin_actions", null, globalConfiguration.getLocale()));
+        admActBtn.setOnAction(event -> {
+            if (!adminActionsWindow.isShowing()) {
+                adminActionsWindow.show();
+            }
+        });
+        grid.add(admActBtn, 0, 4, 1, 1);
+
         Scene dialogScene = new Scene(grid, 300, 200);
         dialog.setScene(dialogScene);
         dialog.show();
@@ -252,12 +269,17 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                         break;
                     case ECO_SHEET:
                         updateEcoSheet(game, diff);
+                        break;
+                    case ADM_ACT:
+                        updateAdmAct(game, diff);
+                        break;
                     default:
                         break;
                 }
                 map.update(diff);
                 chatWindow.update(diff);
                 ecoWindow.update(diff);
+                adminActionsWindow.update(diff);
             }
 
             event.getResponse().getMessages().forEach(message -> {
@@ -633,10 +655,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
-     * Process a eco sheet diff event.
+     * Process a economical sheet diff event.
      *
      * @param game to update.
-     * @param diff involving a room.
+     * @param diff involving an economical sheet.
      */
     private void updateEcoSheet(Game game, Diff diff) {
         switch (diff.getType()) {
@@ -649,10 +671,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
-     * Process the invalide sheet diff event.
+     * Process the invalidate sheet diff event.
      *
      * @param game to update.
-     * @param diff involving a add room.
+     * @param diff involving an invalidate sheet.
      */
     private void invalidateSheet(Game game, Diff diff) {
         Long idCountry = null;
@@ -668,7 +690,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             authentHolder.fillAuthentInfo(request);
             request.setRequest(new LoadEcoSheetsRequest(gameConfig.getIdGame(), idCountry, turn));
             try {
-                java.util.List<EconomicalSheetCountry> sheets = economicService.loadEcnomicSheets(request);
+                java.util.List<EconomicalSheetCountry> sheets = economicService.loadEconomicSheets(request);
 
                 for (EconomicalSheetCountry sheet : sheets) {
                     PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> sheet.getIdCountry().equals(playableCountry.getId()));
@@ -689,6 +711,94 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             return;
         } else {
             LOGGER.error("Missing turn in invalidate sheet event.");
+        }
+    }
+
+    /**
+     * Process a administrative action diff event.
+     *
+     * @param game to update.
+     * @param diff involving an administrative action.
+     */
+    private void updateAdmAct(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                addAdmAct(game, diff);
+                break;
+            case REMOVE:
+                removeAdmAct(game, diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the add administrative action diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add administrative action.
+     */
+    private void addAdmAct(Game game, Diff diff) {
+        PlayableCountry country = null;
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+            country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        }
+
+        if (country != null) {
+            AdministrativeAction admAct = new AdministrativeAction();
+            admAct.setId(diff.getIdObject());
+            admAct.setStatus(AdminActionStatusEnum.PLANNED);
+            country.getAdministrativeActions().add(admAct);
+
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TURN);
+            if (attribute != null) {
+                admAct.setTurn(Integer.parseInt(attribute.getValue()));
+            } else {
+                LOGGER.error("Missing turn in adm act add event.");
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TYPE);
+            if (attribute != null) {
+                admAct.setType(AdminActionTypeEnum.valueOf(attribute.getValue()));
+            } else {
+                LOGGER.error("Missing type in adm act add event.");
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_OBJECT);
+            if (attribute != null) {
+                admAct.setIdObject(Long.parseLong(attribute.getValue()));
+            } else {
+                LOGGER.error("Missing type in adm act add event.");
+            }
+        } else {
+            LOGGER.error("Missing or wrong country in adm act add event.");
+        }
+    }
+
+    /**
+     * Process the remove administrative action diff event.
+     *
+     * @param game to update.
+     * @param diff involving a remove administrative action.
+     */
+    private void removeAdmAct(Game game, Diff diff) {
+        PlayableCountry country = null;
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+            country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        }
+
+        if (country != null) {
+            AdministrativeAction admAct = CommonUtil.findFirst(country.getAdministrativeActions().stream(), action -> action.getId().equals(diff.getIdObject()));
+            if (admAct != null) {
+                country.getAdministrativeActions().remove(admAct);
+            } else {
+                LOGGER.error("Wrong administrative action id in adm act remove event.");
+            }
+        } else {
+            LOGGER.error("Missing or wrong country in adm act remove event.");
         }
     }
 

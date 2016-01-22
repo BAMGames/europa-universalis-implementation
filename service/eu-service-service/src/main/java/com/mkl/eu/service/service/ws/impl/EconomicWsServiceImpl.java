@@ -2,10 +2,13 @@ package com.mkl.eu.service.service.ws.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IEconomicService;
+import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,7 +37,25 @@ public class EconomicWsServiceImpl extends SpringBeanAutowiringSupport implement
 
     /** {@inheritDoc} */
     @Override
-    public List<EconomicalSheetCountry> loadEcnomicSheets(SimpleRequest<LoadEcoSheetsRequest> loadEcoSheets) throws FunctionalException, TechnicalException {
-        return economicService.loadEcnomicSheets(loadEcoSheets);
+    public List<EconomicalSheetCountry> loadEconomicSheets(SimpleRequest<LoadEcoSheetsRequest> loadEcoSheets) throws FunctionalException, TechnicalException {
+        return economicService.loadEconomicSheets(loadEcoSheets);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse addAdminAction(Request<AddAdminActionRequest> request) throws FunctionalException, TechnicalException {
+        return economicService.addAdminAction(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse removeAdminAction(Request<RemoveAdminActionRequest> request) throws FunctionalException, TechnicalException {
+        return economicService.removeAdminAction(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse computeAdminActions(Long idGame) throws FunctionalException, TechnicalException {
+        return economicService.computeAdminActions(idGame);
     }
 }

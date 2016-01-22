@@ -1,24 +1,46 @@
-package com.mkl.eu.client.service.vo.tables;
+package com.mkl.eu.service.service.persistence.oe.tables;
 
-import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
+import com.mkl.eu.client.service.vo.tables.IBasicForce;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 /**
- * VO for the basic forces of a country (tables).
+ * Entity for the basic forces of a country (tables).
  *
  * @author MKL.
  */
-public class BasicForce extends EuObject implements IBasicForce {
+@Entity
+@Table(name = "T_BASIC_FORCE")
+public class BasicForceTableEntity implements IBasicForce, IEntity, Serializable {
+    /** Id. */
+    private Long id;
     /** Country owning these forces. */
     private String country;
     /** Period concerned. */
-    private Period period;
+    private PeriodEntity period;
     /** Number of this type of counter. */
     private Integer number;
     /** Type of limit. */
     private ForceTypeEnum type;
 
+    /** @return the id. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
+    public Long getId() {
+        return id;
+    }
+
+    /** @param id the id to set. */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     /** @return the country. */
+    @Column(name = "R_COUNTRY")
     public String getCountry() {
         return country;
     }
@@ -29,17 +51,19 @@ public class BasicForce extends EuObject implements IBasicForce {
     }
 
     /** @return the period. */
-    public Period getPeriod() {
+    @ManyToOne
+    @JoinColumn(name = "ID_PERIOD")
+    public PeriodEntity getPeriod() {
         return period;
     }
 
     /** @param period the period to set. */
-    public void setPeriod(Period period) {
+    public void setPeriod(PeriodEntity period) {
         this.period = period;
     }
 
     /** @return the number. */
-    @Override
+    @Column(name = "NUMBER")
     public Integer getNumber() {
         return number;
     }
@@ -50,7 +74,8 @@ public class BasicForce extends EuObject implements IBasicForce {
     }
 
     /** @return the type. */
-    @Override
+    @Column(name = "TYPE")
+    @Enumerated(EnumType.STRING)
     public ForceTypeEnum getType() {
         return type;
     }

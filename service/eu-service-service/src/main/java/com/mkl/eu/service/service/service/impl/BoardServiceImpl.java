@@ -141,7 +141,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(isCountryOk).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat("{1}: {0} ({2}) is not in game or is not played by {3}.").setName(PARAMETER_LOAD_GAME, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_LOAD_GAME, idCountry, request.getAuthent().getUsername()));
 
-        Game returnValue = gameMapping.oeToVo(game);
+        Game returnValue = gameMapping.oeToVo(game, idCountry);
 
         List<MessageGlobalEntity> globalMessages = chatDao.getGlobalMessages(idGame);
         List<ChatEntity> messages = null;
@@ -281,7 +281,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         if (country.isPresent()) {
             failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.get().getUsername()))
                     .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), country.get().getUsername()));
+                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), country.get().getUsername()));
 
         } else {
             List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());

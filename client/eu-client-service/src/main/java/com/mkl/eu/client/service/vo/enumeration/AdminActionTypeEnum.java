@@ -22,11 +22,15 @@ public enum AdminActionTypeEnum {
     FTI,
     /** Enhance DTI. */
     DTI,
-    /** Develope a Manufacture. */
+    /** Develop a Manufacture. */
     MNU,
     /** Enhance Land Technology. */
     ELT,
     /** Enhance Naval Technology. */
-    ENT
+    ENT,
+    /** Disband counter. */
+    DIS,
+    /** Low maintenance on counter. */
+    LM
     // TODO add land, naval and fortress purchases/disband.
 }

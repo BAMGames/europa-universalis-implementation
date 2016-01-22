@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.country;
 
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 
 import javax.persistence.*;
@@ -32,10 +33,18 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     private int fti;
     /** Max FTI of the country. */
     private int ftiMax;
+    /** Current land technology of the country. */
+    private String landTech;
+    /** Current naval technology of the country. */
+    private String navalTech;
     /**
-     * Economical sheet by turn of the country.
+     * Economical sheet of the country.
      */
     private List<EconomicalSheetEntity> economicalSheets;
+    /**
+     * Administrative actions of the country.
+     */
+    private List<AdministrativeActionEntity> administrativeActions;
     /** Game of the entity. */
     private GameEntity game;
 
@@ -123,6 +132,28 @@ public class PlayableCountryEntity implements IEntity, Serializable {
         this.ftiMax = ftiMax;
     }
 
+    /** @return the landTech. */
+    @Column(name = "T_LAND_TECH")
+    public String getLandTech() {
+        return landTech;
+    }
+
+    /** @param landTech the landTech to set. */
+    public void setLandTech(String landTech) {
+        this.landTech = landTech;
+    }
+
+    /** @return the navalTech. */
+    @Column(name = "T_NAVAL_TECH")
+    public String getNavalTech() {
+        return navalTech;
+    }
+
+    /** @param navalTech the navalTech to set. */
+    public void setNavalTech(String navalTech) {
+        this.navalTech = navalTech;
+    }
+
     /** @return the economicalSheets. */
     @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<EconomicalSheetEntity> getEconomicalSheets() {
@@ -132,6 +163,17 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     /** @param economicalSheets the economicalSheets to set. */
     public void setEconomicalSheets(List<EconomicalSheetEntity> economicalSheets) {
         this.economicalSheets = economicalSheets;
+    }
+
+    /** @return the administrativeActions. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<AdministrativeActionEntity> getAdministrativeActions() {
+        return administrativeActions;
+    }
+
+    /** @param administrativeActions the administrativeActions to set. */
+    public void setAdministrativeActions(List<AdministrativeActionEntity> administrativeActions) {
+        this.administrativeActions = administrativeActions;
     }
 
     /** @return the game. */

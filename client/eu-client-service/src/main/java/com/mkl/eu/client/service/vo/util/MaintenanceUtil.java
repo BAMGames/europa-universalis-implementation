@@ -40,11 +40,11 @@ public final class MaintenanceUtil {
      * @param units       price of maintenance for each unit.
      * @return the total maintenance fee.
      */
-    public static int computeMaintenance(Map<CounterFaceTypeEnum, Integer> forces, List<? extends IBasicForce> basicForces, List<? extends IUnit> units) {
+    public static int computeMaintenance(Map<CounterFaceTypeEnum, Long> forces, List<? extends IBasicForce> basicForces, List<? extends IUnit> units) {
         int total = 0;
 
         if (forces != null && units != null) {
-            Map<CounterFaceTypeEnum, Integer> forcesLeft = new HashMap<>(forces);
+            Map<CounterFaceTypeEnum, Long> forcesLeft = new HashMap<>(forces);
 
 
             Map<String, Double> maintenance = new HashMap<>();
@@ -82,7 +82,7 @@ public final class MaintenanceUtil {
                     forcesLeft);
 
             for (CounterFaceTypeEnum face : forcesLeft.keySet()) {
-                Integer number = forcesLeft.get(face);
+                Long number = forcesLeft.get(face);
                 if (number != null) {
                     IUnit unit = CommonUtil.findFirst(units, iUnit -> iUnit.getType() == getForceFromFace(face));
                     if (unit != null && unit.getPrice() != null) {
@@ -137,7 +137,7 @@ public final class MaintenanceUtil {
      * @param infoForHalf the info on faces that stands for a unit of size 1/2.
      * @param forces      to manage.
      */
-    private static void SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Integer> forces) {
+    private static void SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Long> forces) {
         if (nbUnit != null) {
             int disc42 = subtract(infoForFour.getPrice(), infoForTwo.getPrice());
             int disc22 = toInt(infoForTwo.getPrice());
@@ -242,12 +242,12 @@ public final class MaintenanceUtil {
      * @param key the key.
      * @param <K> the class of the key.
      */
-    private static <K> void addOne(Map<K, Integer> map, K key) {
+    private static <K> void addOne(Map<K, Long> map, K key) {
         if (map != null) {
             if (map.get(key) != null) {
                 map.put(key, map.get(key) + 1);
             } else {
-                map.put(key, 1);
+                map.put(key, 1l);
             }
         }
     }
@@ -260,7 +260,7 @@ public final class MaintenanceUtil {
      * @param forces to manage.
      * @return the remaining number of D in the maintenance.
      */
-    private static Double subtractMaintenanceForce(Double nbUnit, MaintenanceInfo info, Map<CounterFaceTypeEnum, Integer> forces) {
+    private static Double subtractMaintenanceForce(Double nbUnit, MaintenanceInfo info, Map<CounterFaceTypeEnum, Long> forces) {
         if (info != null && info.getFaces() != null) {
             for (CounterFaceTypeEnum face : info.getFaces()) {
                 if (nbUnit >= info.getSize()
@@ -288,7 +288,7 @@ public final class MaintenanceUtil {
      * @param forces to manage.
      * @return the remaining number of D in the maintenance.
      */
-    private static boolean subtractMaintenanceForce(MaintenanceInfo info, Map<CounterFaceTypeEnum, Integer> forces) {
+    private static boolean subtractMaintenanceForce(MaintenanceInfo info, Map<CounterFaceTypeEnum, Long> forces) {
         boolean result = false;
 
         if (info != null && info.getFaces() != null) {

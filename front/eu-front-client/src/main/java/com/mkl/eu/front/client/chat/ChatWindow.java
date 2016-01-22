@@ -112,6 +112,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     @PostConstruct
     public void init() {
         stage = new Stage();
+        stage.setTitle(message.getMessage("chat.title", null, globalConfiguration.getLocale()));
         stage.initModality(Modality.WINDOW_MODAL);
 
         BorderPane border = new BorderPane();

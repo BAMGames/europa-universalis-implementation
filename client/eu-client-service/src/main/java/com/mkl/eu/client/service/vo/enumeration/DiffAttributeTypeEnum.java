@@ -33,5 +33,7 @@ public enum DiffAttributeTypeEnum {
     /** Flag saying that it is an invite (if not, it is a kick). */
     INVITE,
     /** Turn of the game. */
-    TURN
+    TURN,
+    /** Id of an external object. */
+    ID_OBJECT
 }

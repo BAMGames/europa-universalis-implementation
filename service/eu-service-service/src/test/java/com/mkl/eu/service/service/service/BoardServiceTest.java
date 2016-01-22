@@ -138,7 +138,8 @@ public class BoardServiceTest {
         List<ChatEntity> messages = new ArrayList<>();
 
         when(gameDao.read(idGame)).thenReturn(gameOe);
-        when(gameMapping.oeToVo(gameOe)).thenReturn(gameVo);
+        when(gameMapping.oeToVo(gameOe, null)).thenReturn(gameVo);
+        when(gameMapping.oeToVo(gameOe, idCountry)).thenReturn(gameVo);
         when(chatDao.getGlobalMessages(idGame)).thenReturn(globalMessages);
         when(chatDao.getRooms(idGame, idCountry)).thenReturn(rooms);
         when(chatDao.getMessages(idGame, idCountry)).thenReturn(messages);
@@ -148,7 +149,7 @@ public class BoardServiceTest {
 
         InOrder inOrder = inOrder(gameDao, gameMapping, chatDao, chatMapping);
         inOrder.verify(gameDao).read(idGame);
-        inOrder.verify(gameMapping).oeToVo(gameOe);
+        inOrder.verify(gameMapping).oeToVo(gameOe, null);
         inOrder.verify(chatDao).getGlobalMessages(idGame);
         inOrder.verify(chatMapping).getChat(globalMessages, null, null, null);
 
@@ -172,7 +173,7 @@ public class BoardServiceTest {
 
         inOrder = inOrder(gameDao, gameMapping, chatDao, chatMapping);
         inOrder.verify(gameDao).read(idGame);
-        inOrder.verify(gameMapping).oeToVo(gameOe);
+        inOrder.verify(gameMapping).oeToVo(gameOe, idCountry);
         inOrder.verify(chatDao).getGlobalMessages(idGame);
         inOrder.verify(chatDao).getRooms(idGame, idCountry);
         inOrder.verify(chatDao).getMessages(idGame, idCountry);
@@ -668,7 +669,7 @@ public class BoardServiceTest {
             Assert.fail("Should break because username has not the right to move this counter");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
-            Assert.assertEquals("username", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.authent.username", e.getParams()[0]);
         }
 
         counter.setCountry("genes");

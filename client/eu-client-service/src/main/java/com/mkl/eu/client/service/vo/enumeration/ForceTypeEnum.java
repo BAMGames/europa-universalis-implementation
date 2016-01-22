@@ -18,6 +18,8 @@ public enum ForceTypeEnum {
     FLEET_PLUS,
     /** F-. */
     FLEET_MINUS,
+    /** F+ Transport. */
+    FLEET_TRANSPORT_PLUS,
     /** F- Galley. */
     FLEET_GALLEY_MINUS,
     /** LD. */

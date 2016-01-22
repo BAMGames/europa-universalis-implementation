@@ -6,7 +6,6 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.ITablesService;
 import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.vo.GameLight;
-import com.mkl.eu.client.service.vo.tables.Tables;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -78,7 +77,7 @@ public class EUApplication extends Application {
         List<GameLight> games = boardService.findGames(findGames);
 
 
-        Tables tables = tablesService.getTables();
+        globalConfiguration.setTables(tablesService.getTables());
 
         for (int i = 0; i < games.size(); i++) {
             GameLight game = games.get(i);

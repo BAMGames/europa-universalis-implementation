@@ -3,6 +3,7 @@ package com.mkl.eu.client.common.util;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Various utility method.
@@ -28,6 +29,24 @@ public final class CommonUtil {
     public static <T> T findFirst(Collection<T> list, Predicate<T> predicate) {
         T returnValue = null;
         Optional<T> opt = list.stream().filter(predicate).findFirst();
+        if (opt.isPresent()) {
+            returnValue = opt.get();
+        }
+
+        return returnValue;
+    }
+
+    /**
+     * Find the first element of the stream that matches the predicate, or <code>null</code> if none matches.
+     *
+     * @param stream    stream to parse.
+     * @param predicate to use for matching purpose.
+     * @param <T>       Type of the Collection.
+     * @return the first element of the collection matching the predicate.
+     */
+    public static <T> T findFirst(Stream<T> stream, Predicate<T> predicate) {
+        T returnValue = null;
+        Optional<T> opt = stream.filter(predicate).findFirst();
         if (opt.isPresent()) {
             returnValue = opt.get();
         }

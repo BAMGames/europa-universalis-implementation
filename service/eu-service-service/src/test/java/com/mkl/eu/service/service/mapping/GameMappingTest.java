@@ -78,13 +78,13 @@ public class GameMappingTest {
 
     @Test
     public void testVoidGameMapping() {
-        Game vo = gameMapping.oeToVo(null);
+        Game vo = gameMapping.oeToVo(null, null);
 
         Assert.assertNull(vo);
 
         GameEntity entity = new GameEntity();
 
-        vo = gameMapping.oeToVo(entity);
+        vo = gameMapping.oeToVo(entity, null);
 
         ReflectionAssert.assertReflectionEquals(new Game(), vo);
     }
@@ -93,7 +93,7 @@ public class GameMappingTest {
     public void testFullGameMapping() {
         GameEntity entity = createGameEntity();
 
-        Game vo = gameMapping.oeToVo(entity);
+        Game vo = gameMapping.oeToVo(entity, null);
 
         ReflectionAssert.assertReflectionEquals(createGameVo(), vo);
 

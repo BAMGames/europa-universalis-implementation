@@ -8,8 +8,10 @@ package com.mkl.eu.client.service.vo.enumeration;
 public enum UnitActionEnum {
     /** Purchase. */
     PURCHASE,
-    /** Maintenance in war. */
+    /** Maintenance (naval). */
+    MAINT,
+    /** Maintenance in war (land). */
     MAINT_WAR,
-    /** Maintenance in peace. */
+    /** Maintenance in peace (land). */
     MAINT_PEACE;
 }

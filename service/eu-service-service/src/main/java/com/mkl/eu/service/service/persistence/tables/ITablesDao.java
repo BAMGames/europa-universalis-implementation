@@ -1,7 +1,11 @@
 package com.mkl.eu.service.service.persistence.tables;
 
 import com.mkl.eu.service.service.persistence.IGenericDao;
+import com.mkl.eu.service.service.persistence.oe.tables.BasicForceTableEntity;
 import com.mkl.eu.service.service.persistence.oe.tables.TradeIncomeEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.UnitEntity;
+
+import java.util.List;
 
 /**
  * Interface of the Tables DAO.
@@ -18,4 +22,14 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the foreign or domestic trade income given the input value and the foreign DTI/FTI.
      */
     Integer getTradeIncome(Integer inputValue, Integer countryValue, boolean foreignTrade);
+
+    /**
+     * @return the basic forces tables.
+     */
+    List<BasicForceTableEntity> getBasicForces();
+
+    /**
+     * @return the units tables.
+     */
+    List<UnitEntity> getUnits();
 }

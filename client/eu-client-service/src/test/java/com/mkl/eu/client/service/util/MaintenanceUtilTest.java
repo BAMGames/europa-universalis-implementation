@@ -28,11 +28,11 @@ public class MaintenanceUtilTest {
     public void testComputeMaintenance() {
         Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(null, null, null));
 
-        Map<CounterFaceTypeEnum, Integer> forces = new HashMap<>();
+        Map<CounterFaceTypeEnum, Long> forces = new HashMap<>();
 
         Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, null, null));
 
-        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1l);
 
         Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, null, null));
 
@@ -47,11 +47,11 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, null, units));
 
-        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 3);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 3l);
 
         Assert.assertEquals(36, MaintenanceUtil.computeMaintenance(forces, null, units));
 
-        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1);
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1l);
 
         Assert.assertEquals(36, MaintenanceUtil.computeMaintenance(forces, null, units));
 
@@ -84,14 +84,14 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
-        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 4);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 4l);
 
         Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
-        forces.put(CounterFaceTypeEnum.NAVAL_TRANSPORT, 1);
-        forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT, 1);
-        forces.put(CounterFaceTypeEnum.NAVAL_GALLEY, 1);
-        forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, 2);
+        forces.put(CounterFaceTypeEnum.NAVAL_TRANSPORT, 1l);
+        forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT, 1l);
+        forces.put(CounterFaceTypeEnum.NAVAL_GALLEY, 1l);
+        forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, 2l);
         basicForce = new BasicForce();
         basicForce.setType(ForceTypeEnum.FLEET_MINUS);
         basicForce.setNumber(1);
@@ -118,7 +118,7 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
-        forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, 3);
+        forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, 3l);
 
         Assert.assertEquals(25, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
@@ -126,8 +126,8 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(22, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
-        forces.put(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, 2);
-        forces.put(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, 3);
+        forces.put(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, 2l);
+        forces.put(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, 3l);
         basicForce = new BasicForce();
         basicForce.setType(ForceTypeEnum.ARMY_TIMAR_PLUS);
         basicForce.setNumber(1);
@@ -144,7 +144,7 @@ public class MaintenanceUtilTest {
         Assert.assertEquals(58, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
         forces = new HashMap<>();
-        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1l);
         unit = new Unit();
         unit.setPrice(8);
         unit.setType(ForceTypeEnum.LD);
@@ -158,7 +158,7 @@ public class MaintenanceUtilTest {
         Assert.assertEquals(8, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
         forces = new HashMap<>();
-        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1);
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1l);
 
         Assert.assertEquals(20, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
@@ -166,7 +166,7 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
-        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1l);
 
         Assert.assertEquals(24, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
@@ -175,7 +175,7 @@ public class MaintenanceUtilTest {
         Assert.assertEquals(23, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 
         CommonUtil.findFirst(units, iUnit -> iUnit.getType() == ForceTypeEnum.ARMY_PLUS).setPrice(25);
-        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1l);
 
         Assert.assertEquals(32, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
 

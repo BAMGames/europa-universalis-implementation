@@ -1,19 +1,27 @@
-package com.mkl.eu.client.service.vo.tables;
+package com.mkl.eu.service.service.persistence.oe.tables;
 
-import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.UnitActionEnum;
+import com.mkl.eu.client.service.vo.tables.IUnit;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 /**
- * VO for the unit (purchase, maintenance) of a country (tables).
+ * Entity for the unit (purchase, maintenance) of a country (tables).
  *
  * @author MKL.
  */
-public class Unit extends EuObject implements IUnit {
+@Entity
+@Table(name = "T_UNIT")
+public class UnitEntity implements IUnit, IEntity, Serializable {
+    /** Id. */
+    private Long id;
     /** Country owning this unit. */
     private String country;
     /** Tech of the unit. */
-    private Tech tech;
+    private TechEntity tech;
     /** Price of the pruchase/maintenance of the unit. */
     private Integer price;
     /** Type of the unit. */
@@ -23,7 +31,21 @@ public class Unit extends EuObject implements IUnit {
     /** Flag for special cases (veterans). */
     private boolean special;
 
+    /** @return the id. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
+    public Long getId() {
+        return id;
+    }
+
+    /** @param id the id to set. */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     /** @return the country. */
+    @Column(name = "R_COUNTRY")
     public String getCountry() {
         return country;
     }
@@ -34,17 +56,19 @@ public class Unit extends EuObject implements IUnit {
     }
 
     /** @return the tech. */
-    public Tech getTech() {
+    @ManyToOne
+    @JoinColumn(name = "ID_TECH")
+    public TechEntity getTech() {
         return tech;
     }
 
     /** @param tech the tech to set. */
-    public void setTech(Tech tech) {
+    public void setTech(TechEntity tech) {
         this.tech = tech;
     }
 
     /** @return the price. */
-    @Override
+    @Column(name = "PRICE")
     public Integer getPrice() {
         return price;
     }
@@ -55,7 +79,8 @@ public class Unit extends EuObject implements IUnit {
     }
 
     /** @return the type. */
-    @Override
+    @Column(name = "TYPE")
+    @Enumerated(EnumType.STRING)
     public ForceTypeEnum getType() {
         return type;
     }
@@ -66,7 +91,8 @@ public class Unit extends EuObject implements IUnit {
     }
 
     /** @return the action. */
-    @Override
+    @Column(name = "ACTION")
+    @Enumerated(EnumType.STRING)
     public UnitActionEnum getAction() {
         return action;
     }
@@ -77,7 +103,7 @@ public class Unit extends EuObject implements IUnit {
     }
 
     /** @return the special. */
-    @Override
+    @Column(name = "SPECIAL")
     public boolean isSpecial() {
         return special;
     }

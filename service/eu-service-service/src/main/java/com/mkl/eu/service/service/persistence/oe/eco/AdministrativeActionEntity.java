@@ -1,9 +1,13 @@
-package com.mkl.eu.client.service.vo.eco;
+package com.mkl.eu.service.service.persistence.oe.eco;
 
-import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * Administrative action of a country at a given turn.
@@ -11,7 +15,13 @@ import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
  *
  * @author MKL
  */
-public class AdministrativeAction extends EuObject {
+@Entity
+@Table(name = "ADMINISTRATIVE_ACTION")
+public class AdministrativeActionEntity implements IEntity, Serializable {
+    /** Id. */
+    private Long id;
+    /** Owner of the administrative action. */
+    private PlayableCountryEntity country;
     /** Turn of the administrative action. */
     private Integer turn;
     /** Type of the administrative action (ie MNU, DTI, COL, Exc Levies,...). */
@@ -31,7 +41,34 @@ public class AdministrativeAction extends EuObject {
     /** Eventual if of object subject of the administrative action. */
     private Long idObject;
 
+    /** @return the id. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
+    public Long getId() {
+        return id;
+    }
+
+    /** @param id the id to set. */
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /** @return the country. */
+    @ManyToOne
+    @JoinColumn(name = "ID_COUNTRY")
+    public PlayableCountryEntity getCountry() {
+        return country;
+    }
+
+    /** @param country the country to set. */
+    public void setCountry(PlayableCountryEntity country) {
+        this.country = country;
+    }
+
     /** @return the turn. */
+    @Column(name = "TURN")
     public Integer getTurn() {
         return turn;
     }
@@ -42,6 +79,8 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the type. */
+    @Column(name = "TYPE")
+    @Enumerated(EnumType.STRING)
     public AdminActionTypeEnum getType() {
         return type;
     }
@@ -52,6 +91,7 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the cost. */
+    @Column(name = "COST")
     public Integer getCost() {
         return cost;
     }
@@ -62,6 +102,7 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the column. */
+    @Column(name = "COLUNM")
     public Integer getColumn() {
         return column;
     }
@@ -72,6 +113,7 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the bonus. */
+    @Column(name = "BONUS")
     public Integer getBonus() {
         return bonus;
     }
@@ -82,6 +124,7 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the die. */
+    @Column(name = "DIE")
     public Integer getDie() {
         return die;
     }
@@ -92,6 +135,8 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the result. */
+    @Column(name = "RESULT")
+    @Enumerated(EnumType.STRING)
     public AdminActionResultEnum getResult() {
         return result;
     }
@@ -102,6 +147,8 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the status. */
+    @Column(name = "STATUS")
+    @Enumerated(EnumType.STRING)
     public AdminActionStatusEnum getStatus() {
         return status;
     }
@@ -112,6 +159,7 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the idObject. */
+    @Column(name = "ID_OBJECT")
     public Long getIdObject() {
         return idObject;
     }
