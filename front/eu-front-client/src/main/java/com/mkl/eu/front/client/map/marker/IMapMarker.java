@@ -133,4 +133,23 @@ public interface IMapMarker {
 
     /** @param parent the parent to set.. */
     void setParent(IMapMarker parent);
+
+    /**
+     * Returns the country owning this province.
+     *
+     * @return the country owning this province.
+     */
+    String getOwner();
+
+    /**
+     * Returns the country controlling this province.
+     *
+     * @return the country controlling this province.
+     */
+    String getController();
+
+    /**
+     * @return whether the province is a port or no.
+     */
+    boolean isPort();
 }

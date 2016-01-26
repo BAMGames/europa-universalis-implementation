@@ -4,6 +4,11 @@ import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 /**
  * Administrative action of a country at a given turn.
@@ -30,6 +35,10 @@ public class AdministrativeAction extends EuObject {
     private AdminActionStatusEnum status;
     /** Eventual if of object subject of the administrative action. */
     private Long idObject;
+    /** Eventual name of the province subject of the administrative action. */
+    private String province;
+    /** Eventual type of counter face subject of the administrative action. */
+    private CounterFaceTypeEnum counterFaceType;
 
     /** @return the turn. */
     public Integer getTurn() {
@@ -119,5 +128,27 @@ public class AdministrativeAction extends EuObject {
     /** @param idObject the idObject to set. */
     public void setIdObject(Long idObject) {
         this.idObject = idObject;
+    }
+
+    /** @return the province. */
+    public String getProvince() {
+        return province;
+    }
+
+    /** @param province the province to set. */
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    /** @return the counterFaceType. */
+    @Column(name = "COUNTER_FACE_TYPE")
+    @Enumerated(EnumType.STRING)
+    public CounterFaceTypeEnum getCounterFaceType() {
+        return counterFaceType;
+    }
+
+    /** @param counterFaceType the counterFaceType to set. */
+    public void setCounterFaceType(CounterFaceTypeEnum counterFaceType) {
+        this.counterFaceType = counterFaceType;
     }
 }

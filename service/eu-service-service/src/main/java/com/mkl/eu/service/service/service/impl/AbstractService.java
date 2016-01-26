@@ -8,8 +8,10 @@ import com.mkl.eu.client.service.service.INameConstants;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
+import com.mkl.eu.service.service.mapping.tables.TablesMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
@@ -17,6 +19,11 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.BasicForceTableEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.LimitTableEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.TradeIncomeEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.UnitEntity;
+import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +45,8 @@ import java.util.Map;
 public abstract class AbstractService implements INameConstants {
     /** Logger. */
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    /** Tables of the game cached. */
+    public static Tables TABLES;
     /** Error message when a parameter is missing. */
     public static final String MSG_MISSING_PARAMETER = "{1}: {0} missing.";
     /** Error message when an object is not found (in database mostly). */
@@ -70,6 +79,37 @@ public abstract class AbstractService implements INameConstants {
     /** Chat mapping. */
     @Autowired
     protected ChatMapping chatMapping;
+    /** Tables DAO. */
+    @Autowired
+    private ITablesDao tablesDao;
+    /** Tables Mapping. */
+    @Autowired
+    private TablesMapping tablesMapping;
+
+    /**
+     * @return the Tables of the game.
+     */
+    protected Tables getTables() {
+        return TABLES;
+    }
+
+    /**
+     * Cache the tables.
+     */
+    protected void cacheTables() {
+        TABLES = new Tables();
+
+        Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+
+        List<TradeIncomeEntity> tradeTables = tablesDao.readAll();
+        tablesMapping.fillTradeIncomeTables(tradeTables, TABLES);
+        List<BasicForceTableEntity> basicForces = tablesDao.getBasicForces();
+        tablesMapping.fillBasicForcesTables(basicForces, objectsCreated, TABLES);
+        List<UnitEntity> units = tablesDao.getUnits();
+        tablesMapping.fillUnitsTables(units, objectsCreated, TABLES);
+        List<LimitTableEntity> limits = tablesDao.getLimits();
+        tablesMapping.fillLimitsTables(limits, objectsCreated, TABLES);
+    }
 
     /**
      * Will throw a FunctionalException if the test is <code>null</code>.
@@ -131,7 +171,7 @@ public abstract class AbstractService implements INameConstants {
         args[0] = check.getName();
         String msg = MessageFormat.format(check.getMsgFormat(), args);
         LOGGER.error(msg);
-        throw new FunctionalException(check.getCodeError(), msg, null, check.getName());
+        throw new FunctionalException(check.getCodeError(), msg, null, check.getParams());
     }
 
     /**

@@ -17,8 +17,10 @@ public class Tables {
 //    private List<Period>
     /** Basic forces of major powers. */
     private List<BasicForce> basicForces = new ArrayList<>();
-    /** Unit purchase and maintenance costs of major poxers. */
+    /** Unit purchase and maintenance costs of major powers. */
     private List<Unit> units = new ArrayList<>();
+    /** Actions limits of major powers. */
+    private List<Limit> limits = new ArrayList<>();
 
     /** @return the foreignTrades. */
     public List<TradeIncome> getForeignTrades() {
@@ -58,5 +60,15 @@ public class Tables {
     /** @param units the units to set. */
     public void setUnits(List<Unit> units) {
         this.units = units;
+    }
+
+    /** @return the limits. */
+    public List<Limit> getLimits() {
+        return limits;
+    }
+
+    /** @param limits the limits to set. */
+    public void setLimits(List<Limit> limits) {
+        this.limits = limits;
     }
 }

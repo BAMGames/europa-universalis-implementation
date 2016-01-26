@@ -436,12 +436,9 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         return false;
     }
 
-    /**
-     * Returns the country owning this province.
-     *
-     * @return the country owning this province.
-     */
-    private String getOwner() {
+    /** {@inheritDoc} */
+    @Override
+    public String getOwner() {
         for (StackMarker stack : stacks) {
             for (CounterMarker marker : stack.getCounters()) {
                 if (marker.getType() == CounterFaceTypeEnum.OWN) {
@@ -451,6 +448,26 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         }
 
         return (String) getProperties().get(PROP_EU_OWNER);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getController() {
+        for (StackMarker stack : stacks) {
+            for (CounterMarker marker : stack.getCounters()) {
+                if (marker.getType() == CounterFaceTypeEnum.CONTROL) {
+                    return marker.getCountry();
+                }
+            }
+        }
+
+        return getOwner();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPort() {
+        return getBooleanProperty(PROP_EU_PORT) || getBooleanProperty(PROP_EU_ARSENAL);
     }
 
     /**
@@ -571,5 +588,13 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         result -= 10;
 
         return result;
+    }
+
+    /**
+     * @param property the property.
+     * @return the property as a boolean.
+     */
+    public boolean getBooleanProperty(String property) {
+        return Boolean.parseBoolean(getStringProperty(property));
     }
 }

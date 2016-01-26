@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
+import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
@@ -14,18 +15,26 @@ import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Limit;
+import com.mkl.eu.client.service.vo.tables.Unit;
+import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
+import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +61,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     private static final List<CounterFaceTypeEnum> ARMY_TYPES = new ArrayList<>();
     /** Counter Face Type for land armies. */
     private static final List<CounterFaceTypeEnum> ARMY_LAND_TYPES = new ArrayList<>();
+    /** Counter Face Type for naval armies. */
+    private static final List<CounterFaceTypeEnum> ARMY_NAVAL_TYPES = new ArrayList<>();
     /** EconomicalSheet DAO. */
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
@@ -64,6 +75,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
+    /** Stack DAO. */
+    @Autowired
+    private IStackDao stackDao;
+    /** Province DAO. */
+    @Autowired
+    private IProvinceDao provinceDao;
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
@@ -96,6 +113,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK);
+
+        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.FLEET_PLUS);
+        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.FLEET_MINUS);
+        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT);
+        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION);
+        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_GALLEY);
+        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
     }
 
     /** {@inheritDoc} */
@@ -270,33 +294,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case LM:
                 // TODO check if country is at war
             case DIS:
-                failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdObject()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                        .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT));
-                CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()),
-                        c -> c.getId().equals(request.getRequest().getIdObject()));
-                failIfNull(new AbstractService.CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                        .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
-                failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(StringUtils.equals(counter.getCountry(), country.getName())).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                        .setMsgFormat("{1}: {0} The counter {2} is not owned by the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), request.getRequest().getIdCountry()));
-                if (request.getRequest().getType() == AdminActionTypeEnum.LM) {
-                    failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(ARMY_LAND_TYPES.contains(counter.getType())).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                            .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be maintained low.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
-                } else {
-                    failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(ARMY_TYPES.contains(counter.getType())).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                            .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be disbanded.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
-                }
-
-                List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
-                        request.getRequest().getIdObject(), AdminActionTypeEnum.LM, AdminActionTypeEnum.DIS);
-                failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(actions == null || actions.isEmpty()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                        .setMsgFormat("{1}: {0} The counter {2} has already a DIS or LM administrative action PLANNED this turn.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
-
-
-                admAct = new AdministrativeActionEntity();
-                admAct.setCountry(country);
-                admAct.setStatus(AdminActionStatusEnum.PLANNED);
-                admAct.setTurn(game.getTurn());
-                admAct.setIdObject(counter.getId());
+                admAct = computeDisbandLowMaintenance(request, game, country);
+                break;
+            case PU:
+                admAct = computePurchase(request, game, country);
                 break;
             default:
                 admAct = null;
@@ -330,11 +331,34 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             diffAttributes.setValue(admAct.getType().name());
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.ID_OBJECT);
-            diffAttributes.setValue(admAct.getIdObject().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
+            if (admAct.getCost() != null) {
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.COST);
+                diffAttributes.setValue(admAct.getCost().toString());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+            if (admAct.getIdObject() != null) {
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.ID_OBJECT);
+                diffAttributes.setValue(admAct.getIdObject().toString());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+            if (admAct.getProvince() != null) {
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
+                diffAttributes.setValue(admAct.getProvince());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+            if (admAct.getCounterFaceType() != null) {
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.COUNTER_FACE_TYPE);
+                diffAttributes.setValue(admAct.getCounterFaceType().name());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
 
             diffs.add(diff);
         }
@@ -346,6 +370,160 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         response.setMessages(getMessagesSince(request));
 
         return response;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type PURCHASE.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException
+     */
+    private AdministrativeActionEntity computeDisbandLowMaintenance(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getIdObject()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT));
+        CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()),
+                c -> c.getId().equals(request.getRequest().getIdObject()));
+        failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
+        failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(counter.getCountry(), country.getName())).setCodeError(IConstantsServiceException.COUNTER_NOT_OWNED)
+                .setMsgFormat("{1}: {0} The counter {2} is not owned by the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), request.getRequest().getIdCountry()));
+        if (request.getRequest().getType() == AdminActionTypeEnum.LM) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_LAND_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_MAINTAIN_LOW)
+                    .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be maintained low.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
+        } else {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
+                    .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be disbanded.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
+        }
+
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
+                request.getRequest().getIdObject(), AdminActionTypeEnum.LM, AdminActionTypeEnum.DIS);
+        failIfFalse(new CheckForThrow<Boolean>().setTest(actions == null || actions.isEmpty()).setCodeError(IConstantsServiceException.COUNTER_ALREADY_PLANNED)
+                .setMsgFormat("{1}: {0} The counter {2} has already a DIS or LM administrative action PLANNED this turn.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
+
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setIdObject(counter.getId());
+        return admAct;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type PURCHASE.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException
+     */
+    private AdministrativeActionEntity computePurchase(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        String province = request.getRequest().getProvince();
+        CounterFaceTypeEnum faceType = request.getRequest().getCounterFaceType();
+        failIfNull(new CheckForThrow<>().setTest(faceType).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT));
+        failIfEmpty(new CheckForThrow<String>().setTest(province).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT));
+
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+
+        failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+
+        List<StackEntity> stacks = stackDao.getStacksOnProvince(province, game.getId());
+        String owner = null;
+
+        boolean port = false;
+
+        if (prov instanceof EuropeanProvinceEntity) {
+            EuropeanProvinceEntity euProv = (EuropeanProvinceEntity) prov;
+            owner = euProv.getDefaultOwner();
+            if (euProv.isPort() != null) {
+                port = euProv.isPort();
+            }
+            if (!port && euProv.isArsenal() != null) {
+                port = euProv.isArsenal();
+            }
+        }
+
+        CounterEntity ownCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> counter.getType() == CounterFaceTypeEnum.OWN);
+        if (ownCounter != null) {
+            owner = ownCounter.getCountry();
+        }
+
+        boolean provinceOk = StringUtils.equals(country.getName(), owner);
+
+        if (provinceOk) {
+            CounterEntity ctrlCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> counter.getType() == CounterFaceTypeEnum.CONTROL);
+            if (ctrlCounter != null) {
+                provinceOk = StringUtils.equals(country.getName(), ctrlCounter.getCountry());
+            }
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL)
+                .setMsgFormat("{1}: {0} The province {2} is not owned and controlled by {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+
+        boolean faceConsistent;
+
+        if (port) {
+            faceConsistent = ARMY_TYPES.contains(faceType);
+        } else {
+            faceConsistent = ARMY_LAND_TYPES.contains(faceType);
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(faceConsistent).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
+                .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased on province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, province));
+
+        boolean land = ARMY_LAND_TYPES.contains(faceType);
+        final List<CounterFaceTypeEnum> faces;
+        final LimitTypeEnum limitType;
+        if (land) {
+            faces = ARMY_LAND_TYPES;
+            limitType = LimitTypeEnum.PURCHASE_LAND_TROOPS;
+        } else {
+            faces = ARMY_NAVAL_TYPES;
+            limitType = LimitTypeEnum.PURCHASE_NAVAL_TROOPS;
+        }
+
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
+                null, AdminActionTypeEnum.PU);
+
+        Integer plannedSize = actions.stream().filter(action -> faces.contains(action.getCounterFaceType())).collect(Collectors.summingInt(action -> MaintenanceUtil.getSizeFromType(action.getCounterFaceType())));
+        Integer size = MaintenanceUtil.getSizeFromType(faceType);
+        Integer maxPurchase = getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getType() == limitType &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+        boolean purchaseOk = (land && plannedSize + size <= 3 * maxPurchase) || (!land && plannedSize + size <= maxPurchase);
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(purchaseOk).setCodeError(IConstantsServiceException.PURCHASE_LIMIT_EXCEED)
+                .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased because country limits were exceeded ({3}/{4}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, plannedSize, maxPurchase));
+
+        ForceTypeEnum type = MaintenanceUtil.getPurchaseForceFromFace(faceType);
+        Unit unitCost = CommonUtil.findFirst(getTables().getUnits(), unit -> StringUtils.equals(country.getName(), unit.getCountry()) &&
+                        !unit.isSpecial() &&
+                        unit.getAction() == UnitActionEnum.PURCHASE &&
+                        unit.getType() == type &&
+                        (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))
+        );
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        admAct.setCounterFaceType(faceType);
+        if (unitCost != null) {
+            int cost = MaintenanceUtil.getPurchasePrice(plannedSize, maxPurchase, unitCost.getPrice(), size);
+            admAct.setCost(cost);
+        }
+        return admAct;
     }
 
     /** {@inheritDoc} */
@@ -374,7 +552,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_REMOVE_ADM_ACT, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), action.getCountry().getUsername()));
 
-        failIfFalse(new CheckForThrow<Boolean>().setTest(action.getStatus() == AdminActionStatusEnum.PLANNED).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+        failIfFalse(new CheckForThrow<Boolean>().setTest(action.getStatus() == AdminActionStatusEnum.PLANNED).setCodeError(IConstantsServiceException.ACTION_NOT_PLANNED)
                 .setMsgFormat("{1}: {0} The administrative action {2} is not PLANNED and cannot be removed.").setName(PARAMETER_REMOVE_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_ADM_ACT).setParams(METHOD_REMOVE_ADM_ACT, request.getRequest().getIdAdmAct()));
 
         adminActionDao.delete(action);

@@ -5,11 +5,13 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
@@ -25,6 +27,9 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.EconomicServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import org.junit.Assert;
@@ -36,6 +41,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Matchers.anyObject;
@@ -63,6 +70,9 @@ public class EcoServiceTest {
 
     @Mock
     private IStackDao stackDao;
+
+    @Mock
+    private IProvinceDao provinceDao;
 
     @Mock
     private IChatDao chatDao;
@@ -151,19 +161,6 @@ public class EcoServiceTest {
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(0).getCounters().add(new CounterEntity());
-        game.getStacks().get(0).getCounters().get(0).setId(2L);
-        game.getStacks().get(0).getCounters().get(0).setCountry("angleterre");
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(1).getCounters().add(new CounterEntity());
-        game.getStacks().get(1).getCounters().get(0).setId(3L);
-        game.getStacks().get(1).getCounters().get(0).setCountry("france");
-        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_ART_MINUS);
-        game.getStacks().get(1).getCounters().add(new CounterEntity());
-        game.getStacks().get(1).getCounters().get(1).setId(4L);
-        game.getStacks().get(1).getCounters().get(1).setCountry("france");
-        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.FLEET_MINUS);
 
         when(gameDao.lock(12L)).thenReturn(game);
 
@@ -214,6 +211,40 @@ public class EcoServiceTest {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
             Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
         }
+    }
+
+    @Test
+    public void testAddAdmActDisLmFail() {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(12L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setName("france");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(2L);
+        game.getStacks().get(0).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(3L);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(1).setId(4L);
+        game.getStacks().get(1).getCounters().get(1).setCountry("france");
+        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.FLEET_MINUS);
+
+        when(gameDao.lock(12L)).thenReturn(game);
 
         request.getRequest().setType(AdminActionTypeEnum.DIS);
 
@@ -241,7 +272,7 @@ public class EcoServiceTest {
             economicService.addAdminAction(request);
             Assert.fail("Should break because idObject is invalid");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.COUNTER_NOT_OWNED, e.getCode());
             Assert.assertEquals("addAdminAction.request.idObject", e.getParams()[0]);
         }
 
@@ -251,7 +282,7 @@ public class EcoServiceTest {
             economicService.addAdminAction(request);
             Assert.fail("Should break because idObject is invalid");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_DISBAND, e.getCode());
             Assert.assertEquals("addAdminAction.request.idObject", e.getParams()[0]);
         }
 
@@ -262,7 +293,7 @@ public class EcoServiceTest {
             economicService.addAdminAction(request);
             Assert.fail("Should break because idObject is invalid");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_MAINTAIN_LOW, e.getCode());
             Assert.assertEquals("addAdminAction.request.idObject", e.getParams()[0]);
         }
 
@@ -276,7 +307,7 @@ public class EcoServiceTest {
             economicService.addAdminAction(request);
             Assert.fail("Should break because idObject is invalid");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.COUNTER_ALREADY_PLANNED, e.getCode());
             Assert.assertEquals("addAdminAction.request.idObject", e.getParams()[0]);
         }
     }
@@ -454,6 +485,390 @@ public class EcoServiceTest {
     }
 
     @Test
+    public void testAddAdmActPuFail() {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(12L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setName("france");
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        request.getRequest().setType(AdminActionTypeEnum.PU);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because counterFaceType is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_ART_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("rotw");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        StackEntity stackOwnFor = new StackEntity();
+        CounterEntity counterOwnFor = new CounterEntity();
+        counterOwnFor.setType(CounterFaceTypeEnum.OWN);
+        counterOwnFor.setCountry("angleterre");
+        stackOwnFor.getCounters().add(counterOwnFor);
+
+        StackEntity stackOwn = new StackEntity();
+        CounterEntity counterOwn = new CounterEntity();
+        counterOwn.setType(CounterFaceTypeEnum.OWN);
+        counterOwn.setCountry("france");
+        stackOwn.getCounters().add(counterOwn);
+
+        StackEntity stackCtrlFor = new StackEntity();
+        CounterEntity counterCtrlFor = new CounterEntity();
+        counterCtrlFor.setType(CounterFaceTypeEnum.CONTROL);
+        counterCtrlFor.setCountry("angleterre");
+        stackCtrlFor.getCounters().add(counterCtrlFor);
+
+        StackEntity stackCtrl = new StackEntity();
+        CounterEntity counterCtrl = new CounterEntity();
+        counterCtrl.setType(CounterFaceTypeEnum.CONTROL);
+        counterCtrl.setCountry("france");
+        stackCtrl.getCounters().add(counterCtrl);
+
+        RotwProvinceEntity rotw = new RotwProvinceEntity();
+        rotw.setName("rotw");
+        when(provinceDao.getProvinceByName("rotw")).thenReturn(rotw);
+
+        EuropeanProvinceEntity controlledNotOwn = new EuropeanProvinceEntity();
+        controlledNotOwn.setName("controlledNotOwn");
+        when(provinceDao.getProvinceByName("controlledNotOwn")).thenReturn(controlledNotOwn);
+
+        when(stackDao.getStacksOnProvince("controlledNotOwn", 12L)).thenReturn(Arrays.asList(stackOwnFor, stackCtrl));
+
+        EuropeanProvinceEntity ownedNotControlled = new EuropeanProvinceEntity();
+        ownedNotControlled.setName("ownedNotControlled");
+        when(provinceDao.getProvinceByName("ownedNotControlled")).thenReturn(ownedNotControlled);
+
+        when(stackDao.getStacksOnProvince("ownedNotControlled", 12L)).thenReturn(Arrays.asList(stackOwn, stackCtrlFor));
+
+        EuropeanProvinceEntity owned = new EuropeanProvinceEntity();
+        owned.setName("owned");
+        when(provinceDao.getProvinceByName("owned")).thenReturn(owned);
+
+        when(stackDao.getStacksOnProvince("owned", 12L)).thenReturn(Collections.singletonList(stackOwn));
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("IdF");
+        idf.setDefaultOwner("france");
+        idf.setPort(false);
+        when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
+
+        EuropeanProvinceEntity poitou = new EuropeanProvinceEntity();
+        poitou.setName("poitou");
+        poitou.setDefaultOwner("france");
+        poitou.setPort(true);
+        poitou.setArsenal(false);
+        when(provinceDao.getProvinceByName("poitou")).thenReturn(poitou);
+
+        EuropeanProvinceEntity corn = new EuropeanProvinceEntity();
+        corn.setName("corn");
+        corn.setDefaultOwner("france");
+        corn.setArsenal(true);
+        when(provinceDao.getProvinceByName("corn")).thenReturn(corn);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is not owned by the country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("controlledNotOwn");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is not owned by the country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("ownedNotControlled");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is not owned by the country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("owned");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because face type is not correct");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_PURCHASE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FLEET_MINUS);
+        request.getRequest().setProvince("IdF");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because face type is not correct");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_PURCHASE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        EconomicServiceImpl.TABLES = new Tables();
+        request.getRequest().setProvince("poitou");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because limits were exceeded");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PURCHASE_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(3);
+        limit.setType(LimitTypeEnum.PURCHASE_NAVAL_TROOPS);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(3);
+        limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
+        limits.add(limit);
+        tables.setLimits(limits);
+        EconomicServiceImpl.TABLES = tables;
+        request.getRequest().setProvince("corn");
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            Assert.fail(e.getMessage());
+        }
+
+
+        List<AdministrativeActionEntity> actions = new ArrayList<>();
+        AdministrativeActionEntity action = new AdministrativeActionEntity();
+        action.setCounterFaceType(CounterFaceTypeEnum.ARMY_PLUS);
+        actions.add(action);
+        action = new AdministrativeActionEntity();
+        action.setCounterFaceType(CounterFaceTypeEnum.FLEET_PLUS);
+        actions.add(action);
+        when(adminActionDao.findAdminActions(12l, 1, null, AdminActionTypeEnum.PU)).thenReturn(actions);
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        action = new AdministrativeActionEntity();
+        action.setCounterFaceType(CounterFaceTypeEnum.ARMY_PLUS);
+        actions.add(action);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because limits were exceeded");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PURCHASE_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testAddAdmActPuSuccess() throws FunctionalException {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(12L);
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
+        request.getRequest().setProvince("corn");
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setLandTech("MEDIEVAL");
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        request.getRequest().setType(AdminActionTypeEnum.PU);
+
+        StackEntity stackOwn = new StackEntity();
+        CounterEntity counterOwn = new CounterEntity();
+        counterOwn.setType(CounterFaceTypeEnum.OWN);
+        counterOwn.setCountry("france");
+        stackOwn.getCounters().add(counterOwn);
+
+        when(stackDao.getStacksOnProvince("corn", 12L)).thenReturn(Collections.singletonList(stackOwn));
+
+        EuropeanProvinceEntity corn = new EuropeanProvinceEntity();
+        corn.setName("corn");
+        corn.setDefaultOwner("angleterre");
+        corn.setArsenal(true);
+        when(provinceDao.getProvinceByName("corn")).thenReturn(corn);
+
+        Tables tables = new Tables();
+        List<Unit> units = new ArrayList<>();
+        Unit unit = new Unit();
+        unit.setCountry("france");
+        unit.setPrice(15);
+        unit.setType(ForceTypeEnum.ARMY_MINUS);
+        unit.setAction(UnitActionEnum.PURCHASE);
+        unit.setTech(new Tech());
+        unit.getTech().setName("LACE_WAR");
+        units.add(unit);
+        unit = new Unit();
+        unit.setCountry("angleterre");
+        unit.setPrice(10);
+        unit.setType(ForceTypeEnum.ARMY_MINUS);
+        unit.setAction(UnitActionEnum.PURCHASE);
+        unit.setTech(new Tech());
+        unit.getTech().setName("MEDIEVAL");
+        units.add(unit);
+        unit = new Unit();
+        unit.setCountry("france");
+        unit.setPrice(5);
+        unit.setType(ForceTypeEnum.ARMY_MINUS);
+        unit.setAction(UnitActionEnum.PURCHASE);
+        unit.setTech(new Tech());
+        unit.getTech().setName("MEDIEVAL");
+        units.add(unit);
+        tables.setUnits(units);
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(7);
+        limit.getPeriod().setEnd(15);
+        limit.setNumber(3);
+        limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(7);
+        limit.setNumber(1);
+        limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("angleterre");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(7);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
+        limits.add(limit);
+        tables.setLimits(limits);
+        EconomicServiceImpl.TABLES = tables;
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.addAdminAction(request);
+
+        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(provinceDao).getProvinceByName("corn");
+        inOrder.verify(stackDao).getStacksOnProvince("corn", 12L);
+        inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.PU);
+        inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(6, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(request.getRequest().getIdCountry().toString(), diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(1).getType());
+        Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COST, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("8", diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals(request.getRequest().getProvince(), diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, diffEntity.getAttributes().get(5).getType());
+        Assert.assertEquals(request.getRequest().getCounterFaceType().name(), diffEntity.getAttributes().get(5).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
     public void testRemoveAdmActFailSimple() {
         try {
             economicService.removeAdminAction(null);
@@ -585,7 +1000,7 @@ public class EcoServiceTest {
             economicService.removeAdminAction(request);
             Assert.fail("Should break because idAdmAct is not planned");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.ACTION_NOT_PLANNED, e.getCode());
             Assert.assertEquals("removeAdminAction.request.idAdmAct", e.getParams()[0]);
         }
     }

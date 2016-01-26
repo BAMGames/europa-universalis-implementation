@@ -14,12 +14,15 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.BasicForce;
+import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.main.UIUtil;
+import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -80,6 +83,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private AuthentHolder authentHolder;
     /** Game. */
     private Game game;
+    /** Markers of the loaded game. */
+    private List<IMapMarker> markers;
     /** Game configuration. */
     private GameConfiguration gameConfig;
     /** Stage of the window. */
@@ -94,6 +99,18 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private TableView<AdministrativeAction> unitMaintenanceTable;
     /** The ChoiceBox containing the remaining counters. */
     private ChoiceBox<Counter> unitMaintenanceCountersChoice;
+
+    /********************************************/
+    /**        Nodes about purchase          */
+    /********************************************/
+    /** The TitledPane containing all the other nodes. */
+    private TitledPane unitPurchasePane;
+    /** The TableView containing the already planned actions. */
+    private TableView<AdministrativeAction> unitPurchaseTable;
+    /** The ChoiceBox containing the remaining counters. */
+    private ChoiceBox<IMapMarker> unitPurchaseProvincesChoice;
+    /** The ChoiceBox containing the type of counters that can be added. */
+    private ChoiceBox<CounterFaceTypeEnum> unitPurchaseTypeChoice;
 
     /**
      * Filling the static List.
@@ -128,8 +145,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @param game       the game to set.
      * @param gameConfig the gameConfig to set.
      */
-    public AdminActionsWindow(Game game, GameConfiguration gameConfig) {
+    public AdminActionsWindow(Game game, List<IMapMarker> markers, GameConfiguration gameConfig) {
         this.game = game;
+        this.markers = markers;
         this.gameConfig = gameConfig;
     }
 
@@ -159,45 +177,36 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Creates the tab for the royal treasure sheet.
+     * Creates the tab for the form of the current administrative actions.
      *
-     * @param country default country sheet to display.
-     * @return the tab for the royal treasure sheet.
+     * @param country currently logged (<ocde>null</ocde> if not in this game).
+     * @return the tab for the form of the current administrative actions.
      */
     private Tab createAdminForm(PlayableCountry country) {
         Tab tab = new Tab(message.getMessage("admin_action.form", null, globalConfiguration.getLocale()));
 
-        Node unitMaintenancePane = getMaintenanceNode(country);
+        Node unitMaintenancePane = createMaintenanceNode(country);
+        Node unitPurchasePane = createPurchaseNode(country);
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(unitMaintenancePane);
+        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane);
 
         tab.setContent(vBox);
 
         return tab;
     }
 
-    private Node getMaintenanceNode(PlayableCountry country) {
+    /**
+     * Create the node for the unit maintenance.
+     *
+     * @param country of the current player.
+     * @return the node for the unit maintenance.
+     */
+    private Node createMaintenanceNode(PlayableCountry country) {
         unitMaintenancePane = new TitledPane();
 
         unitMaintenanceTable = new TableView<>();
-        configureAdminActionTable(unitMaintenanceTable, param -> {
-            Request<RemoveAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new RemoveAdminActionRequest(param.getId()));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.removeAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating room.", e);
-                // TODO exception handling
-            }
-        });
+        configureAdminActionTable(unitMaintenanceTable, this::removeAdminAction);
 
         HBox hBox = new HBox();
 
@@ -332,10 +341,183 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Creates the tab for the income sheet.
+     * Create the node for the unit purchase.
      *
-     * @param country default country sheet to display.
-     * @return the tab for the income sheet.
+     * @param country of the current player.
+     * @return the node for the unit purchase.
+     */
+    private Node createPurchaseNode(PlayableCountry country) {
+        unitPurchasePane = new TitledPane();
+
+        unitPurchaseTable = new TableView<>();
+        configureAdminActionTable(unitPurchaseTable, this::removeAdminAction);
+
+        HBox hBox = new HBox();
+
+        unitPurchaseProvincesChoice = new ChoiceBox<>();
+        unitPurchaseProvincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(IMapMarker object) {
+                return object.getId();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public IMapMarker fromString(String string) {
+                return null;
+            }
+        });
+
+        unitPurchaseTypeChoice = new ChoiceBox<>();
+        unitPurchaseTypeChoice.converterProperty().set(new StringConverter<CounterFaceTypeEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(CounterFaceTypeEnum object) {
+                return object.name();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public CounterFaceTypeEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+        btn.setOnAction(event -> {
+            IMapMarker province = unitPurchaseProvincesChoice.getSelectionModel().getSelectedItem();
+            CounterFaceTypeEnum type = unitPurchaseTypeChoice.getSelectionModel().getSelectedItem();
+
+            Request<AddAdminActionRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.PU, province.getId(), type));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.addAdminAction(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when creating room.", e);
+
+                UIUtil.showException(e, globalConfiguration, message);
+            }
+        });
+
+        hBox.getChildren().addAll(unitPurchaseProvincesChoice, unitPurchaseTypeChoice, btn);
+
+        VBox vBox = new VBox();
+
+        vBox.getChildren().addAll(unitPurchaseTable, hBox);
+
+        unitPurchasePane.setContent(vBox);
+
+        unitPurchaseProvincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+                .filter(marker -> StringUtils.equals(country.getName(), marker.getOwner()) &&
+                        StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
+
+        unitPurchaseProvincesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != oldValue) {
+                if (newValue == null) {
+                    unitPurchaseTypeChoice.setItems(null);
+                } else if (newValue.isPort()) {
+                    unitPurchaseTypeChoice.setItems(FXCollections.observableArrayList(ARMY_TYPES));
+                } else {
+                    unitPurchaseTypeChoice.setItems(FXCollections.observableArrayList(ARMY_LAND_TYPES));
+                }
+            }
+        });
+
+        updatePurchaseNode(country);
+
+        return unitPurchasePane;
+    }
+
+    /**
+     * Update the unit purchase node with the current game.
+     *
+     * @param country of the current player.
+     */
+    private void updatePurchaseNode(PlayableCountry country) {
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        admAct.getType() == AdminActionTypeEnum.PU)
+                .collect(Collectors.toList());
+
+        Map<Boolean, Integer> currentPurchase = actions.stream().collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingInt(action -> MaintenanceUtil.getSizeFromType(action.getCounterFaceType()))));
+        Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
+
+        unitPurchasePane.setText(message.getMessage("admin_action.form.unit_purchase", new Object[]{currentPurchase.get(true), maxPurchase.get(LimitTypeEnum.PURCHASE_LAND_TROOPS), currentPurchase.get(false), maxPurchase.get(LimitTypeEnum.PURCHASE_NAVAL_TROOPS)}, globalConfiguration.getLocale()));
+        unitPurchaseTable.setItems(FXCollections.observableArrayList(actions));
+    }
+
+    /**
+     * Returns whether the type of the counter face is land or not.
+     *
+     * @param face the face.
+     * @return if it is land.
+     */
+    private Boolean isLand(CounterFaceTypeEnum face) {
+        Boolean land = null;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_MINUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_KOZAK:
+                    land = true;
+                    break;
+                case FLEET_PLUS:
+                case FLEET_MINUS:
+                case NAVAL_DETACHMENT:
+                case NAVAL_TRANSPORT:
+                case NAVAL_GALLEY:
+                    land = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return land;
+    }
+
+    /**
+     * Method called for removing a PLANNED administrative action.
+     *
+     * @param param the administrative action to remove.
+     */
+    private void removeAdminAction(AdministrativeAction param) {
+        Request<RemoveAdminActionRequest> request = new Request<>();
+        authentHolder.fillAuthentInfo(request);
+        gameConfig.fillGameInfo(request);
+        gameConfig.fillChatInfo(request);
+        request.setRequest(new RemoveAdminActionRequest(param.getId()));
+        Long idGame = gameConfig.getIdGame();
+        try {
+            DiffResponse response = economicService.removeAdminAction(request);
+
+            DiffEvent diff = new DiffEvent(response, idGame);
+            processDiffEvent(diff);
+        } catch (Exception e) {
+            LOGGER.error("Error when creating room.", e);
+            // TODO exception handling
+        }
+    }
+
+    /**
+     * Creates the tab for the administrative actions already done.
+     *
+     * @param country of the current player.
+     * @return the tab for the administrative actions already done
      */
     private Tab createAdminList(PlayableCountry country) {
         Tab tab = new Tab(message.getMessage("admin_action.list", null, globalConfiguration.getLocale()));
@@ -528,14 +710,15 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TYPE);
                 if (attribute != null) {
                     AdminActionTypeEnum type = AdminActionTypeEnum.valueOf(attribute.getValue());
-                    if (type != null) {
+                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
+                    if (type != null && country != null) {
                         switch (type) {
                             case DIS:
                             case LM:
-                                PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
-                                if (country != null) {
-                                    updateMaintenanceNode(country);
-                                }
+                                updateMaintenanceNode(country);
+                                break;
+                            case PU:
+                                updatePurchaseNode(country);
                                 break;
                             default:
                                 break;

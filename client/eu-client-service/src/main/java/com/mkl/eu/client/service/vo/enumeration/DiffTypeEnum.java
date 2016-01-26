@@ -32,7 +32,10 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#ID_COUNTRY for the id of the owner</li>
      * <li>DiffAttributeTypeEnum#TURN for the turn of the action</li>
      * <li>DiffAttributeTypeEnum#TYPE for the type of the action</li>
+     * <li>DiffAttributeTypeEnum#COST for the an eventual cost of the action</li>
      * <li>DiffAttributeTypeEnum#ID_OBJECT for the id of an eventual object</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE for the name of an eventual province</li>
+     * <li>DiffAttributeTypeEnum#COUNTER_FACE_TYPE for the type of an eventual counter face</li>
      * </ul>
      * </li>
      * </ul>

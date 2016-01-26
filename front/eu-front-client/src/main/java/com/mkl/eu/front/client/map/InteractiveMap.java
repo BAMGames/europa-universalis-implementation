@@ -35,9 +35,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -55,8 +57,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     private ApplicationContext context;
     /** Utility for markers. */
     private MarkerUtils markerUtils;
-    /** Marker manager. */
-    private MyMarkerManager markerManager;
     /** Game service. */
     @Autowired
     private IBoardService gameService;
@@ -101,7 +101,18 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     public InteractiveMap(Game game, GameConfiguration gameConfig) {
         this.game = game;
         this.gameConfig = gameConfig;
+
         init();
+    }
+
+    /**
+     * Initialiaze the markers.
+     */
+    @PostConstruct
+    public void initMarkers() {
+        markerUtils = context.getBean(MarkerUtils.class, this);
+
+        countryMarkers = markerUtils.createMarkers(game);
     }
 
     /** Set up the map and the markers. */
@@ -112,7 +123,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
             frame.setResizable(true);
         }
 
-        markerManager = context.getBean(MyMarkerManager.class, gameConfig);
+        MyMarkerManager markerManager = context.getBean(MyMarkerManager.class, gameConfig);
 
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         // Too many inaccessible field to enable tween and no loop.
@@ -165,9 +176,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
             keyboardHandler.addDiffListener(diffListener);
         }
 
-        markerUtils = context.getBean(MarkerUtils.class, this);
-
-        countryMarkers = markerUtils.createMarkers(game);
         mapDetail.addMarkers(countryMarkers.values().toArray(new Marker[countryMarkers.values().size()]));
 
         // Disable the auto-draw feature. Manual redraw on change.
@@ -488,5 +496,12 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.context = applicationContext;
+    }
+
+    /**
+     * @return only the markers of type IMapMarker.
+     */
+    public List<IMapMarker> getMarkers() {
+        return countryMarkers.values().stream().filter(marker -> marker instanceof IMapMarker).map(marker -> (IMapMarker) marker).collect(Collectors.toList());
     }
 }

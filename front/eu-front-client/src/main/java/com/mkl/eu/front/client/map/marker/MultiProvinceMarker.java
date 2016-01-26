@@ -134,6 +134,24 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
+    public String getOwner() {
+        return getFirstMapMarker().getOwner();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getController() {
+        return getFirstMapMarker().getController();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPort() {
+        return getFirstMapMarker().isPort();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setProperties(HashMap<String, Object> props) {
         HashMap<String, Object> properties = null;
         if (props != null) {

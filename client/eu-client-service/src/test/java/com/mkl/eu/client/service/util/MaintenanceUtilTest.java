@@ -183,4 +183,33 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(37, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
     }
+
+    @Test
+    public void testPurchasePrice() {
+        Assert.assertEquals(0, MaintenanceUtil.getPurchasePrice(null, null, null, null));
+
+        Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(null, null, 12, null));
+
+        Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(50, null, 12, null));
+
+        Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(0, 5, 12, null));
+
+        Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(0, 5, 12, 1));
+
+        Assert.assertEquals(24, MaintenanceUtil.getPurchasePrice(5, 5, 12, 1));
+
+        Assert.assertEquals(24, MaintenanceUtil.getPurchasePrice(9, 5, 12, 1));
+
+        Assert.assertEquals(36, MaintenanceUtil.getPurchasePrice(10, 5, 12, 1));
+
+        Assert.assertEquals(18, MaintenanceUtil.getPurchasePrice(null, 1, 12, 2));
+
+        Assert.assertEquals(20, MaintenanceUtil.getPurchasePrice(null, 1, 13, 2));
+
+        Assert.assertEquals(40, MaintenanceUtil.getPurchasePrice(1, 2, 20, 4));
+
+        Assert.assertEquals(47, MaintenanceUtil.getPurchasePrice(1, 2, 23, 4));
+
+        Assert.assertEquals(45, MaintenanceUtil.getPurchasePrice(1, 2, 22, 4));
+    }
 }

@@ -67,6 +67,8 @@ public class AdministrativeActionMapping extends AbstractMapping {
         target.setResult(source.getResult());
         target.setStatus(source.getStatus());
         target.setIdObject(source.getIdObject());
+        target.setProvince(source.getProvince());
+        target.setCounterFaceType(source.getCounterFaceType());
 
         return target;
     }

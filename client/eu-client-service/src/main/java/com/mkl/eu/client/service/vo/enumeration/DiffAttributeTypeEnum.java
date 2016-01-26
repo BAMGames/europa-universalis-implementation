@@ -35,5 +35,9 @@ public enum DiffAttributeTypeEnum {
     /** Turn of the game. */
     TURN,
     /** Id of an external object. */
-    ID_OBJECT
+    ID_OBJECT,
+    /** Type of the face of a counter. */
+    COUNTER_FACE_TYPE,
+    /** Cost of the action/object. */
+    COST
 }

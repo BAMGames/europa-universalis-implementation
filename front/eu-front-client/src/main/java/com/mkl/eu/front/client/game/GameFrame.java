@@ -1,4 +1,4 @@
-package com.mkl.eu.front.client.main;
+package com.mkl.eu.front.client.game;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.Request;
@@ -14,6 +14,7 @@ import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import org.apache.commons.lang3.StringUtils;

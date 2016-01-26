@@ -179,4 +179,42 @@ public class TablesMapping extends AbstractMapping {
 
         return target;
     }
+
+    /**
+     * Fill the actions limits tables.
+     *
+     * @param sources        List of basic forces entity.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
+     * @param tables         the target tables.
+     */
+    public void fillLimitsTables(List<LimitTableEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated, Tables tables) {
+        if (tables != null && sources != null) {
+            for (LimitTableEntity source : sources) {
+                tables.getLimits().add(oeToVo(source, objectsCreated));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source         object source.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
+     * @return object mapped.
+     */
+    public Limit oeToVo(LimitTableEntity source, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
+        if (source == null) {
+            return null;
+        }
+
+        Limit target = new Limit();
+
+        target.setId(source.getId());
+        target.setNumber(source.getNumber());
+        target.setType(source.getType());
+        target.setCountry(source.getCountry());
+        target.setPeriod(storeVo(Period.class, source.getPeriod(), objectsCreated, (ITransformation<PeriodEntity, Period>) this::oeToVo));
+
+        return target;
+    }
 }

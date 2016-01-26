@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.tables;
 
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.tables.BasicForceTableEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.LimitTableEntity;
 import com.mkl.eu.service.service.persistence.oe.tables.TradeIncomeEntity;
 import com.mkl.eu.service.service.persistence.oe.tables.UnitEntity;
 
@@ -32,4 +33,9 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the units tables.
      */
     List<UnitEntity> getUnits();
+
+    /**
+     * @return the actions limits tables.
+     */
+    List<LimitTableEntity> getLimits();
 }

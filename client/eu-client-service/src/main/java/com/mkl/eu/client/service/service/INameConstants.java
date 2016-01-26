@@ -76,6 +76,8 @@ public interface INameConstants {
     String PARAMETER_ID_OBJECT = "idObject";
     /** Name of the parameter idAdmAct. */
     String PARAMETER_ID_ADM_ACT = "idAdmAct";
+    /** Name of the parameter counter face typoe. */
+    String PARAMETER_COUNTER_FACE_TYPE = "counterFaceType";
     /** Name of a response. */
     String RESPONSE = "response";
     /** Name of a response of type game. */

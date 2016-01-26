@@ -1,4 +1,4 @@
-package com.mkl.eu.front.client.main;
+package com.mkl.eu.front.client.game;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.util.CommonUtil;
@@ -30,6 +30,8 @@ import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.main.GameConfiguration;
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -182,7 +184,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private void initEcos() {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), gameConfig);
         ecoWindow.addDiffListener(this);
-        adminActionsWindow = context.getBean(AdminActionsWindow.class, game, gameConfig);
+        adminActionsWindow = context.getBean(AdminActionsWindow.class, game, map.getMarkers(), gameConfig);
         adminActionsWindow.addDiffListener(this);
     }
 
@@ -765,11 +767,21 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             } else {
                 LOGGER.error("Missing type in adm act add event.");
             }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COST);
+            if (attribute != null) {
+                admAct.setCost(Integer.parseInt(attribute.getValue()));
+            }
             attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_OBJECT);
             if (attribute != null) {
                 admAct.setIdObject(Long.parseLong(attribute.getValue()));
-            } else {
-                LOGGER.error("Missing type in adm act add event.");
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+            if (attribute != null) {
+                admAct.setProvince(attribute.getValue());
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTER_FACE_TYPE);
+            if (attribute != null) {
+                admAct.setCounterFaceType(CounterFaceTypeEnum.valueOf(attribute.getValue()));
             }
         } else {
             LOGGER.error("Missing or wrong country in adm act add event.");

@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.main;
 
+import com.mkl.eu.front.client.game.GameFrame;
 import javafx.application.Application;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

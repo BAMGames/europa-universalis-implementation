@@ -107,6 +107,126 @@ public final class MaintenanceUtil {
     }
 
     /**
+     * Transform a face to a force enum.
+     *
+     * @param face to transform in force.
+     * @return the force.
+     */
+    public static ForceTypeEnum getPurchaseForceFromFace(CounterFaceTypeEnum face) {
+        ForceTypeEnum force = null;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_MINUS:
+                case ARMY_TIMAR_MINUS:
+                    force = ForceTypeEnum.ARMY_MINUS;
+                    break;
+                case ARMY_PLUS:
+                case ARMY_TIMAR_PLUS:
+                    force = ForceTypeEnum.ARMY_PLUS;
+                    break;
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_TIMAR:
+                    force = ForceTypeEnum.LD;
+                    break;
+                case FLEET_MINUS:
+                    force = ForceTypeEnum.FLEET_MINUS;
+                    break;
+                case FLEET_PLUS:
+                    force = ForceTypeEnum.FLEET_PLUS;
+                    break;
+                case NAVAL_DETACHMENT:
+                    force = ForceTypeEnum.NWD;
+                    break;
+                case NAVAL_GALLEY:
+                    force = ForceTypeEnum.NGD;
+                    break;
+                case NAVAL_TRANSPORT:
+                    force = ForceTypeEnum.NTD;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return force;
+    }
+
+    /**
+     * Returns the military size of a counter.
+     *
+     * @param face the face.
+     * @return the military size.
+     */
+    public static int getSizeFromType(CounterFaceTypeEnum face) {
+        int size = 0;
+
+        if (face != null) {
+            switch (face) {
+                case FLEET_PLUS:
+                case ARMY_PLUS:
+                    size = 4;
+                    break;
+                case FLEET_MINUS:
+                case ARMY_MINUS:
+                    size = 2;
+                    break;
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_KOZAK:
+                case NAVAL_DETACHMENT:
+                case NAVAL_TRANSPORT:
+                case NAVAL_GALLEY:
+                    size = 1;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return size;
+    }
+
+    /**
+     * Returns the real purchase price for a land army given the size of the already planned land purchase,
+     * the limit purchase, the normal price and the size of the unit being purchased.
+     *
+     * @param alreadyPurchasedSize size in LD of the already planned land purchase.
+     * @param maxPurchaseSize      size in LD of the limit the country can purchase land units at normal cost.
+     * @param price                normal cost of the unit being purchased.
+     * @param size                 size of the unit being purchased.
+     * @return the real purchase price.
+     */
+    public static int getPurchasePrice(Integer alreadyPurchasedSize, Integer maxPurchaseSize, Integer price, Integer size) {
+        int purchasePrice = 0;
+
+        if (price != null) {
+            if (alreadyPurchasedSize == null) {
+                alreadyPurchasedSize = 0;
+            }
+            if (size == null) {
+                size = 1;
+            }
+            if (maxPurchaseSize == null) {
+                return price;
+            }
+            int factor = 1 + alreadyPurchasedSize / maxPurchaseSize;
+            int nbLdInFactor = maxPurchaseSize - alreadyPurchasedSize % maxPurchaseSize;
+
+            if (nbLdInFactor >= size) {
+                purchasePrice = price * factor;
+            } else {
+                int fractionPrice = price * nbLdInFactor / size;
+                int remainingPrice = price - fractionPrice;
+                purchasePrice = fractionPrice * factor + getPurchasePrice(alreadyPurchasedSize + nbLdInFactor, maxPurchaseSize, remainingPrice, size - nbLdInFactor);
+            }
+        }
+
+        return purchasePrice;
+    }
+
+    /**
      * Returns the maintenance price of a face.
      *
      * @param units List of maintenance costs.

@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.ITablesService;
 import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.vo.GameLight;
+import com.mkl.eu.front.client.game.GamePopup;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
