@@ -184,6 +184,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      */
     private Tab createAdminForm(PlayableCountry country) {
         Tab tab = new Tab(message.getMessage("admin_action.form", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
 
         Node unitMaintenancePane = createMaintenanceNode(country);
         Node unitPurchasePane = createPurchaseNode(country);
@@ -401,7 +402,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
-                LOGGER.error("Error when creating room.", e);
+                LOGGER.error("Error when creating administrative action.", e);
 
                 UIUtil.showException(e, globalConfiguration, message);
             }
@@ -571,6 +572,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      */
     private Tab createAdminList(PlayableCountry country) {
         Tab tab = new Tab(message.getMessage("admin_action.list", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
 
         ChoiceBox<PlayableCountry> choiceCountry = new ChoiceBox<>();
         choiceCountry.setItems(FXCollections.observableArrayList(game.getCountries()));

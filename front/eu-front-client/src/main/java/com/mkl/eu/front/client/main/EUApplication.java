@@ -7,12 +7,16 @@ import com.mkl.eu.client.service.service.ITablesService;
 import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.front.client.game.GamePopup;
+import com.mkl.eu.front.client.log.JavaFxAppender;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -55,6 +59,9 @@ public class EUApplication extends Application {
         globalConfiguration = context.getBean(GlobalConfiguration.class);
 
 //        primaryStage.getIcons().add(new Image("file:resources/images/address_book_32.png"));
+        TabPane tabPane = new TabPane();
+
+        Scene scene = new Scene(tabPane, 300, 250);
 
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -62,7 +69,10 @@ public class EUApplication extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        Scene scene = new Scene(grid, 300, 250);
+        Tab tab = new Tab(message.getMessage("game.games", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(grid);
+        tabPane.getTabs().add(tab);
 
         primaryStage.setTitle(message.getMessage("game.title", null, globalConfiguration.getLocale()));
         primaryStage.setScene(scene);
@@ -104,5 +114,11 @@ public class EUApplication extends Application {
             });
             grid.add(loadBtn, 3, i, 1, 1);
         }
+
+        tab = new Tab(message.getMessage("game.log", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        TextArea text = JavaFxAppender.getText();
+        tab.setContent(text);
+        tabPane.getTabs().add(tab);
     }
 }
