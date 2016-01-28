@@ -4,13 +4,15 @@ import ch.qos.logback.core.OutputStreamAppender;
 import javafx.scene.control.TextArea;
 
 /**
- * Description of the class.
+ * Log appender that will write the logs in a static TextArea.
  *
  * @author MKL.
  */
 public class JavaFxAppender<E> extends OutputStreamAppender<E> {
+    /** Static TextArea where the logs will be written. */
     private static TextArea text = new TextArea();
 
+    /** {@inheritDoc} */
     @Override
     public void start() {
         setOutputStream(new JavaFxOutputStream(text));
