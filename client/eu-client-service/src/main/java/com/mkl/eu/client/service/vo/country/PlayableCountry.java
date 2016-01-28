@@ -15,6 +15,10 @@ import java.util.List;
  */
 public class PlayableCountry extends EuObject {
     /**
+     * Name of the major country turkey.
+     */
+    public final static String TURKEY = "turquie";
+    /**
      * Name of the country.
      */
     private String name;

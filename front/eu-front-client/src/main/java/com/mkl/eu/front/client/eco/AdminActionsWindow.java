@@ -419,14 +419,19 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 .filter(marker -> StringUtils.equals(country.getName(), marker.getOwner()) &&
                         StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
 
+        List<Unit> forces = globalConfiguration.getTables().getUnits().stream()
+                .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                        unit.getAction() == UnitActionEnum.PURCHASE &&
+                        (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
+
+
         unitPurchaseProvincesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
                 if (newValue == null) {
                     unitPurchaseTypeChoice.setItems(null);
-                } else if (newValue.isPort()) {
-                    unitPurchaseTypeChoice.setItems(FXCollections.observableArrayList(ARMY_TYPES));
                 } else {
-                    unitPurchaseTypeChoice.setItems(FXCollections.observableArrayList(ARMY_LAND_TYPES));
+                    List<CounterFaceTypeEnum> faces = forces.stream().filter(force -> newValue.isPort() || force.getTech().isLand()).flatMap(force -> getFacesFromPurchaseForce(force.getType(), country.getName()).stream()).collect(Collectors.toList());
+                    unitPurchaseTypeChoice.setItems(FXCollections.observableArrayList(faces));
                 }
             }
         });
@@ -488,6 +493,51 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         }
 
         return land;
+    }
+
+    /**
+     * Returns the different possibilities for a type of force for a counter type.
+     *
+     * @param force   type of force in a unit of action PURCHASE.
+     * @param country for special rules (turkey, france, hollande, england,...)
+     * @return the List of type faces.
+     */
+    private List<CounterFaceTypeEnum> getFacesFromPurchaseForce(ForceTypeEnum force, String country) {
+        List<CounterFaceTypeEnum> faces = new ArrayList<>();
+
+        if (force != null) {
+            switch (force) {
+                case ARMY_MINUS:
+                    faces.add(CounterFaceTypeEnum.ARMY_MINUS);
+                    if (StringUtils.equals(PlayableCountry.TURKEY, country)) {
+                        faces.add(CounterFaceTypeEnum.ARMY_TIMAR_MINUS);
+                    }
+                    break;
+                case LD:
+                    faces.add(CounterFaceTypeEnum.LAND_DETACHMENT);
+                    if (StringUtils.equals(PlayableCountry.TURKEY, country)) {
+                        faces.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
+                    }
+                    break;
+                case FLEET_GALLEY_MINUS:
+                case FLEET_MINUS:
+                    faces.add(CounterFaceTypeEnum.FLEET_MINUS);
+                    break;
+                case NWD:
+                    faces.add(CounterFaceTypeEnum.NAVAL_DETACHMENT);
+                    break;
+                case NGD:
+                    faces.add(CounterFaceTypeEnum.NAVAL_GALLEY);
+                    break;
+                case NTD:
+                    faces.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return faces;
     }
 
     /**
