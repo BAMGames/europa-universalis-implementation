@@ -33,7 +33,7 @@ public class MarkerUtils {
     /** PApplet. */
     private PApplet pApplet;
     /** Cache of the images for the counters. Used to not load several times the same image. first key: country, second key: type. */
-    private Map<String, Map<String, PImage>> countersImage = new HashMap<>();
+    private static Map<String, Map<String, PImage>> countersImage = new HashMap<>();
 
     /**
      * Constructor.
@@ -166,7 +166,7 @@ public class MarkerUtils {
      * @param type    of the counter.
      * @param image   to store.
      */
-    private void putImageInCache(String country, String type, PImage image) {
+    private synchronized void putImageInCache(String country, String type, PImage image) {
         Map<String, PImage> countryImages = countersImage.get(country);
         if (countryImages == null) {
             countryImages = new HashMap<>();
