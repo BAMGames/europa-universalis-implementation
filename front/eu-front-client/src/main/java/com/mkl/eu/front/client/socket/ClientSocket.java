@@ -93,6 +93,8 @@ public class ClientSocket extends AbstractDiffListenerContainer implements Runna
         this.terminate = terminate;
 
         try {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject("TERMINATE");
             socket.close();
         } catch (IOException e) {
             LOGGER.error("Error when closing the socket.", e);

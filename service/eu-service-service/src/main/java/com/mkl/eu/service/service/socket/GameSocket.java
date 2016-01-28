@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.socket;
 
 import com.mkl.eu.client.common.vo.SocketInfo;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ public class GameSocket implements Runnable {
 
             info = (SocketInfo) in.readObject();
 
-            LOGGER.info("New client on game " + info.getIdGame());
+            LOGGER.info("New client on game " + info.getIdGame() + " for player " + info.getIdCountry());
 
             handler.addActiveClient(this, info.getIdGame());
         } catch (Exception e) {
@@ -54,11 +55,19 @@ public class GameSocket implements Runnable {
     /** {@inheritDoc */
     @Override
     public void run() {
-        while (!terminate && !socket.isClosed()) {
-            // do nothing
+        try {
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            Object result;
+            while ((result = in.readObject()) != null) {
+                if (result instanceof String && StringUtils.equals("TERMINATE", (String) result)) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("Client socket aborted: " + e.getMessage());
         }
 
-        LOGGER.info("Closing client on game " + info.getIdGame());
+        LOGGER.info("Closing client on game " + info.getIdGame() + " for player " + info.getIdCountry());
         handler.removeActiveClient(this, info.getIdGame());
     }
 
