@@ -15,6 +15,7 @@
         <property name="basenames">
             <list>
                 <value>file:data/msg/messages</value>
+                <value>file:data/msg/messages-provinces</value>
             </list>
         </property>
     </bean>

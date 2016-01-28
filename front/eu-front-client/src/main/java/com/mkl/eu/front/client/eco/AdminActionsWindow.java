@@ -359,7 +359,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             /** {@inheritDoc} */
             @Override
             public String toString(IMapMarker object) {
-                return object.getId();
+                return message.getMessage(object.getId(), null, globalConfiguration.getLocale());
             }
 
             /** {@inheritDoc} */
