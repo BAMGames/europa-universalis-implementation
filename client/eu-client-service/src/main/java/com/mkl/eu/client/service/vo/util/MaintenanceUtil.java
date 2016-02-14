@@ -5,6 +5,9 @@ import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 import com.mkl.eu.client.service.vo.tables.IBasicForce;
 import com.mkl.eu.client.service.vo.tables.IUnit;
+import com.mkl.eu.client.service.vo.tables.Tech;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +43,7 @@ public final class MaintenanceUtil {
      * @param units       price of maintenance for each unit.
      * @return the total maintenance fee.
      */
-    public static int computeMaintenance(Map<CounterFaceTypeEnum, Long> forces, List<? extends IBasicForce> basicForces, List<? extends IUnit> units) {
+    public static int computeUnitMaintenance(Map<CounterFaceTypeEnum, Long> forces, List<? extends IBasicForce> basicForces, List<? extends IUnit> units) {
         int total = 0;
 
         if (forces != null && units != null) {
@@ -238,21 +241,35 @@ public final class MaintenanceUtil {
         if (face != null) {
             switch (face) {
                 case FORTRESS_5:
+                case ARSENAL_5_ST_PETER:
                     level = 5;
                     break;
                 case FORTRESS_4:
+                case ARSENAL_4:
+                case ARSENAL_4_ST_PETER:
                     level = 4;
                     break;
                 case FORTRESS_3:
+                case ARSENAL_3:
+                case ARSENAL_3_GIBRALTAR:
+                case ARSENAL_3_SEBASTOPOL:
+                case ARSENAL_3_ST_PETER:
                     level = 3;
                     break;
                 case FORTRESS_2:
+                case ARSENAL_2:
+                case ARSENAL_2_GIBRALTAR:
+                case ARSENAL_2_SEBASTOPOL:
+                case ARSENAL_2_ST_PETER:
                     level = 2;
                     break;
                 case FORTRESS_1:
+                case MISSION:
+                case ARSENAL_1_ST_PETER:
                     level = 1;
                     break;
                 case FORT:
+                case ARSENAL_0_ST_PETER:
                     level = 0;
                     break;
                 default:
@@ -583,6 +600,57 @@ public final class MaintenanceUtil {
         }
 
         return size;
+    }
+
+    /**
+     * Compute the maintenance given the fortresses, whether they are in ROTW or not, and given the owner technology and the game turn.
+     *
+     * @param fortresses      the fortresses grouped by level and location (<code>true</code> if in ROTW) to maintain.
+     * @param techs           List of all the land technologies.
+     * @param ownerTechnology the land technology of the owner of the fortresses.
+     * @param gameTurn        the turn of the game.
+     * @return the total maintenance fee.
+     */
+    public static int computeFortressesMaintenance(Map<Pair<Integer, Boolean>, Integer> fortresses, List<Tech> techs, Tech ownerTechnology, Integer gameTurn) {
+        int total = 0;
+
+        if (fortresses != null) {
+            for (Pair<Integer, Boolean> key : fortresses.keySet()) {
+                Integer number = fortresses.get(key);
+                if (number != null && number > 0) {
+                    Integer level = key.getLeft();
+                    if (level != null && level >= 0) {
+                        int cost = level;
+                        if (key.getRight() != null && key.getRight()) {
+                            if (level == 0) {
+                                cost = 1;
+                            } else {
+                                cost *= 2;
+                            }
+                        }
+
+                        if (level == 3) {
+                            boolean goodTech = false;
+                            if (techs != null) {
+                                Tech targetTech = CommonUtil.findFirst(techs, tech -> StringUtils.equals(tech.getName(), Tech.ARQUEBUS));
+                                goodTech = targetTech != null && ownerTechnology != null && ownerTechnology.getBeginTurn() >= targetTech.getBeginTurn();
+                            }
+                            if (!goodTech) {
+                                cost *= 2;
+                            }
+                        }
+
+                        if (level == 4 && (gameTurn == null || gameTurn < 40)) {
+                            cost *= 2;
+                        }
+
+                        total += cost * number;
+                    }
+                }
+            }
+        }
+
+        return total;
     }
 
     private static class MaintenanceInfo {

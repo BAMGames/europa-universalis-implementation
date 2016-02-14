@@ -4,8 +4,11 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 import com.mkl.eu.client.service.vo.tables.BasicForce;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,68 +28,68 @@ import java.util.Map;
 public class MaintenanceUtilTest {
 
     @Test
-    public void testComputeMaintenance() {
-        Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(null, null, null));
+    public void testComputeUnitMaintenance() {
+        Assert.assertEquals(0, MaintenanceUtil.computeUnitMaintenance(null, null, null));
 
         Map<CounterFaceTypeEnum, Long> forces = new HashMap<>();
 
-        Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, null, null));
+        Assert.assertEquals(0, MaintenanceUtil.computeUnitMaintenance(forces, null, null));
 
         forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1l);
 
-        Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, null, null));
+        Assert.assertEquals(0, MaintenanceUtil.computeUnitMaintenance(forces, null, null));
 
         List<Unit> units = new ArrayList<>();
 
-        Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, null, units));
+        Assert.assertEquals(0, MaintenanceUtil.computeUnitMaintenance(forces, null, units));
 
         Unit unit = new Unit();
         unit.setPrice(12);
         unit.setType(ForceTypeEnum.ARMY_MINUS);
         units.add(unit);
 
-        Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, null, units));
+        Assert.assertEquals(12, MaintenanceUtil.computeUnitMaintenance(forces, null, units));
 
         forces.put(CounterFaceTypeEnum.ARMY_MINUS, 3l);
 
-        Assert.assertEquals(36, MaintenanceUtil.computeMaintenance(forces, null, units));
+        Assert.assertEquals(36, MaintenanceUtil.computeUnitMaintenance(forces, null, units));
 
         forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1l);
 
-        Assert.assertEquals(36, MaintenanceUtil.computeMaintenance(forces, null, units));
+        Assert.assertEquals(36, MaintenanceUtil.computeUnitMaintenance(forces, null, units));
 
         unit = new Unit();
         unit.setPrice(25);
         unit.setType(ForceTypeEnum.ARMY_PLUS);
         units.add(unit);
 
-        Assert.assertEquals(61, MaintenanceUtil.computeMaintenance(forces, null, units));
+        Assert.assertEquals(61, MaintenanceUtil.computeUnitMaintenance(forces, null, units));
 
         List<BasicForce> basicForces = new ArrayList<>();
 
-        Assert.assertEquals(61, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(61, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         BasicForce basicForce = new BasicForce();
         basicForce.setType(ForceTypeEnum.ARMY_PLUS);
         basicForce.setNumber(1);
         basicForces.add(basicForce);
 
-        Assert.assertEquals(36, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(36, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         basicForce = new BasicForce();
         basicForce.setType(ForceTypeEnum.ARMY_MINUS);
         basicForce.setNumber(1);
         basicForces.add(basicForce);
 
-        Assert.assertEquals(24, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(24, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         basicForces.get(0).setNumber(2);
 
-        Assert.assertEquals(0, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(0, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces.put(CounterFaceTypeEnum.ARMY_MINUS, 4l);
 
-        Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(12, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces.put(CounterFaceTypeEnum.NAVAL_TRANSPORT, 1l);
         forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT, 1l);
@@ -101,7 +104,7 @@ public class MaintenanceUtilTest {
         basicForce.setNumber(2);
         basicForces.add(basicForce);
 
-        Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(12, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         unit = new Unit();
         unit.setPrice(80);
@@ -116,15 +119,15 @@ public class MaintenanceUtilTest {
         unit.setType(ForceTypeEnum.ND);
         units.add(unit);
 
-        Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(12, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces.put(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, 3l);
 
-        Assert.assertEquals(25, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(25, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         unit.setPrice(20);
 
-        Assert.assertEquals(22, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(22, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces.put(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, 2l);
         forces.put(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, 3l);
@@ -141,7 +144,7 @@ public class MaintenanceUtilTest {
         basicForce.setNumber(2);
         basicForces.add(basicForce);
 
-        Assert.assertEquals(58, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(58, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces = new HashMap<>();
         forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1l);
@@ -155,33 +158,33 @@ public class MaintenanceUtilTest {
         basicForce.setNumber(1);
         basicForces.add(basicForce);
 
-        Assert.assertEquals(8, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(8, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces = new HashMap<>();
         forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1l);
 
-        Assert.assertEquals(20, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(20, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         basicForce.setType(ForceTypeEnum.ARMY_MINUS);
 
-        Assert.assertEquals(12, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(12, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1l);
 
-        Assert.assertEquals(24, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(24, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         CommonUtil.findFirst(units, iUnit -> iUnit.getType() == ForceTypeEnum.ARMY_PLUS).setPrice(23);
 
-        Assert.assertEquals(23, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(23, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         CommonUtil.findFirst(units, iUnit -> iUnit.getType() == ForceTypeEnum.ARMY_PLUS).setPrice(25);
         forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1l);
 
-        Assert.assertEquals(32, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(32, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
         basicForce.setType(ForceTypeEnum.LD);
 
-        Assert.assertEquals(37, MaintenanceUtil.computeMaintenance(forces, basicForces, units));
+        Assert.assertEquals(37, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
     }
 
     @Test
@@ -211,5 +214,57 @@ public class MaintenanceUtilTest {
         Assert.assertEquals(47, MaintenanceUtil.getPurchasePrice(1, 2, 23, 4));
 
         Assert.assertEquals(45, MaintenanceUtil.getPurchasePrice(1, 2, 22, 4));
+    }
+
+    @Test
+    public void testComputeFortressesMaintenance() {
+        Assert.assertEquals(0, MaintenanceUtil.computeFortressesMaintenance(null, null, null, null));
+
+        Map<Pair<Integer, Boolean>, Integer> fortresses = new HashMap<>();
+        fortresses.put(new ImmutablePair<>(-1, null), -1);
+
+        Assert.assertEquals(0, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, null));
+
+        fortresses.put(new ImmutablePair<>(0, null), 2);
+
+        Assert.assertEquals(0, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, null));
+
+        fortresses.put(new ImmutablePair<>(1, null), 3);
+
+        Assert.assertEquals(3, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, null));
+
+        fortresses.put(new ImmutablePair<>(2, true), 2);
+
+        Assert.assertEquals(11, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, null));
+
+        fortresses.put(new ImmutablePair<>(4, false), 1);
+
+        Assert.assertEquals(19, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, null));
+
+        Assert.assertEquals(15, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, 40));
+
+        fortresses.put(new ImmutablePair<>(3, true), 2);
+
+        Assert.assertEquals(39, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, 40));
+
+        List<Tech> techs = new ArrayList<>();
+        Tech arquebus = new Tech();
+        arquebus.setBeginTurn(17);
+        arquebus.setName(Tech.ARQUEBUS);
+        techs.add(arquebus);
+        Tech renaissance = new Tech();
+        renaissance.setBeginTurn(11);
+        renaissance.setName(Tech.RENAISSANCE);
+        techs.add(renaissance);
+        Tech baroque = new Tech();
+        baroque.setBeginTurn(24);
+        baroque.setName(Tech.BAROQUE);
+        techs.add(baroque);
+
+        Assert.assertEquals(39, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, null, 40));
+
+        Assert.assertEquals(39, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, renaissance, 40));
+
+        Assert.assertEquals(27, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, baroque, 40));
     }
 }
