@@ -8,6 +8,14 @@ import com.mkl.eu.client.service.vo.EuObject;
  * @author MKL.
  */
 public class Tech extends EuObject {
+    /** Name of the medieval technology. */
+    public static final String MEDIEVAL = "MEDIEVAL";
+    /** Name of the renaissance technology. */
+    public static final String RENAISSANCE = "RENAISSANCE";
+    /** Name of the arquebus technology. */
+    public static final String ARQUEBUS = "ARQUEBUS";
+    /** Name of the baroque technology. */
+    public static final String BAROQUE = "BAROQUE";
     /** Name of the technology. */
     private String name;
     /** Flag to know if the technology is land or naval. */

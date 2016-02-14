@@ -9,6 +9,8 @@ import java.util.List;
  * @author MKL.
  */
 public class Tables {
+    /** List of technologies. */
+    private List<Tech> techs = new ArrayList<>();
     /** Foreign trade income tables. */
     private List<TradeIncome> foreignTrades = new ArrayList<>();
     /** Domestic trade incomes. */
@@ -21,6 +23,16 @@ public class Tables {
     private List<Unit> units = new ArrayList<>();
     /** Actions limits of major powers. */
     private List<Limit> limits = new ArrayList<>();
+
+    /** @return the techs. */
+    public List<Tech> getTechs() {
+        return techs;
+    }
+
+    /** @param techs the techs to set. */
+    public void setTechs(List<Tech> techs) {
+        this.techs = techs;
+    }
 
     /** @return the foreignTrades. */
     public List<TradeIncome> getForeignTrades() {

@@ -16,6 +16,7 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Limit;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
@@ -34,6 +35,7 @@ import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
@@ -63,6 +65,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     private static final List<CounterFaceTypeEnum> ARMY_LAND_TYPES = new ArrayList<>();
     /** Counter Face Type for naval armies. */
     private static final List<CounterFaceTypeEnum> ARMY_NAVAL_TYPES = new ArrayList<>();
+    /** Counter Face Type for fortresses. */
+    private static final List<CounterFaceTypeEnum> FORTRESS_TYPES = new ArrayList<>();
     /** EconomicalSheet DAO. */
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
@@ -120,6 +124,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION);
         ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_GALLEY);
         ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
+
+        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_1);
+        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_2);
+        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_3);
+        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_4);
+        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_5);
     }
 
     /** {@inheritDoc} */
@@ -438,6 +448,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         String owner = null;
 
         boolean port = false;
+        int fortressLevel = 0;
 
         if (prov instanceof EuropeanProvinceEntity) {
             EuropeanProvinceEntity euProv = (EuropeanProvinceEntity) prov;
@@ -448,7 +459,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             if (!port && euProv.isArsenal() != null) {
                 port = euProv.isArsenal();
             }
+            if (euProv.getFortress() != null) {
+                fortressLevel = euProv.getFortress();
+            }
         }
+
+        boolean isFortress = FORTRESS_TYPES.contains(faceType);
 
         CounterEntity ownCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> counter.getType() == CounterFaceTypeEnum.OWN);
         if (ownCounter != null) {
@@ -457,7 +473,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         boolean provinceOk = StringUtils.equals(country.getName(), owner);
 
-        if (provinceOk) {
+        if (provinceOk || isFortress) {
             CounterEntity ctrlCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> counter.getType() == CounterFaceTypeEnum.CONTROL);
             if (ctrlCounter != null) {
                 provinceOk = StringUtils.equals(country.getName(), ctrlCounter.getCountry());
@@ -467,12 +483,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL)
                 .setMsgFormat("{1}: {0} The province {2} is not owned and controlled by {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
 
-        boolean faceConsistent;
+        boolean faceConsistent = isFortress;
 
         if (port) {
-            faceConsistent = ARMY_TYPES.contains(faceType);
+            faceConsistent |= ARMY_TYPES.contains(faceType);
         } else {
-            faceConsistent = ARMY_LAND_TYPES.contains(faceType);
+            faceConsistent |= ARMY_LAND_TYPES.contains(faceType);
         }
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(faceConsistent).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
@@ -487,6 +503,65 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         } else {
             faces = ARMY_NAVAL_TYPES;
             limitType = LimitTypeEnum.PURCHASE_NAVAL_TROOPS;
+        }
+
+        Integer fortressCost = 25 * (MaintenanceUtil.getFortressLevelFromType(faceType) - 1);
+        if (isFortress) {
+            int actualLevel = fortressLevel;
+            CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> StringUtils.equals(country.getName(), counter.getCountry()) && FORTRESS_TYPES.contains(counter.getType()));
+            if (fortressCounter != null) {
+                actualLevel = MaintenanceUtil.getFortressLevelFromType(fortressCounter.getType());
+            }
+
+            int desiredLevel = MaintenanceUtil.getFortressLevelFromType(faceType);
+
+
+            Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+            boolean canPurchaseFortress = desiredLevel != 0 && actualTech != null;
+            final String fortressTech;
+            if (desiredLevel == 2) {
+                fortressTech = Tech.MEDIEVAL;
+            } else if (desiredLevel == 3) {
+                fortressTech = Tech.RENAISSANCE;
+            } else if (desiredLevel == 4 || desiredLevel == 5) {
+                fortressTech = Tech.BAROQUE;
+            } else {
+                fortressTech = null;
+            }
+            Tech targetTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), fortressTech));
+            if (actualTech != null && targetTech != null) {
+                canPurchaseFortress = actualTech.getBeginTurn() >= targetTech.getBeginTurn();
+            }
+            if (desiredLevel == 5) {
+                canPurchaseFortress = game.getTurn() >= 40;
+            }
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(desiredLevel == actualLevel + 1).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
+                    .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased on province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, province));
+
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(canPurchaseFortress).setCodeError(IConstantsServiceException.FORTRESS_CANT_PURCHASE)
+                    .setMsgFormat("{1}: {0} The fortress {2} cannot be purchased because actual technology is {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, country.getLandTech()));
+
+            if (prov instanceof RotwProvinceEntity) {
+                // Fortress 1 costs 25 ducats in rotw (not pertinent in Europe)
+                if (fortressCost == 0) {
+                    fortressCost = 25;
+                } else {
+                    fortressCost *= 2;
+                }
+            }
+            boolean doubleCost = (desiredLevel == 4 && game.getTurn() < 40);
+            if (desiredLevel == 3) {
+                Tech arquebusTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), Tech.ARQUEBUS));
+                if (actualTech != null && arquebusTech != null) {
+                    doubleCost = actualTech.getBeginTurn() < arquebusTech.getBeginTurn();
+                }
+            }
+
+            if (doubleCost) {
+                fortressCost *= 2;
+            }
         }
 
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
@@ -522,6 +597,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         if (unitCost != null) {
             int cost = MaintenanceUtil.getPurchasePrice(plannedSize, maxPurchase, unitCost.getPrice(), size);
             admAct.setCost(cost);
+        }
+        if (isFortress && fortressCost != null) {
+            admAct.setCost(fortressCost);
         }
         return admAct;
     }

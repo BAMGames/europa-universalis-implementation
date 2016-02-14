@@ -19,10 +19,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.BasicForceTableEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.LimitTableEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.TradeIncomeEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.UnitEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.*;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.socket.SocketHandler;
@@ -103,6 +100,8 @@ public abstract class AbstractService implements INameConstants {
 
         List<TradeIncomeEntity> tradeTables = tablesDao.readAll();
         tablesMapping.fillTradeIncomeTables(tradeTables, TABLES);
+        List<TechEntity> techs = tablesDao.getTechs();
+        tablesMapping.fillTechsTables(techs, objectsCreated, TABLES);
         List<BasicForceTableEntity> basicForces = tablesDao.getBasicForces();
         tablesMapping.fillBasicForcesTables(basicForces, objectsCreated, TABLES);
         List<UnitEntity> units = tablesDao.getUnits();
@@ -171,7 +170,7 @@ public abstract class AbstractService implements INameConstants {
         args[0] = check.getName();
         String msg = MessageFormat.format(check.getMsgFormat(), args);
         LOGGER.error(msg);
-        throw new FunctionalException(check.getCodeError(), msg, null, check.getParams());
+        throw new FunctionalException(check.getCodeError(), msg, null, args);
     }
 
     /**

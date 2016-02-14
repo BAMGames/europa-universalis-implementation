@@ -1,10 +1,7 @@
 package com.mkl.eu.service.service.persistence.tables.impl;
 
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
-import com.mkl.eu.service.service.persistence.oe.tables.BasicForceTableEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.LimitTableEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.TradeIncomeEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.UnitEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.*;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -40,6 +37,15 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
 
         //noinspection unchecked
         return ((TradeIncomeEntity) criteria.uniqueResult()).getValue();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<TechEntity> getTechs() {
+        Criteria criteria = getSession().createCriteria(TechEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
     }
 
     /** {@inheritDoc} */

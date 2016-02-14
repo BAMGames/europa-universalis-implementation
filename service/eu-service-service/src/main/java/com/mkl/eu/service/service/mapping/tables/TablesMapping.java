@@ -59,6 +59,21 @@ public class TablesMapping extends AbstractMapping {
     }
 
     /**
+     * Fill the technologies tables.
+     *
+     * @param sources        List of technologies entity.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
+     * @param tables         the target tables.
+     */
+    public void fillTechsTables(List<TechEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated, Tables tables) {
+        if (tables != null && sources != null) {
+            for (TechEntity source : sources) {
+                tables.getTechs().add(storeVo(Tech.class, source, objectsCreated, (ITransformation<TechEntity, Tech>) this::oeToVo));
+            }
+        }
+    }
+
+    /**
      * Fill the basic forces tables.
      *
      * @param sources        List of basic forces entity.

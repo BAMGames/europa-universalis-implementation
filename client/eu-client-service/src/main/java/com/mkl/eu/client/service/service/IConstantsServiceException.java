@@ -105,6 +105,21 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when a fortress can't be purchased (lack of technology).
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the counter</li>
+     * <li>1: actual technology of the country</li>
+     * </ul>
+     * </p>
+     */
+    String FORTRESS_CANT_PURCHASE = "exception.eu.admin_action.fortress_cant_purchase";
+
+    /**
+     * <p>
      * Exception thrown when a counter can't be purchased because it would exceed the purchase limit.
      * </p>
      * <p>

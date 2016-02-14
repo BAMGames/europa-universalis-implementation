@@ -227,6 +227,43 @@ public final class MaintenanceUtil {
     }
 
     /**
+     * Returns the fortress level of a counter.
+     *
+     * @param face the face.
+     * @return the fortress level.
+     */
+    public static int getFortressLevelFromType(CounterFaceTypeEnum face) {
+        int level = 0;
+
+        if (face != null) {
+            switch (face) {
+                case FORTRESS_5:
+                    level = 5;
+                    break;
+                case FORTRESS_4:
+                    level = 4;
+                    break;
+                case FORTRESS_3:
+                    level = 3;
+                    break;
+                case FORTRESS_2:
+                    level = 2;
+                    break;
+                case FORTRESS_1:
+                    level = 1;
+                    break;
+                case FORT:
+                    level = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return level;
+    }
+
+    /**
      * Returns the maintenance price of a face.
      *
      * @param units List of maintenance costs.
