@@ -1,6 +1,7 @@
 package com.mkl.eu.client.common.util;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -72,5 +73,42 @@ public final class CommonUtil {
         }
 
         return sum;
+    }
+
+    /**
+     * Increment a Map of K->Integer for a given key.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param <K> the class of the key.
+     */
+    public static <K> void addOne(Map<K, Integer> map, K key) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) + 1);
+            } else {
+                map.put(key, 1);
+            }
+        }
+    }
+
+    /**
+     * Decrement a Map of K->Integer for a given key.
+     * If the value is 0, removes the key.
+     * If the key doesn't exist, does nothing.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param <K> the class of the key.
+     */
+    public static <K> void subtractOne(Map<K, Integer> map, K key) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) - 1);
+                if (map.get(key) == 0) {
+                    map.remove(key);
+                }
+            }
+        }
     }
 }

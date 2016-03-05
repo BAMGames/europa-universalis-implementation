@@ -32,6 +32,8 @@ public enum AdminActionTypeEnum {
     DIS,
     /** Low maintenance on counter. */
     LM,
+    /** Lower fortress. */
+    LF,
     /** Purchase land unit. */
     PU
     // TODO add fortress purchases/disband.

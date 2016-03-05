@@ -29,14 +29,16 @@ public class AddAdminActionRequest {
     /**
      * Constructor for disband or low maintenance.
      *
-     * @param idCountry the idCountry to set.
-     * @param type      the type to set.
-     * @param idObject  the idObject to set.
+     * @param idCountry       the idCountry to set.
+     * @param type            the type to set.
+     * @param idObject        the idObject to set.
+     * @param counterFaceType the counterFaceType to set.
      */
-    public AddAdminActionRequest(Long idCountry, AdminActionTypeEnum type, Long idObject) {
+    public AddAdminActionRequest(Long idCountry, AdminActionTypeEnum type, Long idObject, CounterFaceTypeEnum counterFaceType) {
         this.idCountry = idCountry;
         this.type = type;
         this.idObject = idObject;
+        this.counterFaceType = counterFaceType;
     }
 
     /**

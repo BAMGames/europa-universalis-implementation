@@ -15,6 +15,7 @@ import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.BasicForce;
 import com.mkl.eu.client.service.vo.tables.Limit;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
@@ -26,6 +27,7 @@ import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -38,6 +40,8 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +73,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private static final List<CounterFaceTypeEnum> ARMY_TYPES = new ArrayList<>();
     /** Counter Face Type for land armies. */
     private static final List<CounterFaceTypeEnum> ARMY_LAND_TYPES = new ArrayList<>();
+    /** Counter Face Type for land armies. */
+    private static final List<CounterFaceTypeEnum> FORT_TYPES = new ArrayList<>();
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
@@ -94,23 +100,23 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /**        Nodes about maintenance          */
     /********************************************/
     /** The TitledPane containing all the other nodes. */
-    private TitledPane unitMaintenancePane;
+    private TitledPane maintenancePane;
     /** The TableView containing the already planned actions. */
-    private TableView<AdministrativeAction> unitMaintenanceTable;
+    private TableView<AdministrativeAction> maintenanceTable;
     /** The ChoiceBox containing the remaining counters. */
-    private ChoiceBox<Counter> unitMaintenanceCountersChoice;
+    private ChoiceBox<Counter> maintenanceCountersChoice;
 
     /********************************************/
     /**        Nodes about purchase          */
     /********************************************/
     /** The TitledPane containing all the other nodes. */
-    private TitledPane unitPurchasePane;
+    private TitledPane purchasePane;
     /** The TableView containing the already planned actions. */
-    private TableView<AdministrativeAction> unitPurchaseTable;
+    private TableView<AdministrativeAction> purchaseTable;
     /** The ChoiceBox containing the remaining counters. */
-    private ChoiceBox<IMapMarker> unitPurchaseProvincesChoice;
+    private ChoiceBox<IMapMarker> purchaseProvincesChoice;
     /** The ChoiceBox containing the type of counters that can be added. */
-    private ChoiceBox<CounterFaceTypeEnum> unitPurchaseTypeChoice;
+    private ChoiceBox<CounterFaceTypeEnum> purchaseTypeChoice;
 
     /**
      * Filling the static List.
@@ -137,6 +143,26 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK);
+
+        FORT_TYPES.add(CounterFaceTypeEnum.FORT);
+        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_1);
+        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_2);
+        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_3);
+        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_4);
+        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_5);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_0_ST_PETER);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_1_ST_PETER);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2_SEBASTOPOL);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2_ST_PETER);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3_GIBRALTAR);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3_SEBASTOPOL);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3_ST_PETER);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_4);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_4_ST_PETER);
+        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_5_ST_PETER);
     }
 
     /**
@@ -204,15 +230,15 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @return the node for the unit maintenance.
      */
     private Node createMaintenanceNode(PlayableCountry country) {
-        unitMaintenancePane = new TitledPane();
+        maintenancePane = new TitledPane();
 
-        unitMaintenanceTable = new TableView<>();
-        configureAdminActionTable(unitMaintenanceTable, this::removeAdminAction);
+        maintenanceTable = new TableView<>();
+        configureAdminActionTable(maintenanceTable, this::removeAdminAction);
 
         HBox hBox = new HBox();
 
-        unitMaintenanceCountersChoice = new ChoiceBox<>();
-        unitMaintenanceCountersChoice.converterProperty().set(new StringConverter<Counter>() {
+        maintenanceCountersChoice = new ChoiceBox<>();
+        maintenanceCountersChoice.converterProperty().set(new StringConverter<Counter>() {
             /** {@inheritDoc} */
             @Override
             public String toString(Counter object) {
@@ -241,28 +267,62 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        unitMaintenanceCountersChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+        ChoiceBox<CounterFaceTypeEnum> toCounterChoice = new ChoiceBox<>();
+        toCounterChoice.setVisible(false);
+        toCounterChoice.converterProperty().set(new StringConverter<CounterFaceTypeEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(CounterFaceTypeEnum object) {
+                return message.getMessage(object + "", null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public CounterFaceTypeEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        choiceType.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != oldValue) {
+                if (newValue == AdminActionTypeEnum.LF) {
+                    toCounterChoice.setVisible(true);
+                    Counter start = maintenanceCountersChoice.getSelectionModel().getSelectedItem();
+                    IMapMarker province = CommonUtil.findFirst(markers, marker -> StringUtils.equals(marker.getId(), start.getOwner().getProvince()));
+                    List<CounterFaceTypeEnum> fortressTypes = getLowerFortresses(start.getType(), province.getFortressLevel());
+                    toCounterChoice.setItems(FXCollections.observableArrayList(fortressTypes));
+                } else {
+                    toCounterChoice.setItems(FXCollections.observableArrayList());
+                    toCounterChoice.setVisible(false);
+                }
+            }
+        });
+
+        maintenanceCountersChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
                 if (newValue == null) {
-                    choiceType.setItems(null);
+                    choiceType.setItems(FXCollections.observableArrayList());
                 } else if (ARMY_LAND_TYPES.contains(newValue.getType())) {
                     choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS, AdminActionTypeEnum.LM));
                 } else if (ARMY_TYPES.contains(newValue.getType())) {
                     choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS));
+                } else if (FORT_TYPES.contains(newValue.getType())) {
+                    choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF));
                 }
             }
         });
 
         Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
         btn.setOnAction(event -> {
-            Counter counter = unitMaintenanceCountersChoice.getSelectionModel().getSelectedItem();
+            Counter counter = maintenanceCountersChoice.getSelectionModel().getSelectedItem();
             AdminActionTypeEnum type = choiceType.getSelectionModel().getSelectedItem();
+            CounterFaceTypeEnum toCounter = toCounterChoice.getSelectionModel().getSelectedItem();
 
             Request<AddAdminActionRequest> request = new Request<>();
             authentHolder.fillAuthentInfo(request);
             gameConfig.fillGameInfo(request);
             gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), type, counter.getId()));
+            request.setRequest(new AddAdminActionRequest(country.getId(), type, counter.getId(), toCounter));
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = economicService.addAdminAction(request);
@@ -275,17 +335,92 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        hBox.getChildren().addAll(unitMaintenanceCountersChoice, choiceType, btn);
+        hBox.getChildren().addAll(maintenanceCountersChoice, choiceType, toCounterChoice, btn);
 
         VBox vBox = new VBox();
 
-        vBox.getChildren().addAll(unitMaintenanceTable, hBox);
+        vBox.getChildren().addAll(maintenanceTable, hBox);
 
-        unitMaintenancePane.setContent(vBox);
+        maintenancePane.setContent(vBox);
 
         updateMaintenanceNode(country);
 
-        return unitMaintenancePane;
+        return maintenancePane;
+    }
+
+    /**
+     * @param actual the actual fortress type.
+     * @param level of the natural fortress of the province.
+     * @return the potential lower fortresses that can be maintained given the actual fortress type and the natural fortress level of the province.
+     */
+    private List<CounterFaceTypeEnum> getLowerFortresses(CounterFaceTypeEnum actual, int level) {
+        List<CounterFaceTypeEnum> fortresses = new ArrayList<>();
+
+        if (actual != null) {
+            switch (actual) {
+                case FORTRESS_5:
+                    if (level < 4) {
+                        fortresses.add(CounterFaceTypeEnum.FORTRESS_4);
+                    }
+                case FORTRESS_4:
+                    if (level < 3) {
+                        fortresses.add(CounterFaceTypeEnum.FORTRESS_3);
+                    }
+                case FORTRESS_3:
+                    if (level < 2) {
+                        fortresses.add(CounterFaceTypeEnum.FORTRESS_2);
+                    }
+                case FORTRESS_2:
+                    if (level < 1) {
+                        fortresses.add(CounterFaceTypeEnum.FORTRESS_1);
+                    }
+                case FORTRESS_1:
+                    break;
+                case ARSENAL_5_ST_PETER:
+                    if (level < 4) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_4_ST_PETER);
+                    }
+                case ARSENAL_4_ST_PETER:
+                    if (level < 3) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_3_ST_PETER);
+                    }
+                case ARSENAL_3_ST_PETER:
+                    if (level < 2) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_2_ST_PETER);
+                    }
+                case ARSENAL_2_ST_PETER:
+                    if (level < 1) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_1_ST_PETER);
+                    }
+                case ARSENAL_1_ST_PETER:
+                case ARSENAL_0_ST_PETER:
+                    break;
+                case ARSENAL_3_SEBASTOPOL:
+                    if (level < 2) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_2_SEBASTOPOL);
+                    }
+                case ARSENAL_2_SEBASTOPOL:
+                    break;
+                case ARSENAL_3_GIBRALTAR:
+                    if (level < 2) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR);
+                    }
+                case ARSENAL_2_GIBRALTAR:
+                    break;
+                case ARSENAL_4:
+                    if (level < 3) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_3);
+                    }
+                case ARSENAL_3:
+                    if (level < 2) {
+                        fortresses.add(CounterFaceTypeEnum.ARSENAL_2);
+                    }
+                case ARSENAL_2:
+                    break;
+            }
+        }
+
+        return fortresses;
     }
 
     /**
@@ -297,7 +432,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         {
             List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
                     .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
-                            (admAct.getType() == AdminActionTypeEnum.DIS || admAct.getType() == AdminActionTypeEnum.LM))
+                            (admAct.getType() == AdminActionTypeEnum.DIS || admAct.getType() == AdminActionTypeEnum.LM) || admAct.getType() == AdminActionTypeEnum.LF)
                     .collect(Collectors.toList());
 
             List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
@@ -305,12 +440,31 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                             ARMY_TYPES.contains(counter.getType())))
                     .collect(Collectors.toList());
             List<Counter> conscriptCounters = new ArrayList<>();
+            List<Counter> fortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                            FORT_TYPES.contains(counter.getType())))
+                    .collect(Collectors.toList());
+            Map<Pair<Integer, Boolean>, Integer> orderedFortresses = fortresses.stream().collect(Collectors.groupingBy(
+                    this::getFortressKeyFromCounter,
+                    Collectors.summingInt(value -> 1)));
+
             actions.stream().forEach(action -> {
                 Counter counter = CommonUtil.findFirst(counters, o -> o.getId().equals(action.getIdObject()));
-                if (action.getType() == AdminActionTypeEnum.LM) {
-                    conscriptCounters.add(counter);
+                if (counter != null) {
+                    if (action.getType() == AdminActionTypeEnum.LM) {
+                        conscriptCounters.add(counter);
+                    }
+                    counters.remove(counter);
                 }
-                counters.remove(counter);
+                counter = CommonUtil.findFirst(fortresses, o -> o.getId().equals(action.getIdObject()));
+                if (counter != null) {
+                    if (action.getType() == AdminActionTypeEnum.LF) {
+                        CommonUtil.addOne(orderedFortresses,
+                                new ImmutablePair<>(MaintenanceUtil.getFortressLevelFromType(action.getCounterFaceType()), counter.getOwner().getProvince().startsWith("r")));
+                    }
+                    CommonUtil.subtractOne(orderedFortresses, getFortressKeyFromCounter(counter));
+                    fortresses.remove(counter);
+                }
             });
 
             Map<CounterFaceTypeEnum, Long> forces = counters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
@@ -324,7 +478,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                             (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
                             !unit.isSpecial() &&
                             (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
-            Integer unitMaintenanceCost = MaintenanceUtil.computeMaintenance(forces, basicForces, units);
+            Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
 
             Map<CounterFaceTypeEnum, Long> conscriptForces = conscriptCounters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
             List<Unit> conscriptUnits = globalConfiguration.getTables().getUnits().stream()
@@ -332,13 +486,38 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                             unit.getAction() == UnitActionEnum.MAINT_WAR &&
                             unit.isSpecial() &&
                             StringUtils.equals(unit.getTech().getName(), country.getLandTech())).collect(Collectors.toList());
-            Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeMaintenance(conscriptForces, null, conscriptUnits);
+            Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
 
-            unitMaintenancePane.setText(message.getMessage("admin_action.form.unit_maintenance", new Object[]{add(unitMaintenanceCost, unitMaintenanceConscriptCost)}, globalConfiguration.getLocale()));
-            unitMaintenanceTable.setItems(FXCollections.observableArrayList(actions));
-            unitMaintenanceCountersChoice.setItems(FXCollections.observableArrayList(counters));
+            Tech ownerLandTech = CommonUtil.findFirst(globalConfiguration.getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+
+            Integer fortressesMaintenance = MaintenanceUtil.computeFortressesMaintenance(
+                    orderedFortresses,
+                    globalConfiguration.getTables().getTechs(),
+                    ownerLandTech,
+                    game.getTurn());
+
+            List<Counter> missions = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                            counter.getType() == CounterFaceTypeEnum.MISSION))
+                    .collect(Collectors.toList());
+
+            Integer missionMaintenance = missions.size();
+
+            maintenancePane.setText(message.getMessage("admin_action.form.unit_maintenance", new Object[]{add(unitMaintenanceCost, unitMaintenanceConscriptCost), fortressesMaintenance, missionMaintenance}, globalConfiguration.getLocale()));
+            maintenanceTable.setItems(FXCollections.observableArrayList(actions));
+            ObservableList<Counter> counterList = FXCollections.observableArrayList(counters);
+            counterList.addAll(fortresses);
+            maintenanceCountersChoice.setItems(counterList);
         }
 
+    }
+
+    /**
+     * @param counter whose we want the key.
+     * @return the key used for computing fortress maintenance. It is a Pair consisting of level and location (<code>true</code> for ROTW).
+     */
+    private Pair<Integer, Boolean> getFortressKeyFromCounter(Counter counter) {
+        return new ImmutablePair<>(MaintenanceUtil.getFortressLevelFromType(counter.getType()), counter.getOwner().getProvince().startsWith("r"));
     }
 
     /**
@@ -348,15 +527,15 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @return the node for the unit purchase.
      */
     private Node createPurchaseNode(PlayableCountry country) {
-        unitPurchasePane = new TitledPane();
+        purchasePane = new TitledPane();
 
-        unitPurchaseTable = new TableView<>();
-        configureAdminActionTable(unitPurchaseTable, this::removeAdminAction);
+        purchaseTable = new TableView<>();
+        configureAdminActionTable(purchaseTable, this::removeAdminAction);
 
         HBox hBox = new HBox();
 
-        unitPurchaseProvincesChoice = new ChoiceBox<>();
-        unitPurchaseProvincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+        purchaseProvincesChoice = new ChoiceBox<>();
+        purchaseProvincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
             /** {@inheritDoc} */
             @Override
             public String toString(IMapMarker object) {
@@ -370,8 +549,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        unitPurchaseTypeChoice = new ChoiceBox<>();
-        unitPurchaseTypeChoice.converterProperty().set(new StringConverter<CounterFaceTypeEnum>() {
+        purchaseTypeChoice = new ChoiceBox<>();
+        purchaseTypeChoice.converterProperty().set(new StringConverter<CounterFaceTypeEnum>() {
             /** {@inheritDoc} */
             @Override
             public String toString(CounterFaceTypeEnum object) {
@@ -387,8 +566,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
         btn.setOnAction(event -> {
-            IMapMarker province = unitPurchaseProvincesChoice.getSelectionModel().getSelectedItem();
-            CounterFaceTypeEnum type = unitPurchaseTypeChoice.getSelectionModel().getSelectedItem();
+            IMapMarker province = purchaseProvincesChoice.getSelectionModel().getSelectedItem();
+            CounterFaceTypeEnum type = purchaseTypeChoice.getSelectionModel().getSelectedItem();
 
             Request<AddAdminActionRequest> request = new Request<>();
             authentHolder.fillAuthentInfo(request);
@@ -408,15 +587,15 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        hBox.getChildren().addAll(unitPurchaseProvincesChoice, unitPurchaseTypeChoice, btn);
+        hBox.getChildren().addAll(purchaseProvincesChoice, purchaseTypeChoice, btn);
 
         VBox vBox = new VBox();
 
-        vBox.getChildren().addAll(unitPurchaseTable, hBox);
+        vBox.getChildren().addAll(purchaseTable, hBox);
 
-        unitPurchasePane.setContent(vBox);
+        purchasePane.setContent(vBox);
 
-        unitPurchaseProvincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+        purchaseProvincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
                 .filter(marker -> StringUtils.equals(country.getName(), marker.getOwner()) &&
                         StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
 
@@ -426,20 +605,20 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
 
 
-        unitPurchaseProvincesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+        purchaseProvincesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
                 if (newValue == null) {
-                    unitPurchaseTypeChoice.setItems(null);
+                    purchaseTypeChoice.setItems(null);
                 } else {
                     List<CounterFaceTypeEnum> faces = forces.stream().filter(force -> newValue.isPort() || force.getTech().isLand()).flatMap(force -> getFacesFromPurchaseForce(force.getType(), country.getName()).stream()).collect(Collectors.toList());
-                    unitPurchaseTypeChoice.setItems(FXCollections.observableArrayList(faces));
+                    purchaseTypeChoice.setItems(FXCollections.observableArrayList(faces));
                 }
             }
         });
 
         updatePurchaseNode(country);
 
-        return unitPurchasePane;
+        return purchasePane;
     }
 
     /**
@@ -459,8 +638,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         limit.getPeriod().getBegin() <= game.getTurn() &&
                         limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
 
-        unitPurchasePane.setText(message.getMessage("admin_action.form.unit_purchase", new Object[]{currentPurchase.get(true), maxPurchase.get(LimitTypeEnum.PURCHASE_LAND_TROOPS), currentPurchase.get(false), maxPurchase.get(LimitTypeEnum.PURCHASE_NAVAL_TROOPS)}, globalConfiguration.getLocale()));
-        unitPurchaseTable.setItems(FXCollections.observableArrayList(actions));
+        purchasePane.setText(message.getMessage("admin_action.form.unit_purchase", new Object[]{currentPurchase.get(true), maxPurchase.get(LimitTypeEnum.PURCHASE_LAND_TROOPS), currentPurchase.get(false), maxPurchase.get(LimitTypeEnum.PURCHASE_NAVAL_TROOPS)}, globalConfiguration.getLocale()));
+        purchaseTable.setItems(FXCollections.observableArrayList(actions));
     }
 
     /**

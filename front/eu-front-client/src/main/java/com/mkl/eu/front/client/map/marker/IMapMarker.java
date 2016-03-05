@@ -152,4 +152,9 @@ public interface IMapMarker {
      * @return whether the province is a port or no.
      */
     boolean isPort();
+
+    /**
+     * @return the level of the natural fortress in the province.
+     */
+    int getFortressLevel();
 }

@@ -470,6 +470,12 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
         return getBooleanProperty(PROP_EU_PORT) || getBooleanProperty(PROP_EU_ARSENAL);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int getFortressLevel() {
+        return getIntProperty(PROP_EU_FORTRESS);
+    }
+
     /**
      * @return the location of the fortress.
      */
@@ -596,5 +602,21 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
      */
     public boolean getBooleanProperty(String property) {
         return Boolean.parseBoolean(getStringProperty(property));
+    }
+
+    /**
+     * @param property the name of the property.
+     * @return the property as an int.
+     */
+    public int getIntProperty(String property) {
+        int prop;
+
+        try {
+            prop = Integer.parseInt(getStringProperty(property));
+        } catch (NumberFormatException e) {
+            prop = 0;
+        }
+
+        return prop;
     }
 }
