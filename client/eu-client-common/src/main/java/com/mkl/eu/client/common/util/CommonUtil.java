@@ -28,13 +28,7 @@ public final class CommonUtil {
      * @return the first element of the collection matching the predicate.
      */
     public static <T> T findFirst(Collection<T> list, Predicate<T> predicate) {
-        T returnValue = null;
-        Optional<T> opt = list.stream().filter(predicate).findFirst();
-        if (opt.isPresent()) {
-            returnValue = opt.get();
-        }
-
-        return returnValue;
+        return findFirst(list.stream(), predicate);
     }
 
     /**
