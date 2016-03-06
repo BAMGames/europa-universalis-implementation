@@ -405,9 +405,14 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         if (request.getRequest().getType() == AdminActionTypeEnum.LM) {
             failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_LAND_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_MAINTAIN_LOW)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be maintained low.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
-        } else {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
+        } else if (request.getRequest().getType() == AdminActionTypeEnum.DIS) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_TYPES.contains(counter.getType()) || FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be disbanded.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
+        } else if (request.getRequest().getType() == AdminActionTypeEnum.LF) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
+                    .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be lower fortress.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
+
+
         }
 
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
