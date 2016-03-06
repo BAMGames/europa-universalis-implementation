@@ -1084,7 +1084,6 @@ public class EcoServiceTest {
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("corn");
         inOrder.verify(stackDao).getStacksOnProvince("corn", 12L);
-        inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.PU);
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 

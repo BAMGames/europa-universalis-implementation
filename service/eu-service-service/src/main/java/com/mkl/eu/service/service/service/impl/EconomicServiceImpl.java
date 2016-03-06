@@ -111,7 +111,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
 
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_PLUS);
+        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_TIMAR_PLUS);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_MINUS);
+        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_TIMAR_MINUS);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
         ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
@@ -448,7 +450,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         String owner = null;
 
         boolean port = false;
-        int fortressLevel = 0;
 
         if (prov instanceof EuropeanProvinceEntity) {
             EuropeanProvinceEntity euProv = (EuropeanProvinceEntity) prov;
@@ -458,9 +459,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
             if (!port && euProv.isArsenal() != null) {
                 port = euProv.isArsenal();
-            }
-            if (euProv.getFortress() != null) {
-                fortressLevel = euProv.getFortress();
             }
         }
 
@@ -494,6 +492,112 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfFalse(new CheckForThrow<Boolean>().setTest(faceConsistent).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
                 .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased on province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, province));
 
+        Integer cost;
+
+        if (isFortress) {
+            cost = computeFortressPurchase(game, country, stacks, prov, faceType);
+        } else {
+            cost = computeUnitPurchase(game, country, faceType);
+        }
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        admAct.setCounterFaceType(faceType);
+        admAct.setCost(cost);
+
+        return admAct;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type PURCHASE for a fortress.
+     *
+     * @param game     in which the action will be created.
+     * @param country  owner of the action.
+     * @param stacks   the stacks of the game.
+     * @param prov     the province where the action is planned.
+     * @param faceType the type of face of the fortress to purchase.
+     * @return the administrative action to create.
+     * @throws FunctionalException
+     */
+    private Integer computeFortressPurchase(GameEntity game, PlayableCountryEntity country, List<StackEntity> stacks, AbstractProvinceEntity prov, CounterFaceTypeEnum faceType) throws FunctionalException {
+        int actualLevel = 0;
+        if (prov instanceof EuropeanProvinceEntity) {
+            if (((EuropeanProvinceEntity) prov).getFortress() != null) {
+                actualLevel = ((EuropeanProvinceEntity) prov).getFortress();
+            }
+        }
+        CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> StringUtils.equals(country.getName(), counter.getCountry()) && FORTRESS_TYPES.contains(counter.getType()));
+        if (fortressCounter != null) {
+            actualLevel = MaintenanceUtil.getFortressLevelFromType(fortressCounter.getType());
+        }
+
+        int desiredLevel = MaintenanceUtil.getFortressLevelFromType(faceType);
+
+
+        Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+        boolean canPurchaseFortress = desiredLevel != 0 && actualTech != null;
+        final String fortressTech;
+        if (desiredLevel == 2) {
+            fortressTech = Tech.MEDIEVAL;
+        } else if (desiredLevel == 3) {
+            fortressTech = Tech.RENAISSANCE;
+        } else if (desiredLevel == 4 || desiredLevel == 5) {
+            fortressTech = Tech.BAROQUE;
+        } else {
+            fortressTech = null;
+        }
+        Tech targetTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), fortressTech));
+        if (actualTech != null && targetTech != null) {
+            canPurchaseFortress = actualTech.getBeginTurn() >= targetTech.getBeginTurn();
+        }
+        if (desiredLevel == 5) {
+            canPurchaseFortress = game.getTurn() >= 40;
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(desiredLevel == actualLevel + 1).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
+                .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased on province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, prov.getName()));
+
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(canPurchaseFortress).setCodeError(IConstantsServiceException.FORTRESS_CANT_PURCHASE)
+                .setMsgFormat("{1}: {0} The fortress {2} cannot be purchased because actual technology is {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, country.getLandTech()));
+
+        Integer fortressCost = 25 * (MaintenanceUtil.getFortressLevelFromType(faceType) - 1);
+        if (prov instanceof RotwProvinceEntity) {
+            // Fortress 1 costs 25 ducats in rotw (not pertinent in Europe)
+            if (fortressCost == 0) {
+                fortressCost = 25;
+            } else {
+                fortressCost *= 2;
+            }
+        }
+        boolean doubleCost = (desiredLevel == 4 && game.getTurn() < 40);
+        if (desiredLevel == 3) {
+            Tech arquebusTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), Tech.ARQUEBUS));
+            if (actualTech != null && arquebusTech != null) {
+                doubleCost = actualTech.getBeginTurn() < arquebusTech.getBeginTurn();
+            }
+        }
+
+        if (doubleCost) {
+            fortressCost *= 2;
+        }
+
+        return fortressCost;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type PURCHASE for a unit.
+     *
+     * @param game     in which the action will be created.
+     * @param country  owner of the action.
+     * @param faceType the type of face of the unit to purchase.
+     * @return the administrative action to create.
+     * @throws FunctionalException
+     */
+    private Integer computeUnitPurchase(GameEntity game, PlayableCountryEntity country, CounterFaceTypeEnum faceType) throws FunctionalException {
         boolean land = ARMY_LAND_TYPES.contains(faceType);
         final List<CounterFaceTypeEnum> faces;
         final LimitTypeEnum limitType;
@@ -505,66 +609,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             limitType = LimitTypeEnum.PURCHASE_NAVAL_TROOPS;
         }
 
-        Integer fortressCost = 25 * (MaintenanceUtil.getFortressLevelFromType(faceType) - 1);
-        if (isFortress) {
-            int actualLevel = fortressLevel;
-            CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> StringUtils.equals(country.getName(), counter.getCountry()) && FORTRESS_TYPES.contains(counter.getType()));
-            if (fortressCounter != null) {
-                actualLevel = MaintenanceUtil.getFortressLevelFromType(fortressCounter.getType());
-            }
-
-            int desiredLevel = MaintenanceUtil.getFortressLevelFromType(faceType);
-
-
-            Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
-            boolean canPurchaseFortress = desiredLevel != 0 && actualTech != null;
-            final String fortressTech;
-            if (desiredLevel == 2) {
-                fortressTech = Tech.MEDIEVAL;
-            } else if (desiredLevel == 3) {
-                fortressTech = Tech.RENAISSANCE;
-            } else if (desiredLevel == 4 || desiredLevel == 5) {
-                fortressTech = Tech.BAROQUE;
-            } else {
-                fortressTech = null;
-            }
-            Tech targetTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), fortressTech));
-            if (actualTech != null && targetTech != null) {
-                canPurchaseFortress = actualTech.getBeginTurn() >= targetTech.getBeginTurn();
-            }
-            if (desiredLevel == 5) {
-                canPurchaseFortress = game.getTurn() >= 40;
-            }
-
-            failIfFalse(new CheckForThrow<Boolean>().setTest(desiredLevel == actualLevel + 1).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
-                    .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased on province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, province));
-
-
-            failIfFalse(new CheckForThrow<Boolean>().setTest(canPurchaseFortress).setCodeError(IConstantsServiceException.FORTRESS_CANT_PURCHASE)
-                    .setMsgFormat("{1}: {0} The fortress {2} cannot be purchased because actual technology is {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, country.getLandTech()));
-
-            if (prov instanceof RotwProvinceEntity) {
-                // Fortress 1 costs 25 ducats in rotw (not pertinent in Europe)
-                if (fortressCost == 0) {
-                    fortressCost = 25;
-                } else {
-                    fortressCost *= 2;
-                }
-            }
-            boolean doubleCost = (desiredLevel == 4 && game.getTurn() < 40);
-            if (desiredLevel == 3) {
-                Tech arquebusTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), Tech.ARQUEBUS));
-                if (actualTech != null && arquebusTech != null) {
-                    doubleCost = actualTech.getBeginTurn() < arquebusTech.getBeginTurn();
-                }
-            }
-
-            if (doubleCost) {
-                fortressCost *= 2;
-            }
-        }
-
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.PU);
 
         Integer plannedSize = actions.stream().filter(action -> faces.contains(action.getCounterFaceType())).collect(Collectors.summingInt(action -> MaintenanceUtil.getSizeFromType(action.getCounterFaceType())));
@@ -588,20 +633,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                         (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))
         );
 
-        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
-        admAct.setCountry(country);
-        admAct.setStatus(AdminActionStatusEnum.PLANNED);
-        admAct.setTurn(game.getTurn());
-        admAct.setProvince(province);
-        admAct.setCounterFaceType(faceType);
+        Integer cost = null;
         if (unitCost != null) {
-            int cost = MaintenanceUtil.getPurchasePrice(plannedSize, maxPurchase, unitCost.getPrice(), size);
-            admAct.setCost(cost);
+            cost = MaintenanceUtil.getPurchasePrice(plannedSize, maxPurchase, unitCost.getPrice(), size);
         }
-        if (isFortress && fortressCost != null) {
-            admAct.setCost(fortressCost);
-        }
-        return admAct;
+        return cost;
     }
 
     /** {@inheritDoc} */
