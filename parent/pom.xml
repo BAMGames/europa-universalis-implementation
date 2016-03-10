@@ -37,7 +37,7 @@
         <poi.version>3.9</poi.version>
         <jasper.version>5.0.1</jasper.version>
         <commons.digester.version>2.1</commons.digester.version>
-        <commons.collections.version>3.2.1</commons.collections.version>
+        <commons.collections.version>3.2.2</commons.collections.version>
         <guava.version>16.0.1</guava.version>
         <itex.version>2.1.7</itex.version>
         <itextpdf.version>5.4.2</itextpdf.version>
