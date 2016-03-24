@@ -7,6 +7,7 @@ import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,11 +41,11 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     /**
      * Economical sheet of the country.
      */
-    private List<EconomicalSheetEntity> economicalSheets;
+    private List<EconomicalSheetEntity> economicalSheets = new ArrayList<>();
     /**
      * Administrative actions of the country.
      */
-    private List<AdministrativeActionEntity> administrativeActions;
+    private List<AdministrativeActionEntity> administrativeActions = new ArrayList<>();
     /** Game of the entity. */
     private GameEntity game;
 
