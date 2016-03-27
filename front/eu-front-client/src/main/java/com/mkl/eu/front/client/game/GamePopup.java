@@ -74,6 +74,8 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(GamePopup.class);
+    /** Flag saying that the popup has already been closed. */
+    private boolean closed;
     /** Spring application context. */
     private ApplicationContext context;
     /** Internationalisation. */
@@ -823,9 +825,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     /** {@inheritDoc} */
     @Override
     public void handle(WindowEvent event) {
-        map.destroy();
-        frames.forEach(frame -> frame.dispatchEvent(new java.awt.event.WindowEvent(frame, java.awt.event.WindowEvent.WINDOW_CLOSING)));
-        chatWindow.hide();
-        client.setTerminate(true);
+        if (!closed) {
+            map.destroy();
+            frames.forEach(frame -> frame.dispatchEvent(new java.awt.event.WindowEvent(frame, java.awt.event.WindowEvent.WINDOW_CLOSING)));
+            chatWindow.hide();
+            client.setTerminate(true);
+            closed = true;
+        }
     }
 }
