@@ -155,7 +155,7 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
         criteria.add(Restrictions.eq("room.game.id", idGame));
         criteria.add(Restrictions.eq("receiver.id", idCountry));
         if (lastId != null) {
-            criteria.add(Restrictions.gt("id", lastId));
+            criteria.add(Restrictions.gt("message.id", lastId));
         }
 
         //noinspection unchecked

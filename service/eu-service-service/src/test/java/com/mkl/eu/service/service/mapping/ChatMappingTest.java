@@ -244,7 +244,7 @@ public class ChatMappingTest {
         room.setPresent(visible);
         rooms.add(room);
         Message message = new Message();
-        message.setId(1L);
+        message.setId(11L);
         message.setDateRead(ZonedDateTime.parse("2010-02-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
         message.setSender(PRU_VO);
         message.setMessage("Room 1 - Message 1");
@@ -268,14 +268,14 @@ public class ChatMappingTest {
         room.setPresent(false);
         rooms.add(room);
         message = new Message();
-        message.setId(2L);
+        message.setId(12L);
         message.setDateRead(ZonedDateTime.parse("2010-03-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
         message.setSender(PRU_VO);
         message.setMessage("Room 3 - Message 1");
         message.setDateSent(ZonedDateTime.parse("2010-03-01T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
         room.getMessages().add(message);
         message = new Message();
-        message.setId(3L);
+        message.setId(13L);
         message.setDateRead(ZonedDateTime.parse("2010-04-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
         message.setSender(FRA_VO);
         message.setMessage("Room 3 - Message 2");

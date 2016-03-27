@@ -86,7 +86,6 @@ public class ChatMapping extends AbstractMapping {
         for (ChatEntity source : sources) {
             Message target = storeVo(Message.class, source.getMessage(), objectsCreated, this::oeToVo);
             if (target != null) {
-                target.setId(source.getId());
                 target.setDateRead(source.getDateRead());
                 targets.add(target);
             }
@@ -186,7 +185,6 @@ public class ChatMapping extends AbstractMapping {
         for (ChatEntity source : sources) {
             MessageDiff target = storeVo(InnerMessageDiff.class, source.getMessage(), objectsCreated, this::oeToVoSince);
             if (target != null) {
-                target.setId(source.getId());
                 target.setDateRead(source.getDateRead());
                 target.setIdRoom(source.getRoom().getId());
                 targets.add(target);

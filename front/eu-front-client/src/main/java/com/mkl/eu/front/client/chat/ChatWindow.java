@@ -494,29 +494,32 @@ public class ChatWindow extends AbstractDiffListenerContainer {
      */
     public synchronized void update(List<MessageDiff> messages) {
         messages.forEach(message -> {
-            Message msg = new Message();
-            msg.setId(message.getId());
-            msg.setMessage(message.getMessage());
-            msg.setDateRead(message.getDateRead());
-            msg.setDateSent(message.getDateSent());
-            PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> message.getIdSender().equals(playableCountry.getId()));
-            msg.setSender(country);
+            if ((message.getIdRoom() == null && message.getId() > gameConfig.getMaxIdGlobalMessage())
+                    || (message.getIdRoom() != null && message.getId() > gameConfig.getMaxIdMessage())) {
+                Message msg = new Message();
+                msg.setId(message.getId());
+                msg.setMessage(message.getMessage());
+                msg.setDateRead(message.getDateRead());
+                msg.setDateSent(message.getDateSent());
+                PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> message.getIdSender().equals(playableCountry.getId()));
+                msg.setSender(country);
 
-            final String idRoom;
-            if (message.getIdRoom() != null) {
-                idRoom = Long.toString(message.getIdRoom());
-            } else {
-                idRoom = null;
-            }
-            Tab tab = CommonUtil.findFirst(tabPane.getTabs(),
-                    tab1 -> StringUtils.equals(idRoom, tab1.getId()));
-            ListView<Message> listView = getCenterListView(tab);
-            if (listView != null) {
-                listView.getItems().add(msg);
-                updateRoomName(tab, message.getIdRoom());
-                listView.scrollTo(listView.getItems().size());
-            } else {
-                LOGGER.error("New message in unknown tab.");
+                final String idRoom;
+                if (message.getIdRoom() != null) {
+                    idRoom = Long.toString(message.getIdRoom());
+                } else {
+                    idRoom = null;
+                }
+                Tab tab = CommonUtil.findFirst(tabPane.getTabs(),
+                        tab1 -> StringUtils.equals(idRoom, tab1.getId()));
+                ListView<Message> listView = getCenterListView(tab);
+                if (listView != null) {
+                    listView.getItems().add(msg);
+                    updateRoomName(tab, message.getIdRoom());
+                    listView.scrollTo(listView.getItems().size());
+                } else {
+                    LOGGER.error("New message in unknown tab.");
+                }
             }
         });
     }

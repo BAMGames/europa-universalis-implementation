@@ -156,6 +156,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
             message.setSender(sender);
             room.getMessages().add(message);
             chatDao.createMessage(message);
+            msg.setId(message.getId());
         } else {
             RoomEntity room = chatDao.getRoom(request.getGame().getIdGame(), request.getRequest().getIdRoom());
             MessageEntity message = new MessageEntity();
@@ -182,6 +183,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
             }
 
             chatDao.createMessage(messages);
+            msg.setId(message.getId());
         }
 
         push(msg, request.getGame().getIdGame(), idCountries);

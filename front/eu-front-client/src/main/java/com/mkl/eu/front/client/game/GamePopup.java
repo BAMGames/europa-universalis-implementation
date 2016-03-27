@@ -287,33 +287,38 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             }
 
             event.getResponse().getMessages().forEach(message -> {
-                Message msg = new Message();
-                msg.setId(message.getId());
-                msg.setMessage(message.getMessage());
-                msg.setDateRead(message.getDateRead());
-                msg.setDateSent(message.getDateSent());
-                PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> message.getIdSender().equals(playableCountry.getId()));
-                msg.setSender(country);
-                if (message.getIdRoom() == null) {
-                    game.getChat().getGlobalMessages().add(msg);
-                } else {
-                    Room room = CommonUtil.findFirst(game.getChat().getRooms(), room1 -> message.getIdRoom().equals(room1.getId()));
-                    if (room != null) {
-                        room.getMessages().add(msg);
+                if ((message.getIdRoom() == null && message.getId() > gameConfig.getMaxIdGlobalMessage())
+                        || (message.getIdRoom() != null && message.getId() > gameConfig.getMaxIdMessage())) {
+                    Message msg = new Message();
+                    msg.setId(message.getId());
+                    msg.setMessage(message.getMessage());
+                    msg.setDateRead(message.getDateRead());
+                    msg.setDateSent(message.getDateSent());
+                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> message.getIdSender().equals(playableCountry.getId()));
+                    msg.setSender(country);
+                    if (message.getIdRoom() == null) {
+                        game.getChat().getGlobalMessages().add(msg);
+                    } else {
+                        Room room = CommonUtil.findFirst(game.getChat().getRooms(), room1 -> message.getIdRoom().equals(room1.getId()));
+                        if (room != null) {
+                            room.getMessages().add(msg);
+                        }
                     }
                 }
             });
 
             chatWindow.update(event.getResponse().getMessages());
 
-            game.setVersion(event.getResponse().getVersionGame());
-            gameConfig.setVersionGame(event.getResponse().getVersionGame());
+            if (event.getResponse().getVersionGame() != null) {
+                game.setVersion(event.getResponse().getVersionGame());
+                gameConfig.setVersionGame(event.getResponse().getVersionGame());
+            }
             Optional<MessageDiff> opt = event.getResponse().getMessages().stream().filter(messageDiff -> messageDiff.getIdRoom() == null).max((o1, o2) -> (int) (o1.getId() - o2.getId()));
-            if (opt.isPresent()) {
+            if (opt.isPresent() && opt.get().getId() > gameConfig.getMaxIdGlobalMessage()) {
                 gameConfig.setMaxIdGlobalMessage(opt.get().getId());
             }
             opt = event.getResponse().getMessages().stream().filter(messageDiff -> messageDiff.getIdRoom() != null).max((o1, o2) -> (int) (o1.getId() - o2.getId()));
-            if (opt.isPresent()) {
+            if (opt.isPresent() && opt.get().getId() > gameConfig.getMaxIdMessage()) {
                 gameConfig.setMaxIdMessage(opt.get().getId());
             }
         }
