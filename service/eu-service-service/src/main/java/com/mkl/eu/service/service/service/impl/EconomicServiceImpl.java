@@ -17,12 +17,12 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Tech;
+import com.mkl.eu.client.service.vo.tables.TradeIncome;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -37,7 +37,6 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
-import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -73,9 +72,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** AdminAction DAO. */
     @Autowired
     private IAdminActionDao adminActionDao;
-    /** Tables DAO. */
-    @Autowired
-    private ITablesDao tablesDao;
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
@@ -85,9 +81,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
-    /** Diff DAO. */
-    @Autowired
-    private IDiffDao diffDao;
     /** Game mapping. */
     @Autowired
     private EconomicalSheetMapping ecoSheetsMapping;
@@ -233,10 +226,24 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         sheet.setIndustrialIncome(CommonUtil.add(sheet.getMnuIncome(), sheet.getGoldIncome()));
 
-        sheet.setDomTradeIncome(tablesDao.getTradeIncome(CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome()), country.getDti(), false));
+        final Integer valueDom = CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome());
+        TradeIncome tradeIncome = CommonUtil.findFirst(getTables().getDomesticTrades(), tradeIncome1 -> tradeIncome1.getCountryValue() == country.getDti()
+                        && (tradeIncome1.getMinValue() == null || tradeIncome1.getMinValue() <= valueDom)
+                        && (tradeIncome1.getMaxValue() == null || tradeIncome1.getMaxValue() >= valueDom)
+        );
+        if (tradeIncome != null) {
+            sheet.setDomTradeIncome(tradeIncome.getValue());
+        }
 
         // TODO needs War to know the blocked trade
-        sheet.setForTradeIncome(tablesDao.getTradeIncome(0, country.getFti(), true));
+        final Integer valueFor = 0;
+        tradeIncome = CommonUtil.findFirst(getTables().getForeignTrades(), tradeIncome1 -> tradeIncome1.getCountryValue() == country.getFti()
+                        && (tradeIncome1.getMinValue() == null || tradeIncome1.getMinValue() <= valueFor)
+                        && (tradeIncome1.getMaxValue() == null || tradeIncome1.getMaxValue() >= valueFor)
+        );
+        if (tradeIncome != null) {
+            sheet.setForTradeIncome(tradeIncome.getValue());
+        }
 
         sheet.setFleetLevelIncome(economicalSheetDao.getFleetLevelIncome(name, idGame));
 
@@ -412,7 +419,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             failIfFalse(new CheckForThrow<Boolean>().setTest(FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be lower fortress.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
 
-
+            // TODO check that facetype is between natural and actual fortress.
         }
 
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
