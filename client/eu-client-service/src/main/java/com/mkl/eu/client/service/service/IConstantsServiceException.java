@@ -76,6 +76,38 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when a counter can't be lowered.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the counter</li>
+     * <li>2: type of the counter</li>
+     * </ul>
+     * </p>
+     */
+    String COUNTER_CANT_LOWER_FORTRESS = "exception.eu.admin_action.counter_cant_lower_fortress";
+
+    /**
+     * <p>
+     * Exception thrown when a fortress is asked a wrong level to be lowered.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the counter</li>
+     * <li>2: desired level of the fortress</li>
+     * <li>3: natural level of the fortress</li>
+     * <li>4: actual level of the fortress</li>
+     * </ul>
+     * </p>
+     */
+    String COUNTER_WRONG_LOWER_FORTRESS = "exception.eu.admin_action.counter_wrong_lower_fortress";
+
+    /**
+     * <p>
      * Exception thrown when a counter is asked to do an action but is already planned to do one.
      * </p>
      * <p>

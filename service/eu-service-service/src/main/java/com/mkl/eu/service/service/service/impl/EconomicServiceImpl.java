@@ -312,6 +312,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         switch (request.getRequest().getType()) {
             case LM:
                 // TODO check if country is at war
+            case LF:
             case DIS:
                 admAct = computeDisbandLowMaintenance(request, game, country);
                 break;
@@ -416,16 +417,32 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_TYPES.contains(counter.getType()) || FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be disbanded.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
         } else if (request.getRequest().getType() == AdminActionTypeEnum.LF) {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
+            failIfNull(new CheckForThrow<>().setTest(request.getRequest().getCounterFaceType()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                    .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT));
+            failIfFalse(new CheckForThrow<Boolean>().setTest(FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_LOWER_FORTRESS)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be lower fortress.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
 
-            // TODO check that facetype is between natural and actual fortress.
+            String province = counter.getOwner().getProvince();
+            AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+
+            int naturalLevel = 0;
+            if (prov instanceof EuropeanProvinceEntity) {
+                if (((EuropeanProvinceEntity) prov).getFortress() != null) {
+                    naturalLevel = ((EuropeanProvinceEntity) prov).getFortress();
+                }
+            }
+
+            int actualLevel = MaintenanceUtil.getFortressLevelFromType(counter.getType());
+            int desiredLevel = MaintenanceUtil.getFortressLevelFromType(request.getRequest().getCounterFaceType());
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(desiredLevel > naturalLevel && desiredLevel < actualLevel).setCodeError(IConstantsServiceException.COUNTER_WRONG_LOWER_FORTRESS)
+                    .setMsgFormat("{1}: {0} The fortress {2} of level {5} cannot be lowered to {3} (natural fortress: {4}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), desiredLevel, naturalLevel, actualLevel));
         }
 
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
-                request.getRequest().getIdObject(), AdminActionTypeEnum.LM, AdminActionTypeEnum.DIS);
+                request.getRequest().getIdObject(), AdminActionTypeEnum.LM, AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
         failIfFalse(new CheckForThrow<Boolean>().setTest(actions == null || actions.isEmpty()).setCodeError(IConstantsServiceException.COUNTER_ALREADY_PLANNED)
-                .setMsgFormat("{1}: {0} The counter {2} has already a DIS or LM administrative action PLANNED this turn.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
+                .setMsgFormat("{1}: {0} The counter {2} has already a DIS or LM or LF administrative action PLANNED this turn.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
 
 
         AdministrativeActionEntity admAct = new AdministrativeActionEntity();
@@ -433,6 +450,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setStatus(AdminActionStatusEnum.PLANNED);
         admAct.setTurn(game.getTurn());
         admAct.setIdObject(counter.getId());
+        admAct.setCounterFaceType(request.getRequest().getCounterFaceType());
         return admAct;
     }
 
