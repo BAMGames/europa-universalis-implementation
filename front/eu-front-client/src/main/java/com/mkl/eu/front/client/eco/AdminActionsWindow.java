@@ -946,6 +946,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         switch (type) {
                             case DIS:
                             case LM:
+                            case LF:
                                 updateMaintenanceNode(country);
                                 break;
                             case PU:
