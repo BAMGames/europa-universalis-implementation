@@ -819,41 +819,45 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private void configureAdminActionTable(TableView<AdministrativeAction> table, Consumer<AdministrativeAction> callback) {
         table.setTableMenuButtonVisible(true);
         table.setPrefWidth(750);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<AdministrativeAction, String> column = new TableColumn<>(message.getMessage("admin_action.turn", null, globalConfiguration.getLocale()));
-        column.setPrefWidth(30);
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("turn"));
         table.getColumns().add(column);
 
         column = new TableColumn<>(message.getMessage("admin_action.action", null, globalConfiguration.getLocale()));
-        column.setPrefWidth(400);
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.3 + (callback == null ? 0.05 : 0)));
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.type." + param.getValue().getType(), null, globalConfiguration.getLocale())));
         table.getColumns().add(column);
 
+        column = new TableColumn<>(message.getMessage("admin_action.info", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.35 + (callback == null ? 0.05 : 0)));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getInfo(param.getValue())));
+        table.getColumns().add(column);
+
         column = new TableColumn<>(message.getMessage("admin_action.cost", null, globalConfiguration.getLocale()));
-        column.setPrefWidth(30);
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("cost"));
         table.getColumns().add(column);
 
         column = new TableColumn<>(message.getMessage("admin_action.column", null, globalConfiguration.getLocale()));
-        column.setPrefWidth(30);
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("column"));
         table.getColumns().add(column);
 
         column = new TableColumn<>(message.getMessage("admin_action.bonus", null, globalConfiguration.getLocale()));
-        column.setPrefWidth(30);
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("bonus"));
         table.getColumns().add(column);
 
         column = new TableColumn<>(message.getMessage("admin_action.result", null, globalConfiguration.getLocale()));
-        column.setPrefWidth(30);
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.result." + param.getValue().getResult(), null, globalConfiguration.getLocale())));
         table.getColumns().add(column);
 
         if (callback != null) {
             column = new TableColumn<>(message.getMessage("admin_action.actions", null, globalConfiguration.getLocale()));
-            column.setPrefWidth(70);
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
             column.setCellValueFactory(new PropertyValueFactory<>("NONE"));
             Callback<TableColumn<AdministrativeAction, String>, TableCell<AdministrativeAction, String>> cellFactory = new Callback<TableColumn<AdministrativeAction, String>, TableCell<AdministrativeAction, String>>() {
                 @Override
@@ -881,6 +885,25 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             column.setCellFactory(cellFactory);
             table.getColumns().add(column);
         }
+    }
+
+    private String getInfo(AdministrativeAction action) {
+        StringBuilder info = new StringBuilder();
+
+        if (action.getIdObject() != null) {
+            Counter counter = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().get();
+            String provinceName = message.getMessage(counter.getOwner().getProvince(), null, globalConfiguration.getLocale());
+            info.append(provinceName).append(" - ").append(counter.getType());
+            if (action.getCounterFaceType() != null) {
+                info.append(" -> ").append(action.getCounterFaceType());
+            }
+        } else {
+            String provinceName = message.getMessage(action.getProvince(), null, globalConfiguration.getLocale());
+            info.append(provinceName).append(" - ").append(action.getCounterFaceType());
+        }
+
+        return info.toString();
     }
 
     /**
