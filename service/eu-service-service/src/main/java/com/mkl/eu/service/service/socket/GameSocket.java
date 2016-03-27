@@ -22,6 +22,8 @@ public class GameSocket implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketHandler.class);
     /** Socket to communicate with client. */
     private Socket socket;
+    /** Output stream used to write diff to the client. */
+    private ObjectOutputStream outStream;
     /** Handler to be referenced to after the init. */
     private SocketHandler handler;
     /** Information about this socket (game id, login, ...). */
@@ -45,6 +47,8 @@ public class GameSocket implements Runnable {
             info = (SocketInfo) in.readObject();
 
             LOGGER.info("New client on game " + info.getIdGame() + " for player " + info.getIdCountry());
+
+            outStream = new ObjectOutputStream(socket.getOutputStream());
 
             handler.addActiveClient(this, info.getIdGame());
         } catch (Exception e) {
@@ -80,8 +84,7 @@ public class GameSocket implements Runnable {
     public void push(DiffResponse diff, List<Long> idCountries) {
         if (idCountries == null || idCountries.isEmpty() || idCountries.contains(info.getIdCountry())) {
             try {
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                out.writeObject(diff);
+                outStream.writeObject(diff);
             } catch (SocketException e) {
                 terminate = true;
             } catch (Exception e) {
