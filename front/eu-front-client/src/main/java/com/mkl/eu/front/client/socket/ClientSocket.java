@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 /**
  * Socket for the server client side.
@@ -81,6 +82,10 @@ public class ClientSocket extends AbstractDiffListenerContainer implements Runna
                 DiffEvent event = new DiffEvent(response, gameConfig.getIdGame());
                 Platform.runLater(() -> processDiffEvent(event));
             }
+        } catch (SocketTimeoutException e) {
+            setTerminate(terminate);
+            init();
+            run();
         } catch (Exception e) {
             if (!terminate) {
                 LOGGER.error("Error when communicating with server.", e);
