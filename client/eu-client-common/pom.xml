@@ -54,4 +54,22 @@
             <artifactId>assertj-core</artifactId>
         </dependency>
     </dependencies>
+    
+    <build>
+         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>com/mkl/eu/client/common/adapter/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/common/exception/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/common/vo/**/*.class</exclude>
+                        </excludes>
+                    </instrumentation>
+                </configuration>
+            </plugin>
+         </plugins>
+    </build>
 </project>
