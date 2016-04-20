@@ -1,4 +1,4 @@
 # eu
 Europa Universalis game
 
-Build status: https://circleci.com/gh/FogiaFr/eu.png
+Build status: [![Circle CI](https://circleci.com/gh/FogiaFr/eu.png)](https://circleci.com/gh/FogiaFr/eu)
