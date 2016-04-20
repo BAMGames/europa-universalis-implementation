@@ -133,6 +133,7 @@
                 <configuration>
                     <instrumentation>
                         <excludes>
+                            <exclude>com/mkl/eu/service/service/ws/**/*.class</exclude>
                             <exclude>com/mkl/eu/service/service/persistence/oe/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
