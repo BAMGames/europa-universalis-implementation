@@ -38,8 +38,11 @@
                     <aggregate>true</aggregate>
                     <instrumentation>
                         <excludes>
-                            <exclude>com/mkl/client/**/*.class</exclude>
-                            <exclude>com/mkl/front/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/common/adapter/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/common/exception/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/common/vo/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/service/**/*.class</exclude>
+                            <exclude>com/mkl/eu/front/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
                 </configuration>
