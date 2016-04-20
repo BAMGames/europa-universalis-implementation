@@ -36,6 +36,12 @@
                     <maxmem>256m</maxmem>
                     <!-- aggregated reports for multi-module projects -->
                     <aggregate>true</aggregate>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>com/mkl/client/**/*.class</exclude>
+                            <exclude>com/mkl/front/**/*.class</exclude>
+                        </excludes>
+                    </instrumentation>
                 </configuration>
             </plugin>
         </plugins>
