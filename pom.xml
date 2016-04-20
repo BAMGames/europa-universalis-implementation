@@ -25,26 +25,15 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.1.0</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.7</version>
                 <configuration>
                     <format>xml</format>
                     <maxmem>256m</maxmem>
                     <!-- aggregated reports for multi-module projects -->
                     <aggregate>true</aggregate>
-                    <instrumentation>
-                        <excludes>
-                            <exclude>com/mkl/eu/client/common/adapter/**/*.class</exclude>
-                            <exclude>com/mkl/eu/client/common/exception/**/*.class</exclude>
-                            <exclude>com/mkl/eu/client/common/vo/**/*.class</exclude>
-                            <exclude>com/mkl/eu/client/service/**/*.class</exclude>
-                            <exclude>com/mkl/eu/front/**/*.class</exclude>
-                        </excludes>
-                    </instrumentation>
                 </configuration>
             </plugin>
         </plugins>
