@@ -124,4 +124,20 @@
             <artifactId>mockito-all</artifactId>
         </dependency>
     </dependencies>
+    
+    <build>
+         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>com/mkl/eu/service/service/persistence/oe/**/*.class</exclude>
+                        </excludes>
+                    </instrumentation>
+                </configuration>
+            </plugin>
+         </plugins>
+    </build>
 </project>
