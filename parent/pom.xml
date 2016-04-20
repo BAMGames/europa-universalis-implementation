@@ -82,6 +82,18 @@
                     <artifactId>hibernate4-maven-plugin</artifactId>
                     <version>1.0.3</version>
                 </plugin>
+    
+                <plugin>
+                    <groupId>org.eluder.coveralls</groupId>
+                    <artifactId>coveralls-maven-plugin</artifactId>
+                    <version>4.1.0</version>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>cobertura-maven-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
