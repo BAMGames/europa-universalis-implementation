@@ -1,9 +1,8 @@
 package com.mkl.eu.service.service.persistence.oe.ref.province;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
+import com.mkl.eu.client.service.vo.enumeration.TradeZoneTypeEnum;
+
+import javax.persistence.*;
 
 /**
  * Trade zone. Can be europe or rotw.
@@ -15,10 +14,10 @@ import javax.persistence.Table;
 @PrimaryKeyJoinColumn(name = "ID")
 public class TradeZoneProvinceEntity extends AbstractProvinceEntity {
     /** Type of the trade zone (ZP or ZM). */
-    private String type;
+    private TradeZoneTypeEnum type;
     /** Name of the sea zone where the trade zone is located. */
     private String seaZone;
-    /** In case of ZP, name of the country where the trade zone is. */
+    /** In case of CTZ/ZP, name of the country where the trade zone is. */
     private String countryName;
     /** Income earned by a total monopoly (halved for partial monopoly). */
     private int monopoly;
@@ -26,13 +25,14 @@ public class TradeZoneProvinceEntity extends AbstractProvinceEntity {
     private int presence;
 
     /** @return the type. */
+    @Enumerated(EnumType.STRING)
     @Column(name = "TYPE")
-    public String getType() {
+    public TradeZoneTypeEnum getType() {
         return type;
     }
 
     /** @param type the type to set. */
-    public void setType(String type) {
+    public void setType(TradeZoneTypeEnum type) {
         this.type = type;
     }
 

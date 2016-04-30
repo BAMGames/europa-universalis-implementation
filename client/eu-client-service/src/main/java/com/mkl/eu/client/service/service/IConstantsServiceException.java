@@ -168,6 +168,54 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when an administrative action can't be planned because it would exceed the country limit.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the administrative action</li>
+     * <li>2: country performing the administrative action</li>
+     * <li>3: number of already planned action of same type</li>
+     * <li>4: limit of this type for this country</li>
+     * </ul>
+     * </p>
+     */
+    String ADMIN_ACTION_LIMIT_EXCEED = "exception.eu.admin_action.admin_action_limit_exceed";
+
+    /**
+     * <p>
+     * Exception thrown when a province type is unexpected.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the province</li>
+     * <li>2: type of the province</li>
+     * <li>3: expected type of the province</li>
+     * </ul>
+     * </p>
+     */
+    String PROVINCE_WRONG_TYPE = "exception.eu.admin_action.province_wrong_type";
+
+    /**
+     * <p>
+     * Exception thrown when a trade fleet is alreay full.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province of the trade fleet</li>
+     * <li>2: country of the trade fleet</li>
+     * </ul>
+     * </p>
+     */
+    String TRADE_FLEET_FULL = "exception.eu.admin_action.trade_fleet_full";
+
+    /**
+     * <p>
      * Exception thrown when an action is not planned (when trying to remove it for example).
      * </p>
      * <p>

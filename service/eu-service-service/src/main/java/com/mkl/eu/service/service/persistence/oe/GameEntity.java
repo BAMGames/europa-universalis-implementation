@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
 
 import javax.persistence.*;
@@ -29,6 +30,8 @@ public class GameEntity implements IEntity, Serializable {
     private List<PoliticalEventEntity> events = new ArrayList<>();
     /** Stacks of counters of the game. */
     private List<StackEntity> stacks = new ArrayList<>();
+    /** Trade fleets of the game. */
+    private List<TradeFleetEntity> tradeFleets = new ArrayList<>();
     /** Turn of the game. */
     private Integer turn;
     /** Status of the game. */
@@ -92,6 +95,17 @@ public class GameEntity implements IEntity, Serializable {
     /** @param stacks the stacks to set. */
     public void setStacks(List<StackEntity> stacks) {
         this.stacks = stacks;
+    }
+
+    /** @return the tradeFleets. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<TradeFleetEntity> getTradeFleets() {
+        return tradeFleets;
+    }
+
+    /** @param tradeFleets the tradeFleets to set. */
+    public void setTradeFleets(List<TradeFleetEntity> tradeFleets) {
+        this.tradeFleets = tradeFleets;
     }
 
     /** @return the turn. */

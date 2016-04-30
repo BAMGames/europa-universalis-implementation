@@ -19,6 +19,7 @@ import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.TradeIncome;
 import com.mkl.eu.client.service.vo.tables.Unit;
+import com.mkl.eu.client.service.vo.util.EconomicUtil;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -33,9 +34,11 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.TradeZoneProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -319,6 +322,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case PU:
                 admAct = computePurchase(request, game, country);
                 break;
+            case TFI:
+                admAct = computeTradeFleetImplantation(request, game, country);
+                break;
             default:
                 admAct = null;
                 break;
@@ -376,6 +382,20 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes = new DiffAttributesEntity();
                 diffAttributes.setType(DiffAttributeTypeEnum.COUNTER_FACE_TYPE);
                 diffAttributes.setValue(admAct.getCounterFaceType().name());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+            if (admAct.getColumn() != null) {
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.COLUMN);
+                diffAttributes.setValue(admAct.getColumn().toString());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+            if (admAct.getBonus() != null) {
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.BONUS);
+                diffAttributes.setValue(admAct.getBonus().toString());
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
             }
@@ -668,6 +688,96 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             cost = MaintenanceUtil.getPurchasePrice(plannedSize, maxPurchase, unitCost.getPrice(), size);
         }
         return cost;
+    }
+
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type TFI.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeTradeFleetImplantation(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.TFI);
+
+        Integer plannedTfis = actions.stream().collect(Collectors.summingInt(action -> 1));
+        Integer maxTfis = getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getType() == LimitTypeEnum.ACTION_TFI &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(plannedTfis < maxTfis).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_TFI, country.getName(), plannedTfis, maxTfis));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
+
+        String province = request.getRequest().getProvince();
+        failIfEmpty(new CheckForThrow<String>().setTest(province).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT));
+
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+
+        failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(prov instanceof TradeZoneProvinceEntity).setCodeError(IConstantsServiceException.PROVINCE_WRONG_TYPE)
+                .setMsgFormat("{1}: {0} The province {2} of type {3} should be of type {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, prov.getClass(), TradeZoneProvinceEntity.class));
+
+        TradeFleetEntity tradeFleet = CommonUtil.findFirst(game.getTradeFleets(), tradeFleetEntity -> StringUtils.equals(province, tradeFleetEntity.getProvince())
+                && StringUtils.equals(country.getName(), tradeFleetEntity.getCountry()));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(tradeFleet == null || tradeFleet.getLevel() < 6).setCodeError(IConstantsServiceException.TRADE_FLEET_FULL)
+                .setMsgFormat("{1}: {0} The trade fleet located in {2} and owned by {3} is already full.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+
+        Integer column = country.getFti();
+        TradeZoneProvinceEntity tradeZone = (TradeZoneProvinceEntity) prov;
+        if (tradeZone.getType() == TradeZoneTypeEnum.ZP) {
+            if (StringUtils.equals(country.getName(), tradeZone.getCountryName())) {
+                column += country.getDti();
+            } else if (!StringUtils.isEmpty(tradeZone.getCountryName())) {
+                PlayableCountryEntity enemy = CommonUtil.findFirst(game.getCountries(), playableCountryEntity -> StringUtils.equals(tradeZone.getCountryName(), playableCountryEntity.getName()));
+                // REMINDER : check if minor countries who were major are still playable countries
+                if (enemy != null) {
+                    column -= enemy.getDti();
+                }
+            }
+        }
+        int otherTfs = game.getTradeFleets().stream().filter(tradeFleetEntity -> StringUtils.equals(province, tradeFleetEntity.getProvince())
+                && !StringUtils.equals(country.getName(), tradeFleetEntity.getCountry()))
+                .collect(Collectors.summingInt(value -> value.getLevel() != null && value.getLevel() > 0 ? 1 : 0));
+        column -= otherTfs;
+
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+        column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
+
+        int bonus = 0;
+        if (tradeFleet != null && tradeFleet.getLevel() != null && tradeFleet.getLevel() >= 4) {
+            bonus = 1;
+        }
+        List<StackEntity> stacks = game.getStacks().stream().filter(stackEntity -> StringUtils.equals(tradeZone.getSeaZone(), stackEntity.getProvince())).collect(Collectors.toList());
+        CounterEntity pirate = CommonUtil.findFirst(stacks.stream().flatMap(stackEntity -> stackEntity.getCounters().stream()), o -> o.getType() == CounterFaceTypeEnum.PIRATE_MINUS || o.getType() == CounterFaceTypeEnum.PIRATE_PLUS);
+        if (pirate != null) {
+            bonus -= 1;
+        }
+        // TODO battles
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        admAct.setColumn(column);
+        admAct.setBonus(bonus);
+
+        return admAct;
     }
 
     /** {@inheritDoc} */

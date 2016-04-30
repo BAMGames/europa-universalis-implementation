@@ -39,5 +39,9 @@ public enum DiffAttributeTypeEnum {
     /** Type of the face of a counter. */
     COUNTER_FACE_TYPE,
     /** Cost of the action/object. */
-    COST
+    COST,
+    /** Column of the action. */
+    COLUMN,
+    /** Bonus of the action. */
+    BONUS
 }

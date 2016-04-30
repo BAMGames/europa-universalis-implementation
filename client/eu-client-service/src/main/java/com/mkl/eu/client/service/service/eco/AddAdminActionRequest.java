@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.service.eco;
 
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.InvestmentEnum;
 
 /**
  * Request for addAdminAction service.
@@ -19,6 +20,8 @@ public class AddAdminActionRequest {
     private String province;
     /** Eventual type of counter face subject of the administrative action. */
     private CounterFaceTypeEnum counterFaceType;
+    /** Eventual investment of the administrative action. */
+    private InvestmentEnum investment;
 
     /**
      * Constructor for jaxb.
@@ -105,5 +108,15 @@ public class AddAdminActionRequest {
     /** @param counterFaceType the counterFaceType to set. */
     public void setCounterFaceType(CounterFaceTypeEnum counterFaceType) {
         this.counterFaceType = counterFaceType;
+    }
+
+    /** @return the investment. */
+    public InvestmentEnum getInvestment() {
+        return investment;
+    }
+
+    /** @param investment the investment to set. */
+    public void setInvestment(InvestmentEnum investment) {
+        this.investment = investment;
     }
 }
