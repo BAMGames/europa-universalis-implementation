@@ -2,4 +2,4 @@
 Europa Universalis game
 
 [![Circle CI](https://circleci.com/gh/FogiaFr/eu.png?style=shield)](https://circleci.com/gh/FogiaFr/eu)
-[![Coverage Status](https://coveralls.io/repos/FogiaFr/eu/badge.png)](https://coveralls.io/r/FogiaFr/eu)
+[![Coverage Status](https://coveralls.io/repos/github/FogiaFr/eu/badge.svg?branch=master)](https://coveralls.io/github/FogiaFr/eu?branch=master)
