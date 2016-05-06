@@ -117,7 +117,7 @@
   </border>
   <border>
     <first>rCuba~W</first>
-    <second>sCuba</second>
+    <second>sBahamas</second>
   </border>
   <border>
     <first>eCyclades</first>
@@ -166,8 +166,8 @@
     <second>eSuisse</second>
   </border>
   <border>
-    <first>sRouge</first>
-    <second>sSeychelles</second>
+    <first>sErythree</first>
+    <second>sRouge</second>
     <type>STRAIT</type>
   </border>
   <border>
@@ -256,7 +256,7 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sOman</first>
+    <first>sArabie</first>
     <second>sRouge</second>
     <type>STRAIT</type>
   </border>
@@ -284,7 +284,7 @@
   </border>
   <border>
     <first>rJapon~W</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>eSjaelland</first>
@@ -296,7 +296,7 @@
   </border>
   <border>
     <first>rIndus~S</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>eCastilla La Vieja</first>
@@ -365,8 +365,8 @@
     <second>sEgee</second>
   </border>
   <border>
-    <first>sMascate</first>
-    <second>sOman</second>
+    <first>sArabie</first>
+    <second>sMascate</second>
   </border>
   <border>
     <first>eBerry</first>
@@ -388,7 +388,7 @@
   </border>
   <border>
     <first>rJapon~W</first>
-    <second>sPacifique W</second>
+    <second>sPhilippines</second>
   </border>
   <border>
     <first>rNyasa~S</first>
@@ -413,10 +413,10 @@
   </border>
   <border>
     <first>rJapon~W</first>
-    <second>sChine N</second>
+    <second>sFormose</second>
   </border>
   <border>
-    <first>sIndus</first>
+    <first>sKutch</first>
     <second>sMascate</second>
   </border>
   <border>
@@ -510,7 +510,7 @@
   </border>
   <border>
     <first>rCelebes~S</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eBoheme</first>
@@ -526,12 +526,12 @@
     <second>rSiberie~W</second>
   </border>
   <border>
-    <first>sIrlande</first>
-    <second>sWestern Approaches</second>
-  </border>
-  <border>
     <first>eLiguria</first>
     <second>eLucca</second>
+  </border>
+  <border>
+    <first>sCeltique</first>
+    <second>sRockall</second>
   </border>
   <border>
     <first>eBergslagen</first>
@@ -654,7 +654,7 @@
   </border>
   <border>
     <first>rCelebes~N</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eCastilla La Nueva</first>
@@ -662,12 +662,12 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>rCuba~E</first>
-    <second>sCuba</second>
-  </border>
-  <border>
     <first>rIllinois~NW</first>
     <second>rManitoba~S</second>
+  </border>
+  <border>
+    <first>rCuba~E</first>
+    <second>sBahamas</second>
   </border>
   <border>
     <first>eKazan</first>
@@ -737,7 +737,7 @@
   </border>
   <border>
     <first>sArguin</first>
-    <second>sAtlantique</second>
+    <second>sAtlantique N</second>
   </border>
   <border>
     <first>rPlata~NE</first>
@@ -765,7 +765,7 @@
   </border>
   <border>
     <first>eRhodos</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rSainte-Helene~I</first>
@@ -797,7 +797,7 @@
   </border>
   <border>
     <first>rCelebes~N</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>rIroquois~N</first>
@@ -821,7 +821,7 @@
   </border>
   <border>
     <first>rCanton~S</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>eCheboksary</first>
@@ -834,10 +834,10 @@
   </border>
   <border>
     <first>rIles aux epices~A</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
-    <first>sIrlande</first>
+    <first>sCeltique</first>
     <second>sManche</second>
   </border>
   <border>
@@ -857,8 +857,8 @@
     <second>ePoltava</second>
   </border>
   <border>
-    <first>sMozambique</first>
-    <second>sSeychelles</second>
+    <first>sErythree</first>
+    <second>sMozambique</second>
   </border>
   <border>
     <first>eNubie</first>
@@ -958,8 +958,8 @@
     <second>eOrleanais</second>
   </border>
   <border>
-    <first>sOman</first>
-    <second>sSeychelles</second>
+    <first>sArabie</first>
+    <second>sErythree</second>
   </border>
   <border>
     <first>rOman~W</first>
@@ -1125,15 +1125,15 @@
   </border>
   <border>
     <first>rGujarat~W</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>eSaldigna</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>rAntilles~M</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>eBosna</first>
@@ -1154,8 +1154,8 @@
     <second>sBonne-Esperance</second>
   </border>
   <border>
-    <first>sGascogne</first>
-    <second>sIrlande</second>
+    <first>sCeltique</first>
+    <second>sGascogne</second>
   </border>
   <border>
     <first>eBrandenburg</first>
@@ -1171,7 +1171,7 @@
     <second>eHainaut</second>
   </border>
   <border>
-    <first>sIndien W</first>
+    <first>sMalgaches</first>
     <second>sTempetes</second>
   </border>
   <border>
@@ -1197,7 +1197,7 @@
   </border>
   <border>
     <first>rBalouchistan~E</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>eMoldova</first>
@@ -1205,8 +1205,8 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sAtlantique NO</first>
-    <second>sBermudes</second>
+    <first>sBermudes</first>
+    <second>sGrand Bancs</second>
   </border>
   <border>
     <first>eAragon</first>
@@ -1221,12 +1221,12 @@
     <second>rPatagonia~W</second>
   </border>
   <border>
-    <first>sAtlantique NO</first>
-    <second>sFundy</second>
+    <first>sFundy</first>
+    <second>sGrand Bancs</second>
   </border>
   <border>
-    <first>sMalabar</first>
-    <second>sMaldives</second>
+    <first>sLaquedives</first>
+    <second>sMalabar</second>
   </border>
   <border>
     <first>rCanton~E</first>
@@ -1239,7 +1239,7 @@
   </border>
   <border>
     <first>rVirginia~NE</first>
-    <second>sAtlantique W</second>
+    <second>sAmerique</second>
   </border>
   <border>
     <first>eBerg</first>
@@ -1252,7 +1252,7 @@
   </border>
   <border>
     <first>eIlles Balears</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>eMemel</first>
@@ -1312,12 +1312,12 @@
     <second>ePodolie</second>
   </border>
   <border>
-    <first>sAtlantique N</first>
-    <second>sAtlantique NO</second>
-  </border>
-  <border>
     <first>rPatagonia~S</first>
     <second>rPatagonia~SW</second>
+  </border>
+  <border>
+    <first>sBonnet flamand</first>
+    <second>sGrand Bancs</second>
   </border>
   <border>
     <first>eDanzig</first>
@@ -1349,8 +1349,8 @@
     <second>rVirginia~W</second>
   </border>
   <border>
-    <first>sMaldives</first>
-    <second>sSeychelles</second>
+    <first>sErythree</first>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>rAzteca~NW</first>
@@ -1407,8 +1407,8 @@
     <second>eIsfahan</second>
   </border>
   <border>
-    <first>sMalabar</first>
-    <second>sOman</second>
+    <first>sArabie</first>
+    <second>sMalabar</second>
   </border>
   <border>
     <first>rAzteca~NW</first>
@@ -1456,8 +1456,8 @@
     <second>sBaltique</second>
   </border>
   <border>
-    <first>sIndien W</first>
-    <second>sSeychelles</second>
+    <first>sErythree</first>
+    <second>sMalgaches</second>
   </border>
   <border>
     <first>rAzteca~C</first>
@@ -1473,12 +1473,12 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sGroenland</first>
-    <second>sLabrador</second>
-  </border>
-  <border>
     <first>eBeira</first>
     <second>sGascogne</second>
+  </border>
+  <border>
+    <first>sIrminger</first>
+    <second>sLabrador</second>
   </border>
   <border>
     <first>rBelem~W</first>
@@ -1487,7 +1487,7 @@
   </border>
   <border>
     <first>rCabo Verde~I</first>
-    <second>sAtlantique</second>
+    <second>sAtlantique N</second>
   </border>
   <border>
     <first>eCarniola</first>
@@ -1499,7 +1499,7 @@
   </border>
   <border>
     <first>eHighlands</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>rMississippi~NW</first>
@@ -1536,8 +1536,8 @@
     <second>sOresund</second>
   </border>
   <border>
-    <first>sAtlantique NO</first>
-    <second>sGroenland</second>
+    <first>sGrand Bancs</first>
+    <second>sIrminger</second>
   </border>
   <border>
     <first>rEthiopie~N</first>
@@ -1563,7 +1563,7 @@
   </border>
   <border>
     <first>rCabo Verde~I</first>
-    <second>sAtlantique EQ</second>
+    <second>sAtlantique</second>
   </border>
   <border>
     <first>eUtrecht</first>
@@ -1583,7 +1583,7 @@
   </border>
   <border>
     <first>rKenya~N</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>eNice</first>
@@ -1597,7 +1597,7 @@
   </border>
   <border>
     <first>sAtlantique</first>
-    <second>sAtlantique EQ</second>
+    <second>sAtlantique N</second>
   </border>
   <border>
     <first>eSkane</first>
@@ -1609,7 +1609,7 @@
   </border>
   <border>
     <first>rPhilippines~C</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>eSlesvig</first>
@@ -1654,7 +1654,7 @@
   </border>
   <border>
     <first>rEthiopie~S</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>rCarolina~E</first>
@@ -1691,7 +1691,7 @@
   </border>
   <border>
     <first>rTerre-Neuve~N</first>
-    <second>sGroenland</second>
+    <second>sIrminger</second>
   </border>
   <border>
     <first>rRecife~NE</first>
@@ -1758,15 +1758,15 @@
   </border>
   <border>
     <first>rTerre-Neuve~S</first>
-    <second>sAtlantique NO</second>
+    <second>sGrand Bancs</second>
   </border>
   <border>
     <first>sAcores</first>
-    <second>sIrlande</second>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>rDai Viet~S</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>rYakoutie~C</first>
@@ -1800,7 +1800,7 @@
   </border>
   <border>
     <first>rTerre-Neuve~S</first>
-    <second>sGroenland</second>
+    <second>sIrminger</second>
   </border>
   <border>
     <first>rTerre-Neuve~N</first>
@@ -1819,8 +1819,8 @@
     <second>rRio~S</second>
   </border>
   <border>
-    <first>sAtlantique N</first>
-    <second>sGroenland</second>
+    <first>sBonnet flamand</first>
+    <second>sIrminger</second>
   </border>
   <border>
     <first>eFriesland</first>
@@ -1849,7 +1849,7 @@
   </border>
   <border>
     <first>eAntalya</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rCap~S</first>
@@ -1883,7 +1883,7 @@
   </border>
   <border>
     <first>sAcores</first>
-    <second>sGroenland</second>
+    <second>sIrminger</second>
   </border>
   <border>
     <first>eCrimee</first>
@@ -1895,7 +1895,7 @@
   </border>
   <border>
     <first>rMascareignes~M</first>
-    <second>sIndien W</second>
+    <second>sMalgaches</second>
   </border>
   <border>
     <first>rYucatan~S</first>
@@ -2038,7 +2038,7 @@
   </border>
   <border>
     <first>rMascareignes~M</first>
-    <second>sQuarantiemes</second>
+    <second>sCinquantiemes</second>
   </border>
   <border>
     <first>eKocaeli</first>
@@ -2059,7 +2059,7 @@
   </border>
   <border>
     <first>rBalouchistan~W</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>eZeeland</first>
@@ -2094,8 +2094,8 @@
     <second>eThuringen</second>
   </border>
   <border>
-    <first>sAtlantique EQ</first>
-    <second>sSous-le-vent</second>
+    <first>sAtlantique</first>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>rMinas Gerais~E</first>
@@ -2128,8 +2128,8 @@
     <second>eOberPfalz</second>
   </border>
   <border>
-    <first>sAtlantique</first>
-    <second>sSous-le-vent</second>
+    <first>sAtlantique N</first>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>eMonferrato</first>
@@ -2167,7 +2167,7 @@
   </border>
   <border>
     <first>sNorvege</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>eMorava</first>
@@ -2175,11 +2175,11 @@
   </border>
   <border>
     <first>sAmazonie</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>rCarolina~E</first>
-    <second>sAtlantique W</second>
+    <second>sAmerique</second>
   </border>
   <border>
     <first>eSkane</first>
@@ -2191,7 +2191,7 @@
   </border>
   <border>
     <first>rMalabar~S</first>
-    <second>sMaldives</second>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>rAfghanistan~C</first>
@@ -2239,15 +2239,15 @@
   </border>
   <border>
     <first>rOceania~NZN</first>
-    <second>sCorail</second>
+    <second>sTasman</second>
   </border>
   <border>
     <first>rRocheuses~S</first>
     <second>rRocheuses~SE</second>
   </border>
   <border>
-    <first>sIrlande</first>
-    <second>sMan</second>
+    <first>sCeltique</first>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>rDelhi~C</first>
@@ -2265,7 +2265,7 @@
   </border>
   <border>
     <first>eFinistere</first>
-    <second>sIrlande</second>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>rKarnatika~C</first>
@@ -2314,7 +2314,7 @@
   </border>
   <border>
     <first>eAlgerie</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>eAuvergne</first>
@@ -2354,16 +2354,16 @@
     <second>rPendjab~N</second>
   </border>
   <border>
-    <first>sMaldives</first>
-    <second>sOman</second>
+    <first>sArabie</first>
+    <second>sLaquedives</second>
+  </border>
+  <border>
+    <first>sIrlande</first>
+    <second>sRockall</second>
   </border>
   <border>
     <first>eArmor</first>
-    <second>sIrlande</second>
-  </border>
-  <border>
-    <first>sMan</first>
-    <second>sWestern Approaches</second>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>eAstragan</first>
@@ -2404,7 +2404,7 @@
   </border>
   <border>
     <first>eOran</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>rIndus~N</first>
@@ -2412,11 +2412,11 @@
   </border>
   <border>
     <first>rPhilippines~C</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>eCymru</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>rIroquois~SW</first>
@@ -2459,7 +2459,7 @@
   </border>
   <border>
     <first>eTanger</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>rMauritanie~S</first>
@@ -2484,7 +2484,7 @@
   </border>
   <border>
     <first>eRif</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>eLiguria</first>
@@ -2572,7 +2572,7 @@
   </border>
   <border>
     <first>rMumbai~SW</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>rYakoutie~N</first>
@@ -2610,7 +2610,7 @@
   </border>
   <border>
     <first>rJapon~E</first>
-    <second>sPacifique W</second>
+    <second>sPhilippines</second>
   </border>
   <border>
     <first>eBashkiria</first>
@@ -2637,12 +2637,12 @@
     <second>ePars</second>
   </border>
   <border>
-    <first>rAfghanistan~C</first>
-    <second>rAfghanistan~E</second>
+    <first>sArabie</first>
+    <second>sKutch</second>
   </border>
   <border>
-    <first>sIndus</first>
-    <second>sOman</second>
+    <first>rAfghanistan~C</first>
+    <second>rAfghanistan~E</second>
   </border>
   <border>
     <first>eStep</first>
@@ -2650,7 +2650,7 @@
   </border>
   <border>
     <first>rMumbai~NW</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>rRio~S</first>
@@ -2677,7 +2677,7 @@
     <second>ePfalz</second>
   </border>
   <border>
-    <first>sIndus</first>
+    <first>sKutch</first>
     <second>sMalabar</second>
   </border>
   <border>
@@ -2693,7 +2693,7 @@
     <second>sJapon</second>
   </border>
   <border>
-    <first>sIndien S</first>
+    <first>sCinquantiemes</first>
     <second>sQuarantiemes</second>
   </border>
   <border>
@@ -2816,7 +2816,7 @@
   </border>
   <border>
     <first>sCaraibes</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>rBengale~E</first>
@@ -2838,7 +2838,7 @@
   </border>
   <border>
     <first>sNord</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>eMontenegro</first>
@@ -2872,7 +2872,7 @@
   </border>
   <border>
     <first>sAcores</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>eCalabria</first>
@@ -2933,7 +2933,7 @@
   </border>
   <border>
     <first>rSingala~I</first>
-    <second>sMaldives</second>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>eSalzburg</first>
@@ -2966,7 +2966,7 @@
     <second>sCaspienne</second>
   </border>
   <border>
-    <first>sIrlande</first>
+    <first>sCeltique</first>
     <second>sNord</second>
   </border>
   <border>
@@ -3000,7 +3000,7 @@
   </border>
   <border>
     <first>rDai Viet~N</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>eAbruzzo</first>
@@ -3015,8 +3015,8 @@
     <second>rQuebec~NE</second>
   </border>
   <border>
-    <first>sGroenland</first>
-    <second>sWestern Approaches</second>
+    <first>sIrminger</first>
+    <second>sRockall</second>
   </border>
   <border>
     <first>rManitoba~N</first>
@@ -3224,7 +3224,7 @@
   </border>
   <border>
     <first>eCornwall</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eAragon</first>
@@ -3268,7 +3268,7 @@
   </border>
   <border>
     <first>eCornwall</first>
-    <second>sIrlande</second>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>rSumatra~C</first>
@@ -3285,7 +3285,7 @@
   </border>
   <border>
     <first>rIles de la Sonde~W</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eMagrib</first>
@@ -3385,7 +3385,7 @@
   </border>
   <border>
     <first>rIles de la Sonde~W</first>
-    <second>sSawu</second>
+    <second>sSavu</second>
   </border>
   <border>
     <first>rAral~N</first>
@@ -3406,7 +3406,7 @@
   </border>
   <border>
     <first>eConnacht</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>rGrands Lacs~C</first>
@@ -3450,8 +3450,8 @@
     <second>rNevada~SW</second>
   </border>
   <border>
-    <first>sPuerto Rico</first>
-    <second>sSous-le-vent</second>
+    <first>sPetites Antilles</first>
+    <second>sSargasses</second>
   </border>
   <border>
     <first>rCarolina~S</first>
@@ -3655,7 +3655,7 @@
   </border>
   <border>
     <first>eMorbihan</first>
-    <second>sIrlande</second>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>rMinas Gerais~E</first>
@@ -3715,7 +3715,7 @@
   </border>
   <border>
     <first>rAntilles~G</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>eMarche</first>
@@ -3965,7 +3965,7 @@
   </border>
   <border>
     <first>rOceania~AW</first>
-    <second>sIndien S</second>
+    <second>sQuarantiemes</second>
   </border>
   <border>
     <first>rChichimeca~N</first>
@@ -4069,7 +4069,7 @@
   </border>
   <border>
     <first>eSinai</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>eArtois</first>
@@ -4093,8 +4093,8 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>sAtlantique</first>
-    <second>sAtlantique N</second>
+    <first>sAtlantique N</first>
+    <second>sBonnet flamand</second>
   </border>
   <border>
     <first>eNeumark</first>
@@ -4123,7 +4123,7 @@
     <second>eZaporozhye</second>
   </border>
   <border>
-    <first>sAtlantique N</first>
+    <first>sBonnet flamand</first>
     <second>sCanarias</second>
   </border>
   <border>
@@ -4174,7 +4174,7 @@
     <second>eWielkopolska</second>
   </border>
   <border>
-    <first>sAtlantique</first>
+    <first>sAtlantique N</first>
     <second>sCanarias</second>
   </border>
   <border>
@@ -4191,7 +4191,7 @@
   </border>
   <border>
     <first>rJava~C</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eVorpommern</first>
@@ -4233,7 +4233,7 @@
   </border>
   <border>
     <first>sCaraibes</first>
-    <second>sPuerto Rico</second>
+    <second>sSargasses</second>
   </border>
   <border>
     <first>rChili~C</first>
@@ -4304,7 +4304,7 @@
     <second>eModena</second>
   </border>
   <border>
-    <first>sAtlantique NO</first>
+    <first>sGrand Bancs</first>
     <second>sSaint-Laurent</second>
     <type>STRAIT</type>
   </border>
@@ -4314,7 +4314,7 @@
   </border>
   <border>
     <first>rNankin~E</first>
-    <second>sChine N</second>
+    <second>sFormose</second>
   </border>
   <border>
     <first>eMoskva</first>
@@ -4366,7 +4366,7 @@
     <second>sNoire W</second>
   </border>
   <border>
-    <first>sIndien S</first>
+    <first>sQuarantiemes</first>
     <second>sWharton</second>
   </border>
   <border>
@@ -4374,8 +4374,8 @@
     <second>eToscana</second>
   </border>
   <border>
-    <first>sChine S</first>
-    <second>sPhilippines</second>
+    <first>sCelebes</first>
+    <second>sThailande</second>
   </border>
   <border>
     <first>eLombardia</first>
@@ -4458,11 +4458,11 @@
   </border>
   <border>
     <first>eIfriqiya</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>sBermudes</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>eBrandenburg</first>
@@ -4531,7 +4531,7 @@
   </border>
   <border>
     <first>sBermudes</first>
-    <second>sPuerto Rico</second>
+    <second>sSargasses</second>
   </border>
   <border>
     <first>rSumatra~C</first>
@@ -4544,11 +4544,11 @@
   </border>
   <border>
     <first>eDelta</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rNankin~E</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>rOregon~N</first>
@@ -4563,12 +4563,12 @@
     <second>eTrakya</second>
   </border>
   <border>
-    <first>sAtlantique N</first>
-    <second>sBermudes</second>
-  </border>
-  <border>
     <first>rSumatra~N</first>
     <second>sMalaisie</second>
+  </border>
+  <border>
+    <first>sBermudes</first>
+    <second>sBonnet flamand</second>
   </border>
   <border>
     <first>eCrimee</first>
@@ -4593,10 +4593,10 @@
   </border>
   <border>
     <first>eNil</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
-    <first>sAtlantique</first>
+    <first>sAtlantique N</first>
     <second>sBermudes</second>
   </border>
   <border>
@@ -4626,7 +4626,7 @@
   </border>
   <border>
     <first>rPekin~E</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>rPanama~S</first>
@@ -4734,7 +4734,7 @@
   </border>
   <border>
     <first>rMascareignes~B</first>
-    <second>sIndien W</second>
+    <second>sMalgaches</second>
   </border>
   <border>
     <first>eLanguedoc</first>
@@ -4743,7 +4743,7 @@
   </border>
   <border>
     <first>eTerra Sancta</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>eAnnabah</first>
@@ -4818,7 +4818,7 @@
   </border>
   <border>
     <first>rCorea~S</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>eMalopolska</first>
@@ -4830,7 +4830,7 @@
   </border>
   <border>
     <first>eMumhan</first>
-    <second>sIrlande</second>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>rLabrador~E</first>
@@ -4846,7 +4846,7 @@
   </border>
   <border>
     <first>rMascareignes~B</first>
-    <second>sQuarantiemes</second>
+    <second>sCinquantiemes</second>
   </border>
   <border>
     <first>rBaikal~SW</first>
@@ -4875,7 +4875,7 @@
   </border>
   <border>
     <first>eCyrenaique</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rChili~E</first>
@@ -4934,7 +4934,7 @@
   </border>
   <border>
     <first>eTobrouk</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>eBanat</first>
@@ -5014,7 +5014,7 @@
   </border>
   <border>
     <first>rJava~E</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eAntalya</first>
@@ -5077,7 +5077,7 @@
   </border>
   <border>
     <first>rJava~C</first>
-    <second>sSawu</second>
+    <second>sSavu</second>
   </border>
   <border>
     <first>eLazio</first>
@@ -5121,7 +5121,7 @@
   </border>
   <border>
     <first>rAcadie~S</first>
-    <second>sAtlantique NO</second>
+    <second>sGrand Bancs</second>
   </border>
   <border>
     <first>eSinop</first>
@@ -5217,7 +5217,7 @@
   </border>
   <border>
     <first>eLubnan</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>eSyrie</first>
@@ -5237,8 +5237,8 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sBermudes</first>
-    <second>sCuba</second>
+    <first>sBahamas</first>
+    <second>sBermudes</second>
   </border>
   <border>
     <first>eOberPfalz</first>
@@ -5293,7 +5293,7 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sCuba</first>
+    <first>sBahamas</first>
     <second>sMexique</second>
   </border>
   <border>
@@ -5315,7 +5315,7 @@
   </border>
   <border>
     <first>rVirginia~E</first>
-    <second>sAtlantique W</second>
+    <second>sAmerique</second>
   </border>
   <border>
     <first>eMecklenburg</first>
@@ -5323,7 +5323,7 @@
   </border>
   <border>
     <first>rGujarat~E</first>
-    <second>sIndus</second>
+    <second>sKutch</second>
   </border>
   <border>
     <first>eLubnan</first>
@@ -5347,8 +5347,8 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sCuba</first>
-    <second>sPuerto Rico</second>
+    <first>sBahamas</first>
+    <second>sSargasses</second>
   </border>
   <border>
     <first>eCatalunya</first>
@@ -5382,7 +5382,7 @@
   </border>
   <border>
     <first>eAlep</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>eAbruzzo</first>
@@ -5394,7 +5394,7 @@
     <second>eHannover</second>
   </border>
   <border>
-    <first>sAtlantique EQ</first>
+    <first>sAtlantique</first>
     <second>sRecife</second>
   </border>
   <border>
@@ -5420,7 +5420,7 @@
   </border>
   <border>
     <first>rJava~E</first>
-    <second>sSawu</second>
+    <second>sSavu</second>
   </border>
   <border>
     <first>rIroquois~N</first>
@@ -5482,14 +5482,14 @@
   </border>
   <border>
     <first>eKilikya</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>eHolstein</first>
     <second>eSlesvig</second>
   </border>
   <border>
-    <first>sCorail</first>
+    <first>sBass</first>
     <second>sTasman</second>
   </border>
   <border>
@@ -5502,7 +5502,7 @@
   </border>
   <border>
     <first>rFormose~I</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>eBanat</first>
@@ -5536,11 +5536,11 @@
   </border>
   <border>
     <first>rPhilippines~N</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>sArafura</first>
-    <second>sPacifique SW</second>
+    <second>sCorail</second>
   </border>
   <border>
     <first>eGaliza</first>
@@ -5557,7 +5557,7 @@
   </border>
   <border>
     <first>rPhilippines~N</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>rIenissei~E</first>
@@ -5573,7 +5573,7 @@
     <second>sCadix</second>
   </border>
   <border>
-    <first>sCuba</first>
+    <first>sBahamas</first>
     <second>sFloride</second>
   </border>
   <border>
@@ -5582,11 +5582,11 @@
   </border>
   <border>
     <first>rHaiti~Puerto Rico</first>
-    <second>sPuerto Rico</second>
+    <second>sSargasses</second>
   </border>
   <border>
     <first>sCorail</first>
-    <second>sPacifique SW</second>
+    <second>sTasman</second>
   </border>
   <border>
     <first>eMoskva</first>
@@ -5599,7 +5599,7 @@
   </border>
   <border>
     <first>eUladh</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eBourgogne</first>
@@ -5607,7 +5607,7 @@
   </border>
   <border>
     <first>rFormose~I</first>
-    <second>sChine N</second>
+    <second>sFormose</second>
   </border>
   <border>
     <first>sFloride</first>
@@ -5647,14 +5647,14 @@
   </border>
   <border>
     <first>eUladh</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>rOb~S</first>
     <second>rOb~W</second>
   </border>
   <border>
-    <first>sAtlantique W</first>
+    <first>sAmerique</first>
     <second>sFundy</second>
   </border>
   <border>
@@ -5668,7 +5668,7 @@
   </border>
   <border>
     <first>rPhilippines~N</first>
-    <second>sChine N</second>
+    <second>sFormose</second>
   </border>
   <border>
     <first>rNamibie~S</first>
@@ -5705,13 +5705,13 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sAtlantique W</first>
-    <second>sFloride</second>
-  </border>
-  <border>
     <first>rIenissei~NW</first>
     <second>rOb~N</second>
     <type>RIVER</type>
+  </border>
+  <border>
+    <first>sAmerique</first>
+    <second>sFloride</second>
   </border>
   <border>
     <first>rAmerica~W</first>
@@ -5748,8 +5748,8 @@
     <second>eTejo</second>
   </border>
   <border>
-    <first>sCaraibes</first>
-    <second>sCuba</second>
+    <first>sBahamas</first>
+    <second>sCaraibes</second>
   </border>
   <border>
     <first>rIenissei~E</first>
@@ -5760,8 +5760,8 @@
     <second>rMumbai~NW</second>
   </border>
   <border>
-    <first>sChine S</first>
-    <second>sFormose</second>
+    <first>sChine</first>
+    <second>sThailande</second>
   </border>
   <border>
     <first>eBresse</first>
@@ -5769,7 +5769,7 @@
   </border>
   <border>
     <first>rPhilippines~N</first>
-    <second>sPacifique W</second>
+    <second>sPhilippines</second>
   </border>
   <border>
     <first>eEast Anglia</first>
@@ -5780,8 +5780,8 @@
     <second>rOb~SW</second>
   </border>
   <border>
-    <first>sFormose</first>
-    <second>sPhilippines</second>
+    <first>sCelebes</first>
+    <second>sChine</second>
   </border>
   <border>
     <first>eLimburg</first>
@@ -5824,7 +5824,7 @@
   </border>
   <border>
     <first>sArafura</first>
-    <second>sSawu</second>
+    <second>sSavu</second>
   </border>
   <border>
     <first>eLaighean</first>
@@ -5836,7 +5836,7 @@
   </border>
   <border>
     <first>eMumhan</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>rHudson~N</first>
@@ -5844,7 +5844,7 @@
   </border>
   <border>
     <first>eTripoli</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>rChili~NW</first>
@@ -5896,11 +5896,11 @@
   </border>
   <border>
     <first>eLaighean</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eTunis</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>rInca~E</first>
@@ -5934,7 +5934,7 @@
   </border>
   <border>
     <first>eBrega</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eKaluga</first>
@@ -5989,8 +5989,8 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>sPacifique SW</first>
-    <second>sPhilippines</second>
+    <first>sCelebes</first>
+    <second>sCorail</second>
   </border>
   <border>
     <first>rAfghanistan~C</first>
@@ -5998,15 +5998,11 @@
   </border>
   <border>
     <first>rAntilles~SM</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>rManitoba~S</first>
     <second>rRocheuses~N</second>
-  </border>
-  <border>
-    <first>eLaighean</first>
-    <second>sIrlande</second>
   </border>
   <border>
     <first>eAzov</first>
@@ -6017,16 +6013,20 @@
     <second>sAlger</second>
   </border>
   <border>
-    <first>rPendjab~W</first>
-    <second>sIndus</second>
+    <first>eLaighean</first>
+    <second>sCeltique</second>
   </border>
   <border>
-    <first>eVendee</first>
-    <second>sIrlande</second>
+    <first>rPendjab~W</first>
+    <second>sKutch</second>
   </border>
   <border>
     <first>eCampania</first>
     <second>sThyrrenienne</second>
+  </border>
+  <border>
+    <first>eVendee</first>
+    <second>sCeltique</second>
   </border>
   <border>
     <first>eMoskva</first>
@@ -6035,7 +6035,7 @@
   </border>
   <border>
     <first>sArafura</first>
-    <second>sCorail</second>
+    <second>sTasman</second>
   </border>
   <border>
     <first>rAzteca~E</first>
@@ -6055,7 +6055,7 @@
   </border>
   <border>
     <first>sAmazonie</first>
-    <second>sAtlantique EQ</second>
+    <second>sAtlantique</second>
   </border>
   <border>
     <first>rKarnatika~S</first>
@@ -6113,12 +6113,12 @@
     <second>eIrak</second>
   </border>
   <border>
-    <first>sEpices</first>
-    <second>sPhilippines</second>
+    <first>sBanda</first>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>rMadagascar~N</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>eOsterreich</first>
@@ -6135,7 +6135,7 @@
   </border>
   <border>
     <first>rNyasa~Z</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>eAndalucia</first>
@@ -6147,11 +6147,11 @@
   </border>
   <border>
     <first>rAcadie~Cape</first>
-    <second>sAtlantique NO</second>
+    <second>sGrand Bancs</second>
   </border>
   <border>
     <first>rPekin~C</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>rCameroun~W</first>
@@ -6175,7 +6175,7 @@
   </border>
   <border>
     <first>rMadagascar~N</first>
-    <second>sIndien W</second>
+    <second>sMalgaches</second>
   </border>
   <border>
     <first>eIrak</first>
@@ -6195,7 +6195,7 @@
     <second>rMalabar~S</second>
   </border>
   <border>
-    <first>sAtlantique EQ</first>
+    <first>sAtlantique</first>
     <second>sAtlantique S</second>
   </border>
   <border>
@@ -6306,7 +6306,7 @@
   </border>
   <border>
     <first>rOceania~NZS</first>
-    <second>sTasman</second>
+    <second>sBass</second>
   </border>
   <border>
     <first>rVenezuela~W</first>
@@ -6317,12 +6317,12 @@
     <second>ePskov</second>
   </border>
   <border>
-    <first>sAtlantique EQ</first>
+    <first>sAtlantique</first>
     <second>sGambie</second>
   </border>
   <border>
     <first>rOceania~NZS</first>
-    <second>sCorail</second>
+    <second>sTasman</second>
   </border>
   <border>
     <first>rMandchourie~E</first>
@@ -6337,8 +6337,8 @@
     <second>eUmbria</second>
   </border>
   <border>
-    <first>sEpices</first>
-    <second>sSawu</second>
+    <first>sBanda</first>
+    <second>sSavu</second>
   </border>
   <border>
     <first>eKreta</first>
@@ -6351,7 +6351,7 @@
   </border>
   <border>
     <first>rHaiti~E</first>
-    <second>sCuba</second>
+    <second>sBahamas</second>
   </border>
   <border>
     <first>eAragon</first>
@@ -6363,7 +6363,7 @@
   </border>
   <border>
     <first>rVirginia~S</first>
-    <second>sAtlantique W</second>
+    <second>sAmerique</second>
   </border>
   <border>
     <first>rGondwana~N</first>
@@ -6391,11 +6391,11 @@
   </border>
   <border>
     <first>rHaiti~W</first>
-    <second>sCuba</second>
+    <second>sBahamas</second>
   </border>
   <border>
     <first>eKreta</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rMadagascar~N</first>
@@ -6429,7 +6429,7 @@
   </border>
   <border>
     <first>rHaiti~E</first>
-    <second>sPuerto Rico</second>
+    <second>sSargasses</second>
   </border>
   <border>
     <first>rMinas Gerais~W</first>
@@ -6458,7 +6458,7 @@
     <second>eGastrikland</second>
   </border>
   <border>
-    <first>sEpices</first>
+    <first>sBanda</first>
     <second>sJava</second>
   </border>
   <border>
@@ -6530,7 +6530,7 @@
   </border>
   <border>
     <first>eChypre</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rJava~C</first>
@@ -6572,7 +6572,7 @@
   </border>
   <border>
     <first>rMandchourie~S</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>rAzteca~C</first>
@@ -6617,7 +6617,7 @@
   </border>
   <border>
     <first>sArafura</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>rMississippi~SW</first>
@@ -6636,8 +6636,8 @@
     <second>eLuxemburg</second>
   </border>
   <border>
-    <first>sEpices</first>
-    <second>sPacifique SW</second>
+    <first>sBanda</first>
+    <second>sCorail</second>
   </border>
   <border>
     <first>rJava~W</first>
@@ -6654,11 +6654,11 @@
   </border>
   <border>
     <first>rHaiti~Jamaica</first>
-    <second>sCuba</second>
+    <second>sBahamas</second>
   </border>
   <border>
     <first>eAyr</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>sPacifique NE</first>
@@ -6670,7 +6670,7 @@
   </border>
   <border>
     <first>eMurcia</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>eKarnten</first>
@@ -6678,7 +6678,7 @@
   </border>
   <border>
     <first>rDai Viet~C</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>sBermudes</first>
@@ -6739,7 +6739,7 @@
   </border>
   <border>
     <first>eAlba</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eAndalucia</first>
@@ -6751,7 +6751,7 @@
   </border>
   <border>
     <first>eValencia</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>eAzarbayadjan</first>
@@ -6802,7 +6802,7 @@
   </border>
   <border>
     <first>rMadagascar~S</first>
-    <second>sIndien W</second>
+    <second>sMalgaches</second>
   </border>
   <border>
     <first>rMandchourie~S</first>
@@ -6810,16 +6810,16 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sIonienne</first>
-    <second>sSyrte</second>
+    <first>sGabes</first>
+    <second>sIonienne</second>
   </border>
   <border>
     <first>eAlentejo</first>
     <second>eAlgarve</second>
   </border>
   <border>
-    <first>sChine S</first>
-    <second>sJava</second>
+    <first>sJava</first>
+    <second>sThailande</second>
   </border>
   <border>
     <first>rCongo~N</first>
@@ -6872,7 +6872,7 @@
   </border>
   <border>
     <first>rDai Viet~C</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>ePoitou</first>
@@ -6883,7 +6883,7 @@
     <second>eKordistan</second>
   </border>
   <border>
-    <first>sAtlantique W</first>
+    <first>sAmerique</first>
     <second>sBermudes</second>
   </border>
   <border>
@@ -6990,7 +6990,7 @@
   </border>
   <border>
     <first>rJapon~S</first>
-    <second>sChine N</second>
+    <second>sFormose</second>
   </border>
   <border>
     <first>rCorea~N</first>
@@ -7010,7 +7010,7 @@
   </border>
   <border>
     <first>sEgee</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rAmerica~C</first>
@@ -7027,11 +7027,11 @@
   </border>
   <border>
     <first>rCorea~N</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>rJapon~S</first>
-    <second>sCoree</second>
+    <second>sJaune</second>
   </border>
   <border>
     <first>eAngora</first>
@@ -7043,7 +7043,7 @@
   </border>
   <border>
     <first>sIonienne</first>
-    <second>sMediterranee E</second>
+    <second>sLevantin</second>
   </border>
   <border>
     <first>rBelem~E</first>
@@ -7055,7 +7055,7 @@
   </border>
   <border>
     <first>eCumberland</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>rAlaska~E</first>
@@ -7076,7 +7076,7 @@
   </border>
   <border>
     <first>rOceania~NG</first>
-    <second>sPacifique SW</second>
+    <second>sCorail</second>
   </border>
   <border>
     <first>sCalifornie</first>
@@ -7115,21 +7115,21 @@
     <second>eMemel</second>
   </border>
   <border>
-    <first>eGranada</first>
-    <second>sMediterranee W</second>
-  </border>
-  <border>
     <first>eBrandenburg</first>
     <second>eHinterpommern</second>
     <type>RIVER</type>
+  </border>
+  <border>
+    <first>eGranada</first>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>rJapon~N</first>
     <second>sOkhotsk</second>
   </border>
   <border>
-    <first>sCoree</first>
-    <second>sJapon</second>
+    <first>sJapon</first>
+    <second>sJaune</second>
   </border>
   <border>
     <first>eCumberland</first>
@@ -7154,15 +7154,15 @@
   </border>
   <border>
     <first>rOceania~NG</first>
-    <second>sEpices</second>
-  </border>
-  <border>
-    <first>eGibraltar</first>
-    <second>sMediterranee W</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eDurham</first>
     <second>eLothian</second>
+  </border>
+  <border>
+    <first>eGibraltar</first>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>rMississippi~NE</first>
@@ -7183,7 +7183,7 @@
   </border>
   <border>
     <first>rCanton~E</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>sPacifique SE</first>
@@ -7251,7 +7251,7 @@
   </border>
   <border>
     <first>rSeychelles~I</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>rBorneo~N</first>
@@ -7263,7 +7263,7 @@
   </border>
   <border>
     <first>rNankin~SE</first>
-    <second>sFormose</second>
+    <second>sChine</second>
   </border>
   <border>
     <first>eModena</first>
@@ -7288,7 +7288,7 @@
   </border>
   <border>
     <first>rBorneo~S</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>eNubie</first>
@@ -7296,7 +7296,7 @@
   </border>
   <border>
     <first>rKarnatika~S</first>
-    <second>sMaldives</second>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>eBresse</first>
@@ -7309,7 +7309,7 @@
   </border>
   <border>
     <first>eLancashire</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eMemel</first>
@@ -7335,7 +7335,7 @@
   </border>
   <border>
     <first>rSeychelles~I</first>
-    <second>sMaldives</second>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>rBorneo~E</first>
@@ -7391,7 +7391,7 @@
   </border>
   <border>
     <first>rBorneo~N</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>rPlata~NW</first>
@@ -7426,11 +7426,11 @@
   </border>
   <border>
     <first>eAlba</first>
-    <second>sWestern Approaches</second>
+    <second>sRockall</second>
   </border>
   <border>
     <first>eMalta</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>ePfalz</first>
@@ -7447,7 +7447,7 @@
     <second>eUral</second>
   </border>
   <border>
-    <first>sSawu</first>
+    <first>sSavu</first>
     <second>sWharton</second>
   </border>
   <border>
@@ -7459,16 +7459,16 @@
     <second>eTouraine</second>
   </border>
   <border>
-    <first>sAtlantique W</first>
-    <second>sCuba</second>
+    <first>sAmerique</first>
+    <second>sBahamas</second>
   </border>
   <border>
     <first>eErdely</first>
     <second>eMures</second>
   </border>
   <border>
-    <first>sCorail</first>
-    <second>sPacifique</second>
+    <first>sPacifique</first>
+    <second>sTasman</second>
   </border>
   <border>
     <first>eAyr</first>
@@ -7488,8 +7488,8 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sPacifique</first>
-    <second>sTasman</second>
+    <first>sBass</first>
+    <second>sPacifique</second>
   </border>
   <border>
     <first>rAzteca~SE</first>
@@ -7517,7 +7517,7 @@
   </border>
   <border>
     <first>rBorneo~E</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>eTouraine</first>
@@ -7541,7 +7541,7 @@
   </border>
   <border>
     <first>rNankin~SE</first>
-    <second>sChine N</second>
+    <second>sFormose</second>
   </border>
   <border>
     <first>eCorsica</first>
@@ -7559,11 +7559,11 @@
   </border>
   <border>
     <first>sAustralienne</first>
-    <second>sIndien S</second>
+    <second>sQuarantiemes</second>
   </border>
   <border>
     <first>rBorneo~S</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>rKarnatika~N</first>
@@ -7580,11 +7580,11 @@
   </border>
   <border>
     <first>sAustralienne</first>
-    <second>sTasman</second>
+    <second>sBass</second>
   </border>
   <border>
     <first>rBorneo~E</first>
-    <second>sEpices</second>
+    <second>sBanda</second>
   </border>
   <border>
     <first>eRosselo</first>
@@ -7646,8 +7646,8 @@
     <second>sPersique</second>
   </border>
   <border>
-    <first>sChine N</first>
-    <second>sCoree</second>
+    <first>sFormose</first>
+    <second>sJaune</second>
   </border>
   <border>
     <first>sAdriatique</first>
@@ -7753,12 +7753,12 @@
     <second>eTanger</second>
   </border>
   <border>
-    <first>sAlger</first>
-    <second>sMediterranee W</second>
+    <first>sAlboran</first>
+    <second>sAlger</second>
   </border>
   <border>
     <first>sIndien</first>
-    <second>sMaldives</second>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>rHaiti~W</first>
@@ -7775,7 +7775,7 @@
   </border>
   <border>
     <first>sAlger</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>rMinas Gerais~S</first>
@@ -7788,7 +7788,7 @@
   </border>
   <border>
     <first>eGalloway</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>eAlabania</first>
@@ -7850,7 +7850,7 @@
   </border>
   <border>
     <first>rPhilippines~E</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>sEgee</first>
@@ -7900,7 +7900,7 @@
     <second>sGascogne</second>
   </border>
   <border>
-    <first>sSyrte</first>
+    <first>sGabes</first>
     <second>sThyrrenienne</second>
   </border>
   <border>
@@ -7926,8 +7926,8 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>sCadix</first>
-    <second>sMediterranee W</second>
+    <first>sAlboran</first>
+    <second>sCadix</second>
   </border>
   <border>
     <first>rAmour~N</first>
@@ -7994,7 +7994,7 @@
   </border>
   <border>
     <first>rAden~So</first>
-    <second>sOman</second>
+    <second>sArabie</second>
   </border>
   <border>
     <first>rAmour~E</first>
@@ -8012,7 +8012,7 @@
   </border>
   <border>
     <first>eIslas Canarias</first>
-    <second>sAtlantique</second>
+    <second>sAtlantique N</second>
   </border>
   <border>
     <first>eMaine</first>
@@ -8063,7 +8063,7 @@
   </border>
   <border>
     <first>rOceania~AS</first>
-    <second>sCorail</second>
+    <second>sTasman</second>
   </border>
   <border>
     <first>rCotedivoire~E</first>
@@ -8097,7 +8097,7 @@
   </border>
   <border>
     <first>rOceania~AS</first>
-    <second>sTasman</second>
+    <second>sBass</second>
   </border>
   <border>
     <first>eBaltarusija</first>
@@ -8114,7 +8114,7 @@
   </border>
   <border>
     <first>eGloucester</first>
-    <second>sMan</second>
+    <second>sIrlande</second>
   </border>
   <border>
     <first>rAyutthaya~S</first>
@@ -8130,7 +8130,7 @@
   </border>
   <border>
     <first>rBorneo~N</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>eCatalunya</first>
@@ -8147,7 +8147,7 @@
   </border>
   <border>
     <first>rOceania~AE</first>
-    <second>sCorail</second>
+    <second>sTasman</second>
   </border>
   <border>
     <first>ePrypec</first>
@@ -8168,11 +8168,11 @@
   </border>
   <border>
     <first>eCatalunya</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>rAyutthaya~N</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>rPatagonia~E</first>
@@ -8232,7 +8232,7 @@
   </border>
   <border>
     <first>eAragon</first>
-    <second>sMediterranee W</second>
+    <second>sAlboran</second>
   </border>
   <border>
     <first>rVenezuela~E</first>
@@ -8254,7 +8254,7 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sPacifique W</first>
+    <first>sCelebes</first>
     <second>sPhilippines</second>
   </border>
   <border>
@@ -8304,11 +8304,11 @@
   </border>
   <border>
     <first>sBengale</first>
-    <second>sMaldives</second>
+    <second>sLaquedives</second>
   </border>
   <border>
     <first>sPacifique NW</first>
-    <second>sPacifique W</second>
+    <second>sPhilippines</second>
   </border>
   <border>
     <first>rGuyana~C</first>
@@ -8367,8 +8367,8 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>sPacifique</first>
-    <second>sPacifique SW</second>
+    <first>sCorail</first>
+    <second>sPacifique</second>
   </border>
   <border>
     <first>eKabylie</first>
@@ -8390,7 +8390,7 @@
   </border>
   <border>
     <first>sPacifique</first>
-    <second>sPacifique W</second>
+    <second>sPhilippines</second>
   </border>
   <border>
     <first>rParaguay~SE</first>
@@ -8416,8 +8416,8 @@
     <type>PASS</type>
   </border>
   <border>
-    <first>sPacifique</first>
-    <second>sPhilippines</second>
+    <first>sCelebes</first>
+    <second>sPacifique</second>
   </border>
   <border>
     <first>eAlep</first>
@@ -8449,12 +8449,12 @@
     <second>rIenissei~NE</second>
   </border>
   <border>
-    <first>sMaldives</first>
-    <second>sQuarantiemes</second>
+    <first>sCinquantiemes</first>
+    <second>sLaquedives</second>
   </border>
   <border>
-    <first>sLion</first>
-    <second>sMediterranee W</second>
+    <first>sAlboran</first>
+    <second>sLion</second>
   </border>
   <border>
     <first>eCroatie</first>
@@ -8483,11 +8483,11 @@
   </border>
   <border>
     <first>eSicilia</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
-    <first>sIndien W</first>
-    <second>sMaldives</second>
+    <first>sLaquedives</first>
+    <second>sMalgaches</second>
   </border>
   <border>
     <first>eSavoia</first>
@@ -8495,7 +8495,7 @@
   </border>
   <border>
     <first>rPhilippines~S</first>
-    <second>sPhilippines</second>
+    <second>sCelebes</second>
   </border>
   <border>
     <first>eMarche</first>
@@ -8516,12 +8516,12 @@
     <type>STRAIT</type>
   </border>
   <border>
-    <first>rIenissei~C</first>
-    <second>rIenissei~W</second>
+    <first>sCinquantiemes</first>
+    <second>sMalgaches</second>
   </border>
   <border>
-    <first>sIndien W</first>
-    <second>sQuarantiemes</second>
+    <first>rIenissei~C</first>
+    <second>rIenissei~W</second>
   </border>
   <border>
     <first>rMalacca~S</first>
@@ -8594,7 +8594,7 @@
     <second>rIenissei~SW</second>
   </border>
   <border>
-    <first>sChine N</first>
+    <first>sChine</first>
     <second>sFormose</second>
   </border>
   <border>
@@ -8630,8 +8630,8 @@
     <second>eTripoli</second>
   </border>
   <border>
-    <first>sChine N</first>
-    <second>sPacifique W</second>
+    <first>sFormose</first>
+    <second>sPhilippines</second>
   </border>
   <border>
     <first>eCrimee</first>
@@ -8648,7 +8648,7 @@
     <type>RIVER</type>
   </border>
   <border>
-    <first>sIndus</first>
+    <first>sKutch</first>
     <second>sPersique</second>
     <type>STRAIT</type>
   </border>
@@ -8657,7 +8657,7 @@
     <second>eDonets</second>
   </border>
   <border>
-    <first>sQuarantiemes</first>
+    <first>sCinquantiemes</first>
     <second>sTempetes</second>
   </border>
   <border>
@@ -8678,7 +8678,7 @@
   </border>
   <border>
     <first>rAntilles~B</first>
-    <second>sSous-le-vent</second>
+    <second>sPetites Antilles</second>
   </border>
   <border>
     <first>rOrmus~I</first>
@@ -8730,11 +8730,11 @@
   </border>
   <border>
     <first>eAcores</first>
-    <second>sAtlantique N</second>
+    <second>sBonnet flamand</second>
   </border>
   <border>
     <first>rKenya~S</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>eLombardia</first>
@@ -8773,7 +8773,7 @@
   </border>
   <border>
     <first>sAcores</first>
-    <second>sAtlantique N</second>
+    <second>sBonnet flamand</second>
   </border>
   <border>
     <first>eLombardia</first>
@@ -8781,7 +8781,7 @@
   </border>
   <border>
     <first>rNyasa~N</first>
-    <second>sSeychelles</second>
+    <second>sErythree</second>
   </border>
   <border>
     <first>eFranche-Comte</first>
@@ -8820,7 +8820,7 @@
   </border>
   <border>
     <first>rMalacca~S</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>rRecife~S</first>
@@ -8870,11 +8870,11 @@
   </border>
   <border>
     <first>ePalermo</first>
-    <second>sSyrte</second>
+    <second>sGabes</second>
   </border>
   <border>
     <first>rAyutthaya~W</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>eBaltarusija</first>
@@ -8891,7 +8891,7 @@
   </border>
   <border>
     <first>rMalacca~N</first>
-    <second>sChine S</second>
+    <second>sThailande</second>
   </border>
   <border>
     <first>eBaltarusija</first>
