@@ -6,6 +6,30 @@ package com.mkl.eu.client.service.vo.enumeration;
  * @author MKL
  */
 public enum LimitTypeEnum {
+    /** Maximum DTI. */
+    MAX_DTI,
+    /** Maximum FTI. */
+    MAX_FTI,
+    /** Maximum special FTI for the rotw. */
+    MAX_FTI_ROWT,
+    /** Maximum manufacture counters. */
+    MAX_MNU,
+    /** Maximum colony counters. */
+    MAX_COL,
+    /** Maximum trading post counters. */
+    MAX_TP,
+    /** Maximum naval detachment counters. */
+    MAX_ND,
+    /** Maximum naval detachment in a F-. */
+    MAX_ND_F_MOINS,
+    /** Maximum naval transport detachment in a F-. */
+    MAX_NTR_F_MOINS,
+    /** Maximum naval detachment in a F+. */
+    MAX_ND_F_PLUS,
+    /** Maximum naval transport detachment in a F+. */
+    MAX_NTR_F_PLUS,
+    /** Number of artilleries in an A+ counter. */
+    ARTILLERY_A_PLUS,
     /** Number of diplomatic action. */
     ACTION_DIPLO,
     /** Number of trade fleet implantation action. */
