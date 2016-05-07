@@ -77,9 +77,9 @@
 	<entry key="income.innergold">
 		<![CDATA[
 			select
-				sum(t.value)
-			from t_gold t
-			where t.R_PROVINCE in :provinceNames;
+				sum(g.value)
+			from r_gold g
+			where g.R_PROVINCE in :provinceNames;
 		]]>
 	</entry>
 	<entry key="income.outergold">

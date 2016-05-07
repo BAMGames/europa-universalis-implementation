@@ -28,6 +28,8 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     private Boolean arsenal;
     /** Flag saying that the natural port can be blocked by a fortress. */
     private Boolean praesidiable;
+    /** Number of salt resource in the province. */
+    private Integer salt;
     /** Metadata on the province. Names of cities and province for search function. */
     private String metadata;
 
@@ -106,6 +108,17 @@ public class EuropeanProvinceEntity extends AbstractProvinceEntity {
     /** @param praesidiable the praesidiable to set. */
     public void setPraesidiable(Boolean praesidiable) {
         this.praesidiable = praesidiable;
+    }
+
+    /** @return the salt. */
+    @Column(name = "SALT")
+    public Integer getSalt() {
+        return salt;
+    }
+
+    /** @param salt the salt to set. */
+    public void setSalt(Integer salt) {
+        this.salt = salt;
     }
 
     /** @return the metadata. */
