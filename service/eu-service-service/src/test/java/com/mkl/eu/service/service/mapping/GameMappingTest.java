@@ -310,6 +310,7 @@ public class GameMappingTest {
         List<Monarch> objects = new ArrayList<>();
 
         Monarch object = new Monarch();
+        object.setId(1L);
         object.setBegin(1);
         object.setEnd(12);
         object.setAdministrative(9);
@@ -319,6 +320,7 @@ public class GameMappingTest {
         objects.add(object);
 
         object = new Monarch();
+        object.setId(2L);
         object.setBegin(13);
         object.setEnd(63);
         object.setAdministrative(3);
@@ -540,6 +542,7 @@ public class GameMappingTest {
         List<MonarchEntity> objects = new ArrayList<>();
 
         MonarchEntity object = new MonarchEntity();
+        object.setId(1L);
         object.setBegin(1);
         object.setEnd(12);
         object.setAdministrative(9);
@@ -549,6 +552,7 @@ public class GameMappingTest {
         objects.add(object);
 
         object = new MonarchEntity();
+        object.setId(2L);
         object.setBegin(13);
         object.setEnd(63);
         object.setAdministrative(3);
