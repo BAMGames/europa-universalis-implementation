@@ -849,7 +849,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         // If the MNU is already max, then it is the creation of a new MNU alongside the other one
-        if (mnu != null && (EconomicUtil.getManufactureLevel(mnu.getType()) == 2 || mnu.getType() != type)) {
+        if (mnu != null && (EconomicUtil.getManufactureLevel(mnu.getType()) == 2)) {
             mnu = null;
             otherMnu = true;
         }

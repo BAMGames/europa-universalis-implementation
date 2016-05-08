@@ -1872,7 +1872,7 @@ public class EcoServiceTest {
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setId(3L);
         game.getStacks().get(1).getCounters().get(0).setCountry("france");
-        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_CLOTHES_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_ART_PLUS);
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(1).setId(4L);
@@ -2201,7 +2201,7 @@ public class EcoServiceTest {
             Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
         }
 
-        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_ART_PLUS);
 
         try {
             economicService.addAdminAction(request);
