@@ -25,6 +25,9 @@ public class PlayableCountryMapping extends AbstractMapping {
     /** Mapping for an administrative action. */
     @Autowired
     private AdministrativeActionMapping administrativeActionMapping;
+    /** Mapping for a monarch. */
+    @Autowired
+    private MonarchMapping monarchMapping;
 
     /**
      * OEs to VOs.
@@ -99,6 +102,8 @@ public class PlayableCountryMapping extends AbstractMapping {
         target.setNavalTech(source.getNavalTech());
         target.setEconomicalSheets(economicalSheetMapping.oesToVos(source.getEconomicalSheets(), objectsCreated));
         target.setAdministrativeActions(administrativeActionMapping.oesToVos(source.getAdministrativeActions(), source.getId().equals(idCountry), objectsCreated));
+        target.setMonarchs(monarchMapping.oesToVos(source.getMonarchs(), objectsCreated));
+        target.setMonarch(monarchMapping.oeToVo(source.getMonarch(), objectsCreated));
 
         return target;
     }

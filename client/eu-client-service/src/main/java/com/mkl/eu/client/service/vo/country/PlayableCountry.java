@@ -19,6 +19,22 @@ public class PlayableCountry extends EuObject {
      */
     public final static String TURKEY = "turquie";
     /**
+     * Name of the major country spain.
+     */
+    public final static String SPAIN = "espagne";
+    /**
+     * Name of the major country russia.
+     */
+    public final static String RUSSIA = "russie";
+    /**
+     * Name of the major country poland.
+     */
+    public final static String POLAND = "pologne";
+    /**
+     * Name of the major country england.
+     */
+    public final static String ENGLAND = "angleterre";
+    /**
      * Name of the country.
      */
     private String name;
@@ -36,6 +52,10 @@ public class PlayableCountry extends EuObject {
     private String landTech;
     /** Current naval technology of the country. */
     private String navalTech;
+    /**
+     * Actual Monarch ruling the country.
+     */
+    private Monarch monarch;
     /**
      * Monarchs (past and present) of the country.
      */
@@ -139,6 +159,16 @@ public class PlayableCountry extends EuObject {
     /** @param navalTech the navalTech to set. */
     public void setNavalTech(String navalTech) {
         this.navalTech = navalTech;
+    }
+
+    /** @return the monarch. */
+    public Monarch getMonarch() {
+        return monarch;
+    }
+
+    /** @param monarch the monarch to set. */
+    public void setMonarch(Monarch monarch) {
+        this.monarch = monarch;
     }
 
     /**

@@ -46,6 +46,12 @@ public class PlayableCountryEntity implements IEntity, Serializable {
      * Administrative actions of the country.
      */
     private List<AdministrativeActionEntity> administrativeActions = new ArrayList<>();
+    /** Actual monarch of the country. */
+    private MonarchEntity monarch;
+    /**
+     * Monarchs of the country (including the actual).
+     */
+    private List<MonarchEntity> monarchs = new ArrayList<>();
     /** Game of the entity. */
     private GameEntity game;
 
@@ -175,6 +181,29 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     /** @param administrativeActions the administrativeActions to set. */
     public void setAdministrativeActions(List<AdministrativeActionEntity> administrativeActions) {
         this.administrativeActions = administrativeActions;
+    }
+
+    /** @return the monarch. */
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "ID_MONARCH")
+    public MonarchEntity getMonarch() {
+        return monarch;
+    }
+
+    /** @param monarch the monarch to set. */
+    public void setMonarch(MonarchEntity monarch) {
+        this.monarch = monarch;
+    }
+
+    /** @return the monarchs. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<MonarchEntity> getMonarchs() {
+        return monarchs;
+    }
+
+    /** @param monarchs the monarchs to set. */
+    public void setMonarchs(List<MonarchEntity> monarchs) {
+        this.monarchs = monarchs;
     }
 
     /** @return the game. */

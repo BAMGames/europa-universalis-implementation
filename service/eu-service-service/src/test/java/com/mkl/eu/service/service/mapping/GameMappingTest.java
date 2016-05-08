@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.mapping;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
+import com.mkl.eu.client.service.vo.country.Monarch;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
@@ -13,6 +14,7 @@ import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
@@ -111,6 +113,8 @@ public class GameMappingTest {
         object.getCountries().add(PRU_VO);
 
         FRA_VO.setEconomicalSheets(createEconomicalSheetVos());
+        FRA_VO.setMonarchs(createMonarchsVos());
+        FRA_VO.setMonarch(createMonarchsVos().get(0));
 
         object.setEvents(createEventsVos());
 
@@ -302,6 +306,30 @@ public class GameMappingTest {
         return objects;
     }
 
+    private List<Monarch> createMonarchsVos() {
+        List<Monarch> objects = new ArrayList<>();
+
+        Monarch object = new Monarch();
+        object.setBegin(1);
+        object.setEnd(12);
+        object.setAdministrative(9);
+        object.setDiplomacy(9);
+        object.setMilitary(9);
+        object.setMilitaryAverage(5);
+        objects.add(object);
+
+        object = new Monarch();
+        object.setBegin(13);
+        object.setEnd(63);
+        object.setAdministrative(3);
+        object.setDiplomacy(3);
+        object.setMilitary(3);
+        object.setMilitaryAverage(0);
+        objects.add(object);
+
+        return objects;
+    }
+
     private GameEntity createGameEntity() {
         GameEntity object = new GameEntity();
 
@@ -314,6 +342,8 @@ public class GameMappingTest {
         object.getCountries().add(PRU_OE);
 
         FRA_OE.setEconomicalSheets(createEconomicalSheetEntities());
+        FRA_OE.setMonarchs(createMonarchsEntities());
+        FRA_OE.setMonarch(createMonarchsEntities().get(0));
 
         object.setEvents(createEventsEntities());
 
@@ -501,6 +531,30 @@ public class GameMappingTest {
         object = new StackEntity();
         object.setId(3L);
         object.setProvince(IDF);
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<MonarchEntity> createMonarchsEntities() {
+        List<MonarchEntity> objects = new ArrayList<>();
+
+        MonarchEntity object = new MonarchEntity();
+        object.setBegin(1);
+        object.setEnd(12);
+        object.setAdministrative(9);
+        object.setDiplomacy(9);
+        object.setMilitary(9);
+        object.setMilitaryAverage(5);
+        objects.add(object);
+
+        object = new MonarchEntity();
+        object.setBegin(13);
+        object.setEnd(63);
+        object.setAdministrative(3);
+        object.setDiplomacy(3);
+        object.setMilitary(3);
+        object.setMilitaryAverage(0);
         objects.add(object);
 
         return objects;
