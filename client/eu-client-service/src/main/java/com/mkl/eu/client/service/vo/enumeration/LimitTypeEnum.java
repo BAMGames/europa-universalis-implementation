@@ -11,7 +11,7 @@ public enum LimitTypeEnum {
     /** Maximum FTI. */
     MAX_FTI,
     /** Maximum special FTI for the rotw. */
-    MAX_FTI_ROWT,
+    MAX_FTI_ROTW,
     /** Maximum manufacture counters. */
     MAX_MNU,
     /** Maximum colony counters. */

@@ -28,12 +28,10 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     private String username;
     /** DTI of the country. */
     private int dti;
-    /** Max DTI of the country. */
-    private int dtiMax;
     /** FTI of the country. */
     private int fti;
-    /** Max FTI of the country. */
-    private int ftiMax;
+    /** FTI of the country in the rotw. */
+    private int ftiRotw;
     /** Current land technology of the country. */
     private String landTech;
     /** Current naval technology of the country. */
@@ -106,17 +104,6 @@ public class PlayableCountryEntity implements IEntity, Serializable {
         this.dti = dti;
     }
 
-    /** @return the dtiMax. */
-    @Column(name = "DTI_MAX")
-    public int getDtiMax() {
-        return dtiMax;
-    }
-
-    /** @param dtiMax the dtiMax to set. */
-    public void setDtiMax(int dtiMax) {
-        this.dtiMax = dtiMax;
-    }
-
     /** @return the fti. */
     @Column(name = "FTI")
     public int getFti() {
@@ -128,15 +115,15 @@ public class PlayableCountryEntity implements IEntity, Serializable {
         this.fti = fti;
     }
 
-    /** @return the ftiMax. */
-    @Column(name = "FTI_MAX")
-    public int getFtiMax() {
-        return ftiMax;
+    /** @return the ftiRotw. */
+    @Column(name = "FTI_ROTW")
+    public int getFtiRotw() {
+        return ftiRotw;
     }
 
-    /** @param ftiMax the ftiMax to set. */
-    public void setFtiMax(int ftiMax) {
-        this.ftiMax = ftiMax;
+    /** @param ftiRotw the ftiRotw to set. */
+    public void setFtiRotw(int ftiRotw) {
+        this.ftiRotw = ftiRotw;
     }
 
     /** @return the landTech. */

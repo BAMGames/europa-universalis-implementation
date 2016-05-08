@@ -42,12 +42,10 @@ public class PlayableCountry extends EuObject {
     private String username;
     /** DTI of the country. */
     private int dti;
-    /** Max DTI of the country. */
-    private int dtiMax;
     /** FTI of the country. */
     private int fti;
-    /** Max FTI of the country. */
-    private int ftiMax;
+    /** FTI of the country in the ROTW. */
+    private int ftiRotw;
     /** Current land technology of the country. */
     private String landTech;
     /** Current naval technology of the country. */
@@ -111,16 +109,6 @@ public class PlayableCountry extends EuObject {
         this.dti = dti;
     }
 
-    /** @return the dtiMax. */
-    public int getDtiMax() {
-        return dtiMax;
-    }
-
-    /** @param dtiMax the dtiMax to set. */
-    public void setDtiMax(int dtiMax) {
-        this.dtiMax = dtiMax;
-    }
-
     /** @return the fti. */
     public int getFti() {
         return fti;
@@ -131,14 +119,14 @@ public class PlayableCountry extends EuObject {
         this.fti = fti;
     }
 
-    /** @return the ftiMax. */
-    public int getFtiMax() {
-        return ftiMax;
+    /** @return the ftiRotw. */
+    public int getFtiRotw() {
+        return ftiRotw;
     }
 
-    /** @param ftiMax the ftiMax to set. */
-    public void setFtiMax(int ftiMax) {
-        this.ftiMax = ftiMax;
+    /** @param ftiRotw the ftiRotw to set. */
+    public void setFtiRotw(int ftiRotw) {
+        this.ftiRotw = ftiRotw;
     }
 
     /** @return the landTech. */

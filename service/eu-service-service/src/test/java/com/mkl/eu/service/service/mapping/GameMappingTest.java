@@ -54,28 +54,26 @@ public class GameMappingTest {
         FRA_VO.setName("FRA");
         FRA_VO.setUsername("MKL");
         FRA_VO.setDti(3);
-        FRA_VO.setDtiMax(5);
 
         PRU_VO = new PlayableCountry();
         PRU_VO.setId(2L);
         PRU_VO.setName("PRU");
         PRU_VO.setUsername("Fogia");
         PRU_VO.setFti(4);
-        PRU_VO.setFtiMax(4);
+        PRU_VO.setFtiRotw(4);
 
         FRA_OE = new PlayableCountryEntity();
         FRA_OE.setId(1L);
         FRA_OE.setName("FRA");
         FRA_OE.setUsername("MKL");
         FRA_OE.setDti(3);
-        FRA_OE.setDtiMax(5);
 
         PRU_OE = new PlayableCountryEntity();
         PRU_OE.setId(2L);
         PRU_OE.setName("PRU");
         PRU_OE.setUsername("Fogia");
         PRU_OE.setFti(4);
-        PRU_OE.setFtiMax(4);
+        PRU_OE.setFtiRotw(4);
     }
 
     @Test
