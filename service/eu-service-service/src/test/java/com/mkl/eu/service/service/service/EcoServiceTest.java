@@ -1625,12 +1625,12 @@ public class EcoServiceTest {
 
     @Test
     public void testAddAdmActTfiSuccess1() throws FunctionalException {
-        subTestAddAdmActTfiSuccess("zp_france", InvestmentEnum.S, "10", "4", "1");
+        subTestAddAdmActTfiSuccess("zp_france", InvestmentEnum.M, "30", "4", "1");
     }
 
     @Test
     public void testAddAdmActTfiSuccess2() throws FunctionalException {
-        subTestAddAdmActTfiSuccess("zp_angleterre", InvestmentEnum.M, "30", "-2", "0");
+        subTestAddAdmActTfiSuccess("zp_angleterre", InvestmentEnum.S, "10", "-3", "0");
     }
 
     @Test

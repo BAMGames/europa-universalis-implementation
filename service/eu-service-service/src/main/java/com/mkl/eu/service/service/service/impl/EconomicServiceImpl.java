@@ -757,6 +757,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         // threshold to -4/4
         column = Math.min(Math.max(column, -4), 4);
         column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
 
         int bonus = 0;
         if (tradeFleet != null && tradeFleet.getLevel() != null && tradeFleet.getLevel() >= 4) {
