@@ -2176,11 +2176,23 @@ public class EcoServiceTest {
             Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
         }
 
-        EuropeanProvinceEntity sea = new EuropeanProvinceEntity();
-        sea.setTerrain(TerrainEnum.SEA);
         idf.getBorders().add(new BorderEntity());
         idf.getBorders().get(0).setProvinceFrom(idf);
-        idf.getBorders().get(0).setProvinceTo(sea);
+        idf.getBorders().get(0).setProvinceTo(new EuropeanProvinceEntity());
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.getBorders().add(new BorderEntity());
+        EuropeanProvinceEntity sea = new EuropeanProvinceEntity();
+        sea.setTerrain(TerrainEnum.SEA);
+        idf.getBorders().get(1).setProvinceFrom(idf);
+        idf.getBorders().get(1).setProvinceTo(sea);
 
         try {
             economicService.addAdminAction(request);
@@ -2190,8 +2202,8 @@ public class EcoServiceTest {
             Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
         }
 
-        idf.getBorders().get(0).setProvinceFrom(sea);
-        idf.getBorders().get(0).setProvinceTo(idf);
+        idf.getBorders().get(1).setProvinceFrom(sea);
+        idf.getBorders().get(1).setProvinceTo(idf);
 
         try {
             economicService.addAdminAction(request);
