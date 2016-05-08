@@ -324,6 +324,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case MNU:
                 admAct = computeManufacture(request, game, country);
                 break;
+            case FTI:
+            case DTI:
+                admAct = computeFtiDti(request, game, country);
+                break;
             default:
                 admAct = null;
                 break;
@@ -737,6 +741,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .setMsgFormat("{1}: {0} The trade fleet located in {2} and owned by {3} is already full.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
 
         Integer column = country.getFti();
+        //noinspection ConstantConditions
         TradeZoneProvinceEntity tradeZone = (TradeZoneProvinceEntity) prov;
         if (tradeZone.getType() == TradeZoneTypeEnum.ZP) {
             if (StringUtils.equals(country.getName(), tradeZone.getCountryName())) {
@@ -934,6 +939,98 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
         }
 
+        int column = getColumnForDomesticOperation(request, country);
+
+        int bonus = getBonusForDomesticOperation(game, country);
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        if (mnu != null) {
+            admAct.setIdObject(mnu.getId());
+        }
+        admAct.setColumn(column);
+        admAct.setBonus(bonus);
+
+        return admAct;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type MNU.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeFtiDti(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
+                .setMsgFormat("{1}: {0} The administrative action of type {1} is already panned for the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.MNU, country.getName()));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
+
+        Map<LimitTypeEnum, Integer> maxi = getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        (limit.getType() == LimitTypeEnum.MAX_DTI ||
+                                limit.getType() == LimitTypeEnum.MAX_FTI ||
+                                limit.getType() == LimitTypeEnum.MAX_FTI_ROTW) &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors
+                .groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
+
+        boolean ok;
+        int actual;
+        int max;
+
+        if (request.getRequest().getType() == AdminActionTypeEnum.DTI) {
+            actual = country.getDti();
+            max = maxi.get(LimitTypeEnum.MAX_DTI);
+            ok = actual < max;
+        } else {
+            actual = country.getFti();
+            max = maxi.get(LimitTypeEnum.MAX_FTI);
+            ok = actual < max;
+            if (!ok && maxi.get(LimitTypeEnum.MAX_FTI_ROTW) != null) {
+                ok = country.getFtiRotw() < maxi.get(LimitTypeEnum.MAX_FTI_ROTW);
+            }
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(ok).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).")
+                .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getType(), country.getName(), actual, max));
+
+
+        int column = getColumnForDomesticOperation(request, country);
+
+        int bonus = getBonusForDomesticOperation(game, country);
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        admAct.setColumn(column);
+        admAct.setBonus(bonus);
+
+        return admAct;
+    }
+
+    /**
+     * Compute the column for a domestic operation.
+     *
+     * @param request of the domestic operation.
+     * @param country of the domestic operation.
+     * @return the column.
+     */
+    private int getColumnForDomesticOperation(Request<AddAdminActionRequest> request, PlayableCountryEntity country) {
         int adm = 3;
         if (country.getMonarch() != null && country.getMonarch().getAdministrative() != null) {
             adm = country.getMonarch().getAdministrative();
@@ -945,7 +1042,17 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
         // threshold to -4/4
         column = Math.min(Math.max(column, -4), 4);
+        return column;
+    }
 
+    /**
+     * Compute the bonus for a domestic operation.
+     *
+     * @param game    to retrieve global information such as stability, inflation,...
+     * @param country of the domestic operation.
+     * @return the bonus.
+     */
+    private int getBonusForDomesticOperation(GameEntity game, PlayableCountryEntity country) {
         int stab = 0;
         CounterEntity stabCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isStabilityBox(stack.getProvince()))
                         .flatMap(stack -> stack.getCounters().stream()),
@@ -973,20 +1080,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         } else if (StringUtils.equals(PlayableCountry.ENGLAND, country.getName()) && game.getTurn() >= 43) {
             bonus += 2;
         }
-
-        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
-        admAct.setCountry(country);
-        admAct.setStatus(AdminActionStatusEnum.PLANNED);
-        admAct.setTurn(game.getTurn());
-        admAct.setProvince(province);
-        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
-        if (mnu != null) {
-            admAct.setIdObject(mnu.getId());
-        }
-        admAct.setColumn(column);
-        admAct.setBonus(bonus);
-
-        return admAct;
+        return bonus;
     }
 
     /** {@inheritDoc} */

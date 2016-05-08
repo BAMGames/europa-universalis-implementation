@@ -2425,4 +2425,249 @@ public class EcoServiceTest {
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
     }
+
+    @Test
+    public void testAddAdmActDtiFtiFail() {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(11L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setDti(3);
+        game.getCountries().get(0).setFti(4);
+        game.getCountries().get(0).setFtiRotw(5);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
+        AdministrativeActionEntity action = new AdministrativeActionEntity();
+        actionsFor11.add(action);
+        when(adminActionDao.findAdminActions(11L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor11);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor12);
+
+        request.getRequest().setType(AdminActionTypeEnum.DTI);
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("angleterre");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.MAX_DTI);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(3);
+        limit.setType(LimitTypeEnum.MAX_DTI);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(4);
+        limit.setType(LimitTypeEnum.MAX_FTI);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(5);
+        limit.setType(LimitTypeEnum.MAX_FTI_ROTW);
+        limits.add(limit);
+        tables.setLimits(limits);
+        EconomicServiceImpl.TABLES = tables;
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because domestic operation already planned");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_PLANNED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCountry(12L);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because investment is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.investment", e.getParams()[0]);
+        }
+
+        request.getRequest().setInvestment(InvestmentEnum.M);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because dti limit was reached");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        request.getRequest().setType(AdminActionTypeEnum.FTI);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because fti limit was reached");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testAddAdmActDtiFtiSuccess() throws FunctionalException {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(12L);
+        request.getRequest().setInvestment(InvestmentEnum.M);
+        request.getRequest().setType(AdminActionTypeEnum.FTI);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setDti(3);
+        game.getCountries().get(0).setFti(4);
+        game.getCountries().get(0).setFtiRotw(4);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setMonarch(new MonarchEntity());
+        game.getCountries().get(0).getMonarch().setAdministrative(7);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("B_STAB_2");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.STABILITY);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor12);
+
+        request.getRequest().setType(AdminActionTypeEnum.FTI);
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("angleterre");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.MAX_DTI);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(3);
+        limit.setType(LimitTypeEnum.MAX_DTI);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(4);
+        limit.setType(LimitTypeEnum.MAX_FTI);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(5);
+        limit.setType(LimitTypeEnum.MAX_FTI_ROTW);
+        limits.add(limit);
+        tables.setLimits(limits);
+        EconomicServiceImpl.TABLES = tables;
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.addAdminAction(request);
+
+        InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+        inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(6, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(request.getRequest().getIdCountry().toString(), diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(1).getType());
+        Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COST, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("50", diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COLUMN, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("2", diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(5).getType());
+        Assert.assertEquals("2", diffEntity.getAttributes().get(5).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(diffAfter, response.getDiffs());
+    }
 }
