@@ -227,4 +227,36 @@ public interface IConstantsServiceException {
      * </p>
      */
     String ACTION_NOT_PLANNED = "exception.eu.admin_action.action_not_planned";
+
+    /**
+     * <p>
+     * Exception thrown when an action is already planned.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the action</li>
+     * <li>2: country of the action</li>
+     * </ul>
+     * </p>
+     */
+    String ACTION_ALREADY_PLANNED = "exception.eu.admin_action.action_already_planned";
+
+    /**
+     * <p>
+     * Exception thrown when a manufacture can't be created in the province.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the manufacture</li>
+     * <li>2: province where the manufacture would have benn created</li>
+     * <li>3: additional actual info</li>
+     * <li>4: additional expected info</li>
+     * </ul>
+     * </p>
+     */
+    String MNU_WRONG_PROVINCE = "exception.eu.admin_action.mnu_wrong_province";
 }

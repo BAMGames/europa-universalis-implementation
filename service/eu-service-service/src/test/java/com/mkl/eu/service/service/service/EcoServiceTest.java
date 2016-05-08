@@ -21,13 +21,16 @@ import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
+import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.TradeZoneProvinceEntity;
@@ -42,10 +45,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.inOrder;
@@ -75,6 +75,9 @@ public class EcoServiceTest {
 
     @Mock
     private IProvinceDao provinceDao;
+
+    @Mock
+    private IEconomicalSheetDao economicalSheetDao;
 
     @Mock
     private IChatDao chatDao;
@@ -1836,6 +1839,576 @@ public class EcoServiceTest {
         Assert.assertEquals(column, diffEntity.getAttributes().get(5).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(6).getType());
         Assert.assertEquals(bonus, diffEntity.getAttributes().get(6).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
+    public void testAddAdmActMnuFail() {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(11L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(2L);
+        game.getStacks().get(0).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(3L);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_CLOTHES_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(1).setId(4L);
+        game.getStacks().get(1).getCounters().get(1).setCountry("france");
+        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.FLEET_MINUS);
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(2).setId(5L);
+        game.getStacks().get(1).getCounters().get(2).setCountry("france");
+        game.getStacks().get(1).getCounters().get(2).setType(CounterFaceTypeEnum.MNU_WINE_MINUS);
+        game.getStacks().get(1).getCounters().get(2).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().get(2).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).setProvince("idf");
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(0).setCountry("france");
+        game.getTradeFleets().get(0).setProvince("zp_france");
+        game.getTradeFleets().get(0).setLevel(6);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        Map<String, Integer> ownedProvinces = new HashMap<>();
+        ownedProvinces.put("provence", 5);
+        ownedProvinces.put("lyonnais", 8);
+
+        when(economicalSheetDao.getOwnedAndControlledProvinces("france", 12L)).thenReturn(ownedProvinces);
+
+        List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
+        AdministrativeActionEntity action = new AdministrativeActionEntity();
+        actionsFor11.add(action);
+        when(adminActionDao.findAdminActions(11L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor11);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor12);
+
+        request.getRequest().setType(AdminActionTypeEnum.MNU);
+
+        StackEntity stackOwnFor = new StackEntity();
+        stackOwnFor.setProvince("controlledNotOwn");
+        CounterEntity counterOwnFor = new CounterEntity();
+        counterOwnFor.setType(CounterFaceTypeEnum.OWN);
+        counterOwnFor.setCountry("angleterre");
+        stackOwnFor.getCounters().add(counterOwnFor);
+        game.getStacks().add(stackOwnFor);
+
+        StackEntity stackOwn = new StackEntity();
+        stackOwn.setProvince("ownedNotControlled");
+        CounterEntity counterOwn = new CounterEntity();
+        counterOwn.setType(CounterFaceTypeEnum.OWN);
+        counterOwn.setCountry("france");
+        stackOwn.getCounters().add(counterOwn);
+        game.getStacks().add(stackOwn);
+
+        StackEntity stackOwn2 = new StackEntity();
+        stackOwn2.setProvince("owned");
+        stackOwn2.getCounters().add(counterOwn);
+        game.getStacks().add(stackOwn2);
+
+        StackEntity stackCtrlFor = new StackEntity();
+        stackCtrlFor.setProvince("ownedNotControlled");
+        CounterEntity counterCtrlFor = new CounterEntity();
+        counterCtrlFor.setType(CounterFaceTypeEnum.CONTROL);
+        counterCtrlFor.setCountry("angleterre");
+        stackCtrlFor.getCounters().add(counterCtrlFor);
+        game.getStacks().add(stackCtrlFor);
+
+        StackEntity stackCtrl = new StackEntity();
+        stackCtrl.setProvince("controlledNotOwn");
+        CounterEntity counterCtrl = new CounterEntity();
+        counterCtrl.setType(CounterFaceTypeEnum.CONTROL);
+        counterCtrl.setCountry("france");
+        stackCtrl.getCounters().add(counterCtrl);
+        game.getStacks().add(stackCtrl);
+
+        StackEntity stackFortress = new StackEntity();
+        CounterEntity counterFortress = new CounterEntity();
+        counterFortress.setType(CounterFaceTypeEnum.FORTRESS_2);
+        counterFortress.setCountry("france");
+        stackFortress.getCounters().add(counterFortress);
+        game.getStacks().add(stackFortress);
+
+        EuropeanProvinceEntity controlledNotOwn = new EuropeanProvinceEntity();
+        controlledNotOwn.setName("controlledNotOwn");
+        when(provinceDao.getProvinceByName("controlledNotOwn")).thenReturn(controlledNotOwn);
+
+        when(stackDao.getStacksOnProvince("controlledNotOwn", 12L)).thenReturn(Arrays.asList(stackOwnFor, stackCtrl));
+
+        EuropeanProvinceEntity ownedNotControlled = new EuropeanProvinceEntity();
+        ownedNotControlled.setName("ownedNotControlled");
+        when(provinceDao.getProvinceByName("ownedNotControlled")).thenReturn(ownedNotControlled);
+
+        when(stackDao.getStacksOnProvince("ownedNotControlled", 12L)).thenReturn(Arrays.asList(stackOwn, stackCtrlFor));
+
+        EuropeanProvinceEntity owned = new EuropeanProvinceEntity();
+        owned.setName("owned");
+        when(provinceDao.getProvinceByName("owned")).thenReturn(owned);
+
+        when(stackDao.getStacksOnProvince("owned", 12L)).thenReturn(Collections.singletonList(stackOwn));
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("idf");
+        idf.setDefaultOwner("france");
+        idf.setTerrain(TerrainEnum.DESERT);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("angleterre");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.MAX_MNU);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(0);
+        limit.setType(LimitTypeEnum.MAX_MNU);
+        limits.add(limit);
+        tables.setLimits(limits);
+        EconomicServiceImpl.TABLES = tables;
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because domestic operation already planned");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_PLANNED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCountry(12L);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because investment is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.investment", e.getParams()[0]);
+        }
+
+        request.getRequest().setInvestment(InvestmentEnum.M);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because counter face type is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because counter face type is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_CEREALS_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("toto");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("controlledNotOwn");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is not owned and controlled");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("ownedNotControlled");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is not owned and controlled");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("owned");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because mnu limit was reached");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        limit.setNumber(2);
+        request.getRequest().setProvince("idf");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.setTerrain(TerrainEnum.PLAIN);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_WOOD_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.setTerrain(TerrainEnum.SPARSE_FOREST);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        idf.setTerrain(TerrainEnum.DENSE_FOREST);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_SALT_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.setSalt(0);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.setSalt(1);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_FISH_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        EuropeanProvinceEntity sea = new EuropeanProvinceEntity();
+        sea.setTerrain(TerrainEnum.SEA);
+        idf.getBorders().add(new BorderEntity());
+        idf.getBorders().get(0).setProvinceFrom(idf);
+        idf.getBorders().get(0).setProvinceTo(sea);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        idf.getBorders().get(0).setProvinceFrom(sea);
+        idf.getBorders().get(0).setProvinceTo(idf);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_ART_MINUS);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.setIncome(4);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu can't be placed in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        idf.setIncome(5);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu should be placed on an empty province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.MNU_WRONG_PROVINCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        when(economicalSheetDao.getOwnedAndControlledProvinces("france", 12L)).thenReturn(new HashMap<String, Integer>());
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should have worked.");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testAddAdmActMnuSuccess1() throws FunctionalException {
+        testAddAdmActMnuSuccess(10L, "turquie", null, "B_PB_1D", 1, InvestmentEnum.M, "50", "-3", "-1");
+    }
+
+    @Test
+    public void testAddAdmActMnuSuccess2() throws FunctionalException {
+        testAddAdmActMnuSuccess(12L, "espagne", "toto", "B_PB_1D", 1, InvestmentEnum.S, "30", "-4", "0");
+    }
+
+    @Test
+    public void testAddAdmActMnuSuccess3() throws FunctionalException {
+        testAddAdmActMnuSuccess(12L, "espagne", "B_STAB_0", "B_PB_2G", 1, InvestmentEnum.L, "100", "-1", "-1");
+    }
+
+    @Test
+    public void testAddAdmActMnuSuccess4() throws FunctionalException {
+        testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_-3", "B_PB_1D", 42, InvestmentEnum.S, "30", "4", "-3");
+    }
+
+    @Test
+    public void testAddAdmActMnuSuccess5() throws FunctionalException {
+        testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_3", "B_PB_1D", 43, InvestmentEnum.L, "100", "4", "5");
+    }
+
+    private void testAddAdmActMnuSuccess(Long idCountry, String country, String stabilityBox, String inflationBox, int turn, InvestmentEnum investment, String cost, String column, String bonus) throws FunctionalException {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(idCountry);
+        request.getRequest().setInvestment(investment);
+        request.getRequest().setType(AdminActionTypeEnum.MNU);
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_METAL_MINUS);
+        request.getRequest().setProvince("idf");
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(turn);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setName("espagne");
+        game.getCountries().get(0).setDti(2);
+        game.getCountries().get(0).setMonarch(new MonarchEntity());
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().get(1).setDti(5);
+        game.getCountries().get(1).setMonarch(new MonarchEntity());
+        game.getCountries().get(1).getMonarch().setAdministrative(9);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(2).setId(10L);
+        game.getCountries().get(2).setName("turquie");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(2L);
+        game.getStacks().get(0).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(3L);
+        game.getStacks().get(1).getCounters().get(0).setCountry(country);
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_METAL_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(1).setId(4L);
+        game.getStacks().get(1).getCounters().get(1).setCountry("france");
+        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.FLEET_MINUS);
+        game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).setProvince("idf");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setProvince(inflationBox);
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.INFLATION);
+        game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
+        if (stabilityBox != null) {
+            game.getStacks().add(new StackEntity());
+            game.getStacks().get(3).setProvince(stabilityBox);
+            game.getStacks().get(3).getCounters().add(new CounterEntity());
+            game.getStacks().get(3).getCounters().get(0).setCountry(country);
+            game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.STABILITY);
+            game.getStacks().get(3).getCounters().get(0).setOwner(game.getStacks().get(3));
+        }
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(0).setCountry("france");
+        game.getTradeFleets().get(0).setProvince("zp_france");
+        game.getTradeFleets().get(0).setLevel(6);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        when(adminActionDao.findAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(new ArrayList<>());
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("idf");
+        idf.setDefaultOwner(country);
+        idf.setTerrain(TerrainEnum.DESERT);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry(country);
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.MAX_MNU);
+        limits.add(limit);
+        tables.setLimits(limits);
+        EconomicServiceImpl.TABLES = tables;
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.addAdminAction(request);
+
+        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(adminActionDao).findAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+        inOrder.verify(provinceDao).getProvinceByName("idf");
+        inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(8, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(request.getRequest().getIdCountry().toString(), diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(1).getType());
+        Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COST, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals(cost, diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_OBJECT, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("3", diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(5).getType());
+        Assert.assertEquals(request.getRequest().getProvince(), diffEntity.getAttributes().get(5).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COLUMN, diffEntity.getAttributes().get(6).getType());
+        Assert.assertEquals(column, diffEntity.getAttributes().get(6).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(7).getType());
+        Assert.assertEquals(bonus, diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

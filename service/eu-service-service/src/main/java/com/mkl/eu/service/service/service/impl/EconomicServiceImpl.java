@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -20,6 +21,7 @@ import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.TradeIncome;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.client.service.vo.util.EconomicUtil;
+import com.mkl.eu.client.service.vo.util.GameUtil;
 import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -35,10 +37,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.TradeZoneProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -47,10 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -324,6 +320,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 break;
             case TFI:
                 admAct = computeTradeFleetImplantation(request, game, country);
+                break;
+            case MNU:
+                admAct = computeManufacture(request, game, country);
                 break;
             default:
                 admAct = null;
@@ -776,6 +775,212 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setTurn(game.getTurn());
         admAct.setProvince(province);
         admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        admAct.setColumn(column);
+        admAct.setBonus(bonus);
+
+        return admAct;
+    }
+
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type MNU.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeManufacture(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
+                .setMsgFormat("{1}: {0} The administrative action of type {1} is already panned for the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.MNU, country.getName()));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
+
+        CounterFaceTypeEnum type = request.getRequest().getCounterFaceType();
+        failIfNull(new CheckForThrow<>().setTest(type).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(EconomicUtil.isManufacture(type)).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat("{1}: {0} The type {2} is not a manufacture.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, type));
+
+
+        String province = request.getRequest().getProvince();
+        failIfEmpty(new CheckForThrow<String>().setTest(province).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT));
+
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+
+        failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(prov instanceof EuropeanProvinceEntity).setCodeError(IConstantsServiceException.PROVINCE_WRONG_TYPE)
+                .setMsgFormat("{1}: {0} The province {2} of type {3} should be of type {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, prov.getClass(), EuropeanProvinceEntity.class));
+
+
+        @SuppressWarnings("ConstantConditions") EuropeanProvinceEntity euProv = (EuropeanProvinceEntity) prov;
+        String owner = euProv.getDefaultOwner();
+
+        List<CounterEntity> counters = game.getStacks().stream().filter(stack -> StringUtils.equals(province, stack.getProvince())).flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.OWN
+                        || counter.getType() == CounterFaceTypeEnum.CONTROL
+                        || EconomicUtil.isManufacture(counter.getType())).collect(Collectors.toList());
+        String control = country.getName();
+        // MNU to upgrade if it exists, or create if it doesn't
+        CounterEntity mnu = null;
+        // Other MNU in the province
+        boolean otherMnu = false;
+        for (CounterEntity counter : counters) {
+            if (counter.getType() == CounterFaceTypeEnum.CONTROL) {
+                control = counter.getCountry();
+            } else if (counter.getType() == CounterFaceTypeEnum.OWN) {
+                owner = counter.getCountry();
+            } else if (counter.getType() == type) {
+                mnu = counter;
+            } else if (EconomicUtil.isManufacture(counter.getType())) {
+                otherMnu = true;
+            }
+        }
+
+        // If the MNU is already max, then it is the creation of a new MNU alongside the other one
+        if (mnu != null && (EconomicUtil.getManufactureLevel(mnu.getType()) == 2 || mnu.getType() != type)) {
+            mnu = null;
+            otherMnu = true;
+        }
+
+        boolean provinceOk = StringUtils.equals(country.getName(), owner) && StringUtils.equals(country.getName(), control);
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL)
+                .setMsgFormat("{1}: {0} The province {2} is not owned and controlled by {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+
+        // New MNU ? Check placement and limits
+        if (mnu == null) {
+            Integer actualMnus = game.getStacks().stream().flatMap(stackEntity -> stackEntity.getCounters().stream())
+                    .filter(counterEntity -> StringUtils.equals(country.getName(), counterEntity.getCountry()) && EconomicUtil.isManufacture(counterEntity.getType())).collect(Collectors.summingInt(value -> 1));
+            Integer maxMnus = getTables().getLimits().stream().filter(
+                    limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                            limit.getType() == LimitTypeEnum.MAX_MNU &&
+                            limit.getPeriod().getBegin() <= game.getTurn() &&
+                            limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(actualMnus < maxMnus + 2).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).")
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.MNU, country.getName(), actualMnus, maxMnus));
+
+            // Cereals manufactures on plains
+            provinceOk = (type != CounterFaceTypeEnum.MNU_CEREALS_MINUS && type != CounterFaceTypeEnum.MNU_CEREALS_PLUS)
+                    || euProv.getTerrain() == TerrainEnum.PLAIN;
+            failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.MNU_WRONG_PROVINCE)
+                    .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, province, euProv.getTerrain(), TerrainEnum.PLAIN));
+
+            // Wood manufactures on sparse or dense forests
+            provinceOk = (type != CounterFaceTypeEnum.MNU_WOOD_MINUS && type != CounterFaceTypeEnum.MNU_WOOD_PLUS)
+                    || (euProv.getTerrain() == TerrainEnum.DENSE_FOREST || euProv.getTerrain() == TerrainEnum.SPARSE_FOREST);
+            failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.MNU_WRONG_PROVINCE)
+                    .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, province, euProv.getTerrain(), TerrainEnum.SPARSE_FOREST));
+
+            // Salt manufactures on province with salt resource
+            provinceOk = (type != CounterFaceTypeEnum.MNU_SALT_MINUS && type != CounterFaceTypeEnum.MNU_SALT_PLUS)
+                    || (euProv.getSalt() != null && euProv.getSalt() > 0);
+            failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.MNU_WRONG_PROVINCE)
+                    .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, province, euProv.getSalt(), "1+"));
+
+            // Fish manufactures on coastal province
+            if (type == CounterFaceTypeEnum.MNU_FISH_MINUS || type == CounterFaceTypeEnum.MNU_FISH_PLUS) {
+                boolean coastal = false;
+                for (BorderEntity border : euProv.getBorders()) {
+                    coastal = border.getProvinceFrom().getTerrain() == TerrainEnum.SEA
+                            || border.getProvinceTo().getTerrain() == TerrainEnum.SEA;
+                    if (coastal) {
+                        break;
+                    }
+                }
+
+                failIfFalse(new CheckForThrow<Boolean>().setTest(coastal).setCodeError(IConstantsServiceException.MNU_WRONG_PROVINCE)
+                        .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
+                        .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, province, 0, "1+"));
+            }
+
+            // Art manufactures on province with an income of 5+
+            provinceOk = (type != CounterFaceTypeEnum.MNU_ART_MINUS && type != CounterFaceTypeEnum.MNU_ART_PLUS)
+                    || (euProv.getIncome() != null && euProv.getIncome() >= 5);
+            failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.MNU_WRONG_PROVINCE)
+                    .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, province, euProv.getIncome(), "5+"));
+
+            if (otherMnu) {
+                // Placing a manufacture in the same province than another is only possible if all other controlled provinces have
+                // already one. This rule should only apply to holland usually.
+
+                Set<String> provinces = economicalSheetDao.getOwnedAndControlledProvinces(country.getName(), game.getId()).keySet();
+                List<String> provincesWithMnu = game.getStacks().stream().flatMap(stackEntity -> stackEntity.getCounters().stream())
+                        .filter(counter -> StringUtils.equals(country.getName(), counter.getCountry()) && EconomicUtil.isManufacture(counter.getType()))
+                        .map(counter -> counter.getOwner().getProvince())
+                        .collect(Collectors.toList());
+
+                provinces.removeAll(provincesWithMnu);
+                failIfFalse(new CheckForThrow<Boolean>().setTest(provinces.isEmpty()).setCodeError(IConstantsServiceException.MNU_WRONG_PROVINCE)
+                        .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
+                        .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, type, province, province, String.join(", ", provinces)));
+            }
+        }
+
+        int adm = 3;
+        if (country.getMonarch() != null && country.getMonarch().getAdministrative() != null) {
+            adm = country.getMonarch().getAdministrative();
+        }
+        int column = adm + country.getDti() - 9;
+
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+        column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+
+        int stab = 0;
+        CounterEntity stabCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isStabilityBox(stack.getProvince()))
+                        .flatMap(stack -> stack.getCounters().stream()),
+                counter -> StringUtils.equals(country.getName(), counter.getCountry()) && counter.getType() == CounterFaceTypeEnum.STABILITY);
+        if (stabCounter != null) {
+            String box = stabCounter.getOwner().getProvince();
+            stab = GameUtil.getStability(box);
+        }
+        int bonus = stab;
+        if (StringUtils.equals(PlayableCountry.SPAIN, country.getName())) {
+            CounterEntity inflationCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isInflationBox(stack.getProvince()))
+                            .flatMap(stack -> stack.getCounters().stream()),
+                    counter -> counter.getType() == CounterFaceTypeEnum.INFLATION || counter.getType() == CounterFaceTypeEnum.INFLATION_GOLD);
+            if (inflationCounter != null) {
+                int inflation = GameUtil.getInflation(inflationCounter.getOwner().getProvince(), false);
+                if (inflation >= 10) {
+                    bonus -= 1;
+                }
+            }
+        } else if (StringUtils.equals(PlayableCountry.RUSSIA, country.getName()) ||
+                StringUtils.equals(PlayableCountry.POLAND, country.getName()) ||
+                StringUtils.equals(PlayableCountry.TURKEY, country.getName())) {
+            // TODO St-Petersburg
+            bonus -= 1;
+        } else if (StringUtils.equals(PlayableCountry.ENGLAND, country.getName()) && game.getTurn() >= 43) {
+            bonus += 2;
+        }
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        if (mnu != null) {
+            admAct.setIdObject(mnu.getId());
+        }
         admAct.setColumn(column);
         admAct.setBonus(bonus);
 
