@@ -259,4 +259,20 @@ public interface IConstantsServiceException {
      * </p>
      */
     String MNU_WRONG_PROVINCE = "exception.eu.admin_action.mnu_wrong_province";
+
+    /**
+     * <p>
+     * Exception thrown when the stability of a country is too low.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: country owning the stability/li>
+     * <li>2: actual stability</li>
+     * <li>3: minimum stability required</li>
+     * </ul>
+     * </p>
+     */
+    String INSUFICIENT_STABILITY = "exception.eu.insufficient_stability";
 }

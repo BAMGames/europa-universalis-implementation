@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.service;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
@@ -37,6 +38,9 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.TradeZoneProvinceE
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.EconomicServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
+import com.mkl.eu.service.service.util.IOEUtil;
+import com.mkl.eu.service.service.util.impl.OEUtilImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,6 +100,9 @@ public class EcoServiceTest {
 
     @Mock
     private SocketHandler socketHandler;
+
+    @Mock
+    private IOEUtil oeUtil;
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
@@ -2255,30 +2262,30 @@ public class EcoServiceTest {
 
     @Test
     public void testAddAdmActMnuSuccess1() throws FunctionalException {
-        testAddAdmActMnuSuccess(10L, "turquie", null, "B_PB_1D", 1, InvestmentEnum.M, "50", "-3", "-1");
+        testAddAdmActMnuSuccess(10L, "turquie", null, 0, "B_PB_1D", 1, InvestmentEnum.M, "50", "-3", "-1");
     }
 
     @Test
     public void testAddAdmActMnuSuccess2() throws FunctionalException {
-        testAddAdmActMnuSuccess(12L, "espagne", "toto", "B_PB_1D", 1, InvestmentEnum.S, "30", "-4", "0");
+        testAddAdmActMnuSuccess(12L, "espagne", "toto", 0, "B_PB_1D", 1, InvestmentEnum.S, "30", "-4", "0");
     }
 
     @Test
     public void testAddAdmActMnuSuccess3() throws FunctionalException {
-        testAddAdmActMnuSuccess(12L, "espagne", "B_STAB_0", "B_PB_2G", 1, InvestmentEnum.L, "100", "-1", "-1");
+        testAddAdmActMnuSuccess(12L, "espagne", "B_STAB_0", 0, "B_PB_2G", 1, InvestmentEnum.L, "100", "-1", "-1");
     }
 
     @Test
     public void testAddAdmActMnuSuccess4() throws FunctionalException {
-        testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_-3", "B_PB_1D", 42, InvestmentEnum.S, "30", "4", "-3");
+        testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_-3", -3, "B_PB_1D", 42, InvestmentEnum.S, "30", "4", "-3");
     }
 
     @Test
     public void testAddAdmActMnuSuccess5() throws FunctionalException {
-        testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_3", "B_PB_1D", 43, InvestmentEnum.L, "100", "4", "5");
+        testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_3", 3, "B_PB_1D", 43, InvestmentEnum.L, "100", "4", "5");
     }
 
-    private void testAddAdmActMnuSuccess(Long idCountry, String country, String stabilityBox, String inflationBox, int turn, InvestmentEnum investment, String cost, String column, String bonus) throws FunctionalException {
+    private void testAddAdmActMnuSuccess(Long idCountry, String country, String stabilityBox, int stability, String inflationBox, int turn, InvestmentEnum investment, String cost, String column, String bonus) throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.setGame(new GameInfo());
@@ -2347,6 +2354,10 @@ public class EcoServiceTest {
 
         when(adminActionDao.findAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(new ArrayList<>());
 
+        PlayableCountryEntity countryEntity = CommonUtil.findFirst(game.getCountries(), o -> StringUtils.equals(country, o.getName()));
+        when(oeUtil.getAdministrativeValue(countryEntity)).thenReturn(new OEUtilImpl().getAdministrativeValue(countryEntity));
+        when(oeUtil.getStability(game, country)).thenReturn(stability);
+
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setName("idf");
         idf.setDefaultOwner(country);
@@ -2389,12 +2400,14 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
         inOrder.verify(provinceDao).getProvinceByName("idf");
+        inOrder.verify(oeUtil).getAdministrativeValue(countryEntity);
+        inOrder.verify(oeUtil).getStability(game, country);
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
@@ -2577,6 +2590,9 @@ public class EcoServiceTest {
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor12);
 
+        when(oeUtil.getAdministrativeValue(game.getCountries().get(0))).thenReturn(7);
+        when(oeUtil.getStability(game, "france")).thenReturn(2);
+
         request.getRequest().setType(AdminActionTypeEnum.FTI);
 
         Tables tables = new Tables();
@@ -2639,11 +2655,13 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+        inOrder.verify(oeUtil).getAdministrativeValue(game.getCountries().get(0));
+        inOrder.verify(oeUtil).getStability(game, "france");
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
@@ -2666,6 +2684,143 @@ public class EcoServiceTest {
         Assert.assertEquals("2", diffEntity.getAttributes().get(4).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(5).getType());
         Assert.assertEquals("2", diffEntity.getAttributes().get(5).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
+    public void testAddAdmActExcTaxesFail() {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(11L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setDti(3);
+        game.getCountries().get(0).setFti(4);
+        game.getCountries().get(0).setFtiRotw(5);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
+        AdministrativeActionEntity action = new AdministrativeActionEntity();
+        actionsFor11.add(action);
+        when(adminActionDao.findAdminActions(11L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor11);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor12);
+
+        when(oeUtil.getStability(game, "france")).thenReturn(-3);
+
+        request.getRequest().setType(AdminActionTypeEnum.ELT);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because domestic operation already planned");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_PLANNED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCountry(12L);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because stab is -3");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INSUFICIENT_STABILITY, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testAddAdmActExcTaxesSuccess() throws FunctionalException {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(12L);
+        request.getRequest().setType(AdminActionTypeEnum.ELT);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setName("france");
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL)).thenReturn(actionsFor12);
+
+        when(oeUtil.getStability(game, "france")).thenReturn(2);
+        when(oeUtil.getAdministrativeValue(game.getCountries().get(0))).thenReturn(7);
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.addAdminAction(request);
+
+        InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping, oeUtil);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+        inOrder.verify(oeUtil).getStability(game, "france");
+        inOrder.verify(oeUtil).getAdministrativeValue(game.getCountries().get(0));
+        inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(request.getRequest().getIdCountry().toString(), diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(1).getType());
+        Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("10", diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

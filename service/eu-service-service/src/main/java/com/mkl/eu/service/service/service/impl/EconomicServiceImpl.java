@@ -40,6 +40,7 @@ import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +84,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Game mapping. */
     @Autowired
     private EconomicalSheetMapping ecoSheetsMapping;
+    /** OEUtil. */
+    @Autowired
+    private IOEUtil oeUtil;
 
     /**
      * Filling the static List.
@@ -327,6 +331,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case FTI:
             case DTI:
                 admAct = computeFtiDti(request, game, country);
+                break;
+            case ELT:
+                admAct = computeExceptionalTaxes(request, game, country);
                 break;
             default:
                 admAct = null;
@@ -959,7 +966,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     }
 
     /**
-     * Computes the creation of a PLANNED administrative action of type MNU.
+     * Computes the creation of a PLANNED administrative action of type DTI/FTI improve.
      *
      * @param request request containing the info about the action to create.
      * @param game    in which the action will be created.
@@ -1031,10 +1038,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return the column.
      */
     private int getColumnForDomesticOperation(Request<AddAdminActionRequest> request, PlayableCountryEntity country) {
-        int adm = 3;
-        if (country.getMonarch() != null && country.getMonarch().getAdministrative() != null) {
-            adm = country.getMonarch().getAdministrative();
-        }
+        int adm = oeUtil.getAdministrativeValue(country);
         int column = adm + country.getDti() - 9;
 
         // threshold to -4/4
@@ -1053,14 +1057,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return the bonus.
      */
     private int getBonusForDomesticOperation(GameEntity game, PlayableCountryEntity country) {
-        int stab = 0;
-        CounterEntity stabCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isStabilityBox(stack.getProvince()))
-                        .flatMap(stack -> stack.getCounters().stream()),
-                counter -> StringUtils.equals(country.getName(), counter.getCountry()) && counter.getType() == CounterFaceTypeEnum.STABILITY);
-        if (stabCounter != null) {
-            String box = stabCounter.getOwner().getProvince();
-            stab = GameUtil.getStability(box);
-        }
+        int stab = oeUtil.getStability(game, country.getName());
         int bonus = stab;
         if (StringUtils.equals(PlayableCountry.SPAIN, country.getName())) {
             CounterEntity inflationCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isInflationBox(stack.getProvince()))
@@ -1081,6 +1078,47 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             bonus += 2;
         }
         return bonus;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type Exceptional taxes.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeExceptionalTaxes(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
+                .setMsgFormat("{1}: {0} The administrative action of type {1} is already panned for the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.MNU, country.getName()));
+
+        // TODO war
+
+        // TODO war if ennemy stack on national territory, no loss of stab nor condition
+
+        int stab = oeUtil.getStability(game, country.getName());
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(stab > -3).setCodeError(IConstantsServiceException.INSUFICIENT_STABILITY)
+                .setMsgFormat("{1}: {0} The stability of the country {1} is too low. Actual: {2}, minimum: {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName(), stab, -2));
+
+        // TODO war no loss of stab
+        stab--;
+
+        int adm = oeUtil.getAdministrativeValue(country);
+
+        int bonus = adm + stab * 3;
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setBonus(bonus);
+
+        return admAct;
     }
 
     /** {@inheritDoc} */
