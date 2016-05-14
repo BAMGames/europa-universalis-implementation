@@ -1,4 +1,4 @@
-package com.mkl.eu.client.service.vo.util;
+package com.mkl.eu.client.service.util;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -1,8 +1,8 @@
 package com.mkl.eu.service.service.util.impl;
 
 import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.util.GameUtil;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;

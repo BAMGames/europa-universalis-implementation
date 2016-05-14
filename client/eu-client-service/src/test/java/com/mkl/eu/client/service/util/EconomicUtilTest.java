@@ -3,7 +3,6 @@ package com.mkl.eu.client.service.util;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.InvestmentEnum;
-import com.mkl.eu.client.service.vo.util.EconomicUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

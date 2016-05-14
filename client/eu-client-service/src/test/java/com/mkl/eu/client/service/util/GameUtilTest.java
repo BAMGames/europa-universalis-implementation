@@ -1,6 +1,5 @@
 package com.mkl.eu.client.service.util;
 
-import com.mkl.eu.client.service.vo.util.GameUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

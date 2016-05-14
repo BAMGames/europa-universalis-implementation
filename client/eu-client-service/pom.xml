@@ -84,7 +84,8 @@
                 <configuration>
                     <instrumentation>
                         <excludes>
-                            <exclude>com/mkl/eu/client/service/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/service/vo/**/*.class</exclude>
+                            <exclude>com/mkl/eu/client/service/service/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
                 </configuration>

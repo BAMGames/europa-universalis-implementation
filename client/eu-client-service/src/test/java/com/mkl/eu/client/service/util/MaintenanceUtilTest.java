@@ -6,7 +6,6 @@ import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 import com.mkl.eu.client.service.vo.tables.BasicForce;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
-import com.mkl.eu.client.service.vo.util.MaintenanceUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;

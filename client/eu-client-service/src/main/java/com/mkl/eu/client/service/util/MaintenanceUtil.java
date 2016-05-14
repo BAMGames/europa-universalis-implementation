@@ -1,4 +1,4 @@
-package com.mkl.eu.client.service.vo.util;
+package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
