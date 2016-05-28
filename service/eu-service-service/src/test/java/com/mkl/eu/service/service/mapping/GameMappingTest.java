@@ -54,6 +54,7 @@ public class GameMappingTest {
         FRA_VO.setName("FRA");
         FRA_VO.setUsername("MKL");
         FRA_VO.setDti(3);
+        FRA_VO.setColonisationPenalty(3);
 
         PRU_VO = new PlayableCountry();
         PRU_VO.setId(2L);
@@ -67,6 +68,7 @@ public class GameMappingTest {
         FRA_OE.setName("FRA");
         FRA_OE.setUsername("MKL");
         FRA_OE.setDti(3);
+        FRA_OE.setColonisationPenalty(3);
 
         PRU_OE = new PlayableCountryEntity();
         PRU_OE.setId(2L);

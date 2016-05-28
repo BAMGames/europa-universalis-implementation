@@ -97,6 +97,7 @@ public class PlayableCountryMapping extends AbstractMapping {
         target.setDti(source.getDti());
         target.setFti(source.getFti());
         target.setFtiRotw(source.getFtiRotw());
+        target.setColonisationPenalty(source.getColonisationPenalty());
         target.setLandTech(source.getLandTech());
         target.setNavalTech(source.getNavalTech());
         target.setEconomicalSheets(economicalSheetMapping.oesToVos(source.getEconomicalSheets(), objectsCreated));

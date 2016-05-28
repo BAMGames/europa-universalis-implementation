@@ -54,7 +54,7 @@ public final class MaintenanceUtil {
             if (basicForces != null) {
                 for (IBasicForce basicForce : basicForces) {
                     String type = getTypeFromForce(basicForce.getType());
-                    Double number = basicForce.getNumber() * getSizeFromForce(basicForce.getType());
+                    Double number = basicForce.getNumber() * CounterUtil.getSizeFromForce(basicForce.getType());
                     if (!maintenance.containsKey(type)) {
                         maintenance.put(type, number);
                     } else {
@@ -157,41 +157,6 @@ public final class MaintenanceUtil {
     }
 
     /**
-     * Returns the military size of a counter.
-     *
-     * @param face the face.
-     * @return the military size.
-     */
-    public static int getSizeFromType(CounterFaceTypeEnum face) {
-        int size = 0;
-
-        if (face != null) {
-            switch (face) {
-                case FLEET_PLUS:
-                case ARMY_PLUS:
-                    size = 4;
-                    break;
-                case FLEET_MINUS:
-                case ARMY_MINUS:
-                    size = 2;
-                    break;
-                case LAND_DETACHMENT:
-                case LAND_DETACHMENT_TIMAR:
-                case LAND_DETACHMENT_KOZAK:
-                case NAVAL_DETACHMENT:
-                case NAVAL_TRANSPORT:
-                case NAVAL_GALLEY:
-                    size = 1;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return size;
-    }
-
-    /**
      * Returns the real purchase price for a land army given the size of the already planned land purchase,
      * the limit purchase, the normal price and the size of the unit being purchased.
      *
@@ -227,57 +192,6 @@ public final class MaintenanceUtil {
         }
 
         return purchasePrice;
-    }
-
-    /**
-     * Returns the fortress level of a counter.
-     *
-     * @param face the face.
-     * @return the fortress level.
-     */
-    public static int getFortressLevelFromType(CounterFaceTypeEnum face) {
-        int level = 0;
-
-        if (face != null) {
-            switch (face) {
-                case FORTRESS_5:
-                case ARSENAL_5_ST_PETER:
-                    level = 5;
-                    break;
-                case FORTRESS_4:
-                case ARSENAL_4:
-                case ARSENAL_4_ST_PETER:
-                    level = 4;
-                    break;
-                case FORTRESS_3:
-                case ARSENAL_3:
-                case ARSENAL_3_GIBRALTAR:
-                case ARSENAL_3_SEBASTOPOL:
-                case ARSENAL_3_ST_PETER:
-                    level = 3;
-                    break;
-                case FORTRESS_2:
-                case ARSENAL_2:
-                case ARSENAL_2_GIBRALTAR:
-                case ARSENAL_2_SEBASTOPOL:
-                case ARSENAL_2_ST_PETER:
-                    level = 2;
-                    break;
-                case FORTRESS_1:
-                case MISSION:
-                case ARSENAL_1_ST_PETER:
-                    level = 1;
-                    break;
-                case FORT:
-                case ARSENAL_0_ST_PETER:
-                    level = 0;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return level;
     }
 
     /**
@@ -561,45 +475,6 @@ public final class MaintenanceUtil {
         }
 
         return type;
-    }
-
-    /**
-     * Transform a force to a size.
-     *
-     * @param force to transform in size.
-     * @return the size.
-     */
-    private static Double getSizeFromForce(ForceTypeEnum force) {
-        Double size = null;
-
-        if (force != null) {
-            switch (force) {
-                case ARMY_PLUS:
-                case ARMY_TIMAR_PLUS:
-                case FLEET_PLUS:
-                    size = 4d;
-                    break;
-                case ARMY_MINUS:
-                case ARMY_TIMAR_MINUS:
-                case FLEET_MINUS:
-                    size = 2d;
-                    break;
-                case LD:
-                case LDT:
-                case ND:
-                case LDND:
-                    size = 1d;
-                    break;
-                case LDE:
-                case DE:
-                    size = 0.5;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return size;
     }
 
     /**

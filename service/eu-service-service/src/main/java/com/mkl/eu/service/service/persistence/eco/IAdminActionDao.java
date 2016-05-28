@@ -22,4 +22,11 @@ public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity,
      * @return the administrative actions that matches.
      */
     List<AdministrativeActionEntity> findAdminActions(Long idCountry, Integer turn, Long idObject, AdminActionTypeEnum... types);
+
+    /**
+     * @param province the name of the ROTW province.
+     * @param idGame   the id of the game.
+     * @return the countries that qualify for the inland advance rule for the given ROTW province.
+     */
+    List<String> getCountriesInlandAdvance(String province, Long idGame);
 }

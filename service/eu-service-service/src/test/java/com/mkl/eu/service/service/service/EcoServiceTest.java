@@ -20,21 +20,22 @@ import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
+import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.country.DiscoveryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.TradeZoneProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.EconomicServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
@@ -82,6 +83,9 @@ public class EcoServiceTest {
 
     @Mock
     private IEconomicalSheetDao economicalSheetDao;
+
+    @Mock
+    private IPlayableCountryDao playableCountryDao;
 
     @Mock
     private IChatDao chatDao;
@@ -2821,6 +2825,525 @@ public class EcoServiceTest {
         Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(3).getType());
         Assert.assertEquals("10", diffEntity.getAttributes().get(3).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
+    public void testAddAdmActColFail() {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(11L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setDti(3);
+        game.getCountries().get(0).setFti(4);
+        game.getCountries().get(0).setFtiRotw(5);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("virginia");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.COLONY_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("quebec");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.COLONY_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        EstablishmentEntity establishment = new EstablishmentEntity();
+        establishment.setLevel(2);
+        game.getStacks().get(1).getCounters().get(0).setEstablishment(establishment);
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("angleterre");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.ACTION_COL);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.ACTION_COL);
+        limits.add(limit);
+        tables.setLimits(limits);
+        List<Period> periods = new ArrayList<>();
+        Period period = new Period();
+        period.setName(Period.PERIOD_I);
+        period.setBegin(1);
+        period.setEnd(6);
+        periods.add(period);
+        tables.setPeriods(periods);
+        EconomicServiceImpl.TABLES = tables;
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
+        AdministrativeActionEntity action = new AdministrativeActionEntity();
+        actionsFor11.add(action);
+        actionsFor11.add(action);
+        when(adminActionDao.findAdminActions(11L, 1, null, AdminActionTypeEnum.COL)).thenReturn(actionsFor11);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        actionsFor12.add(action);
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.COL)).thenReturn(actionsFor12);
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("IdF");
+        idf.setDefaultOwner("france");
+        idf.setPort(false);
+        when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
+
+        RotwProvinceEntity virginia = new RotwProvinceEntity();
+        virginia.setName("virginia");
+        when(provinceDao.getProvinceByName("virginia")).thenReturn(virginia);
+
+        RotwProvinceEntity quebec = new RotwProvinceEntity();
+        quebec.setName("quebec");
+        quebec.setRegion("Canada");
+        when(provinceDao.getProvinceByName("quebec")).thenReturn(quebec);
+
+        when(provinceDao.getRegionByName("Canada")).thenReturn(new RegionEntity());
+
+        RotwProvinceEntity terreneuve = new RotwProvinceEntity();
+        quebec.setName("terreneuve");
+        when(provinceDao.getProvinceByName("terreneuve")).thenReturn(terreneuve);
+
+        List<String> sources = new ArrayList<>();
+        sources.add("Idf");
+        sources.add("Lyonnais");
+        when(playableCountryDao.getOwnedProvinces("france", 12L)).thenReturn(sources);
+
+        request.getRequest().setType(AdminActionTypeEnum.COL);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because limit exceeded");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCountry(12L);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because investment is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.investment", e.getParams()[0]);
+        }
+
+        request.getRequest().setInvestment(InvestmentEnum.M);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("toto");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("IdF");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because province is not a rotw province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_WRONG_TYPE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("virginia");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because there is a colony of another player on it");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("quebec");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of pioneering rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PIONEERING, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        period.setName(Period.PERIOD_VI);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of settlement rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SETTLEMENTS, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        period.setName(Period.PERIOD_V);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of pioneering rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PIONEERING, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("terreneuve");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of settlement rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SETTLEMENTS, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("quebec");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of pioneering rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PIONEERING, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        establishment.setLevel(null);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of settlement rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SETTLEMENTS, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        establishment.setLevel(1);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of settlement rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SETTLEMENTS, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        establishment.setLevel(2);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of pioneering rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PIONEERING, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        when(provinceDao.getGoldInProvince("quebec")).thenReturn(new GoldEntity());
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of settlement rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SETTLEMENTS, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        when(oeUtil.canSettle(quebec, new ArrayList<>(), sources, new ArrayList<>())).thenReturn(true);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of inland advance rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INLAND_ADVANCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        quebec.getBorders().add(new BorderEntity());
+        quebec.getBorders().get(0).setProvinceTo(new RotwProvinceEntity());
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of inland advance rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INLAND_ADVANCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        quebec.getBorders().add(new BorderEntity());
+        quebec.getBorders().get(1).setProvinceTo(new RotwProvinceEntity());
+        quebec.getBorders().get(1).getProvinceTo().setTerrain(TerrainEnum.SEA);
+
+        quebec.getBorders().add(new BorderEntity());
+        quebec.getBorders().get(2).setProvinceTo(new RotwProvinceEntity());
+        quebec.getBorders().get(2).getProvinceTo().setTerrain(TerrainEnum.PLAIN);
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should have worked.");
+            e.printStackTrace();
+        }
+
+        quebec.getBorders().get(1).getProvinceTo().setTerrain(TerrainEnum.DENSE_FOREST);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of inland advance rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INLAND_ADVANCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        List<String> countries = new ArrayList<>();
+        countries.add("angleterre");
+        when(adminActionDao.getCountriesInlandAdvance("quebec", 12L)).thenReturn(countries);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of inland advance rules");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INLAND_ADVANCE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        countries.add("france");
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should have worked.");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testAddAdmActColSuccess() throws FunctionalException {
+        Request<AddAdminActionRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new AddAdminActionRequest());
+        request.getRequest().setIdCountry(12L);
+        request.getRequest().setInvestment(InvestmentEnum.M);
+        request.getRequest().setProvince("quebec");
+        request.getRequest().setType(AdminActionTypeEnum.COL);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(1);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(12L);
+        game.getCountries().get(0).setDti(3);
+        game.getCountries().get(0).setFti(4);
+        game.getCountries().get(0).setFtiRotw(5);
+        game.getCountries().get(0).setColonisationPenalty(2);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).getDiscoveries().add(new DiscoveryEntity());
+        game.getCountries().get(0).getDiscoveries().get(0).setProvince("atlantique");
+        game.getCountries().get(0).getDiscoveries().get(0).setTurn(2);
+        game.getCountries().get(0).getDiscoveries().add(new DiscoveryEntity());
+        game.getCountries().get(0).getDiscoveries().get(1).setProvince("pacifique");
+        game.getCountries().get(0).getDiscoveries().get(1).setStack(new StackEntity());
+        game.getCountries().get(0).getDiscoveries().add(new DiscoveryEntity());
+        game.getCountries().get(0).getDiscoveries().get(2).setProvince("indien");
+        game.getCountries().get(0).getDiscoveries().get(2).setTurn(2);
+        game.getCountries().get(0).getDiscoveries().get(2).setStack(new StackEntity());
+        game.getCountries().get(0).getDiscoveries().add(new DiscoveryEntity());
+        game.getCountries().get(0).getDiscoveries().get(3).setProvince("quebec");
+        game.getCountries().get(0).getDiscoveries().get(3).setTurn(3);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(11L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("virginia");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.COLONY_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("quebec");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.COLONY_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setId(666L);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARSENAL_2);
+        game.getStacks().get(1).getCounters().get(1).setCountry("france");
+        game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        EstablishmentEntity establishment = new EstablishmentEntity();
+        establishment.setLevel(2);
+        game.getStacks().get(1).getCounters().get(0).setEstablishment(establishment);
+        game.getOtherForces().add(new OtherForcesEntity());
+        game.getOtherForces().get(0).setProvince("quebec");
+        game.getOtherForces().get(0).setType(OtherForcesTypeEnum.NATIVES);
+
+        Tables tables = new Tables();
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("angleterre");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.ACTION_COL);
+        limits.add(limit);
+        limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(6);
+        limit.setNumber(2);
+        limit.setType(LimitTypeEnum.ACTION_COL);
+        limits.add(limit);
+        tables.setLimits(limits);
+        List<Period> periods = new ArrayList<>();
+        Period period = new Period();
+        period.setName(Period.PERIOD_I);
+        period.setBegin(1);
+        period.setEnd(6);
+        periods.add(period);
+        tables.setPeriods(periods);
+        EconomicServiceImpl.TABLES = tables;
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
+        actionsFor12.add(new AdministrativeActionEntity());
+        when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.COL)).thenReturn(actionsFor12);
+
+        RotwProvinceEntity quebec = new RotwProvinceEntity();
+        quebec.setName("quebec");
+        quebec.setRegion("Canada");
+        quebec.getBorders().add(new BorderEntity());
+        quebec.getBorders().get(0).setProvinceTo(new RotwProvinceEntity());
+        quebec.getBorders().add(new BorderEntity());
+        quebec.getBorders().get(1).setProvinceTo(new RotwProvinceEntity());
+        quebec.getBorders().get(1).getProvinceTo().setTerrain(TerrainEnum.DENSE_FOREST);
+        quebec.getBorders().add(new BorderEntity());
+        quebec.getBorders().get(2).setProvinceTo(new RotwProvinceEntity());
+        quebec.getBorders().get(2).getProvinceTo().setTerrain(TerrainEnum.PLAIN);
+        when(provinceDao.getProvinceByName("quebec")).thenReturn(quebec);
+
+        RegionEntity region = new RegionEntity();
+        region.setDifficulty(7);
+        when(provinceDao.getRegionByName("Canada")).thenReturn(region);
+
+        List<String> sources = new ArrayList<>();
+        sources.add("Idf");
+        sources.add("Lyonnais");
+        when(playableCountryDao.getOwnedProvinces("france", 12L)).thenReturn(sources);
+
+        List<String> discoveries = new ArrayList<>();
+        discoveries.add("atlantique");
+        discoveries.add("quebec");
+        when(oeUtil.canSettle(quebec, discoveries, sources, new ArrayList<>())).thenReturn(true);
+
+        List<String> countries = new ArrayList<>();
+        countries.add("angleterre");
+        countries.add("france");
+        when(adminActionDao.getCountriesInlandAdvance("quebec", 12L)).thenReturn(countries);
+
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.addAdminAction(request);
+
+        InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping, oeUtil);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.COL);
+        inOrder.verify(provinceDao).getProvinceByName("quebec");
+        inOrder.verify(provinceDao).getGoldInProvince("quebec");
+        inOrder.verify(playableCountryDao).getOwnedProvinces("france", 12L);
+        inOrder.verify(oeUtil).canSettle(quebec, discoveries, sources, new ArrayList<>());
+        inOrder.verify(adminActionDao).getCountriesInlandAdvance("quebec", 12L);
+        inOrder.verify(provinceDao).getRegionByName("Canada");
+        inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(8, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(request.getRequest().getIdCountry().toString(), diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(1).getType());
+        Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COST, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("50", diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_OBJECT, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("666", diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(5).getType());
+        Assert.assertEquals("quebec", diffEntity.getAttributes().get(5).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COLUMN, diffEntity.getAttributes().get(6).getType());
+        Assert.assertEquals("-1", diffEntity.getAttributes().get(6).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(7).getType());
+        Assert.assertEquals("2", diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

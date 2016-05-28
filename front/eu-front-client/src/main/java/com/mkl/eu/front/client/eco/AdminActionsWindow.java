@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -460,7 +461,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 if (counter != null) {
                     if (action.getType() == AdminActionTypeEnum.LF) {
                         CommonUtil.addOne(orderedFortresses,
-                                new ImmutablePair<>(MaintenanceUtil.getFortressLevelFromType(action.getCounterFaceType()), counter.getOwner().getProvince().startsWith("r")));
+                                new ImmutablePair<>(CounterUtil.getFortressLevelFromType(action.getCounterFaceType()), counter.getOwner().getProvince().startsWith("r")));
                     }
                     CommonUtil.subtractOne(orderedFortresses, getFortressKeyFromCounter(counter));
                     fortresses.remove(counter);
@@ -517,7 +518,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @return the key used for computing fortress maintenance. It is a Pair consisting of level and location (<code>true</code> for ROTW).
      */
     private Pair<Integer, Boolean> getFortressKeyFromCounter(Counter counter) {
-        return new ImmutablePair<>(MaintenanceUtil.getFortressLevelFromType(counter.getType()), counter.getOwner().getProvince().startsWith("r"));
+        return new ImmutablePair<>(CounterUtil.getFortressLevelFromType(counter.getType()), counter.getOwner().getProvince().startsWith("r"));
     }
 
     /**
@@ -632,7 +633,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         admAct.getType() == AdminActionTypeEnum.PU)
                 .collect(Collectors.toList());
 
-        Map<Boolean, Integer> currentPurchase = actions.stream().collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingInt(action -> MaintenanceUtil.getSizeFromType(action.getCounterFaceType()))));
+        Map<Boolean, Integer> currentPurchase = actions.stream().collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType()))));
         Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getPeriod().getBegin() <= game.getTurn() &&

@@ -9,6 +9,8 @@ import java.util.List;
  * @author MKL.
  */
 public class Tables {
+    /** List of periods. */
+    private List<Period> periods = new ArrayList<>();
     /** List of technologies. */
     private List<Tech> techs = new ArrayList<>();
     /** Foreign trade income tables. */
@@ -23,6 +25,16 @@ public class Tables {
     private List<Unit> units = new ArrayList<>();
     /** Actions limits of major powers. */
     private List<Limit> limits = new ArrayList<>();
+
+    /** @return the periods. */
+    public List<Period> getPeriods() {
+        return periods;
+    }
+
+    /** @param periods the periods to set. */
+    public void setPeriods(List<Period> periods) {
+        this.periods = periods;
+    }
 
     /** @return the techs. */
     public List<Tech> getTechs() {

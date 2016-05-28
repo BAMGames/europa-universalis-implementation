@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.EconomicUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
@@ -19,18 +20,18 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.tables.Limit;
-import com.mkl.eu.client.service.vo.tables.Tech;
-import com.mkl.eu.client.service.vo.tables.TradeIncome;
-import com.mkl.eu.client.service.vo.tables.Unit;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
+import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
+import com.mkl.eu.service.service.persistence.oe.country.DiscoveryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
@@ -72,6 +73,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** AdminAction DAO. */
     @Autowired
     private IAdminActionDao adminActionDao;
+    /** Country DAO. */
+    @Autowired
+    private IPlayableCountryDao playableCountryDao;
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
@@ -335,6 +339,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case ELT:
                 admAct = computeExceptionalTaxes(request, game, country);
                 break;
+            case COL:
+                admAct = computeColonisation(request, game, country);
+                break;
             default:
                 admAct = null;
                 break;
@@ -462,8 +469,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 }
             }
 
-            int actualLevel = MaintenanceUtil.getFortressLevelFromType(counter.getType());
-            int desiredLevel = MaintenanceUtil.getFortressLevelFromType(request.getRequest().getCounterFaceType());
+            int actualLevel = CounterUtil.getFortressLevelFromType(counter.getType());
+            int desiredLevel = CounterUtil.getFortressLevelFromType(request.getRequest().getCounterFaceType());
 
             failIfFalse(new CheckForThrow<Boolean>().setTest(desiredLevel > naturalLevel && desiredLevel < actualLevel).setCodeError(IConstantsServiceException.COUNTER_WRONG_LOWER_FORTRESS)
                     .setMsgFormat("{1}: {0} The fortress {2} of level {5} cannot be lowered to {3} (natural fortress: {4}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), desiredLevel, naturalLevel, actualLevel));
@@ -591,10 +598,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
         CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> StringUtils.equals(country.getName(), counter.getCountry()) && FORTRESS_TYPES.contains(counter.getType()));
         if (fortressCounter != null) {
-            actualLevel = MaintenanceUtil.getFortressLevelFromType(fortressCounter.getType());
+            actualLevel = CounterUtil.getFortressLevelFromType(fortressCounter.getType());
         }
 
-        int desiredLevel = MaintenanceUtil.getFortressLevelFromType(faceType);
+        int desiredLevel = CounterUtil.getFortressLevelFromType(faceType);
 
 
         Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
@@ -624,7 +631,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfFalse(new CheckForThrow<Boolean>().setTest(canPurchaseFortress).setCodeError(IConstantsServiceException.FORTRESS_CANT_PURCHASE)
                 .setMsgFormat("{1}: {0} The fortress {2} cannot be purchased because actual technology is {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, country.getLandTech()));
 
-        Integer fortressCost = 25 * (MaintenanceUtil.getFortressLevelFromType(faceType) - 1);
+        Integer fortressCost = 25 * (CounterUtil.getFortressLevelFromType(faceType) - 1);
         if (prov instanceof RotwProvinceEntity) {
             // Fortress 1 costs 25 ducats in rotw (not pertinent in Europe)
             if (fortressCost == 0) {
@@ -672,8 +679,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.PU);
 
-        Integer plannedSize = actions.stream().filter(action -> faces.contains(action.getCounterFaceType())).collect(Collectors.summingInt(action -> MaintenanceUtil.getSizeFromType(action.getCounterFaceType())));
-        Integer size = MaintenanceUtil.getSizeFromType(faceType);
+        Integer plannedSize = actions.stream().filter(action -> faces.contains(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
+        Integer size = CounterUtil.getSizeFromType(faceType);
         Integer maxPurchase = getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getType() == limitType &&
@@ -819,7 +826,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfNull(new CheckForThrow<>().setTest(type).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT));
 
-        failIfFalse(new CheckForThrow<Boolean>().setTest(EconomicUtil.isManufacture(type)).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+        failIfFalse(new CheckForThrow<Boolean>().setTest(CounterUtil.isManufacture(type)).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat("{1}: {0} The type {2} is not a manufacture.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, type));
 
 
@@ -842,7 +849,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         List<CounterEntity> counters = game.getStacks().stream().filter(stack -> StringUtils.equals(province, stack.getProvince())).flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.OWN
                         || counter.getType() == CounterFaceTypeEnum.CONTROL
-                        || EconomicUtil.isManufacture(counter.getType())).collect(Collectors.toList());
+                        || CounterUtil.isManufacture(counter.getType())).collect(Collectors.toList());
         String control = country.getName();
         // MNU to upgrade if it exists, or create if it doesn't
         CounterEntity mnu = null;
@@ -855,13 +862,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 owner = counter.getCountry();
             } else if (counter.getType() == type) {
                 mnu = counter;
-            } else if (EconomicUtil.isManufacture(counter.getType())) {
+            } else if (CounterUtil.isManufacture(counter.getType())) {
                 otherMnu = true;
             }
         }
 
         // If the MNU is already max, then it is the creation of a new MNU alongside the other one
-        if (mnu != null && (EconomicUtil.getManufactureLevel(mnu.getType()) == 2)) {
+        if (mnu != null && (CounterUtil.getManufactureLevel(mnu.getType()) == 2)) {
             mnu = null;
             otherMnu = true;
         }
@@ -874,7 +881,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         // New MNU ? Check placement and limits
         if (mnu == null) {
             Integer actualMnus = game.getStacks().stream().flatMap(stackEntity -> stackEntity.getCounters().stream())
-                    .filter(counterEntity -> StringUtils.equals(country.getName(), counterEntity.getCountry()) && EconomicUtil.isManufacture(counterEntity.getType())).collect(Collectors.summingInt(value -> 1));
+                    .filter(counterEntity -> StringUtils.equals(country.getName(), counterEntity.getCountry()) && CounterUtil.isManufacture(counterEntity.getType())).collect(Collectors.summingInt(value -> 1));
             Integer maxMnus = getTables().getLimits().stream().filter(
                     limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                             limit.getType() == LimitTypeEnum.MAX_MNU &&
@@ -935,7 +942,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
                 Set<String> provinces = economicalSheetDao.getOwnedAndControlledProvinces(country.getName(), game.getId()).keySet();
                 List<String> provincesWithMnu = game.getStacks().stream().flatMap(stackEntity -> stackEntity.getCounters().stream())
-                        .filter(counter -> StringUtils.equals(country.getName(), counter.getCountry()) && EconomicUtil.isManufacture(counter.getType()))
+                        .filter(counter -> StringUtils.equals(country.getName(), counter.getCountry()) && CounterUtil.isManufacture(counter.getType()))
                         .map(counter -> counter.getOwner().getProvince())
                         .collect(Collectors.toList());
 
@@ -1116,6 +1123,162 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setCountry(country);
         admAct.setStatus(AdminActionStatusEnum.PLANNED);
         admAct.setTurn(game.getTurn());
+        admAct.setBonus(bonus);
+
+        return admAct;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type Colonisation.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeColonisation(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.COL);
+
+        Integer plannedCols = actions.stream().collect(Collectors.summingInt(action -> 1));
+        Integer maxCols = getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getType() == LimitTypeEnum.ACTION_COL &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(plannedCols < maxCols).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), plannedCols, maxCols));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
+
+        String province = request.getRequest().getProvince();
+        failIfEmpty(new CheckForThrow<String>().setTest(province).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT));
+
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+
+        failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(prov instanceof RotwProvinceEntity).setCodeError(IConstantsServiceException.PROVINCE_WRONG_TYPE)
+                .setMsgFormat("{1}: {0} The province {2} of type {3} should be of type {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, prov.getClass(), RotwProvinceEntity.class));
+
+        List<CounterEntity> counters = game.getStacks().stream().filter(stack -> StringUtils.equals(province, stack.getProvince())).flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.COLONY_MINUS
+                        || counter.getType() == CounterFaceTypeEnum.COLONY_PLUS || CounterUtil.isArsenal(counter.getType())
+                        || counter.getType() == CounterFaceTypeEnum.MISSION).collect(Collectors.toList());
+
+        CounterEntity colony = null;
+        boolean arsenal = false;
+        boolean mission = false;
+        for (CounterEntity counter : counters) {
+            if (counter.getType() == CounterFaceTypeEnum.COLONY_MINUS || counter.getType() == CounterFaceTypeEnum.COLONY_PLUS) {
+                colony = counter;
+            } else if (counter.getType() == CounterFaceTypeEnum.MISSION) {
+                mission = true;
+            } else if (CounterUtil.isArsenal(counter.getType())) {
+                arsenal = true;
+            }
+        }
+
+        boolean provinceOk = colony == null || StringUtils.equals(country.getName(), colony.getCountry());
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL)
+                .setMsgFormat("{1}: {0} The colony located in {2} is not owned by {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+
+        //noinspection ConstantConditions
+        RotwProvinceEntity rotwProv = (RotwProvinceEntity) prov;
+
+        Period period = CommonUtil.findFirst(getTables().getPeriods(), per -> per.getBegin() <= game.getTurn() && per.getEnd() >= game.getTurn());
+        if (period != null && period.getName().compareTo(Period.PERIOD_V) <= 0 && colony != null) {
+            GoldEntity gold = provinceDao.getGoldInProvince(province);
+            int level = 0;
+            if (colony.getEstablishment() != null && colony.getEstablishment().getLevel() != null) {
+                level = colony.getEstablishment().getLevel();
+            }
+            provinceOk = level < 2 || gold != null || mission || arsenal;
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PIONEERING)
+                    .setMsgFormat("{1}: {0} The colony located in {2} and of level {3} can't be upgraded because of pioneering rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, level));
+            // TODO countries and economical events rules
+        }
+
+        List<String> discoveries = country.getDiscoveries().stream().filter(d -> d.getStack() == null && d.getTurn() != null).map(DiscoveryEntity::getProvince).collect(Collectors.toList());
+        List<String> forts = new ArrayList<>();
+        List<String> sources = playableCountryDao.getOwnedProvinces(country.getName(), game.getId());
+
+        game.getStacks().stream().flatMap(s -> s.getCounters().stream())
+                .filter(c -> StringUtils.equals(country.getName(), c.getCountry()) &&
+                        (c.getType() == CounterFaceTypeEnum.TRADING_POST_PLUS ||
+                                c.getType() == CounterFaceTypeEnum.TRADING_POST_MINUS ||
+                                c.getType() == CounterFaceTypeEnum.COLONY_PLUS ||
+                                c.getType() == CounterFaceTypeEnum.COLONY_MINUS ||
+                                c.getType() == CounterFaceTypeEnum.FORT))
+                .forEach(c -> {
+                    if (c.getType() == CounterFaceTypeEnum.FORT) {
+                        forts.add(c.getOwner().getProvince());
+                    } else {
+                        sources.add(c.getOwner().getProvince());
+                    }
+                });
+        provinceOk = oeUtil.canSettle(rotwProv, discoveries, sources, forts);
+        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.SETTLEMENTS)
+                .setMsgFormat("{1}: {0} The establishment located in {2} can't be settled because of settlements rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+
+        if (colony != null) {
+            boolean sea = false;
+            for (BorderEntity border : prov.getBorders()) {
+                if (border.getProvinceTo().getTerrain() == TerrainEnum.SEA) {
+                    sea = true;
+                    break;
+                }
+            }
+
+            if (!sea) {
+                List<String> countries = adminActionDao.getCountriesInlandAdvance(province, game.getId());
+
+                provinceOk = countries.contains(country.getName());
+                failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.INLAND_ADVANCE)
+                        .setMsgFormat("{1}: {0} The colony located in {2} can't be improved because of inland advance rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+            }
+        }
+
+        // TODO Native empires, VI.7.4.4
+
+        RegionEntity region = provinceDao.getRegionByName(rotwProv.getRegion());
+        Integer column = country.getFtiRotw() - region.getDifficulty();
+
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+        column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+
+        int bonus = -country.getColonisationPenalty();
+        if (colony != null) {
+            bonus += 2;
+        }
+        OtherForcesEntity natives = CommonUtil.findFirst(game.getOtherForces(),
+                o -> o.getType() == OtherForcesTypeEnum.NATIVES && StringUtils.equals(province, o.getProvince()));
+        if (natives != null && !natives.isReplenish() && natives.getNbLd() == 0 && natives.getNbLde() == 0) {
+            bonus += 2;
+        }
+        // TODO battles
+        // TODO leaders
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        if (colony != null) {
+            admAct.setIdObject(colony.getId());
+        }
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        admAct.setColumn(column);
         admAct.setBonus(bonus);
 
         return admAct;

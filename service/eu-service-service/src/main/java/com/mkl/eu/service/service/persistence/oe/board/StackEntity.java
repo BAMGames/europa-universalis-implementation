@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.board;
 
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.country.DiscoveryEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -22,6 +23,10 @@ public class StackEntity implements IEntity, Serializable {
     private String province;
     /** Counters of the stack. */
     private List<CounterEntity> counters = new ArrayList<>();
+    /**
+     * Discoveries of the stack (the one being repatriated).
+     */
+    private List<DiscoveryEntity> discoveries = new ArrayList<>();
     /** Game of the entity. */
     private GameEntity game;
 
@@ -63,6 +68,17 @@ public class StackEntity implements IEntity, Serializable {
     /** @param counters the counters to set. */
     public void setCounters(List<CounterEntity> counters) {
         this.counters = counters;
+    }
+
+    /** @return the discoveries. */
+    @OneToMany(mappedBy = "stack", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<DiscoveryEntity> getDiscoveries() {
+        return discoveries;
+    }
+
+    /** @param discoveries the discoveries to set. */
+    public void setDiscoveries(List<DiscoveryEntity> discoveries) {
+        this.discoveries = discoveries;
     }
 
     /** @return the game. */

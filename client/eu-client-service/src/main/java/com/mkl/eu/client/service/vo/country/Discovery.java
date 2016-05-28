@@ -13,9 +13,9 @@ public class Discovery extends EuObject {
     private PlayableCountry country;
     /** Province of the discovery. */
     private String province;
-    /** Stack where the discovery is if being rappatried. */
-    private Stack owner;
-    /** Turn it was rappatried in a national province (<code>null</code> if on going). */
+    /** Stack where the discovery is if being repatriated. */
+    private Stack stack;
+    /** Turn it was repatriated in a national province (<code>null</code> if on going). */
     private Integer turn;
 
     /**
@@ -47,17 +47,17 @@ public class Discovery extends EuObject {
     }
 
     /**
-     * @return the owner.
+     * @return the stack.
      */
-    public Stack getOwner() {
-        return owner;
+    public Stack getStack() {
+        return stack;
     }
 
     /**
-     * @param owner the owner to set.
+     * @param stack the stack to set.
      */
-    public void setOwner(Stack owner) {
-        this.owner = owner;
+    public void setStack(Stack stack) {
+        this.stack = stack;
     }
 
     /**

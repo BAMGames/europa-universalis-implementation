@@ -32,6 +32,8 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     private int fti;
     /** FTI of the country in the rotw. */
     private int ftiRotw;
+    /** Penalty for colonisation. */
+    private int colonisationPenalty;
     /** Current land technology of the country. */
     private String landTech;
     /** Current naval technology of the country. */
@@ -50,6 +52,10 @@ public class PlayableCountryEntity implements IEntity, Serializable {
      * Monarchs of the country (including the actual).
      */
     private List<MonarchEntity> monarchs = new ArrayList<>();
+    /**
+     * Discoveries of the country.
+     */
+    private List<DiscoveryEntity> discoveries = new ArrayList<>();
     /** Game of the entity. */
     private GameEntity game;
 
@@ -126,6 +132,17 @@ public class PlayableCountryEntity implements IEntity, Serializable {
         this.ftiRotw = ftiRotw;
     }
 
+    /** @return the colonisationPenalty. */
+    @Column(name = "COL_MALUS")
+    public int getColonisationPenalty() {
+        return colonisationPenalty;
+    }
+
+    /** @param colonisationPenalty the colonisationPenalty to set. */
+    public void setColonisationPenalty(int colonisationPenalty) {
+        this.colonisationPenalty = colonisationPenalty;
+    }
+
     /** @return the landTech. */
     @Column(name = "T_LAND_TECH")
     public String getLandTech() {
@@ -191,6 +208,17 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     /** @param monarchs the monarchs to set. */
     public void setMonarchs(List<MonarchEntity> monarchs) {
         this.monarchs = monarchs;
+    }
+
+    /** @return the discoveries. */
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<DiscoveryEntity> getDiscoveries() {
+        return discoveries;
+    }
+
+    /** @param discoveries the discoveries to set. */
+    public void setDiscoveries(List<DiscoveryEntity> discoveries) {
+        this.discoveries = discoveries;
     }
 
     /** @return the game. */

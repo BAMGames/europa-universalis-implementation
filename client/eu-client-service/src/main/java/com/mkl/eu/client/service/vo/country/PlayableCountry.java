@@ -46,6 +46,8 @@ public class PlayableCountry extends EuObject {
     private int fti;
     /** FTI of the country in the ROTW. */
     private int ftiRotw;
+    /** Penalty for colonisation. */
+    private int colonisationPenalty;
     /** Current land technology of the country. */
     private String landTech;
     /** Current naval technology of the country. */
@@ -127,6 +129,16 @@ public class PlayableCountry extends EuObject {
     /** @param ftiRotw the ftiRotw to set. */
     public void setFtiRotw(int ftiRotw) {
         this.ftiRotw = ftiRotw;
+    }
+
+    /** @return the colonisationPenalty. */
+    public int getColonisationPenalty() {
+        return colonisationPenalty;
+    }
+
+    /** @param colonisationPenalty the colonisationPenalty to set. */
+    public void setColonisationPenalty(int colonisationPenalty) {
+        this.colonisationPenalty = colonisationPenalty;
     }
 
     /** @return the landTech. */

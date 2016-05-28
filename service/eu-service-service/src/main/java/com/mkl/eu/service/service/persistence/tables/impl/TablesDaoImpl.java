@@ -41,6 +41,15 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
 
     /** {@inheritDoc} */
     @Override
+    public List<PeriodEntity> getPeriods() {
+        Criteria criteria = getSession().createCriteria(PeriodEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<TechEntity> getTechs() {
         Criteria criteria = getSession().createCriteria(TechEntity.class);
 

@@ -174,4 +174,83 @@
 		;
 		]]>
 	</entry>
+	<entry key="game.ownedProvinces">
+		<![CDATA[
+			select
+				p.NAME as PROVINCE
+			from r_province_eu peu
+				inner join r_province p on peu.id = p.id
+			where R_COUNTRY = ':countryName'
+				and  p.name not in
+					(select
+						s.R_PROVINCE
+					from counter c
+						inner join stack s on c.ID_STACK = s.id
+					where c.R_COUNTRY <> ':countryName'
+						and s.ID_GAME = :idGame
+						and (c.TYPE = 'OWN')
+					)
+			UNION
+			select
+				s.R_PROVINCE as PROVINCE
+			from counter c
+				inner join stack s on c.ID_STACK = s.id
+				inner join r_province p on p.name = s.r_province
+				inner join r_province_eu peu on peu.id = p.id
+			where c.R_COUNTRY = ':countryName'
+				and s.ID_GAME = :idGame
+				and c.type = 'OWN'
+			;
+		]]>
+	</entry>
+	<entry key="colony.inlandAdvance.rotw">
+		<![CDATA[
+			select
+				distinct c.R_COUNTRY
+			FROM r_province_rotw pr
+  				INNER JOIN r_province p ON pr.id = p.id
+ 				LEFT OUTER JOIN STACK s ON s.R_PROVINCE = p.NAME
+ 				LEFT OUTER JOIN COUNTER c ON c.ID_STACK = s.ID
+    		WHERE s.ID_GAME = :idGame
+    			AND (c.TYPE = 'COLONY_PLUS' OR c.TYPE = 'MISSION')
+    			AND pr.region IN (
+  					SELECT
+  						DISTINCT pr1.region
+  					FROM r_province_rotw pr
+    					INNER JOIN r_province p ON pr.id = p.id
+    					INNER JOIN r_border b1 ON b1.ID_R_PROVINCE_FROM = p.ID
+    					INNER JOIN r_province p1 ON b1.ID_R_PROVINCE_TO = p1.ID
+    					INNER JOIN r_province_rotw pr1 ON pr1.ID = p1.ID
+  					WHERE pr.region = (
+    					SELECT
+    						pr.REGION
+    				FROM r_province_rotw pr
+      					INNER JOIN r_province p ON pr.id = p.id
+    				WHERE p.name = ':province'
+  					)
+				)
+			;
+		]]>
+	</entry>
+	<entry key="colony.inlandAdvance.eu">
+		<![CDATA[
+			SELECT
+				DISTINCT IFNULL(c.R_COUNTRY, pe1.R_COUNTRY) as owner
+			FROM r_province_rotw pr
+  				INNER JOIN r_province p ON pr.id = p.id
+  				INNER JOIN r_border b1 ON b1.ID_R_PROVINCE_FROM = p.ID
+  				INNER JOIN r_province p1 ON b1.ID_R_PROVINCE_TO = p1.ID
+  				INNER JOIN r_province_eu pe1 ON pe1.ID = p1.ID
+  				LEFT OUTER JOIN stack s ON s.R_PROVINCE = p1.NAME AND s.ID_GAME = :idGame
+  				LEFT OUTER JOIN counter c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
+			WHERE pr.region = (
+  				SELECT
+  					pr.REGION
+  				FROM r_province_rotw pr
+    				INNER JOIN r_province p ON pr.id = p.id
+  				WHERE p.name = ':province'
+				)
+			;
+		]]>
+	</entry>
 </properties>

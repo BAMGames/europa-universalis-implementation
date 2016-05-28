@@ -22,6 +22,11 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
     Integer getTradeIncome(Integer inputValue, Integer countryValue, boolean foreignTrade);
 
     /**
+     * @return the periods tables.
+     */
+    List<PeriodEntity> getPeriods();
+
+    /**
      * @return the technologies tables.
      */
     List<TechEntity> getTechs();

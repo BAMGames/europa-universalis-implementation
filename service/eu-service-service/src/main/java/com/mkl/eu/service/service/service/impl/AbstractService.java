@@ -98,6 +98,8 @@ public abstract class AbstractService implements INameConstants {
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
 
+        List<PeriodEntity> periods = tablesDao.getPeriods();
+        tablesMapping.fillPeriodsTables(periods, objectsCreated, TABLES);
         List<TradeIncomeEntity> tradeTables = tablesDao.readAll();
         tablesMapping.fillTradeIncomeTables(tradeTables, TABLES);
         List<TechEntity> techs = tablesDao.getTechs();

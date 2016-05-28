@@ -1,7 +1,6 @@
 package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.InvestmentEnum;
 
 /**
@@ -114,85 +113,5 @@ public final class EconomicUtil {
         }
 
         return bonus;
-    }
-
-    /**
-     * @param type of the counter to test.
-     * @return <code>true</code> if the counter face type is the one of a manufacture, <code>false</code> otherwise.
-     */
-    public static boolean isManufacture(CounterFaceTypeEnum type) {
-        boolean mnu = false;
-
-        if (type != null) {
-            switch (type) {
-                case MNU_ART_MINUS:
-                case MNU_ART_PLUS:
-                case MNU_CEREALS_MINUS:
-                case MNU_CEREALS_PLUS:
-                case MNU_CLOTHES_MINUS:
-                case MNU_CLOTHES_PLUS:
-                case MNU_FISH_MINUS:
-                case MNU_FISH_PLUS:
-                case MNU_INSTRUMENTS_MINUS:
-                case MNU_INSTRUMENTS_PLUS:
-                case MNU_METAL_MINUS:
-                case MNU_METAL_PLUS:
-                case MNU_METAL_SCHLESIEN_MINUS:
-                case MNU_METAL_SCHLESIEN_PLUS:
-                case MNU_SALT_MINUS:
-                case MNU_SALT_PLUS:
-                case MNU_WINE_MINUS:
-                case MNU_WINE_PLUS:
-                case MNU_WOOD_MINUS:
-                case MNU_WOOD_PLUS:
-                    mnu = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return mnu;
-    }
-
-    /**
-     * @param type of the counter to test.
-     * @return the level of the manufacture (0 if the type is not a manufacture).
-     */
-    public static int getManufactureLevel(CounterFaceTypeEnum type) {
-        int level = 0;
-
-        if (type != null) {
-            switch (type) {
-                case MNU_ART_MINUS:
-                case MNU_CEREALS_MINUS:
-                case MNU_CLOTHES_MINUS:
-                case MNU_FISH_MINUS:
-                case MNU_INSTRUMENTS_MINUS:
-                case MNU_METAL_MINUS:
-                case MNU_METAL_SCHLESIEN_MINUS:
-                case MNU_SALT_MINUS:
-                case MNU_WINE_MINUS:
-                case MNU_WOOD_MINUS:
-                    level = 1;
-                    break;
-                case MNU_ART_PLUS:
-                case MNU_CEREALS_PLUS:
-                case MNU_CLOTHES_PLUS:
-                case MNU_FISH_PLUS:
-                case MNU_INSTRUMENTS_PLUS:
-                case MNU_METAL_PLUS:
-                case MNU_METAL_SCHLESIEN_PLUS:
-                case MNU_SALT_PLUS:
-                case MNU_WINE_PLUS:
-                case MNU_WOOD_PLUS:
-                    level = 2;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return level;
     }
 }

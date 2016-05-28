@@ -112,6 +112,22 @@ public class TablesMapping extends AbstractMapping {
     }
 
     /**
+     * Fill the periods tables.
+     *
+     * @param sources        List of periods entity.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
+     * @param tables         the target tables.
+     */
+    public void fillPeriodsTables(List<PeriodEntity> sources, final Map<Class<?>, Map<Long, Object>> objectsCreated, Tables tables) {
+        if (tables != null && sources != null) {
+            for (PeriodEntity source : sources) {
+                Period target = storeVo(Period.class, source, objectsCreated, (ITransformation<PeriodEntity, Period>) this::oeToVo);
+                tables.getPeriods().add(target);
+            }
+        }
+    }
+
+    /**
      * OE to VO.
      *
      * @param source object source.

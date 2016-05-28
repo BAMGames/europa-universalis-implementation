@@ -275,4 +275,47 @@ public interface IConstantsServiceException {
      * </p>
      */
     String INSUFICIENT_STABILITY = "exception.eu.insufficient_stability";
+
+    /**
+     * <p>
+     * Exception thrown when trying to improve a colony contradicting pioneering rules.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province where the colony would have improved.</li>
+     * <li>2: actual level of the colony</li>
+     * </ul>
+     * </p>
+     */
+    String PIONEERING = "exception.eu.pioneering";
+
+    /**
+     * <p>
+     * Exception thrown when trying to improve or settle a colony or a trading post contradicting settlements rules.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province where the establishment would have settled.</li>
+     * </ul>
+     * </p>
+     */
+    String SETTLEMENTS = "exception.eu.settlements";
+
+    /**
+     * <p>
+     * Exception thrown when trying to improve a colony contradicting inland advance rules.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province where the establishment would have settled.</li>
+     * </ul>
+     * </p>
+     */
+    String INLAND_ADVANCE = "exception.eu.inland_advance";
 }

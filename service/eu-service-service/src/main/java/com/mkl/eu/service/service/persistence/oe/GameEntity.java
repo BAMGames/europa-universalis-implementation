@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.persistence.oe;
 
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
@@ -32,6 +33,8 @@ public class GameEntity implements IEntity, Serializable {
     private List<StackEntity> stacks = new ArrayList<>();
     /** Trade fleets of the game. */
     private List<TradeFleetEntity> tradeFleets = new ArrayList<>();
+    /** Special forces of the game (native, militia,...). */
+    private List<OtherForcesEntity> otherForces = new ArrayList<>();
     /** Turn of the game. */
     private Integer turn;
     /** Status of the game. */
@@ -106,6 +109,17 @@ public class GameEntity implements IEntity, Serializable {
     /** @param tradeFleets the tradeFleets to set. */
     public void setTradeFleets(List<TradeFleetEntity> tradeFleets) {
         this.tradeFleets = tradeFleets;
+    }
+
+    /** @return the otherForces. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<OtherForcesEntity> getOtherForces() {
+        return otherForces;
+    }
+
+    /** @param otherForces the otherForces to set. */
+    public void setOtherForces(List<OtherForcesEntity> otherForces) {
+        this.otherForces = otherForces;
     }
 
     /** @return the turn. */

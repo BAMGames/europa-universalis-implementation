@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.board;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -22,6 +23,8 @@ public class CounterEntity implements IEntity, Serializable {
     private StackEntity owner;
     /** Type of the counter. */
     private CounterFaceTypeEnum type;
+    /** If the counter is an establishment, all the info about. */
+    private EstablishmentEntity establishment;
 
     /** @return the id. */
     @Id
@@ -69,5 +72,16 @@ public class CounterEntity implements IEntity, Serializable {
     /** @param type the type to set. */
     public void setType(CounterFaceTypeEnum type) {
         this.type = type;
+    }
+
+    /** @return the establishment. */
+    @OneToOne(mappedBy = "counter")
+    public EstablishmentEntity getEstablishment() {
+        return establishment;
+    }
+
+    /** @param establishment the establishment to set. */
+    public void setEstablishment(EstablishmentEntity establishment) {
+        this.establishment = establishment;
     }
 }
