@@ -11,7 +11,6 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
-import com.mkl.eu.service.service.mapping.tables.TablesMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
@@ -19,8 +18,6 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.*;
-import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -76,40 +73,12 @@ public abstract class AbstractService implements INameConstants {
     /** Chat mapping. */
     @Autowired
     protected ChatMapping chatMapping;
-    /** Tables DAO. */
-    @Autowired
-    private ITablesDao tablesDao;
-    /** Tables Mapping. */
-    @Autowired
-    private TablesMapping tablesMapping;
 
     /**
      * @return the Tables of the game.
      */
     protected Tables getTables() {
         return TABLES;
-    }
-
-    /**
-     * Cache the tables.
-     */
-    protected void cacheTables() {
-        TABLES = new Tables();
-
-        Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
-
-        List<PeriodEntity> periods = tablesDao.getPeriods();
-        tablesMapping.fillPeriodsTables(periods, objectsCreated, TABLES);
-        List<TradeIncomeEntity> tradeTables = tablesDao.readAll();
-        tablesMapping.fillTradeIncomeTables(tradeTables, TABLES);
-        List<TechEntity> techs = tablesDao.getTechs();
-        tablesMapping.fillTechsTables(techs, objectsCreated, TABLES);
-        List<BasicForceTableEntity> basicForces = tablesDao.getBasicForces();
-        tablesMapping.fillBasicForcesTables(basicForces, objectsCreated, TABLES);
-        List<UnitEntity> units = tablesDao.getUnits();
-        tablesMapping.fillUnitsTables(units, objectsCreated, TABLES);
-        List<LimitTableEntity> limits = tablesDao.getLimits();
-        tablesMapping.fillLimitsTables(limits, objectsCreated, TABLES);
     }
 
     /**

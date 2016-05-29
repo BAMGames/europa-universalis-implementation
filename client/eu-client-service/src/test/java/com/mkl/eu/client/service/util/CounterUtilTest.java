@@ -15,6 +15,56 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 public class CounterUtilTest {
 
     @Test
+    public void testSizeFromType() {
+        Assert.assertEquals(0, CounterUtil.getSizeFromType(null));
+        Assert.assertEquals(0, CounterUtil.getSizeFromType(CounterFaceTypeEnum.ARSENAL_1_ST_PETER));
+
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.NAVAL_GALLEY));
+
+        Assert.assertEquals(2, CounterUtil.getSizeFromType(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(2, CounterUtil.getSizeFromType(CounterFaceTypeEnum.ARMY_MINUS));
+
+        Assert.assertEquals(4, CounterUtil.getSizeFromType(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(4, CounterUtil.getSizeFromType(CounterFaceTypeEnum.ARMY_PLUS));
+    }
+
+    @Test
+    public void testFortressLevel() {
+        Assert.assertEquals(0, CounterUtil.getFortressLevelFromType(null));
+        Assert.assertEquals(0, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARMY_PLUS));
+
+        Assert.assertEquals(0, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.FORT));
+        Assert.assertEquals(0, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_0_ST_PETER));
+
+        Assert.assertEquals(1, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.FORTRESS_1));
+        Assert.assertEquals(1, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_1_ST_PETER));
+
+        Assert.assertEquals(2, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.FORTRESS_2));
+        Assert.assertEquals(2, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_2_ST_PETER));
+        Assert.assertEquals(2, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_2));
+        Assert.assertEquals(2, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR));
+        Assert.assertEquals(2, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_2_SEBASTOPOL));
+
+        Assert.assertEquals(3, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.FORTRESS_3));
+        Assert.assertEquals(3, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_3_ST_PETER));
+        Assert.assertEquals(3, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_3));
+        Assert.assertEquals(3, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_3_GIBRALTAR));
+        Assert.assertEquals(3, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_3_SEBASTOPOL));
+
+        Assert.assertEquals(4, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.FORTRESS_4));
+        Assert.assertEquals(4, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_4_ST_PETER));
+        Assert.assertEquals(4, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_4));
+
+        Assert.assertEquals(5, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.FORTRESS_5));
+        Assert.assertEquals(5, CounterUtil.getFortressLevelFromType(CounterFaceTypeEnum.ARSENAL_5_ST_PETER));
+    }
+
+    @Test
     public void testManufacture() {
         Assert.assertFalse(CounterUtil.isManufacture(null));
         Assert.assertTrue(CounterUtil.isManufacture(CounterFaceTypeEnum.MNU_ART_MINUS));

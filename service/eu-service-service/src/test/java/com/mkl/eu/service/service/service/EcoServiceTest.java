@@ -3210,6 +3210,10 @@ public class EcoServiceTest {
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARSENAL_2);
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(2).setType(CounterFaceTypeEnum.MISSION);
+        game.getStacks().get(1).getCounters().get(2).setCountry("france");
+        game.getStacks().get(1).getCounters().get(2).setOwner(game.getStacks().get(1));
         EstablishmentEntity establishment = new EstablishmentEntity();
         establishment.setLevel(2);
         game.getStacks().get(1).getCounters().get(0).setEstablishment(establishment);
@@ -3588,6 +3592,18 @@ public class EcoServiceTest {
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION);
         game.getStacks().get(2).getCounters().get(1).setCountry("angleterre");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(3).setProvince("carolina");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.FORT);
+        game.getStacks().get(3).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().get(3).getCounters().get(0).setOwner(game.getStacks().get(3));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(4).setProvince("terreneuve");
+        game.getStacks().get(4).getCounters().add(new CounterEntity());
+        game.getStacks().get(4).getCounters().get(0).setType(CounterFaceTypeEnum.FORT);
+        game.getStacks().get(4).getCounters().get(0).setCountry("france");
+        game.getStacks().get(4).getCounters().get(0).setOwner(game.getStacks().get(4));
         EstablishmentEntity establishment = new EstablishmentEntity();
         establishment.setLevel(2);
         game.getStacks().get(1).getCounters().get(0).setEstablishment(establishment);
@@ -3637,10 +3653,13 @@ public class EcoServiceTest {
         sources.add("Lyonnais");
         when(playableCountryDao.getOwnedProvinces("france", 12L)).thenReturn(sources);
 
+        List<String> forts = new ArrayList<>();
+        forts.add("terreneuve");
+
         List<String> discoveries = new ArrayList<>();
         discoveries.add("atlantique");
         discoveries.add("quebec");
-        when(oeUtil.canSettle(quebec, discoveries, sources, new ArrayList<>())).thenReturn(true);
+        when(oeUtil.canSettle(quebec, discoveries, sources, forts)).thenReturn(true);
 
         when(adminActionDao.countOtherTpsInRegion("france", "Canada", 12L)).thenReturn(3);
 
@@ -3675,7 +3694,7 @@ public class EcoServiceTest {
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.TP);
         inOrder.verify(provinceDao).getProvinceByName("quebec");
         inOrder.verify(playableCountryDao).getOwnedProvinces("france", 12L);
-        inOrder.verify(oeUtil).canSettle(quebec, discoveries, sources, new ArrayList<>());
+        inOrder.verify(oeUtil).canSettle(quebec, discoveries, sources, forts);
         inOrder.verify(provinceDao).getRegionByName("Canada");
         inOrder.verify(adminActionDao).countOtherTpsInRegion("france", "Canada", 12L);
         inOrder.verify(adminActionDao).create(anyObject());
