@@ -185,6 +185,23 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when the action would create a counter that is already at his limit.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the counter</li>
+     * <li>2: country performing the administrative action</li>
+     * <li>3: number of counter of same type already created</li>
+     * <li>4: limit of counter of this type for this country</li>
+     * </ul>
+     * </p>
+     */
+    String COUNTER_LIMIT_EXCEED = "exception.eu.admin_action.counter_limit_exceed";
+
+    /**
+     * <p>
      * Exception thrown when a province type is unexpected.
      * </p>
      * <p>

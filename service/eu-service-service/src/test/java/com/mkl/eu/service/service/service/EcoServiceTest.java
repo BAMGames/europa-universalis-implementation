@@ -2887,6 +2887,14 @@ public class EcoServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.ACTION_COL);
         limits.add(limit);
+        Limit limitCol = new Limit();
+        limitCol.setCountry("france");
+        limitCol.setPeriod(new Period());
+        limitCol.getPeriod().setBegin(1);
+        limitCol.getPeriod().setEnd(6);
+        limitCol.setNumber(1);
+        limitCol.setType(LimitTypeEnum.MAX_COL);
+        limits.add(limitCol);
         tables.setLimits(limits);
         List<Period> periods = new ArrayList<>();
         Period period = new Period();
@@ -2985,6 +2993,17 @@ public class EcoServiceTest {
             Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
         }
 
+        request.getRequest().setProvince("terreneuve");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because there the number of counter is reached");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        limitCol.setNumber(2);
         request.getRequest().setProvince("virginia");
 
         try {
@@ -3410,6 +3429,14 @@ public class EcoServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.ACTION_TP);
         limits.add(limit);
+        Limit limitCol = new Limit();
+        limitCol.setCountry("france");
+        limitCol.setPeriod(new Period());
+        limitCol.getPeriod().setBegin(1);
+        limitCol.getPeriod().setEnd(6);
+        limitCol.setNumber(0);
+        limitCol.setType(LimitTypeEnum.MAX_TP);
+        limits.add(limitCol);
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
 
@@ -3498,6 +3525,16 @@ public class EcoServiceTest {
         }
 
         request.getRequest().setProvince("virginia");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because there the number of counter is reached");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        limitCol.setNumber(2);
 
         try {
             economicService.addAdminAction(request);

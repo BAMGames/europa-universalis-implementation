@@ -55,6 +55,8 @@ public abstract class AbstractService implements INameConstants {
     public static final String MSG_NOT_SAME_STACK = "{1}: {0} / The stack should be another one.";
     /** Error message when an action is not authorized. */
     public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action. Should be {3}.";
+    /** Error message when a counter limit would exceed. */
+    public static final String MSG_COUNTER_LIMIT_EXCEED = "{1}: {0} The counter type {2} can''t be created by {3} because country limits were exceeded ({4}/{5}).";
     /** Socket Handler. */
     @Autowired
     private SocketHandler socketHandler;

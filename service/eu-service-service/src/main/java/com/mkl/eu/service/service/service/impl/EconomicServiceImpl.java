@@ -892,8 +892,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                             limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
 
             failIfFalse(new CheckForThrow<Boolean>().setTest(actualMnus < maxMnus + 2).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
-                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).")
-                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.MNU, country.getName(), actualMnus, maxMnus));
+                    .setMsgFormat(MSG_COUNTER_LIMIT_EXCEED)
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, country.getName(), actualMnus, maxMnus));
 
             // Cereals manufactures on plains
             provinceOk = (type != CounterFaceTypeEnum.MNU_CEREALS_MINUS && type != CounterFaceTypeEnum.MNU_CEREALS_PLUS)
@@ -1113,7 +1113,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         int stab = oeUtil.getStability(game, country.getName());
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(stab > -3).setCodeError(IConstantsServiceException.INSUFICIENT_STABILITY)
-                .setMsgFormat("{1}: {0} The stability of the country {1} is too low. Actual: {2}, minimum: {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName(), stab, -2));
+                .setMsgFormat("{1}: {0} The stability of the country {2} is too low. Actual: {3}, minimum: {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName(), stab, -2));
 
         // TODO war no loss of stab
         stab--;
@@ -1191,6 +1191,22 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL)
                 .setMsgFormat("{1}: {0} The colony located in {2} is not owned by {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+
+        if (colony == null) {
+            Integer cols = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> StringUtils.equals(country.getName(), counter.getCountry())
+                            && (counter.getType() == CounterFaceTypeEnum.COLONY_MINUS || counter.getType() == CounterFaceTypeEnum.COLONY_PLUS))
+                    .collect(Collectors.summingInt(c -> 1));
+            Integer maxColCounters = getTables().getLimits().stream().filter(
+                    limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                            limit.getType() == LimitTypeEnum.MAX_COL &&
+                            limit.getPeriod().getBegin() <= game.getTurn() &&
+                            limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(cols < maxColCounters).setCodeError(IConstantsServiceException.COUNTER_LIMIT_EXCEED)
+                    .setMsgFormat(MSG_COUNTER_LIMIT_EXCEED).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterFaceTypeEnum.COLONY_MINUS, country.getName(), cols, maxColCounters));
+
+        }
 
         //noinspection ConstantConditions
         RotwProvinceEntity rotwProv = (RotwProvinceEntity) prov;
@@ -1319,6 +1335,22 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     && StringUtils.equals(country.getName(), counter.getCountry())) {
                 tp = counter;
             }
+        }
+
+        if (tp == null) {
+            Integer tps = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> StringUtils.equals(country.getName(), counter.getCountry())
+                            && (counter.getType() == CounterFaceTypeEnum.TRADING_POST_MINUS || counter.getType() == CounterFaceTypeEnum.TRADING_POST_PLUS))
+                    .collect(Collectors.summingInt(c -> 1));
+            Integer maxTpCounters = getTables().getLimits().stream().filter(
+                    limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                            limit.getType() == LimitTypeEnum.MAX_TP &&
+                            limit.getPeriod().getBegin() <= game.getTurn() &&
+                            limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(tps < maxTpCounters).setCodeError(IConstantsServiceException.COUNTER_LIMIT_EXCEED)
+                    .setMsgFormat(MSG_COUNTER_LIMIT_EXCEED).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterFaceTypeEnum.TRADING_POST_MINUS, country.getName(), tps, maxTpCounters));
+
         }
 
         boolean provinceOk = colony == null || StringUtils.equals(country.getName(), colony.getCountry());
