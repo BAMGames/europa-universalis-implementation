@@ -84,4 +84,26 @@ public class CounterUtilTest {
         Assert.assertTrue(CounterUtil.isArsenal(CounterFaceTypeEnum.ARSENAL_5_ST_PETER));
         Assert.assertFalse(CounterUtil.isArsenal(CounterFaceTypeEnum.ARMY_MINUS));
     }
+
+    @Test
+    public void testForce() {
+        Assert.assertFalse(CounterUtil.isForce(null));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.FORT));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.TRADING_POST_MINUS));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.TRADING_POST_PLUS));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+        Assert.assertFalse(CounterUtil.isForce(CounterFaceTypeEnum.ARSENAL_2));
+    }
 }

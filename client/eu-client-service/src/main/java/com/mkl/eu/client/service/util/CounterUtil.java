@@ -224,10 +224,10 @@ public final class CounterUtil {
 
     /**
      * @param type of the counter to test.
-     * @return <code>true</code> if the counter face type is the one of a manufacture, <code>false</code> otherwise.
+     * @return <code>true</code> if the counter face type is the one of an arsenal, <code>false</code> otherwise.
      */
     public static boolean isArsenal(CounterFaceTypeEnum type) {
-        boolean mnu = false;
+        boolean arsenal = false;
 
         if (type != null) {
             switch (type) {
@@ -244,13 +244,48 @@ public final class CounterUtil {
                 case ARSENAL_4:
                 case ARSENAL_4_ST_PETER:
                 case ARSENAL_5_ST_PETER:
-                    mnu = true;
+                    arsenal = true;
                     break;
                 default:
                     break;
             }
         }
 
-        return mnu;
+        return arsenal;
+    }
+
+    /**
+     * @param type of the counter to test.
+     * @return <code>true</code> if the counter face type is the one of a force, <code>false</code> otherwise.
+     */
+    public static boolean isForce(CounterFaceTypeEnum type) {
+        boolean force = false;
+
+        if (type != null) {
+            switch (type) {
+                case FORT:
+                case TRADING_POST_MINUS:
+                case TRADING_POST_PLUS:
+                case ARMY_MINUS:
+                case ARMY_PLUS:
+                case ARMY_TIMAR_MINUS:
+                case ARMY_TIMAR_PLUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY:
+                case LAND_SEPOY_EXPLORATION:
+                    force = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return force;
     }
 }
