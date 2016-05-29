@@ -86,4 +86,16 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
 
         return countries;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public int countOtherTpsInRegion(String country, String region, Long idGame) {
+        String sql = queryProps.getProperty("tp.others_region");
+
+        sql = sql.replace(":countryName", country);
+        sql = sql.replace(":region", region);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
 }

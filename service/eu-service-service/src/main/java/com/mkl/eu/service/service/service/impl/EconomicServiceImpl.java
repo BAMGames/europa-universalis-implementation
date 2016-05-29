@@ -342,6 +342,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case COL:
                 admAct = computeColonisation(request, game, country);
                 break;
+            case TP:
+                admAct = computeTradingPost(request, game, country);
+                break;
             default:
                 admAct = null;
                 break;
@@ -1206,31 +1209,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             // TODO countries and economical events rules
         }
 
-        List<String> discoveries = country.getDiscoveries().stream().filter(d -> d.getStack() == null && d.getTurn() != null).map(DiscoveryEntity::getProvince).collect(Collectors.toList());
-        List<String> forts = new ArrayList<>();
-        List<String> sources = playableCountryDao.getOwnedProvinces(country.getName(), game.getId());
-
-        game.getStacks().stream().flatMap(s -> s.getCounters().stream())
-                .filter(c -> StringUtils.equals(country.getName(), c.getCountry()) &&
-                        (c.getType() == CounterFaceTypeEnum.TRADING_POST_PLUS ||
-                                c.getType() == CounterFaceTypeEnum.TRADING_POST_MINUS ||
-                                c.getType() == CounterFaceTypeEnum.COLONY_PLUS ||
-                                c.getType() == CounterFaceTypeEnum.COLONY_MINUS ||
-                                c.getType() == CounterFaceTypeEnum.FORT))
-                .forEach(c -> {
-                    if (c.getType() == CounterFaceTypeEnum.FORT) {
-                        forts.add(c.getOwner().getProvince());
-                    } else {
-                        sources.add(c.getOwner().getProvince());
-                    }
-                });
-        provinceOk = oeUtil.canSettle(rotwProv, discoveries, sources, forts);
-        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.SETTLEMENTS)
-                .setMsgFormat("{1}: {0} The establishment located in {2} can't be settled because of settlements rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+        checkSettlements(game, country, rotwProv);
 
         if (colony != null) {
             boolean sea = false;
-            for (BorderEntity border : prov.getBorders()) {
+            for (BorderEntity border : rotwProv.getBorders()) {
                 if (border.getProvinceTo().getTerrain() == TerrainEnum.SEA) {
                     sea = true;
                     break;
@@ -1238,11 +1221,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
 
             if (!sea) {
-                List<String> countries = adminActionDao.getCountriesInlandAdvance(province, game.getId());
+                List<String> countries = adminActionDao.getCountriesInlandAdvance(rotwProv.getName(), game.getId());
 
                 provinceOk = countries.contains(country.getName());
                 failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.INLAND_ADVANCE)
-                        .setMsgFormat("{1}: {0} The colony located in {2} can't be improved because of inland advance rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+                        .setMsgFormat("{1}: {0} The colony located in {2} can't be improved because of inland advance rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, rotwProv.getName()));
             }
         }
 
@@ -1282,6 +1265,147 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setBonus(bonus);
 
         return admAct;
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type Trading post.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeTradingPost(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.TP);
+
+        Integer plannedCols = actions.stream().collect(Collectors.summingInt(action -> 1));
+        Integer maxCols = getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getType() == LimitTypeEnum.ACTION_TP &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(plannedCols < maxCols).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), plannedCols, maxCols));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
+
+        String province = request.getRequest().getProvince();
+        failIfEmpty(new CheckForThrow<String>().setTest(province).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT));
+
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+
+        failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(prov instanceof RotwProvinceEntity).setCodeError(IConstantsServiceException.PROVINCE_WRONG_TYPE)
+                .setMsgFormat("{1}: {0} The province {2} of type {3} should be of type {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, prov.getClass(), RotwProvinceEntity.class));
+
+        List<CounterEntity> counters = game.getStacks().stream().filter(stack -> StringUtils.equals(province, stack.getProvince())).flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.COLONY_MINUS || counter.getType() == CounterFaceTypeEnum.COLONY_PLUS
+                        || counter.getType() == CounterFaceTypeEnum.TRADING_POST_MINUS || counter.getType() == CounterFaceTypeEnum.TRADING_POST_PLUS)
+                .collect(Collectors.toList());
+
+        CounterEntity colony = null;
+        CounterEntity tp = null;
+        for (CounterEntity counter : counters) {
+            if (counter.getType() == CounterFaceTypeEnum.COLONY_MINUS || counter.getType() == CounterFaceTypeEnum.COLONY_PLUS) {
+                colony = counter;
+            } else if ((counter.getType() == CounterFaceTypeEnum.TRADING_POST_MINUS || counter.getType() == CounterFaceTypeEnum.TRADING_POST_PLUS)
+                    && StringUtils.equals(country.getName(), counter.getCountry())) {
+                tp = counter;
+            }
+        }
+
+        boolean provinceOk = colony == null || StringUtils.equals(country.getName(), colony.getCountry());
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PROVINCE_NOT_OWN_CONTROL)
+                .setMsgFormat("{1}: {0} The colony located in {2} is not owned by {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+
+        //noinspection ConstantConditions
+        RotwProvinceEntity rotwProv = (RotwProvinceEntity) prov;
+
+        checkSettlements(game, country, rotwProv);
+
+        // TODO Native empires, VI.7.4.4
+
+        RegionEntity region = provinceDao.getRegionByName(rotwProv.getRegion());
+        int tolerance = region.getTolerance();
+        if (tolerance == 0) {
+            tolerance = region.getDifficulty();
+        }
+        Integer column = country.getFtiRotw() - tolerance;
+
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+        column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+
+        int bonus = -adminActionDao.countOtherTpsInRegion(country.getName(), rotwProv.getRegion(), game.getId());
+        long otherForces = game.getStacks().stream().filter(s -> StringUtils.equals(province, s.getProvince()))
+                .flatMap(s -> s.getCounters().stream())
+                .filter(c -> !StringUtils.equals(country.getName(), c.getCountry()) && CounterUtil.isForce(c.getType())).count();
+        if (otherForces > 0) {
+            bonus -= 1;
+        }
+        OtherForcesEntity natives = CommonUtil.findFirst(game.getOtherForces(),
+                o -> o.getType() == OtherForcesTypeEnum.NATIVES && StringUtils.equals(province, o.getProvince()));
+        if (natives != null && !natives.isReplenish() && natives.getNbLd() == 0 && natives.getNbLde() == 0) {
+            bonus += 2;
+        }
+        // TODO battles
+        // TODO leaders
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setProvince(province);
+        if (tp != null) {
+            admAct.setIdObject(tp.getId());
+        }
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        admAct.setColumn(column);
+        admAct.setBonus(bonus);
+
+        return admAct;
+    }
+
+    /**
+     * Check the settlement rules (VI.7.4.3).
+     *
+     * @param game     the game.
+     * @param country  the country creating an establishment.
+     * @param province where the establishment is.
+     * @throws FunctionalException Functional error.
+     */
+    private void checkSettlements(GameEntity game, PlayableCountryEntity country, RotwProvinceEntity province) throws FunctionalException {
+        List<String> discoveries = country.getDiscoveries().stream().filter(d -> d.getStack() == null && d.getTurn() != null).map(DiscoveryEntity::getProvince).collect(Collectors.toList());
+        List<String> forts = new ArrayList<>();
+        List<String> sources = playableCountryDao.getOwnedProvinces(country.getName(), game.getId());
+
+        game.getStacks().stream().flatMap(s -> s.getCounters().stream())
+                .filter(c -> StringUtils.equals(country.getName(), c.getCountry()) &&
+                        (c.getType() == CounterFaceTypeEnum.TRADING_POST_PLUS ||
+                                c.getType() == CounterFaceTypeEnum.TRADING_POST_MINUS ||
+                                c.getType() == CounterFaceTypeEnum.COLONY_PLUS ||
+                                c.getType() == CounterFaceTypeEnum.COLONY_MINUS ||
+                                c.getType() == CounterFaceTypeEnum.FORT))
+                .forEach(c -> {
+                    if (c.getType() == CounterFaceTypeEnum.FORT) {
+                        forts.add(c.getOwner().getProvince());
+                    } else {
+                        sources.add(c.getOwner().getProvince());
+                    }
+                });
+        boolean provinceOk = oeUtil.canSettle(province, discoveries, sources, forts);
+        failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.SETTLEMENTS)
+                .setMsgFormat("{1}: {0} The establishment located in {2} can't be settled because of settlements rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province.getName()));
     }
 
     /** {@inheritDoc} */

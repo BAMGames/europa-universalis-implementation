@@ -253,4 +253,19 @@
 			;
 		]]>
 	</entry>
+	<entry key="tp.others_region">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS NUMBER
+			FROM counter c
+				INNER JOIN stack s ON c.ID_STACK = s.ID
+				INNER JOIN r_province p ON s.R_PROVINCE = p.NAME
+				INNER JOIN r_province_rotw pr ON pr.id = p.id
+			WHERE s.ID_GAME = :idGame
+				AND c.R_COUNTRY <> ':countryName'
+				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_MINUS')
+				AND pr.region = 'region'
+			;
+		]]>
+	</entry>
 </properties>

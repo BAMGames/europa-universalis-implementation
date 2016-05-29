@@ -29,4 +29,12 @@ public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity,
      * @return the countries that qualify for the inland advance rule for the given ROTW province.
      */
     List<String> getCountriesInlandAdvance(String province, Long idGame);
+
+    /**
+     * @param country whose trading post are not count.
+     * @param region  where we want the number of trading posts.
+     * @param idGame  the id of the game.
+     * @return the number of trading posts of others countries in the region.
+     */
+    int countOtherTpsInRegion(String country, String region, Long idGame);
 }
