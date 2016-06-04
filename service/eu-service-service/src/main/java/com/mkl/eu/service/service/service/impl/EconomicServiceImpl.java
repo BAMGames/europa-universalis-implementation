@@ -20,6 +20,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -749,7 +750,34 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfFalse(new CheckForThrow<Boolean>().setTest(prov instanceof TradeZoneProvinceEntity).setCodeError(IConstantsServiceException.PROVINCE_WRONG_TYPE)
                 .setMsgFormat("{1}: {0} The province {2} of type {3} should be of type {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, prov.getClass(), TradeZoneProvinceEntity.class));
 
-        // TODO trade fleet access, VI.7.4.1
+        //noinspection ConstantConditions
+        TradeZoneProvinceEntity tradeZone = (TradeZoneProvinceEntity) prov;
+        if (Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_EUROPE, prov.getName()) < 0) {
+            List<String> countries = adminActionDao.getCountriesTradeFleetAccessRotw(tradeZone.getSeaZone(), game.getId());
+            // TODO trade rights taken
+            if (!countries.contains(country.getName())) {
+                boolean right = false;
+                if (Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_TRADE, prov.getName()) > +0) {
+                    SeaProvinceEntity sea = (SeaProvinceEntity) provinceDao.getProvinceByName(tradeZone.getSeaZone());
+                    List<String> discovers = country.getDiscoveries().stream().filter(d -> d.getStack() == null && d.getTurn() != null)
+                            .map(DiscoveryEntity::getProvince).collect(Collectors.toList());
+                    long miss = sea.getBorders().stream().filter(border -> border.getProvinceTo() instanceof SeaProvinceEntity &&
+                            discovers.contains(border.getProvinceTo().getName()))
+                            .count();
+
+                    right = miss == 0 && discovers.contains(tradeZone.getSeaZone());
+                }
+
+                failIfFalse(new CheckForThrow<Boolean>().setTest(right).setCodeError(IConstantsServiceException.TRADE_FLEET_ACCESS_ROTW)
+                        .setMsgFormat("{1}: {0} The country {3} can''t implant a trade fleet located in {2} because of rotw access limitation.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+            }
+        } else if (StringUtils.equals(IReferentielConstants.TRADE_ZONE_CASPIAN, prov.getName())) {
+            List<String> owners = counterDao.getNeighboringOwners(tradeZone.getSeaZone(), game.getId());
+            boolean right = owners.contains(country.getName());
+            // TODO trade centers Grand Orient or Mediterranean
+            failIfFalse(new CheckForThrow<Boolean>().setTest(right).setCodeError(IConstantsServiceException.TRADE_FLEET_ACCESS_CASPIAN)
+                    .setMsgFormat("{1}: {0} The country {3} can''t implant a trade fleet located in {2} because of caspian access limitation.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
+        }
 
         TradeFleetEntity tradeFleet = CommonUtil.findFirst(game.getTradeFleets(), tradeFleetEntity -> StringUtils.equals(province, tradeFleetEntity.getProvince())
                 && StringUtils.equals(country.getName(), tradeFleetEntity.getCountry()));
@@ -758,8 +786,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .setMsgFormat("{1}: {0} The trade fleet located in {2} and owned by {3} is already full.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
 
         Integer column = country.getFti();
-        //noinspection ConstantConditions
-        TradeZoneProvinceEntity tradeZone = (TradeZoneProvinceEntity) prov;
         if (tradeZone.getType() == TradeZoneTypeEnum.ZP) {
             if (StringUtils.equals(country.getName(), tradeZone.getCountryName())) {
                 column += country.getDti();
@@ -1067,8 +1093,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return the bonus.
      */
     private int getBonusForDomesticOperation(GameEntity game, PlayableCountryEntity country) {
-        int stab = oeUtil.getStability(game, country.getName());
-        int bonus = stab;
+        int bonus = oeUtil.getStability(game, country.getName());
         if (StringUtils.equals(PlayableCountry.SPAIN, country.getName())) {
             CounterEntity inflationCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isInflationBox(stack.getProvince()))
                             .flatMap(stack -> stack.getCounters().stream()),

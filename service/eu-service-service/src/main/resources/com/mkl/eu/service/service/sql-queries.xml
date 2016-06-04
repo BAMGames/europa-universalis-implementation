@@ -264,8 +264,53 @@
 			WHERE s.ID_GAME = :idGame
 				AND c.R_COUNTRY <> ':countryName'
 				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_MINUS')
-				AND pr.region = 'region'
+				AND pr.region = ':region'
 			;
+		]]>
+	</entry>
+	<entry key="tz.trade_fleet_access_rotw">
+		<![CDATA[
+			SELECT
+				DISTINCT c.R_COUNTRY AS OWNER
+			FROM counter c
+ 				INNER JOIN stack s ON c.ID_STACK = s.ID
+			WHERE
+				s.ID_GAME = :idGame
+  				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_PLUS' OR c.TYPE = 'COLONY_MINUS' OR c.TYPE = 'COLONY_PLUS')
+  				AND s.R_PROVINCE IN (
+  					SELECT
+  						DISTINCT p.NAME
+  					FROM r_province_rotw pr
+    					INNER JOIN r_province p ON p.ID = pr.ID
+    					LEFT OUTER JOIN r_border b ON b.ID_R_PROVINCE_FROM = p.ID
+    					INNER JOIN R_PROVINCE p2 ON b.ID_R_PROVINCE_TO = p2.ID
+  					WHERE p2.NAME = ':province'
+  						OR p2.NAME IN (
+    						SELECT
+    							p2.NAME
+    						FROM r_province_tz ptz
+      							INNER JOIN r_province p1 ON ptz.R_PROVINCE = p1.NAME
+      							INNER JOIN R_PROVINCE_SEA ps1 ON p1.ID = ps1.ID
+      							LEFT OUTER JOIN r_border b ON b.ID_R_PROVINCE_FROM = p1.ID
+      							INNER JOIN R_PROVINCE p2 ON b.ID_R_PROVINCE_TO = p2.ID
+      							INNER JOIN R_PROVINCE_SEA ps2 ON p2.ID = ps2.ID
+    						WHERE ptz.R_PROVINCE = ':province'
+  						)
+				)
+			;
+		]]>
+	</entry>
+	<entry key="game.neighbor_owner">
+		<![CDATA[
+			SELECT
+				DISTINCT IFNULL(C.R_COUNTRY, PE1.R_COUNTRY) AS OWNER
+  			FROM R_PROVINCE P
+  				INNER JOIN R_BORDER B1 ON B1.ID_R_PROVINCE_FROM = P.ID
+  				INNER JOIN R_PROVINCE P1 ON B1.ID_R_PROVINCE_TO = P1.ID
+  				INNER JOIN R_PROVINCE_EU PE1 ON PE1.ID = P1.ID
+  				LEFT OUTER JOIN STACK S ON S.R_PROVINCE = P1.NAME AND S.ID_GAME = :idGame
+  				LEFT OUTER JOIN COUNTER C ON C.ID_STACK = S.ID AND C.TYPE = 'OWN'
+			WHERE P.NAME = ':province';
 		]]>
 	</entry>
 </properties>

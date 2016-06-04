@@ -218,7 +218,7 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
-     * Exception thrown when a trade fleet is alreay full.
+     * Exception thrown when a trade fleet is already full.
      * </p>
      * <p>
      * Parameters:
@@ -230,6 +230,36 @@ public interface IConstantsServiceException {
      * </p>
      */
     String TRADE_FLEET_FULL = "exception.eu.admin_action.trade_fleet_full";
+
+    /**
+     * <p>
+     * Exception thrown when a trade fleet can't be implemented in the caspian trade zone.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province of the trade fleet (should be caspian sea)</li>
+     * <li>2: country of the trade fleet</li>
+     * </ul>
+     * </p>
+     */
+    String TRADE_FLEET_ACCESS_CASPIAN = "exception.eu.admin_action.trade_fleet_access_caspian";
+
+    /**
+     * <p>
+     * Exception thrown when a trade fleet can't be implemented in a rotw trade zone.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province of the trade fleet</li>
+     * <li>2: country of the trade fleet</li>
+     * </ul>
+     * </p>
+     */
+    String TRADE_FLEET_ACCESS_ROTW = "exception.eu.admin_action.trade_fleet_access_rotw";
 
     /**
      * <p>

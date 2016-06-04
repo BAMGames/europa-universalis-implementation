@@ -37,4 +37,11 @@ public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity,
      * @return the number of trading posts of others countries in the region.
      */
     int countOtherTpsInRegion(String country, String region, Long idGame);
+
+    /**
+     * @param province the name of the ROTW trade zone.
+     * @param idGame   the id of the game.
+     * @return the countries that qualify for the trade fleet access in the ROTW rule for the given trade zone.
+     */
+    List<String> getCountriesTradeFleetAccessRotw(String province, Long idGame);
 }

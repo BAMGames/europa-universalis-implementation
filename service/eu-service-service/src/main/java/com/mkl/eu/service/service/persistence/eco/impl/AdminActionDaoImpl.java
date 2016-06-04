@@ -98,4 +98,20 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
 
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getCountriesTradeFleetAccessRotw(String province, Long idGame) {
+        List<String> countries = new ArrayList<>();
+
+        String sql = queryProps.getProperty("tz.trade_fleet_access_rotw");
+
+        sql = sql.replace(":province", province);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+        results.stream().forEach(input -> countries.add((String) input.get("OWNER")));
+
+        return countries;
+    }
 }

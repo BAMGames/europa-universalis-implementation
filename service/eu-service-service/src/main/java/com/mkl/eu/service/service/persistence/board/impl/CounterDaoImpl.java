@@ -6,10 +6,15 @@ import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,6 +26,15 @@ import java.util.stream.Collectors;
  */
 @Repository
 public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implements ICounterDao {
+    /** Template jdbc . */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    /** Sql queries. */
+    @Autowired
+    @Qualifier("queryProps")
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private Properties queryProps;
+
     /**
      * Constructor.
      */
@@ -96,6 +110,22 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
         if (counters != null) {
             countries.addAll(counters.stream().map(CounterEntity::getCountry).collect(Collectors.toList()));
         }
+
+        return countries;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getNeighboringOwners(String province, Long idGame) {
+        List<String> countries = new ArrayList<>();
+
+        String sql = queryProps.getProperty("game.neighbor_owner");
+
+        sql = sql.replace(":province", province);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+        results.stream().forEach(input -> countries.add((String) input.get("OWNER")));
 
         return countries;
     }

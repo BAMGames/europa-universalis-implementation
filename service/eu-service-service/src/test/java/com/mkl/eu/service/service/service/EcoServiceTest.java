@@ -1548,11 +1548,33 @@ public class EcoServiceTest {
         idf.setName("idf");
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
 
+        TradeZoneProvinceEntity zmPerou = new TradeZoneProvinceEntity();
+        zmPerou.setName("ZMPerou");
+        zmPerou.setSeaZone("ZMPerou");
+        zmPerou.setType(TradeZoneTypeEnum.ZM);
+        when(provinceDao.getProvinceByName("ZMPerou")).thenReturn(zmPerou);
+
+        TradeZoneProvinceEntity zmCanarias = new TradeZoneProvinceEntity();
+        zmCanarias.setName("ZMCanarias");
+        zmCanarias.setSeaZone("eCanarias");
+        zmCanarias.setType(TradeZoneTypeEnum.ZM);
+        when(provinceDao.getProvinceByName("ZMCanarias")).thenReturn(zmCanarias);
+
+        TradeZoneProvinceEntity zmCasp = new TradeZoneProvinceEntity();
+        zmCasp.setName("ZMCaspienne");
+        zmCasp.setSeaZone("eCaspienne");
+        zmCasp.setType(TradeZoneTypeEnum.ZM);
+        when(provinceDao.getProvinceByName("ZMCaspienne")).thenReturn(zmCasp);
+
         TradeZoneProvinceEntity zpFr = new TradeZoneProvinceEntity();
-        zpFr.setName("zp_france");
+        zpFr.setName("ZPfrance");
+        zpFr.setSeaZone("ZPfrance");
         zpFr.setType(TradeZoneTypeEnum.ZP);
         zpFr.setCountryName("france");
         when(provinceDao.getProvinceByName("zp_france")).thenReturn(zpFr);
+
+        SeaProvinceEntity canarias = new SeaProvinceEntity();
+        when(provinceDao.getProvinceByName("eCanarias")).thenReturn(canarias);
 
         Tables tables = new Tables();
         List<Limit> limits = new ArrayList<>();
@@ -1574,6 +1596,18 @@ public class EcoServiceTest {
         limits.add(limit);
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
+
+        List<String> countries = new ArrayList<>();
+        countries.add("espagne");
+        when(adminActionDao.getCountriesTradeFleetAccessRotw("ZMPerou", 12L)).thenReturn(countries);
+
+        List<String> countries2 = new ArrayList<>();
+        countries2.add("portugal");
+        when(adminActionDao.getCountriesTradeFleetAccessRotw("ZMCanarias", 12L)).thenReturn(countries2);
+
+        List<String> countries3 = new ArrayList<>();
+        countries3.add("russie");
+        when(counterDao.getNeighboringOwners("eCaspienne", 12L)).thenReturn(countries3);
 
         try {
             economicService.addAdminAction(request);
@@ -1623,6 +1657,94 @@ public class EcoServiceTest {
             Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
         }
 
+        request.getRequest().setProvince("ZMPerou");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of trade fleet access in rotw");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.TRADE_FLEET_ACCESS_ROTW, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        countries.add("france");
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        request.getRequest().setProvince("ZMCanarias");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of trade fleet access in rotw");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.TRADE_FLEET_ACCESS_ROTW, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        canarias.getBorders().add(new BorderEntity());
+        canarias.getBorders().get(0).setProvinceTo(new RotwProvinceEntity());
+        canarias.getBorders().get(0).getProvinceTo().setName("rotw");
+        canarias.getBorders().add(new BorderEntity());
+        canarias.getBorders().get(1).setProvinceTo(new SeaProvinceEntity());
+        canarias.getBorders().get(1).getProvinceTo().setName("eGuinea");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of trade fleet access in rotw");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.TRADE_FLEET_ACCESS_ROTW, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        DiscoveryEntity disc = new DiscoveryEntity();
+        disc.setProvince("sGuinea");
+        disc.setTurn(10);
+        game.getCountries().get(0).getDiscoveries().add(disc);
+        disc = new DiscoveryEntity();
+        disc.setProvince("eCanarias");
+        game.getCountries().get(0).getDiscoveries().add(disc);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of trade fleet access in rotw");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.TRADE_FLEET_ACCESS_ROTW, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        disc.setTurn(10);
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        request.getRequest().setProvince("ZMCaspienne");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because of trade fleet access in caspian");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.TRADE_FLEET_ACCESS_CASPIAN, e.getCode());
+            Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
+        }
+
+        countries3.add("france");
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
         request.getRequest().setProvince("zp_france");
 
         try {
@@ -1636,17 +1758,17 @@ public class EcoServiceTest {
 
     @Test
     public void testAddAdmActTfiSuccess1() throws FunctionalException {
-        subTestAddAdmActTfiSuccess("zp_france", InvestmentEnum.M, "30", "4", "1");
+        subTestAddAdmActTfiSuccess("ZPfrance", InvestmentEnum.M, "30", "4", "1");
     }
 
     @Test
     public void testAddAdmActTfiSuccess2() throws FunctionalException {
-        subTestAddAdmActTfiSuccess("zp_angleterre", InvestmentEnum.S, "10", "-3", "0");
+        subTestAddAdmActTfiSuccess("ZPangleterre", InvestmentEnum.S, "10", "-3", "0");
     }
 
     @Test
     public void testAddAdmActTfiSuccess3() throws FunctionalException {
-        subTestAddAdmActTfiSuccess("zm_baltique", InvestmentEnum.L, "50", "-1", "-1");
+        subTestAddAdmActTfiSuccess("ZPBaltique", InvestmentEnum.L, "50", "-1", "-1");
     }
 
     private void subTestAddAdmActTfiSuccess(String province, InvestmentEnum investment, String cost, String column, String bonus) throws FunctionalException {
@@ -1694,47 +1816,47 @@ public class EcoServiceTest {
         game.getStacks().get(1).setProvince("idf");
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(0).setCountry("france");
-        game.getTradeFleets().get(0).setProvince("zp_france");
+        game.getTradeFleets().get(0).setProvince("ZPfrance");
         game.getTradeFleets().get(0).setLevel(5);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(1).setCountry("angleterre");
-        game.getTradeFleets().get(1).setProvince("zp_angleterre");
+        game.getTradeFleets().get(1).setProvince("ZPangleterre");
         game.getTradeFleets().get(1).setLevel(4);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(2).setCountry("hollande");
-        game.getTradeFleets().get(2).setProvince("zp_angleterre");
+        game.getTradeFleets().get(2).setProvince("ZPangleterre");
         game.getTradeFleets().get(2).setLevel(2);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(3).setCountry("france");
-        game.getTradeFleets().get(3).setProvince("zp_angleterre");
+        game.getTradeFleets().get(3).setProvince("ZPangleterre");
         game.getTradeFleets().get(3).setLevel(2);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(4).setCountry("hollande");
-        game.getTradeFleets().get(4).setProvince("zm_baltique");
+        game.getTradeFleets().get(4).setProvince("ZPBaltique");
         game.getTradeFleets().get(4).setLevel(1);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(5).setCountry("suede");
-        game.getTradeFleets().get(5).setProvince("zm_baltique");
+        game.getTradeFleets().get(5).setProvince("ZPBaltique");
         game.getTradeFleets().get(5).setLevel(1);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(6).setCountry("angleterre");
-        game.getTradeFleets().get(6).setProvince("zm_baltique");
+        game.getTradeFleets().get(6).setProvince("ZPBaltique");
         game.getTradeFleets().get(6).setLevel(1);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(7).setCountry("espagne");
-        game.getTradeFleets().get(7).setProvince("zm_baltique");
+        game.getTradeFleets().get(7).setProvince("ZPBaltique");
         game.getTradeFleets().get(7).setLevel(1);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(8).setCountry("russie");
-        game.getTradeFleets().get(8).setProvince("zm_baltique");
+        game.getTradeFleets().get(8).setProvince("ZPBaltique");
         game.getTradeFleets().get(8).setLevel(1);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(9).setCountry("ecosse");
-        game.getTradeFleets().get(9).setProvince("zm_baltique");
+        game.getTradeFleets().get(9).setProvince("ZPBaltique");
         game.getTradeFleets().get(9).setLevel(1);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(10).setCountry("hanse");
-        game.getTradeFleets().get(10).setProvince("zm_baltique");
+        game.getTradeFleets().get(10).setProvince("ZPBaltique");
         game.getTradeFleets().get(10).setLevel(1);
 
         when(gameDao.lock(12L)).thenReturn(game);
@@ -1756,22 +1878,22 @@ public class EcoServiceTest {
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
 
         TradeZoneProvinceEntity zpFr = new TradeZoneProvinceEntity();
-        zpFr.setName("zp_france");
+        zpFr.setName("ZPfrance");
         zpFr.setType(TradeZoneTypeEnum.ZP);
         zpFr.setCountryName("france");
-        when(provinceDao.getProvinceByName("zp_france")).thenReturn(zpFr);
+        when(provinceDao.getProvinceByName("ZPfrance")).thenReturn(zpFr);
 
         TradeZoneProvinceEntity zpEn = new TradeZoneProvinceEntity();
-        zpEn.setName("zp_angleterre");
+        zpEn.setName("ZPangleterre");
         zpEn.setType(TradeZoneTypeEnum.ZP);
         zpEn.setCountryName("angleterre");
-        when(provinceDao.getProvinceByName("zp_angleterre")).thenReturn(zpEn);
+        when(provinceDao.getProvinceByName("ZPangleterre")).thenReturn(zpEn);
 
         TradeZoneProvinceEntity zmBal = new TradeZoneProvinceEntity();
-        zmBal.setName("zm_baltique");
+        zmBal.setName("ZPBaltique");
         zmBal.setType(TradeZoneTypeEnum.ZP);
         zmBal.setSeaZone("s_baltique");
-        when(provinceDao.getProvinceByName("zm_baltique")).thenReturn(zmBal);
+        when(provinceDao.getProvinceByName("ZPBaltique")).thenReturn(zmBal);
 
         Tables tables = new Tables();
         List<Limit> limits = new ArrayList<>();
