@@ -1736,6 +1736,26 @@ public class EcoServiceTest {
             Assert.assertEquals("addAdminAction.request.province", e.getParams()[0]);
         }
 
+        game.setMedCommCenterOwner("france");
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        game.setMedCommCenterOwner("espagne");
+        game.setOrientCommCenterOwner("france");
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        game.setOrientCommCenterOwner("turquie");
         countries3.add("france");
 
         try {
@@ -2411,6 +2431,11 @@ public class EcoServiceTest {
         testAddAdmActMnuSuccess(11L, "angleterre", "B_STAB_3", 3, "B_PB_1D", 43, InvestmentEnum.L, "100", "4", "5");
     }
 
+    @Test
+    public void testAddAdmActMnuSuccess6() throws FunctionalException {
+        testAddAdmActMnuSuccess(13L, "russie", null, 0, "B_PB_1D", 1, InvestmentEnum.M, "50", "-3", "0");
+    }
+
     private void testAddAdmActMnuSuccess(Long idCountry, String country, String stabilityBox, int stability, String inflationBox, int turn, InvestmentEnum investment, String cost, String column, String bonus) throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
@@ -2428,6 +2453,7 @@ public class EcoServiceTest {
         game.setId(12L);
         game.setTurn(turn);
         game.setVersion(5L);
+        game.setStPeterProvince("Neva");
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("espagne");
@@ -2442,6 +2468,9 @@ public class EcoServiceTest {
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(2).setId(10L);
         game.getCountries().get(2).setName("turquie");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(3).setId(13L);
+        game.getCountries().get(3).setName("russie");
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(0).setId(2L);

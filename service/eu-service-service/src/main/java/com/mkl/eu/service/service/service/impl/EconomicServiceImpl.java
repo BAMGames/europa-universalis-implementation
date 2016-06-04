@@ -773,8 +773,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
         } else if (StringUtils.equals(IReferentielConstants.TRADE_ZONE_CASPIAN, prov.getName())) {
             List<String> owners = counterDao.getNeighboringOwners(tradeZone.getSeaZone(), game.getId());
+            owners.add(game.getMedCommCenterOwner());
+            owners.add(game.getOrientCommCenterOwner());
             boolean right = owners.contains(country.getName());
-            // TODO trade centers Grand Orient or Mediterranean
+
             failIfFalse(new CheckForThrow<Boolean>().setTest(right).setCodeError(IConstantsServiceException.TRADE_FLEET_ACCESS_CASPIAN)
                     .setMsgFormat("{1}: {0} The country {3} can''t implant a trade fleet located in {2} because of caspian access limitation.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
         }
@@ -1104,10 +1106,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     bonus -= 1;
                 }
             }
-        } else if (StringUtils.equals(PlayableCountry.RUSSIA, country.getName()) ||
+        } else if ((StringUtils.equals(PlayableCountry.RUSSIA, country.getName()) && StringUtils.isEmpty(game.getStPeterProvince())) ||
                 StringUtils.equals(PlayableCountry.POLAND, country.getName()) ||
                 StringUtils.equals(PlayableCountry.TURKEY, country.getName())) {
-            // TODO St-Petersburg
             bonus -= 1;
         } else if (StringUtils.equals(PlayableCountry.ENGLAND, country.getName()) && game.getTurn() >= 43) {
             bonus += 2;

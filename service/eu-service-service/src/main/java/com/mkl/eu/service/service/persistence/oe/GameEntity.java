@@ -41,6 +41,16 @@ public class GameEntity implements IEntity, Serializable {
     private GameStatusEnum status;
     /** Version of the game (technical field). */
     private long version;
+    /** Country owning the mediterranean commercial center. */
+    private String medCommCenterOwner;
+    /** Country owning the grand orient commercial center. */
+    private String orientCommCenterOwner;
+    /** Country owning the atlantic commercial center. */
+    private String atlCommCenterOwner;
+    /** Country owning the indian commercial center. */
+    private String indianCommCenterOwner;
+    /** Province where Saint-Petersburg has been build (<code>null</code> if not build yet or in process). */
+    private String stPeterProvince;
 
     /** @return the id. */
     @Id
@@ -154,5 +164,60 @@ public class GameEntity implements IEntity, Serializable {
     /** @param version the version to set. */
     public void setVersion(long version) {
         this.version = version;
+    }
+
+    /** @return the medCommCenterOwner. */
+    @Column(name = "MED_CC_COUNTRY")
+    public String getMedCommCenterOwner() {
+        return medCommCenterOwner;
+    }
+
+    /** @param medCommCenterOwner the medCommCenterOwner to set. */
+    public void setMedCommCenterOwner(String medCommCenterOwner) {
+        this.medCommCenterOwner = medCommCenterOwner;
+    }
+
+    /** @return the orientCommCenterOwner. */
+    @Column(name = "ORIENT_CC_COUNTRY")
+    public String getOrientCommCenterOwner() {
+        return orientCommCenterOwner;
+    }
+
+    /** @param orientCommCenterOwner the orientCommCenterOwner to set. */
+    public void setOrientCommCenterOwner(String orientCommCenterOwner) {
+        this.orientCommCenterOwner = orientCommCenterOwner;
+    }
+
+    /** @return the atlCommCenterOwner. */
+    @Column(name = "ATL_CC_COUNTRY")
+    public String getAtlCommCenterOwner() {
+        return atlCommCenterOwner;
+    }
+
+    /** @param atlCommCenterOwner the atlCommCenterOwner to set. */
+    public void setAtlCommCenterOwner(String atlCommCenterOwner) {
+        this.atlCommCenterOwner = atlCommCenterOwner;
+    }
+
+    /** @return the indianCommCenterOwner. */
+    @Column(name = "INDIAN_CC_COUNTRY")
+    public String getIndianCommCenterOwner() {
+        return indianCommCenterOwner;
+    }
+
+    /** @param indianCommCenterOwner the indianCommCenterOwner to set. */
+    public void setIndianCommCenterOwner(String indianCommCenterOwner) {
+        this.indianCommCenterOwner = indianCommCenterOwner;
+    }
+
+    /** @return the stPeterProvince. */
+    @Column(name = "ST_PETER_PROVINCE")
+    public String getStPeterProvince() {
+        return stPeterProvince;
+    }
+
+    /** @param stPeterProvince the stPeterProvince to set. */
+    public void setStPeterProvince(String stPeterProvince) {
+        this.stPeterProvince = stPeterProvince;
     }
 }
