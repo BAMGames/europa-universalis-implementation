@@ -25,7 +25,7 @@ import java.util.List;
  * @author MKL.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/com/mkl/eu/service/service/eu-service-service-applicationContext-test.xml"})
+@ContextConfiguration({"/com/mkl/eu/service/service/mapping/test-eu-mapping-applicationContext..xml"})
 public class DiffMappingTest {
     @Autowired
     private DiffMapping diffMapping;
