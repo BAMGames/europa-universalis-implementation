@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.service;
+package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
@@ -37,7 +37,6 @@ import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
-import com.mkl.eu.service.service.service.impl.EconomicServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.impl.OEUtilImpl;
@@ -110,6 +109,54 @@ public class EcoServiceTest {
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
+
+    @Test
+    public void testComputeSheets() {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(2);
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        Diff diffAfter = new Diff();
+
+        when(diffMapping.oeToVo((DiffEntity) anyObject())).thenReturn(diffAfter);
+
+        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
+            diffEntity = (DiffEntity) invocation.getArguments()[0];
+            return diffEntity;
+        });
+
+        DiffResponse response = economicService.computeEconomicalSheets(game.getId().longValue());
+
+        InOrder inOrder = inOrder(gameDao, economicalSheetDao, diffDao, diffMapping, socketHandler);
+
+        inOrder.verify(gameDao).lock(game.getId());
+        inOrder.verify(economicalSheetDao).getTradeCenters(game.getId());
+        inOrder.verify(diffDao).create(anyObject());
+        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
+        inOrder.verify(diffMapping).oeToVo((DiffEntity) anyObject());
+
+        Assert.assertNull(diffEntity.getIdObject());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ECO_SHEET, diffEntity.getTypeObject());
+        Assert.assertEquals(game.getId().longValue(), diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(Integer.toString(game.getTurn()), diffEntity.getAttributes().get(0).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(1, response.getDiffs().size());
+        Assert.assertEquals(diffAfter, response.getDiffs().get(0));
+    }
+
+    //    @Test
+    public void testComputeSheet() {
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        Map<String, List<CounterFaceTypeEnum>> centers = new HashMap<>();
+
+        economicService.computeEconomicalSheet(country, 12L, 2, centers);
+    }
 
     @Test
     public void testAddAdmActFailSimple() {

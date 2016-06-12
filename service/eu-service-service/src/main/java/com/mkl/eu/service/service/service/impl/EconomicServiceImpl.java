@@ -159,7 +159,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         Map<String, List<CounterFaceTypeEnum>> tradeCenters = economicalSheetDao.getTradeCenters(game.getId());
 
         for (PlayableCountryEntity country : game.getCountries()) {
-            computeEconomicalSheet(country, game, tradeCenters);
+            computeEconomicalSheet(country, game.getId(), game.getTurn(), tradeCenters);
         }
 
         DiffEntity diff = new DiffEntity();
@@ -188,22 +188,22 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * Compute the economical sheet of a country for the turn of the game.
      *
      * @param country      the country.
-     * @param game         the game.
+     * @param idGame       id of the game.
+     * @param turn         turn of the game.
      * @param tradeCenters the trade centers and their owners.
      */
-    private void computeEconomicalSheet(PlayableCountryEntity country, GameEntity game, Map<String, List<CounterFaceTypeEnum>> tradeCenters) {
-        EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(game.getTurn()));
+    protected void computeEconomicalSheet(PlayableCountryEntity country, Long idGame, Integer turn, Map<String, List<CounterFaceTypeEnum>> tradeCenters) {
+        EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(turn));
         if (sheet == null) {
             sheet = new EconomicalSheetEntity();
             sheet.setCountry(country);
-            sheet.setTurn(game.getTurn());
+            sheet.setTurn(turn);
 
             economicalSheetDao.create(sheet);
 
             country.getEconomicalSheets().add(sheet);
         }
 
-        Long idGame = game.getId();
         String name = country.getName();
 
         Map<String, Integer> provinces = economicalSheetDao.getOwnedAndControlledProvinces(name, idGame);
