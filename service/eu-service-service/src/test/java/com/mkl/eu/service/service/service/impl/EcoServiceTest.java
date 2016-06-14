@@ -159,28 +159,46 @@ public class EcoServiceTest {
     }
 
     @Test
-    public void testComputeSheet() {
+    public void testComputeSheet1() {
+        testComputeSheet("france", 200, true);
+    }
+
+    @Test
+    public void testComputeSheet2() {
+        testComputeSheet("angleterre", 50, false);
+    }
+
+    private void testComputeSheet(String name, long tradeIncome, boolean createSheet) {
         Long idGame = 12L;
         PlayableCountryEntity country = new PlayableCountryEntity();
-        country.setName("france");
+        country.setName(name);
         country.setDti(3);
         country.setFti(2);
         country.getEconomicalSheets().add(new EconomicalSheetEntity());
         country.getEconomicalSheets().get(0).setTurn(0);
         country.getEconomicalSheets().add(new EconomicalSheetEntity());
         country.getEconomicalSheets().get(1).setTurn(1);
-        String name = country.getName();
+        if (!createSheet) {
+            sheetEntity = new EconomicalSheetEntity();
+            sheetEntity.setTurn(2);
+            sheetEntity.setTradeCenterLoss(13);
+            sheetEntity.setCountry(country);
+
+            country.getEconomicalSheets().add(sheetEntity);
+        }
         Map<String, List<CounterFaceTypeEnum>> centers = new HashMap<>();
-        centers.put(name, new ArrayList<>());
-        centers.get(name).add(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN);
-        centers.get(name).add(CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC);
+        centers.put("france", new ArrayList<>());
+        centers.get("france").add(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN);
+        centers.get("france").add(CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC);
         centers.put("angleterre", new ArrayList<>());
         centers.get("angleterre").add(CounterFaceTypeEnum.TRADE_CENTER_INDIAN);
 
-        when(economicalSheetDao.create(anyObject())).thenAnswer(invocation -> {
-            sheetEntity = (EconomicalSheetEntity) invocation.getArguments()[0];
-            return sheetEntity;
-        });
+        if (createSheet) {
+            when(economicalSheetDao.create(anyObject())).thenAnswer(invocation -> {
+                sheetEntity = (EconomicalSheetEntity) invocation.getArguments()[0];
+                return sheetEntity;
+            });
+        }
         Map<String, Integer> provinces = new HashMap<>();
         provinces.put("idf", 12);
         provinces.put("lyonnais", 5);
@@ -273,7 +291,9 @@ public class EcoServiceTest {
 
         InOrder inOrder = inOrder(economicalSheetDao, counterDao);
 
-        inOrder.verify(economicalSheetDao).create(anyObject());
+        if (createSheet) {
+            inOrder.verify(economicalSheetDao).create(anyObject());
+        }
         inOrder.verify(economicalSheetDao).getOwnedAndControlledProvinces(name, idGame);
         inOrder.verify(counterDao).getVassals(name, idGame);
         inOrder.verify(economicalSheetDao).getOwnedAndControlledProvinces("sabaudia", idGame);
@@ -301,14 +321,22 @@ public class EcoServiceTest {
         Assert.assertEquals(10, sheetEntity.getForTradeIncome().longValue());
         Assert.assertEquals(30, sheetEntity.getFleetLevelIncome().longValue());
         Assert.assertEquals(12, sheetEntity.getFleetMonopIncome().longValue());
-        Assert.assertEquals(200, sheetEntity.getTradeCenterIncome().longValue());
-        Assert.assertEquals(268, sheetEntity.getTradeIncome().longValue());
+        Assert.assertEquals(tradeIncome, sheetEntity.getTradeCenterIncome().longValue());
+        if (createSheet) {
+            Assert.assertNull(sheetEntity.getTradeCenterLoss());
+            Assert.assertEquals(tradeIncome + 68, sheetEntity.getTradeIncome().longValue());
+            Assert.assertEquals(tradeIncome + 229, sheetEntity.getIncome().longValue());
+            Assert.assertEquals(tradeIncome + 229, sheetEntity.getGrossIncome().longValue());
+        } else {
+            Assert.assertEquals(13, sheetEntity.getTradeCenterLoss().longValue());
+            Assert.assertEquals(tradeIncome + 55, sheetEntity.getTradeIncome().longValue());
+            Assert.assertEquals(tradeIncome + 216, sheetEntity.getIncome().longValue());
+            Assert.assertEquals(tradeIncome + 216, sheetEntity.getGrossIncome().longValue());
+        }
         Assert.assertEquals(22, sheetEntity.getColIncome().longValue());
         Assert.assertEquals(18, sheetEntity.getTpIncome().longValue());
         Assert.assertEquals(8, sheetEntity.getExoResIncome().longValue());
         Assert.assertEquals(48, sheetEntity.getRotwIncome().longValue());
-        Assert.assertEquals(429, sheetEntity.getIncome().longValue());
-        Assert.assertEquals(429, sheetEntity.getGrossIncome().longValue());
     }
 
     @Test
