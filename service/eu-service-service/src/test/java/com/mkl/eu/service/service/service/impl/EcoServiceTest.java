@@ -1014,6 +1014,7 @@ public class EcoServiceTest {
         corn.setName("corn");
         corn.setDefaultOwner("france");
         corn.setArsenal(true);
+        corn.setFortress(1);
         when(provinceDao.getProvinceByName("corn")).thenReturn(corn);
         when(stackDao.getStacksOnProvince("corn", 12L)).thenReturn(Collections.singletonList(stackFortress));
 
@@ -1157,6 +1158,26 @@ public class EcoServiceTest {
             Assert.fail("Should break because fortress level cant be purchased by this country (technology)");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.FORTRESS_CANT_PURCHASE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FORTRESS_4);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because fortress level cant be purchased by this country (technology)");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_PURCHASE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FORTRESS_5);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because fortress level cant be purchased by this country (technology)");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_PURCHASE, e.getCode());
             Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
         }
 
