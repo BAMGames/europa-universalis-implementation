@@ -72,7 +72,7 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
         if (counter != null) {
             countries = new ArrayList<>();
             String box = counter.getOwner().getProvince();
-            Matcher m = Pattern.compile("B_DE_([a-zA-Z])\\-.*").matcher(box);
+            Matcher m = Pattern.compile("B_DE_([a-zA-Z]*)\\-.*").matcher(box);
             if (m.matches()) {
                 countries.add(m.group(1));
             }

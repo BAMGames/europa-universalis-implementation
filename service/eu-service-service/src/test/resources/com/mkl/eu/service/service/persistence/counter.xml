@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <GAME ID="1" VERSION="1" />
+    <GAME ID="2" VERSION="1" />
+
+    <STACK ID="1" ID_GAME="1" R_PROVINCE="idf" />
+    <STACK ID="2" />
+
+    <COUNTER ID="1" ID_STACK="1" TYPE="ARMY_MINUS" R_COUNTRY="france" />
+    <COUNTER ID="2" ID_STACK="2" TYPE="ARMY_PLUS" />
+
+    <COUNTER ID="6"  />
+
+
+
+    <STACK ID="101" ID_GAME="1" R_PROVINCE="B_DE_france-MA" />
+    <COUNTER ID="101" ID_STACK="101" TYPE="DIPLOMACY" R_COUNTRY="sancta sedes" />
+    <STACK ID="151" ID_GAME="2" R_PROVINCE="B_DE_espagne-RM" />
+    <COUNTER ID="151" ID_STACK="151" TYPE="DIPLOMACY_WAR" R_COUNTRY="sancta sedes" />
+    <STACK ID="102" ID_GAME="1" R_PROVINCE="B_DR_iroquois" />
+    <COUNTER ID="102" ID_STACK="102" TYPE="ROTW_RELATION" R_COUNTRY="france" />
+    <COUNTER ID="103" ID_STACK="102" TYPE="ROTW_ALLIANCE" R_COUNTRY="angleterre" />
+
+    <STACK ID="201" ID_GAME="1" R_PROVINCE="B_DE_hollande-VA" />
+    <COUNTER ID="201" ID_STACK="201" TYPE="DIPLOMACY" R_COUNTRY="wurtenberger" />
+    <COUNTER ID="202" ID_STACK="201" TYPE="DIPLOMACY_WAR" R_COUNTRY="mayence" />
+    <STACK ID="202" ID_GAME="1" R_PROVINCE="B_DE_hollande-AN" />
+    <COUNTER ID="203" ID_STACK="202" TYPE="DIPLOMACY" R_COUNTRY="pologne" />
+    <COUNTER ID="204" ID_STACK="202" TYPE="DIPLOMACY_WAR" R_COUNTRY="saxe" />
+
+</dataset>
