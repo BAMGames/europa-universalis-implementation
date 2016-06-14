@@ -206,6 +206,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         String name = country.getName();
 
+        Map<String, Integer> allProvinces = new HashMap<>();
+
         Map<String, Integer> provinces = economicalSheetDao.getOwnedAndControlledProvinces(name, idGame);
         sheet.setProvincesIncome(provinces.values().stream().collect(Collectors.summingInt(value -> value)));
 
@@ -221,11 +223,18 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         provinceNames.addAll(vassalProvinces.keySet());
         List<String> pillagedProvinces = economicalSheetDao.getPillagedProvinces(provinceNames, idGame);
 
-        Integer pillagedIncome = pillagedProvinces.stream().collect(Collectors.summingInt(provinces::get));
+        allProvinces.putAll(provinces);
+        allProvinces.putAll(vassalProvinces);
+
+        Integer pillagedIncome = pillagedProvinces.stream().collect(Collectors.summingInt(allProvinces::get));
 
         sheet.setPillages(pillagedIncome);
 
-        sheet.setLandIncome(CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome(), sheet.getPillages(), sheet.getEventLandIncome()));
+        Integer sum = CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome(), sheet.getEventLandIncome());
+        if (sheet.getPillages() != null) {
+            sum -= sheet.getPillages();
+        }
+        sheet.setLandIncome(sum);
 
         sheet.setMnuIncome(economicalSheetDao.getMnuIncome(name, pillagedProvinces, idGame));
 
@@ -273,7 +282,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         sheet.setTradeCenterIncome(tradeCentersIncome);
 
-        Integer sum = CommonUtil.add(sheet.getDomTradeIncome(), sheet.getForTradeIncome(), sheet.getFleetLevelIncome(), sheet.getFleetMonopIncome(), sheet.getTradeCenterIncome());
+        sum = CommonUtil.add(sheet.getDomTradeIncome(), sheet.getForTradeIncome(), sheet.getFleetLevelIncome(), sheet.getFleetMonopIncome(), sheet.getTradeCenterIncome());
         if (sheet.getTradeCenterLoss() != null) {
             sum -= sheet.getTradeCenterLoss();
         }
