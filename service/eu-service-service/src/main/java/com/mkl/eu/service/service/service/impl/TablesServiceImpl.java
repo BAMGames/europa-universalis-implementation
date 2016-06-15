@@ -40,6 +40,12 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
 
     /** {@inheritDoc} */
     @Override
+    public void refresh() {
+        cacheTables();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         cacheTables();
     }

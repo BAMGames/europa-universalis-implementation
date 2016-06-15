@@ -45,11 +45,6 @@
             <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-
         <!--Autres-->
         <dependency>
             <groupId>javax.servlet</groupId>

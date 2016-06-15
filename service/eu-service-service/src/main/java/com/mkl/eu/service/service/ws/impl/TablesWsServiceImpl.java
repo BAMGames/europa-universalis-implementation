@@ -25,4 +25,10 @@ public class TablesWsServiceImpl extends SpringBeanAutowiringSupport implements 
     public Tables getTables() {
         return tableService.getTables();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void refresh() {
+        tableService.refresh();
+    }
 }

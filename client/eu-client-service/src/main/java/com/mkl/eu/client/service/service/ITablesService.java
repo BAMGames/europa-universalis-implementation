@@ -19,4 +19,9 @@ public interface ITablesService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     Tables getTables();
+
+    /**
+     * Refresh the tables.
+     */
+    void refresh();
 }
