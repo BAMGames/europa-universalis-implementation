@@ -11,9 +11,7 @@ import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.ReplacementDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSet;
-import org.dbunit.dataset.xml.FlatXmlProducer;
+import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,7 +22,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.xml.sax.InputSource;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
@@ -36,7 +33,8 @@ import java.sql.Connection;
  * @author MKL
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml", "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
+@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
+                                   "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 @Transactional
 public class TableDaoImplTest {
@@ -50,18 +48,16 @@ public class TableDaoImplTest {
     private ITablesDao tablesDao;
 
     @Before
-    public void initDb() throws Exception{
+    public void initDb() throws Exception {
         DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSet());
     }
 
     private IDataSet getDataSet() throws Exception {
         InputStream inputStream = this.getClass().getClassLoader()
                                       .getResourceAsStream("com/mkl/eu/service/service/persistence/tables.xml");
-        InputSource xmlSource = new InputSource(inputStream);
-        FlatXmlProducer flatXmlProducer = new FlatXmlProducer(xmlSource);
-        ReplacementDataSet dataSet= new ReplacementDataSet(new FlatXmlDataSet(flatXmlProducer));
-        dataSet.addReplacementObject("[null]", null);
-        return dataSet;
+        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
+        builder.setColumnSensing(true);
+        return builder.build(inputStream);
 
     }
 

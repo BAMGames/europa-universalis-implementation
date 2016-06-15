@@ -5,9 +5,7 @@ import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.ReplacementDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSet;
-import org.dbunit.dataset.xml.FlatXmlProducer;
+import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,12 +16,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.xml.sax.InputSource;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +30,8 @@ import java.util.List;
  * @author MKL
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml", "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
+@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
+                                   "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 @Transactional
 public class CounterDaoImplTest {
@@ -44,19 +42,26 @@ public class CounterDaoImplTest {
     private ICounterDao counterDao;
 
     @Before
-    public void initDb() throws Exception{
+    public void initDb() throws Exception {
         DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSet());
+        DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSetProvinces());
     }
 
     private IDataSet getDataSet() throws Exception {
         InputStream inputStream = this.getClass().getClassLoader()
                                       .getResourceAsStream("com/mkl/eu/service/service/persistence/counter.xml");
-        InputSource xmlSource = new InputSource(inputStream);
-        FlatXmlProducer flatXmlProducer = new FlatXmlProducer(xmlSource);
-        ReplacementDataSet dataSet= new ReplacementDataSet(new FlatXmlDataSet(flatXmlProducer));
-        dataSet.addReplacementObject("[null]", null);
-        return dataSet;
+        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
+        builder.setColumnSensing(true);
+        return builder.build(inputStream);
 
+    }
+
+    private IDataSet getDataSetProvinces() throws Exception {
+        InputStream inputStream = this.getClass().getClassLoader()
+                                      .getResourceAsStream("com/mkl/eu/service/service/persistence/provinces.xml");
+        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
+        builder.setColumnSensing(true);
+        return builder.build(inputStream);
     }
 
     private IDatabaseConnection getConnection() throws Exception {
@@ -74,7 +79,7 @@ public class CounterDaoImplTest {
     }
 
     @Test
-    public void testGetPatrons(){
+    public void testGetPatrons() {
         Assert.assertEquals(1, counterDao.getPatrons("sancta sedes", 1L).size());
         Assert.assertEquals("france", counterDao.getPatrons("sancta sedes", 1L).get(0));
         Assert.assertEquals(1, counterDao.getPatrons("sancta sedes", 2L).size());
@@ -100,5 +105,26 @@ public class CounterDaoImplTest {
         Assert.assertEquals("saxe", vassals.get(2));
         Assert.assertEquals("wurtenberger", vassals.get(3));
         Assert.assertEquals(0, counterDao.getVassals("hollande", 2L).size());
+    }
+
+    @Test
+    public void testNeighbors() {
+        List<String> neighbors = new ArrayList<>();
+        Assert.assertEquals(neighbors, counterDao.getNeighboringOwners("rAden~W", 1L));
+
+        neighbors.clear();
+        neighbors.add("arabie");
+        neighbors.add("turquie");
+        Assert.assertEquals(neighbors, counterDao.getNeighboringOwners("rNedj~E", 1L));
+
+        neighbors.clear();
+        neighbors.add("arabie");
+        neighbors.add("irak");
+        Assert.assertEquals(neighbors, counterDao.getNeighboringOwners("rNedj~E", 2L));
+
+        neighbors.clear();
+        neighbors.add("astrakhan");
+        neighbors.add("perse");
+        Assert.assertEquals(neighbors, counterDao.getNeighboringOwners("sCaspienne", 1L));
     }
 }

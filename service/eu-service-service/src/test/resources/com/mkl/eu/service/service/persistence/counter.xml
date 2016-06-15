@@ -28,4 +28,6 @@
     <COUNTER ID="203" ID_STACK="202" TYPE="DIPLOMACY" R_COUNTRY="pologne" />
     <COUNTER ID="204" ID_STACK="202" TYPE="DIPLOMACY_WAR" R_COUNTRY="saxe" />
 
+    <STACK ID="301" ID_GAME="1" R_PROVINCE="eBassorah" />
+    <COUNTER ID="301" ID_STACK="301" TYPE="OWN" R_COUNTRY="turquie" />
 </dataset>
