@@ -19,7 +19,7 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @param foreignTrade true/false.
      * @return the foreign or domestic trade income given the input value and the foreign DTI/FTI.
      */
-    Integer getTradeIncome(Integer inputValue, Integer countryValue, boolean foreignTrade);
+    int getTradeIncome(int inputValue, int countryValue, boolean foreignTrade);
 
     /**
      * @return the periods tables.

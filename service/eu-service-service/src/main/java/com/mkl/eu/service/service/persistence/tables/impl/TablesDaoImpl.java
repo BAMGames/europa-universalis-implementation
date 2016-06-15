@@ -25,7 +25,7 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
 
     /** {@inheritDoc} */
     @Override
-    public Integer getTradeIncome(Integer inputValue, Integer countryValue, boolean foreignTrade) {
+    public int getTradeIncome(int inputValue, int countryValue, boolean foreignTrade) {
         Criteria criteria = getSession().createCriteria(TradeIncomeEntity.class);
 
         criteria.add(Restrictions.and(

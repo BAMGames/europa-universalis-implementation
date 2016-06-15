@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.vo.enumeration.UnitActionEnum;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
+import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
@@ -44,6 +45,9 @@ public class TableDaoImplTest {
 
     @Autowired
     private ITablesService tablesService;
+
+    @Autowired
+    private ITablesDao tablesDao;
 
     @Before
     public void initDb() throws Exception{
@@ -116,5 +120,26 @@ public class TableDaoImplTest {
         Assert.assertEquals(LimitTypeEnum.LEADER_CONQUISTADOR, tables.getLimits().get(258).getType());
         Assert.assertEquals(1, tables.getLimits().get(258).getNumber().intValue());
         Assert.assertEquals(Period.PERIOD_IV, tables.getLimits().get(258).getPeriod().getName());
+    }
+
+    @Test
+    public void testTradeIncome() {
+        Assert.assertEquals(2, tablesDao.getTradeIncome(0, 2, false));
+        Assert.assertEquals(4, tablesDao.getTradeIncome(0, 4, false));
+        Assert.assertEquals(9, tablesDao.getTradeIncome(60, 3, false));
+        Assert.assertEquals(21, tablesDao.getTradeIncome(160, 3, false));
+        Assert.assertEquals(27, tablesDao.getTradeIncome(161, 3, false));
+        Assert.assertEquals(60, tablesDao.getTradeIncome(251, 3, false));
+        Assert.assertEquals(60, tablesDao.getTradeIncome(9999, 3, false));
+        Assert.assertEquals(100, tablesDao.getTradeIncome(9999, 5, false));
+
+        Assert.assertEquals(60, tablesDao.getTradeIncome(0, 2, true));
+        Assert.assertEquals(120, tablesDao.getTradeIncome(0, 4, true));
+        Assert.assertEquals(81, tablesDao.getTradeIncome(60, 3, true));
+        Assert.assertEquals(54, tablesDao.getTradeIncome(299, 3, true));
+        Assert.assertEquals(45, tablesDao.getTradeIncome(300, 3, true));
+        Assert.assertEquals(3, tablesDao.getTradeIncome(1100, 3, true));
+        Assert.assertEquals(3, tablesDao.getTradeIncome(9999, 3, true));
+        Assert.assertEquals(5, tablesDao.getTradeIncome(9999, 5, true));
     }
 }
