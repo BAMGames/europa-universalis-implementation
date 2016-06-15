@@ -16,7 +16,7 @@
 						inner join stack s on c.ID_STACK = s.id
 					where c.R_COUNTRY <> ':countryName'
 						and s.ID_GAME = :idGame
-						and (c.TYPE = 'OWN' or c.type = 'CONTROL')
+						and c.TYPE = 'OWN'
 					)
 			;
 		]]>
@@ -33,15 +33,6 @@
 			where c.R_COUNTRY = ':countryName'
 				and s.ID_GAME = :idGame
 				and c.type = 'OWN'
-				and s.R_PROVINCE not in
-					(select
-						s2.R_PROVINCE
-					from counter c2
-						inner join stack s2 on c2.ID_STACK = s2.id
-					where c2.R_COUNTRY <> ':countryName'
-						and s2.ID_GAME = :idGame
-						and c2.type = 'CONTROL'
-					)
 			;
 		]]>
     </entry>
@@ -55,7 +46,8 @@
 					OR c.TYPE = 'REVOLT_PLUS'
 					OR c.TYPE = 'PILLAGE_MINUS'
 					OR c.TYPE = 'PILLAGE_PLUS'
-					OR c.TYPE = 'SIEGEWORK_MINUS')
+					OR c.TYPE = 'SIEGEWORK_MINUS'
+					OR c.TYPE = 'CONTROL')
 				AND s.ID_GAME = :idGame
 				AND s.R_PROVINCE in :provinceNames
 			;
