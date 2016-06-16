@@ -187,4 +187,31 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertEquals(130, economicalSheetDao.getGoldIncome(provinces, 1L).intValue());
         Assert.assertEquals(70, economicalSheetDao.getGoldIncome(provinces, 2L).intValue());
     }
+
+    @Test
+    public void testFleets() {
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("france", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("angleterre", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("hollande", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("suede", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("turquie", 2L));
+
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("france", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("angleterre", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("hollande", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("suede", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("turquie", 2L));
+
+        Assert.assertEquals(21, economicalSheetDao.getFleetLevelIncome("france", 1L).intValue());
+        Assert.assertEquals(6, economicalSheetDao.getFleetLevelIncome("angleterre", 1L).intValue());
+        Assert.assertEquals(8, economicalSheetDao.getFleetLevelIncome("hollande", 1L).intValue());
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("suede", 1L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelIncome("turquie", 1L));
+
+        Assert.assertEquals(54, economicalSheetDao.getFleetLevelMonopoly("france", 1L).intValue());
+        Assert.assertEquals(4, economicalSheetDao.getFleetLevelMonopoly("angleterre", 1L).intValue());
+        Assert.assertEquals(20, economicalSheetDao.getFleetLevelMonopoly("hollande", 1L).intValue());
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("suede", 1L));
+        Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("turquie", 1L));
+    }
 }

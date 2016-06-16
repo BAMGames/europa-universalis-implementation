@@ -39,4 +39,12 @@
     <COUNTER ID="201" ID_STACK="8" TYPE="GOLD_MINE" />
     <COUNTER ID="202" ID_STACK="8" TYPE="GOLD_MINE" />
     <COUNTER ID="203" ID_STACK="1" TYPE="GOLD_MINE" />
+
+    <TRADE_FLEET ID="1" R_COUNTRY="france" R_PROVINCE="ZPfrance" LEVEL="6" ID_GAME="1" />
+    <TRADE_FLEET ID="2" R_COUNTRY="france" R_PROVINCE="ZMLion" LEVEL="5" ID_GAME="1" />
+    <TRADE_FLEET ID="3" R_COUNTRY="france" R_PROVINCE="ZPBaltique" LEVEL="2" ID_GAME="1" />
+    <TRADE_FLEET ID="4" R_COUNTRY="france" R_PROVINCE="ZPrussie" LEVEL="0" ID_GAME="1" />
+    <TRADE_FLEET ID="5" R_COUNTRY="hollande" R_PROVINCE="ZPBaltique" LEVEL="4" ID_GAME="1" />
+    <TRADE_FLEET ID="6" R_COUNTRY="angleterre" R_PROVINCE="ZPBaltique" LEVEL="3" ID_GAME="1" />
+    <TRADE_FLEET ID="7" R_COUNTRY="turquie" R_PROVINCE="notazp" LEVEL="3" ID_GAME="1" />
 </dataset>

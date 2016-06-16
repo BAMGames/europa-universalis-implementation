@@ -89,7 +89,7 @@
 	<entry key="income.tflevels">
 		<![CDATA[
 			select
-				sum(tf.level * IF(tz.TYPE = 'ZP', 2, 1))
+				sum(tf.level * (CASE tz.TYPE WHEN 'ZP' THEN 2 ELSE 1 END))
 			from trade_fleet tf
 				inner join r_province p on tf.R_PROVINCE = p.NAME
 				inner join R_PROVINCE_TZ tz on tz.ID = p.ID
@@ -102,9 +102,13 @@
 		<![CDATA[
 			select
 				sum(
-					IF(tf.LEVEL = 6, tz.MONOPOLY,
-					IF(tf.LEVEL >= 4, tz.MONOPOLY / 2,
-					IF(tf.LEVEL >= 1, tz.PRESENCE, 0))))
+					CASE
+        				WHEN tf.LEVEL = 6 THEN tz.MONOPOLY
+        				WHEN tf.LEVEL >= 4 THEN tz.MONOPOLY / 2
+        				WHEN tf.LEVEL >= 1 THEN tz.PRESENCE
+        				ELSE 0
+        			END
+        		)
 			from trade_fleet tf
 				inner join r_province p on tf.R_PROVINCE = p.NAME
 				inner join R_PROVINCE_TZ tz on tz.ID = p.ID
