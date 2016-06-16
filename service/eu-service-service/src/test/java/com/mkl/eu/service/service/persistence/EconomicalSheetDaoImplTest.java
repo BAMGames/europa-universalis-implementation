@@ -160,4 +160,31 @@ public class EconomicalSheetDaoImplTest {
         provinces.add("eBearn");
         Assert.assertEquals(null, economicalSheetDao.getMnuIncome("france", provinces, 1L));
     }
+
+    @Test
+    public void testGold() {
+        List<String> provinces = new ArrayList<>();
+        Assert.assertEquals(0, economicalSheetDao.getGoldIncome(provinces, 1L).intValue());
+
+        provinces.clear();
+        provinces.add("eQuercy");
+        Assert.assertEquals(20, economicalSheetDao.getGoldIncome(provinces, 1L).intValue());
+
+        provinces.clear();
+        provinces.add("eLanguedoc");
+        Assert.assertEquals(50, economicalSheetDao.getGoldIncome(provinces, 1L).intValue());
+
+        provinces.clear();
+        provinces.add("eQuercy");
+        provinces.add("eLanguedoc");
+        Assert.assertEquals(70, economicalSheetDao.getGoldIncome(provinces, 1L).intValue());
+
+        provinces.clear();
+        provinces.add("eQuercy");
+        provinces.add("eLanguedoc");
+        provinces.add("eBearn");
+        provinces.add("eIle-de-France");
+        Assert.assertEquals(130, economicalSheetDao.getGoldIncome(provinces, 1L).intValue());
+        Assert.assertEquals(70, economicalSheetDao.getGoldIncome(provinces, 2L).intValue());
+    }
 }
