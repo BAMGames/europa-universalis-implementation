@@ -100,8 +100,8 @@
 	</entry>
 	<entry key="income.tfmonop">
 		<![CDATA[
-			select
-				sum(
+			SELECT
+				SUM(
 					CASE
         				WHEN tf.LEVEL = 6 THEN tz.MONOPOLY
         				WHEN tf.LEVEL >= 4 THEN tz.MONOPOLY / 2
@@ -109,24 +109,26 @@
         				ELSE 0
         			END
         		)
-			from trade_fleet tf
-				inner join r_province p on tf.R_PROVINCE = p.NAME
-				inner join R_PROVINCE_TZ tz on tz.ID = p.ID
-			where tf.R_COUNTRY = ':countryName'
+			FROM trade_fleet tf
+				INNER JOIN r_province p ON tf.R_PROVINCE = p.NAME
+				INNER JOIN R_PROVINCE_TZ tz ON tz.ID = p.ID
+			WHERE tf.R_COUNTRY = ':countryName'
 				AND tf.ID_GAME = :idGame
 		;
 		]]>
 	</entry>
 	<entry key="counter.tradeCenter">
 		<![CDATA[
-			select
+			SELECT
 				c.TYPE as TYPE,
-				peu.R_COUNTRY as COUNTRY
-			from counter c
-				inner join stack s on c.ID_STACK = s.ID
-				inner join r_province p on s.R_PROVINCE = p.NAME
-				inner join r_province_eu peu on p.ID = peu.ID
-			where type like 'TRADE_CENTER%'
+				CASE WHEN cp.R_COUNTRY is null THEN peu.R_COUNTRY ELSE cp.R_COUNTRY END as COUNTRY
+			FROM counter c
+				INNER JOIN stack s ON c.ID_STACK = s.ID
+				INNER JOIN r_province p ON s.R_PROVINCE = p.NAME
+				INNER JOIN r_province_eu peu ON p.ID = peu.ID
+  				LEFT OUTER JOIN COUNTER cp ON  cp.TYPE = 'OWN'
+  					AND cp.ID_STACK IN (SELECT ID FROM STACK WHERE R_PROVINCE = p.NAME AND ID_GAME = :idGame)
+			WHERE type LIKE 'TRADE_CENTER%'
 				AND s.ID_GAME = :idGame
 		;
 		]]>
@@ -304,8 +306,8 @@
   				INNER JOIN R_BORDER B1 ON B1.ID_R_PROVINCE_FROM = P.ID
   				INNER JOIN R_PROVINCE P1 ON B1.ID_R_PROVINCE_TO = P1.ID
   				INNER JOIN R_PROVINCE_EU PE1 ON PE1.ID = P1.ID
-  				LEFT OUTER JOIN STACK S ON S.R_PROVINCE = P1.NAME AND S.ID_GAME = :idGame
-  				LEFT OUTER JOIN COUNTER C ON C.ID_STACK = S.ID AND C.TYPE = 'OWN'
+  				LEFT OUTER JOIN COUNTER C ON C.TYPE = 'OWN'
+  					AND C.ID_STACK IN (SELECT ID FROM STACK WHERE R_PROVINCE = P1.NAME AND ID_GAME = :idGame)
 			WHERE P.NAME = ':province';
 		]]>
 	</entry>

@@ -221,4 +221,22 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("suede", 1L));
         Assert.assertEquals(null, economicalSheetDao.getFleetLevelMonopoly("turquie", 1L));
     }
+
+    @Test
+    public void testTradeCenters() {
+        Map<String, List<CounterFaceTypeEnum>> centers =  economicalSheetDao.getTradeCenters(2L);
+
+        Assert.assertEquals(0, centers.size());
+
+        centers = economicalSheetDao.getTradeCenters(1L);
+
+        Assert.assertEquals(2, centers.size());
+        List<CounterFaceTypeEnum> franceCenters = centers.get("france");
+        Collections.sort(franceCenters);
+        Assert.assertEquals(2, franceCenters.size());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN, franceCenters.get(0));
+        Assert.assertEquals(CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC, franceCenters.get(1));
+        Assert.assertEquals(1, centers.get("hollande").size());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADE_CENTER_INDIAN, centers.get("hollande").get(0));
+    }
 }

@@ -30,4 +30,6 @@
 
     <STACK ID="301" ID_GAME="1" R_PROVINCE="eBassorah" />
     <COUNTER ID="301" ID_STACK="301" TYPE="OWN" R_COUNTRY="turquie" />
+    <STACK ID="302" ID_GAME="1" R_PROVINCE="eBassorah" />
+    <COUNTER ID="302" ID_STACK="302" TYPE="ARMY_MINUS" R_COUNTRY="turquie" />
 </dataset>
