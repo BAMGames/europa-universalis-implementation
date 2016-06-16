@@ -13,6 +13,7 @@ import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,11 @@ public class TableDaoImplTest {
     @Before
     public void initDb() throws Exception {
         DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSet());
+    }
+
+    @After
+    public void clearDb() throws Exception {
+        DatabaseOperation.DELETE.execute(getConnection(), getDataSet());
     }
 
     private IDataSet getDataSet() throws Exception {
