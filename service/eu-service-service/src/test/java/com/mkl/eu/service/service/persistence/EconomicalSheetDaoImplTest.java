@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Description of the class.
+ * Test for EconomicalSheetDao.
  *
  * @author MKL
  */
