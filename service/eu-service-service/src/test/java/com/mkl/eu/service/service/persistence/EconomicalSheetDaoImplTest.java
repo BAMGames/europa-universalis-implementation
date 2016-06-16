@@ -93,6 +93,13 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertFalse(provinces.containsKey("eHinterpommern"));
         Assert.assertEquals(12, provinces.size());
         Assert.assertEquals(126, provinces.values().stream().collect(Collectors.summingInt(value -> value)).intValue());
+
+        provinces = economicalSheetDao.getOwnedAndControlledProvinces("hansia", 1L);
+        Assert.assertEquals(0, provinces.size());
+
+        provinces = economicalSheetDao.getOwnedAndControlledProvinces("hanse", 1L);
+        Assert.assertEquals(4, provinces.size());
+        Assert.assertEquals(20, provinces.values().stream().collect(Collectors.summingInt(value -> value)).intValue());
     }
 
     @Test
@@ -132,5 +139,25 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertEquals("eNormandie", pillaged.get(4));
         Assert.assertEquals("ePoitou", pillaged.get(5));
         Assert.assertEquals("eQuercy", pillaged.get(6));
+    }
+
+    @Test
+    public void testMnu() {
+        List<String> provinces = new ArrayList<>();
+        Assert.assertEquals(15, economicalSheetDao.getMnuIncome("angleterre", provinces, 1L).intValue());
+        Assert.assertEquals(null, economicalSheetDao.getMnuIncome("angleterre", provinces, 2L));
+        Assert.assertEquals(14, economicalSheetDao.getMnuIncome("france", provinces, 1L).intValue());
+        Assert.assertEquals(null, economicalSheetDao.getMnuIncome("france", provinces, 2L));
+        Assert.assertEquals(null, economicalSheetDao.getMnuIncome("prusse", provinces, 1L));
+
+        provinces.clear();
+        provinces.add("eIle-de-France");
+        Assert.assertEquals(null, economicalSheetDao.getMnuIncome("angleterre", provinces, 1L));
+        Assert.assertEquals(14, economicalSheetDao.getMnuIncome("france", provinces, 1L).intValue());
+
+        provinces.clear();
+        provinces.add("ePoitou");
+        provinces.add("eBearn");
+        Assert.assertEquals(null, economicalSheetDao.getMnuIncome("france", provinces, 1L));
     }
 }
