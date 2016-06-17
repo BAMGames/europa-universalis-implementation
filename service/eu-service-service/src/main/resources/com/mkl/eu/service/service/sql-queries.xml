@@ -121,15 +121,16 @@
 		<![CDATA[
 			SELECT
 				c.TYPE as TYPE,
-				COALESCE(cp.R_COUNTRY, peu.R_COUNTRY) as COUNTRY
+				COALESCE(GROUP_CONCAT(cp.R_COUNTRY SEPARATOR ','), peu.R_COUNTRY) as COUNTRY
 			FROM counter c
 				INNER JOIN stack s ON c.ID_STACK = s.ID
 				INNER JOIN r_province p ON s.R_PROVINCE = p.NAME
 				INNER JOIN r_province_eu peu ON p.ID = peu.ID
-  				LEFT OUTER JOIN COUNTER cp ON  cp.TYPE = 'OWN'
-  					AND cp.ID_STACK IN (SELECT ID FROM STACK WHERE R_PROVINCE = p.NAME AND ID_GAME = :idGame)
-			WHERE type LIKE 'TRADE_CENTER%'
+  				LEFT OUTER JOIN STACK sp ON sp.R_PROVINCE = p.NAME AND sp.ID_GAME = :idGame
+  				LEFT OUTER JOIN COUNTER cp ON cp.ID_STACK = sp.ID AND cp.TYPE = 'OWN'
+			WHERE c.TYPE LIKE 'TRADE_CENTER%'
 				AND s.ID_GAME = :idGame
+			GROUP BY c.TYPE, peu.R_COUNTRY
 		;
 		]]>
 	</entry>
@@ -301,14 +302,15 @@
 	<entry key="game.neighbor_owner">
 		<![CDATA[
 			SELECT
-				DISTINCT COALESCE(c.R_COUNTRY, pe1.R_COUNTRY) AS OWNER
+				DISTINCT COALESCE(GROUP_CONCAT(c.R_COUNTRY), pe1.R_COUNTRY) AS OWNER
   			FROM r_province p
   				INNER JOIN r_border b1 ON b1.ID_R_PROVINCE_FROM = p.ID
   				INNER JOIN r_province p1 ON b1.ID_R_PROVINCE_TO = p1.ID
   				INNER JOIN r_province_eu pe1 ON pe1.ID = p1.ID
-  				LEFT OUTER JOIN counter c ON c.TYPE = 'OWN'
-  					AND c.ID_STACK IN (SELECT ID FROM stack WHERE R_PROVINCE = p1.NAME AND ID_GAME = :idGame)
-			WHERE p.NAME = ':province';
+  				LEFT OUTER JOIN stack s ON s.R_PROVINCE = p1.NAME AND s.ID_GAME = :idGame
+  				LEFT OUTER JOIN counter c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
+			WHERE p.NAME = ':province'
+			GROUP BY pe1.R_COUNTRY;
 		]]>
 	</entry>
 </properties>
