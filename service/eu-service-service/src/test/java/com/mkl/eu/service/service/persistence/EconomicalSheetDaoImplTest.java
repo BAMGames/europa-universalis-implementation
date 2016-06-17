@@ -290,4 +290,17 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertEquals(null, colTp.getLeft());
         Assert.assertEquals(null, colTp.getRight());
     }
+
+    @Test
+    public void testExoRes() {
+        Assert.assertEquals(21, economicalSheetDao.getExoResIncome("hollande", 1L).intValue());
+        Assert.assertEquals(24, economicalSheetDao.getExoResIncome("france", 1L).intValue());
+        Assert.assertEquals(null, economicalSheetDao.getExoResIncome("angleterre", 1L));
+        Assert.assertEquals(null, economicalSheetDao.getExoResIncome("suede", 1L));
+
+        Assert.assertEquals(null, economicalSheetDao.getExoResIncome("hollande", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getExoResIncome("france", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getExoResIncome("angleterre", 2L));
+        Assert.assertEquals(null, economicalSheetDao.getExoResIncome("suede", 2L));
+    }
 }
