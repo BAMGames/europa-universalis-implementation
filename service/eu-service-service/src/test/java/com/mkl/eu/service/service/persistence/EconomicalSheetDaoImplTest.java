@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.persistence;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
+import org.apache.commons.lang3.tuple.Pair;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
@@ -238,5 +239,55 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertEquals(CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC, franceCenters.get(1));
         Assert.assertEquals(1, centers.get("hollande").size());
         Assert.assertEquals(CounterFaceTypeEnum.TRADE_CENTER_INDIAN, centers.get("hollande").get(0));
+    }
+
+    @Test
+    public void testColTp() {
+        Pair<Integer, Integer> colTp;
+
+        colTp = economicalSheetDao.getColTpIncome("france", 1L);
+
+        Assert.assertEquals(null, colTp.getLeft());
+        Assert.assertEquals(2, colTp.getRight().intValue());
+
+        colTp = economicalSheetDao.getColTpIncome("portugal", 1L);
+
+        Assert.assertEquals(4, colTp.getLeft().intValue());
+        Assert.assertEquals(null, colTp.getRight());
+
+        colTp = economicalSheetDao.getColTpIncome("hollande", 1L);
+
+        Assert.assertEquals(9, colTp.getLeft().intValue());
+        Assert.assertEquals(1, colTp.getRight().intValue());
+
+        colTp = economicalSheetDao.getColTpIncome("angleterre", 1L);
+
+        Assert.assertEquals(0, colTp.getLeft().intValue());
+        Assert.assertEquals(0, colTp.getRight().intValue());
+
+        colTp = economicalSheetDao.getColTpIncome("suede", 1L);
+
+        Assert.assertEquals(null, colTp.getLeft());
+        Assert.assertEquals(null, colTp.getRight());
+
+        colTp = economicalSheetDao.getColTpIncome("france", 2L);
+
+        Assert.assertEquals(null, colTp.getLeft());
+        Assert.assertEquals(null, colTp.getRight());
+
+        colTp = economicalSheetDao.getColTpIncome("portugal", 2L);
+
+        Assert.assertEquals(null, colTp.getLeft());
+        Assert.assertEquals(null, colTp.getRight());
+
+        colTp = economicalSheetDao.getColTpIncome("hollande", 2L);
+
+        Assert.assertEquals(null, colTp.getLeft());
+        Assert.assertEquals(null, colTp.getRight());
+
+        colTp = economicalSheetDao.getColTpIncome("angleterre", 2L);
+
+        Assert.assertEquals(null, colTp.getLeft());
+        Assert.assertEquals(null, colTp.getRight());
     }
 }

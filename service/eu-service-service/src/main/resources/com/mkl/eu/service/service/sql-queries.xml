@@ -137,20 +137,19 @@
 	<entry key="income.colTp">
 		<![CDATA[
 			SELECT
-				c.COLONY as COL,
+				e.TYPE as TYPE,
 				SUM(
-					IF(c.COLONY,
-						LEVEL + IF(LEVEL >=4, 2, IF(LEVEL >= 1, 1, 0)) * r.INCOME,
-						IF(LEVEL >= 4,
-							2,
-							IF(LEVEL >=1, 1, .0)))) AS INCOME
-			FROM colony c
-				INNER JOIN r_region r ON c.R_REGION = r.NAME
-				INNER JOIN counter c0 ON c.ID_COUNTER = c0.ID
+					CASE e.TYPE
+						WHEN 'COLONY' THEN LEVEL + (CASE WHEN LEVEL >=4 THEN 2 WHEN LEVEL >= 1 THEN 1 ELSE 0 END) * r.INCOME
+						ELSE CASE WHEN LEVEL >= 4 THEN 2 WHEN LEVEL >=1 THEN 1 ELSE 0 END
+					END) AS INCOME
+			FROM establishment e
+				INNER JOIN r_region r ON e.R_REGION = r.NAME
+				INNER JOIN counter c0 ON e.ID_COUNTER = c0.ID
 				INNER JOIN stack s ON c0.ID_STACK = s.id
 			WHERE c0.R_COUNTRY = ':countryName'
 				AND s.ID_GAME = :idGame
-			GROUP BY c.COLONY
+			GROUP BY e.TYPE
 		;
 		]]>
 	</entry>

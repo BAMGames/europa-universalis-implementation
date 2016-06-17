@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Criteria;
@@ -184,8 +185,8 @@ public class EconomicalSheetDaoImpl extends GenericDaoImpl<EconomicalSheetEntity
         sql = sql.replace(":idGame", Long.toString(idGame));
         List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
         results.stream().forEach(input -> {
-            Boolean isCol = (Boolean) input.get("COL");
-            if (isCol) {
+            String type = (String) input.get("TYPE");
+            if (StringUtils.equals("COLONY", type)) {
                 income.setLeft(((BigDecimal) input.get("INCOME")).intValue());
             } else {
                 income.setRight(((BigDecimal) input.get("INCOME")).intValue());
