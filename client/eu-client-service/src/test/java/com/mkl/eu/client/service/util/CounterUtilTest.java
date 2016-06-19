@@ -1,6 +1,7 @@
 package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import org.junit.Assert;
 import org.junit.Test;
@@ -216,5 +217,21 @@ public class CounterUtilTest {
         Assert.assertEquals(CounterFaceTypeEnum.TECH_SEVENTY_FOUR, CounterUtil.getTechnologyType(Tech.SEVENTY_FOUR));
         Assert.assertEquals(CounterFaceTypeEnum.TECH_TERCIO, CounterUtil.getTechnologyType(Tech.TERCIO));
         Assert.assertEquals(CounterFaceTypeEnum.TECH_GALLEASS, CounterUtil.getTechnologyType(Tech.GALLEASS));
+    }
+
+    @Test
+    public void testTechGroup() {
+        Assert.assertEquals(null, CounterUtil.getTechnologyGroup(null, true));
+        Assert.assertEquals(null, CounterUtil.getTechnologyGroup(null, false));
+        Assert.assertEquals(null, CounterUtil.getTechnologyGroup(CultureEnum.MEDIEVAL, true));
+        Assert.assertEquals(null, CounterUtil.getTechnologyGroup(CultureEnum.MEDIEVAL, false));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_LATIN, CounterUtil.getTechnologyGroup(CultureEnum.LATIN, true));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_NAVAL_LATIN, CounterUtil.getTechnologyGroup(CultureEnum.LATIN, false));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_ISLAM, CounterUtil.getTechnologyGroup(CultureEnum.ISLAM, true));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_NAVAL_ISLAM, CounterUtil.getTechnologyGroup(CultureEnum.ISLAM, false));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_ORTHODOX, CounterUtil.getTechnologyGroup(CultureEnum.ORTHODOX, true));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_NAVAL_ORTHODOX, CounterUtil.getTechnologyGroup(CultureEnum.ORTHODOX, false));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_ASIA, CounterUtil.getTechnologyGroup(CultureEnum.ROTW, true));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_NAVAL_ASIA, CounterUtil.getTechnologyGroup(CultureEnum.ROTW, false));
     }
 }

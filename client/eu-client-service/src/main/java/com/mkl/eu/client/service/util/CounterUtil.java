@@ -1,6 +1,7 @@
 package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 
 /**
@@ -352,5 +353,50 @@ public final class CounterUtil {
         }
 
         return type;
+    }
+
+    /**
+     * @param culture group.
+     * @param land    <code>true</code> for land tech, <code>false</code> for naval tech.
+     * @return the technology group from culture.
+     */
+    public static CounterFaceTypeEnum getTechnologyGroup(CultureEnum culture, boolean land) {
+        CounterFaceTypeEnum tech = null;
+
+        if (culture != null) {
+            if (land) {
+                switch (culture) {
+                    case LATIN:
+                        tech = CounterFaceTypeEnum.TECH_LAND_LATIN;
+                        break;
+                    case ISLAM:
+                        tech = CounterFaceTypeEnum.TECH_LAND_ISLAM;
+                        break;
+                    case ORTHODOX:
+                        tech = CounterFaceTypeEnum.TECH_LAND_ORTHODOX;
+                        break;
+                    case ROTW:
+                        tech = CounterFaceTypeEnum.TECH_LAND_ASIA;
+                        break;
+                }
+            } else {
+                switch (culture) {
+                    case LATIN:
+                        tech = CounterFaceTypeEnum.TECH_NAVAL_LATIN;
+                        break;
+                    case ISLAM:
+                        tech = CounterFaceTypeEnum.TECH_NAVAL_ISLAM;
+                        break;
+                    case ORTHODOX:
+                        tech = CounterFaceTypeEnum.TECH_NAVAL_ORTHODOX;
+                        break;
+                    case ROTW:
+                        tech = CounterFaceTypeEnum.TECH_NAVAL_ASIA;
+                        break;
+                }
+            }
+        }
+
+        return tech;
     }
 }
