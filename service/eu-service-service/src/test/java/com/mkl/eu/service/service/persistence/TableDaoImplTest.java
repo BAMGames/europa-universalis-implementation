@@ -1,5 +1,8 @@
 package com.mkl.eu.service.service.persistence;
 
+import com.excilys.ebi.spring.dbunit.config.DBOperation;
+import com.excilys.ebi.spring.dbunit.test.DataSet;
+import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.service.service.ITablesService;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.LimitTypeEnum;
@@ -8,69 +11,38 @@ import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
-import org.dbunit.database.DatabaseConnection;
-import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
-import org.dbunit.operation.DatabaseOperation;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
-import java.io.InputStream;
-import java.sql.Connection;
-
 /**
- * Description of the class.
+ * Test for Tables service, dao and mapping.
  *
  * @author MKL
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
-                                   "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 @Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
+@TestExecutionListeners({
+        DependencyInjectionTestExecutionListener.class,
+        TransactionalTestExecutionListener.class,
+        RollbackTransactionalDataSetTestExecutionListener.class
+})
+@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
+        "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
+@DataSet(value = "tables.xml", columnSensing = true, tearDownOperation = DBOperation.DELETE_ALL)
 public class TableDaoImplTest {
-    @Autowired
-    private DataSource dataSource;
-
     @Autowired
     private ITablesService tablesService;
 
     @Autowired
     private ITablesDao tablesDao;
-
-    @Before
-    public void initDb() throws Exception {
-        DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSet());
-    }
-
-    @After
-    public void clearDb() throws Exception {
-        DatabaseOperation.DELETE.execute(getConnection(), getDataSet());
-    }
-
-    private IDataSet getDataSet() throws Exception {
-        InputStream inputStream = this.getClass().getClassLoader()
-                                      .getResourceAsStream("com/mkl/eu/service/service/persistence/tables.xml");
-        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
-        builder.setColumnSensing(true);
-        return builder.build(inputStream);
-
-    }
-
-    private IDatabaseConnection getConnection() throws Exception {
-        Connection jdbcConnection = dataSource.getConnection();
-        return new DatabaseConnection(jdbcConnection);
-    }
 
     @Test
     public void testTables() {

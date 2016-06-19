@@ -309,7 +309,7 @@
             <dependency>
                 <groupId>com.excilys.ebi.spring-dbunit</groupId>
                 <artifactId>spring-dbunit-test</artifactId>
-                <version>1.2.0</version>
+                <version>1.4.0</version>
             </dependency>
 
             <dependency>

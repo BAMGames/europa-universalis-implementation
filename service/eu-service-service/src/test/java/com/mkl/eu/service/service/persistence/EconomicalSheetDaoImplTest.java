@@ -1,29 +1,26 @@
 package com.mkl.eu.service.service.persistence;
 
+import com.excilys.ebi.spring.dbunit.config.DBOperation;
+import com.excilys.ebi.spring.dbunit.test.DataSet;
+import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import org.apache.commons.lang3.tuple.Pair;
-import org.dbunit.database.DatabaseConnection;
-import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
-import org.dbunit.operation.DatabaseOperation;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -31,50 +28,20 @@ import java.util.stream.Collectors;
  *
  * @author MKL
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
-                                   "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 @Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
+@TestExecutionListeners({
+        DependencyInjectionTestExecutionListener.class,
+        TransactionalTestExecutionListener.class,
+        RollbackTransactionalDataSetTestExecutionListener.class
+})
+@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
+        "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
+@DataSet(value = {"/com/mkl/eu/service/service/persistence/provinces.xml", "eco.xml"}, columnSensing = true, tearDownOperation = DBOperation.DELETE_ALL)
 public class EconomicalSheetDaoImplTest {
-    @Autowired
-    private DataSource dataSource;
 
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
-
-    @Before
-    public void initDb() throws Exception {
-        DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSet());
-        DatabaseOperation.CLEAN_INSERT.execute(getConnection(), getDataSetProvinces());
-    }
-
-    @After
-    public void clearDb() throws Exception {
-        DatabaseOperation.DELETE.execute(getConnection(), getDataSet());
-        DatabaseOperation.DELETE.execute(getConnection(), getDataSetProvinces());
-    }
-
-    private IDataSet getDataSet() throws Exception {
-        InputStream inputStream = this.getClass().getClassLoader()
-                                      .getResourceAsStream("com/mkl/eu/service/service/persistence/eco.xml");
-        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
-        builder.setColumnSensing(true);
-        return builder.build(inputStream);
-    }
-
-    private IDataSet getDataSetProvinces() throws Exception {
-        InputStream inputStream = this.getClass().getClassLoader()
-                                      .getResourceAsStream("com/mkl/eu/service/service/persistence/provinces.xml");
-        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
-        builder.setColumnSensing(true);
-        return builder.build(inputStream);
-    }
-
-    private IDatabaseConnection getConnection() throws Exception {
-        Connection jdbcConnection = dataSource.getConnection();
-        return new DatabaseConnection(jdbcConnection);
-    }
 
     @Test
     public void testGetOwnAndControlProvinces() {

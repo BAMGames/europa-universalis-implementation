@@ -110,6 +110,11 @@
 
         <!-- Test -->
         <dependency>
+            <groupId>com.excilys.ebi.spring-dbunit</groupId>
+            <artifactId>spring-dbunit-test</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
@@ -139,9 +144,9 @@
             <artifactId>hsqldb</artifactId>
         </dependency>
     </dependencies>
-    
+
     <build>
-         <plugins>
+        <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
@@ -154,6 +159,6 @@
                     </instrumentation>
                 </configuration>
             </plugin>
-         </plugins>
+        </plugins>
     </build>
 </project>
