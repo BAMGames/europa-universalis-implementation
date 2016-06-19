@@ -54,9 +54,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
@@ -3175,7 +3173,7 @@ public class EcoServiceTest {
 
         when(oeUtil.getStability(game, "france")).thenReturn(-3);
 
-        request.getRequest().setType(AdminActionTypeEnum.ELT);
+        request.getRequest().setType(AdminActionTypeEnum.EXL);
 
         try {
             economicService.addAdminAction(request);
@@ -3205,7 +3203,7 @@ public class EcoServiceTest {
         request.getGame().setVersionGame(1L);
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
-        request.getRequest().setType(AdminActionTypeEnum.ELT);
+        request.getRequest().setType(AdminActionTypeEnum.EXL);
 
         GameEntity game = new GameEntity();
         game.setId(12L);

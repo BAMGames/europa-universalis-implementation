@@ -346,7 +346,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             case DTI:
                 admAct = computeFtiDti(request, game, country);
                 break;
-            case ELT:
+            case EXL:
                 admAct = computeExceptionalTaxes(request, game, country);
                 break;
             case COL:
