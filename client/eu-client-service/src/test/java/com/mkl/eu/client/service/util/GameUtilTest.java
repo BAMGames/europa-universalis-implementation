@@ -72,4 +72,15 @@ public class GameUtilTest {
         Assert.assertTrue(GameUtil.isInflationBox("B_PB_1G"));
         Assert.assertTrue(GameUtil.isInflationBox("B_PB_3D"));
     }
+
+    @Test
+    public void testTechBox() {
+        Assert.assertEquals(null, GameUtil.getTechnologyBox(null));
+        Assert.assertEquals(null, GameUtil.getTechnologyBox(""));
+        Assert.assertEquals(null, GameUtil.getTechnologyBox("21"));
+        Assert.assertEquals(0, GameUtil.getTechnologyBox("B_TECH_0").intValue());
+        Assert.assertEquals(5, GameUtil.getTechnologyBox("B_TECH_5").intValue());
+        Assert.assertEquals(25, GameUtil.getTechnologyBox("B_TECH_25").intValue());
+        Assert.assertEquals(60, GameUtil.getTechnologyBox("B_TECH_60").intValue());
+    }
 }

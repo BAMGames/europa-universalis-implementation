@@ -110,4 +110,22 @@ public final class GameUtil {
     public static boolean isInflationBox(String provinceBox) {
         return !StringUtils.isEmpty(provinceBox) && provinceBox.startsWith("B_PB_");
     }
+
+    /**
+     * Get the box number of a technology counter.
+     *
+     * @param techBox name of the province/box where the technology counter is.
+     * @return the box number.
+     */
+    public static Integer getTechnologyBox(String techBox) {
+        Integer tech = null;
+        if (!StringUtils.isEmpty(techBox)) {
+            Matcher matcher = Pattern.compile("B_TECH_(\\d*)").matcher(techBox);
+            if (matcher.matches()) {
+                tech = Integer.parseInt(matcher.group(1));
+            }
+        }
+
+        return tech;
+    }
 }
