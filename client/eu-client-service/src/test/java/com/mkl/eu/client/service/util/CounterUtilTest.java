@@ -197,4 +197,24 @@ public class CounterUtilTest {
         Assert.assertEquals(Tech.TERCIO, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_TERCIO));
         Assert.assertEquals(Tech.GALLEASS, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_GALLEASS));
     }
+
+    @Test
+    public void testTechType() {
+        Assert.assertEquals(null, CounterUtil.getTechnologyType(null));
+        Assert.assertEquals(null, CounterUtil.getTechnologyType("toto"));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_RENAISSANCE, CounterUtil.getTechnologyType(Tech.RENAISSANCE));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_ARQUEBUS, CounterUtil.getTechnologyType(Tech.ARQUEBUS));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_MUSKET, CounterUtil.getTechnologyType(Tech.MUSKET));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_BAROQUE, CounterUtil.getTechnologyType(Tech.BAROQUE));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_MANOEUVRE, CounterUtil.getTechnologyType(Tech.MANOEUVRE));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LACE_WAR, CounterUtil.getTechnologyType(Tech.LACE_WAR));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_NAE_GALEON, CounterUtil.getTechnologyType(Tech.NAE_GALEON));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_GALLEON_FLUYT, CounterUtil.getTechnologyType(Tech.GALLEON_FLUYT));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_BATTERY, CounterUtil.getTechnologyType(Tech.BATTERY));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_VESSEL, CounterUtil.getTechnologyType(Tech.VESSEL));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_THREE_DECKER, CounterUtil.getTechnologyType(Tech.THREE_DECKER));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_SEVENTY_FOUR, CounterUtil.getTechnologyType(Tech.SEVENTY_FOUR));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_TERCIO, CounterUtil.getTechnologyType(Tech.TERCIO));
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_GALLEASS, CounterUtil.getTechnologyType(Tech.GALLEASS));
+    }
 }
