@@ -7,7 +7,7 @@ import com.mkl.eu.client.service.vo.EuObject;
  *
  * @author MKL.
  */
-public class Tech extends EuObject {
+public class Tech extends EuObject implements Comparable<Tech> {
     /** Name of the medieval technology. */
     public static final String MEDIEVAL = "MEDIEVAL";
     /** Name of the renaissance technology. */
@@ -99,5 +99,11 @@ public class Tech extends EuObject {
     /** @param beginTurn the beginTurn to set. */
     public void setBeginTurn(Integer beginTurn) {
         this.beginTurn = beginTurn;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int compareTo(Tech o) {
+        return getBeginTurn().compareTo(o.getBeginTurn());
     }
 }

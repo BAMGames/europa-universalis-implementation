@@ -3189,7 +3189,7 @@ public class EcoServiceTest {
             economicService.addAdminAction(request);
             Assert.fail("Should break because stab is -3");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.INSUFICIENT_STABILITY, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.INSUFFICIENT_STABILITY, e.getCode());
             Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
         }
     }

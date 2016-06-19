@@ -292,6 +292,69 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when planning a technology enhancement with high investment
+     * when the other technology has already been planned with a high investment.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the action</li>
+     * <li>2: country of the action</li>
+     * </ul>
+     * </p>
+     */
+    String TECH_ALREADY_HIGH_INVESTMENT = "exception.eu.admin_action.tech_already_high_investment";
+
+    /**
+     * <p>
+     * Exception thrown when planning a technology enhancement while its counter is already at maximum level.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the action</li>
+     * <li>2: country of the action</li>
+     * </ul>
+     * </p>
+     */
+    String TECH_ALREADY_MAX = "exception.eu.admin_action.tech_already_max";
+
+    /**
+     * <p>
+     * Exception thrown when a counter that should exist does not.
+     * May require admin manipulation.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the counter</li>
+     * <li>2: country of the counter</li>
+     * </ul>
+     * </p>
+     */
+    String MISSING_COUNTER = "exception.eu.missing_counter";
+
+    /**
+     * <p>
+     * Exception thrown when an entry in a table that should exist does not.
+     * May require admin manipulation.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the table</li>
+     * <li>2: entry missing</li>
+     * </ul>
+     * </p>
+     */
+    String MISSING_TABLE_ENTRY = "exception.eu.missing_counter";
+
+    /**
+     * <p>
      * Exception thrown when a manufacture can't be created in the province.
      * </p>
      * <p>
@@ -321,7 +384,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String INSUFICIENT_STABILITY = "exception.eu.insufficient_stability";
+    String INSUFFICIENT_STABILITY = "exception.eu.insufficient_stability";
 
     /**
      * <p>

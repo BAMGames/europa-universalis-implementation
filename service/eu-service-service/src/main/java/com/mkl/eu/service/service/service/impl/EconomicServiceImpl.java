@@ -39,7 +39,9 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
+import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
@@ -86,6 +88,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
+    /** Country DAO. */
+    @Autowired
+    private ICountryDao countryDao;
     /** Game mapping. */
     @Autowired
     private EconomicalSheetMapping ecoSheetsMapping;
@@ -354,6 +359,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 break;
             case TP:
                 admAct = computeTradingPost(request, game, country);
+                break;
+            case ELT:
+                admAct = computeTechnology(request, game, country, true);
+                break;
+            case ENT:
+                admAct = computeTechnology(request, game, country, false);
                 break;
             default:
                 admAct = null;
@@ -631,7 +642,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
         Tech targetTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), fortressTech));
         if (actualTech != null && targetTech != null) {
-            canPurchaseFortress = actualTech.getBeginTurn() >= targetTech.getBeginTurn();
+            canPurchaseFortress = actualTech.compareTo(targetTech) >= 0;
         }
         if (desiredLevel == 5) {
             canPurchaseFortress = game.getTurn() >= 40;
@@ -1147,7 +1158,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         int stab = oeUtil.getStability(game, country.getName());
 
-        failIfFalse(new CheckForThrow<Boolean>().setTest(stab > -3).setCodeError(IConstantsServiceException.INSUFICIENT_STABILITY)
+        failIfFalse(new CheckForThrow<Boolean>().setTest(stab > -3).setCodeError(IConstantsServiceException.INSUFFICIENT_STABILITY)
                 .setMsgFormat("{1}: {0} The stability of the country {2} is too low. Actual: {3}, minimum: {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName(), stab, -2));
 
         // TODO war no loss of stab
@@ -1473,6 +1484,152 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         boolean provinceOk = oeUtil.canSettle(province, discoveries, sources, forts);
         failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.SETTLEMENTS)
                 .setMsgFormat("{1}: {0} The establishment located in {2} can't be settled because of settlements rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province.getName()));
+    }
+
+    /**
+     * Computes the creation of a PLANNED administrative action of type Technology enhancement.
+     *
+     * @param request request containing the info about the action to create.
+     * @param game    in which the action will be created.
+     * @param country owner of the action.
+     * @param land    <code>true</code> if the technology to enhance is land, <code>false</code> otherwise.
+     * @return the administrative action to create.
+     * @throws FunctionalException Exception.
+     */
+    private AdministrativeActionEntity computeTechnology(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country, boolean land) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+                null, AdminActionTypeEnum.ELT, AdminActionTypeEnum.ENT);
+
+        boolean techAlreadyPlanned = false;
+        boolean otherTechBigInvestment = false;
+        Integer smallCost = EconomicUtil.getAdminActionCost(request.getRequest().getType(), InvestmentEnum.S);
+        for (AdministrativeActionEntity action : actions) {
+            if ((action.getType() == AdminActionTypeEnum.ELT && land) ||
+                    (action.getType() == AdminActionTypeEnum.ENT && !land)) {
+                techAlreadyPlanned = true;
+            } else {
+                otherTechBigInvestment = action.getCost() > smallCost;
+            }
+        }
+
+        failIfTrue(new CheckForThrow<Boolean>().setTest(techAlreadyPlanned).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
+
+        failIfTrue(new CheckForThrow<Boolean>().setTest(request.getRequest().getInvestment() != InvestmentEnum.S && otherTechBigInvestment).setCodeError(IConstantsServiceException.TECH_ALREADY_HIGH_INVESTMENT)
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the other tech has already a high investment.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+
+        CounterFaceTypeEnum type;
+        String actualTechName;
+        if (land) {
+            type = CounterFaceTypeEnum.TECH_LAND;
+            actualTechName = country.getLandTech();
+        } else {
+            type = CounterFaceTypeEnum.TECH_NAVAL;
+            actualTechName = country.getNavalTech();
+        }
+        CounterEntity techCounter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                c -> StringUtils.equals(c.getCountry(), country.getName()) && c.getType() == type);
+
+        failIfNull(new CheckForThrow<>().setTest(techCounter).setCodeError(IConstantsServiceException.MISSING_COUNTER)
+                .setMsgFormat(MSG_MISSING_COUNTER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, country.getName()));
+
+        int techBox = GameUtil.getTechnologyBox(techCounter.getOwner().getProvince());
+        Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), t -> StringUtils.equals(t.getName(), actualTechName));
+
+        failIfNull(new CheckForThrow<>().setTest(actualTech).setCodeError(IConstantsServiceException.MISSING_TABLE_ENTRY)
+                .setMsgFormat("{1}: {0} The entry {3} of the table {2} is missing. Please ask an admin for correction.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, "TECH", actualTechName));
+
+        List<Tech> higherTechs = getTables().getTechs().stream()
+                .filter(t -> t.getBeginTurn() > actualTech.getBeginTurn())
+                .collect(Collectors.toList());
+
+        Collections.sort(higherTechs);
+
+        if (higherTechs.size() > 0) {
+            Tech tech = higherTechs.get(0);
+
+            CounterEntity nextTechCounter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                    c -> c.getType() == CounterUtil.getTechnologyType(tech.getName()));
+
+            failIfNull(new CheckForThrow<>().setTest(nextTechCounter).setCodeError(IConstantsServiceException.MISSING_COUNTER)
+                    .setMsgFormat(MSG_MISSING_COUNTER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterUtil.getTechnologyType(tech.getName()), country.getName()));
+
+            int nextTechBox = GameUtil.getTechnologyBox(nextTechCounter.getOwner().getProvince());
+
+            boolean nextTechUnknown = tech.getBeginTurn() <= game.getTurn();
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(nextTechUnknown && nextTechBox > techBox + 1).setCodeError(IConstantsServiceException.TECH_ALREADY_MAX)
+                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the tech is already at max level.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+        } else {
+            // TODO it is possible to go through box 70. Disable this test when the conception of the 70+ will be made.
+            failIfFalse(new CheckForThrow<Boolean>().setTest(techBox < 70).setCodeError(IConstantsServiceException.TECH_ALREADY_MAX)
+                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the tech is already at max level.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+        }
+
+        int adm = oeUtil.getMilitaryValue(country);
+        int column = adm + country.getDti() - 9;
+
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+        if (land) {
+            CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                    c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_PLUS || c.getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS)
+                            && StringUtils.equals(c.getCountry(), country.getName()));
+            if (mnu != null) {
+                column += 2;
+            } else {
+                mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                        c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_MINUS || c.getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS)
+                                && StringUtils.equals(c.getCountry(), country.getName()));
+                if (mnu != null) {
+                    column += 1;
+                }
+            }
+        } else {
+            CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                    c -> c.getType() == CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS && StringUtils.equals(c.getCountry(), country.getName()));
+            if (mnu != null) {
+                column += 2;
+            } else {
+                mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                        c -> c.getType() == CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS && StringUtils.equals(c.getCountry(), country.getName()));
+                if (mnu != null) {
+                    column += 1;
+                }
+            }
+        }
+        column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
+        // threshold to -4/4
+        column = Math.min(Math.max(column, -4), 4);
+
+        int bonus = 0;
+        if (StringUtils.equals(PlayableCountry.TURKEY, country.getName())) {
+            // TODO REFORMS
+            bonus -= 1;
+        }
+        CountryEntity countryRef = countryDao.getCountryByName(country.getName());
+        CounterFaceTypeEnum groupTechType = CounterUtil.getTechnologyGroup(countryRef.getCulture(), land);
+        CounterEntity groupTechCounter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                c -> c.getType() == groupTechType);
+        if (groupTechCounter != null) {
+            int groupBox = GameUtil.getTechnologyBox(groupTechCounter.getOwner().getProvince());
+            if (groupBox > techBox + 5) {
+                bonus += groupBox - techBox - 5;
+            }
+        }
+
+        AdministrativeActionEntity admAct = new AdministrativeActionEntity();
+        admAct.setCountry(country);
+        admAct.setStatus(AdminActionStatusEnum.PLANNED);
+        admAct.setTurn(game.getTurn());
+        admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
+        admAct.setColumn(column);
+        admAct.setBonus(bonus);
+
+        return admAct;
     }
 
     /** {@inheritDoc} */

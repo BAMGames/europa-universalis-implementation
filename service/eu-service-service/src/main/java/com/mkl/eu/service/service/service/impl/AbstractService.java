@@ -57,6 +57,8 @@ public abstract class AbstractService implements INameConstants {
     public static final String MSG_ACCESS_RIGHT = "{1}: {2} has not the right to perform this action. Should be {3}.";
     /** Error message when a counter limit would exceed. */
     public static final String MSG_COUNTER_LIMIT_EXCEED = "{1}: {0} The counter type {2} can''t be created by {3} because country limits were exceeded ({4}/{5}).";
+    /** Error message when a counter is missing. */
+    public static final String MSG_MISSING_COUNTER = "{1}: {0} The counter {2} for country {3} is missing. Please ask an admin for correction.";
     /** Socket Handler. */
     @Autowired
     private SocketHandler socketHandler;
@@ -117,12 +119,23 @@ public abstract class AbstractService implements INameConstants {
     }
 
     /**
-     * Will throw a FunctionalException if the test is <code>null</code>.
+     * Will throw a FunctionalException if the test is <code>null</code> or <code>false</code>.
      *
      * @throws FunctionalException the exception.
      */
     protected void failIfFalse(CheckForThrow<Boolean> check) throws FunctionalException {
         if (check.getTest() == null || !check.getTest()) {
+            fail(check);
+        }
+    }
+
+    /**
+     * Will throw a FunctionalException if the test is <code>null</code> or <code>true</code>.
+     *
+     * @throws FunctionalException the exception.
+     */
+    protected void failIfTrue(CheckForThrow<Boolean> check) throws FunctionalException {
+        if (check.getTest() == null || check.getTest()) {
             fail(check);
         }
     }
