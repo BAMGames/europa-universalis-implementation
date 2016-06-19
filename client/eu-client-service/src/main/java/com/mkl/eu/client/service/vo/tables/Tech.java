@@ -14,8 +14,32 @@ public class Tech extends EuObject {
     public static final String RENAISSANCE = "RENAISSANCE";
     /** Name of the arquebus technology. */
     public static final String ARQUEBUS = "ARQUEBUS";
+    /** Name of the musket technology. */
+    public static final String MUSKET = "MUSKET";
     /** Name of the baroque technology. */
     public static final String BAROQUE = "BAROQUE";
+    /** Name of the manoeuvre technology. */
+    public static final String MANOEUVRE = "MANOEUVRE";
+    /** Name of the lace war technology. */
+    public static final String LACE_WAR = "LACE_WAR";
+    /** Name of the carrack technology. */
+    public static final String CARRACK = "CARRACK";
+    /** Name of the nae galeon technology. */
+    public static final String NAE_GALEON = "NAE_GALEON";
+    /** Name of the galleon fluyt technology. */
+    public static final String GALLEON_FLUYT = "GALLEON_FLUYT";
+    /** Name of the battery technology. */
+    public static final String BATTERY = "BATTERY";
+    /** Name of the vessel technology. */
+    public static final String VESSEL = "VESSEL";
+    /** Name of the three decker technology. */
+    public static final String THREE_DECKER = "THREE_DECKER";
+    /** Name of the seventy four technology. */
+    public static final String SEVENTY_FOUR = "SEVENTY_FOUR";
+    /** Name of the tercio technology. */
+    public static final String TERCIO = "TERCIO";
+    /** Name of the galleass technology. */
+    public static final String GALLEASS = "GALLEASS";
     /** Name of the technology. */
     private String name;
     /** Flag to know if the technology is land or naval. */

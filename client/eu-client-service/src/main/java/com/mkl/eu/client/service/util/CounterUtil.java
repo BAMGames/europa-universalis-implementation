@@ -324,4 +324,18 @@ public final class CounterUtil {
 
         return tech;
     }
+
+    /**
+     * @param tech counter face type of the technology counter.
+     * @return the name of the technology counter given the counter face type.
+     */
+    public static String getTechnologyName(CounterFaceTypeEnum tech) {
+        String name = null;
+
+        if (isNeutralTechnology(tech)) {
+            name = tech.name().substring(5);
+        }
+
+        return name;
+    }
 }

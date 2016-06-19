@@ -1,6 +1,7 @@
 package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -177,4 +178,23 @@ public class CounterUtilTest {
         Assert.assertFalse(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.ARMY_MINUS));
     }
 
+    @Test
+    public void testTechName() {
+        Assert.assertEquals(null, CounterUtil.getTechnologyName(null));
+        Assert.assertEquals(null, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_LAND));
+        Assert.assertEquals(Tech.RENAISSANCE, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_RENAISSANCE));
+        Assert.assertEquals(Tech.ARQUEBUS, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_ARQUEBUS));
+        Assert.assertEquals(Tech.MUSKET, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_MUSKET));
+        Assert.assertEquals(Tech.BAROQUE, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_BAROQUE));
+        Assert.assertEquals(Tech.MANOEUVRE, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_MANOEUVRE));
+        Assert.assertEquals(Tech.LACE_WAR, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_LACE_WAR));
+        Assert.assertEquals(Tech.NAE_GALEON, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_NAE_GALEON));
+        Assert.assertEquals(Tech.GALLEON_FLUYT, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_GALLEON_FLUYT));
+        Assert.assertEquals(Tech.BATTERY, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_BATTERY));
+        Assert.assertEquals(Tech.VESSEL, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_VESSEL));
+        Assert.assertEquals(Tech.THREE_DECKER, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_THREE_DECKER));
+        Assert.assertEquals(Tech.SEVENTY_FOUR, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_SEVENTY_FOUR));
+        Assert.assertEquals(Tech.TERCIO, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_TERCIO));
+        Assert.assertEquals(Tech.GALLEASS, CounterUtil.getTechnologyName(CounterFaceTypeEnum.TECH_GALLEASS));
+    }
 }
