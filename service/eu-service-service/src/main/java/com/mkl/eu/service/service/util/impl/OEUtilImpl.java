@@ -39,6 +39,18 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
+    public int getMilitaryValue(PlayableCountryEntity country) {
+        int mil = 3;
+        if (country != null && country.getMonarch() != null && country.getMonarch().getMilitary() != null) {
+            mil = country.getMonarch().getMilitary();
+        }
+        return mil;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getStability(GameEntity game, String country) {
         int stab = 0;
         if (game != null) {

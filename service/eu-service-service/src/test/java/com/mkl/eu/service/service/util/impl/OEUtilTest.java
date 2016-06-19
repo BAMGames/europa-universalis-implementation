@@ -41,6 +41,19 @@ public class OEUtilTest {
     }
 
     @Test
+    public void testMilValue() {
+        Assert.assertEquals(3, oeUtil.getMilitaryValue(null));
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        Assert.assertEquals(3, oeUtil.getMilitaryValue(country));
+        country.setMonarch(new MonarchEntity());
+        Assert.assertEquals(3, oeUtil.getMilitaryValue(country));
+        country.getMonarch().setMilitary(5);
+        Assert.assertEquals(5, oeUtil.getMilitaryValue(country));
+        country.getMonarch().setMilitary(9);
+        Assert.assertEquals(9, oeUtil.getMilitaryValue(country));
+    }
+
+    @Test
     public void testStability() {
         Assert.assertEquals(0, oeUtil.getStability(null, null));
         GameEntity game = new GameEntity();

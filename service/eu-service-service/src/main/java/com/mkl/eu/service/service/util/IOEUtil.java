@@ -19,6 +19,12 @@ public interface IOEUtil {
     int getAdministrativeValue(PlayableCountryEntity country);
 
     /**
+     * @param country whom we want the military value.
+     * @return the military value of a country.
+     */
+    int getMilitaryValue(PlayableCountryEntity country);
+
+    /**
      * @param game    game containing all the counters.
      * @param country whom we want the stability.
      * @return the stability of a country.
