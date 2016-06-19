@@ -156,4 +156,25 @@ public class CounterUtilTest {
         Assert.assertTrue(CounterUtil.isForce(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
         Assert.assertFalse(CounterUtil.isForce(CounterFaceTypeEnum.ARSENAL_2));
     }
+
+    @Test
+    public void testNeutralTech() {
+        Assert.assertFalse(CounterUtil.isNeutralTechnology(null));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_RENAISSANCE));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_ARQUEBUS));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_MUSKET));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_BAROQUE));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_MANOEUVRE));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_LACE_WAR));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_NAE_GALEON));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_GALLEON_FLUYT));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_BATTERY));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_VESSEL));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_THREE_DECKER));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_SEVENTY_FOUR));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_TERCIO));
+        Assert.assertTrue(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.TECH_GALLEASS));
+        Assert.assertFalse(CounterUtil.isNeutralTechnology(CounterFaceTypeEnum.ARMY_MINUS));
+    }
+
 }

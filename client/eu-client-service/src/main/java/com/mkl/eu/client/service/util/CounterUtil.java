@@ -288,4 +288,40 @@ public final class CounterUtil {
 
         return force;
     }
+
+    /**
+     * @param type of the counter to test.
+     * @return <code>true</code> if the counter face type is the one of a neutral technology, <code>false</code> otherwise.
+     */
+    public static boolean isNeutralTechnology(CounterFaceTypeEnum type) {
+        boolean tech = false;
+
+        if (type != null) {
+            switch (type) {
+                /** Land technologies. */
+                case TECH_RENAISSANCE:
+                case TECH_ARQUEBUS:
+                case TECH_MUSKET:
+                case TECH_BAROQUE:
+                case TECH_MANOEUVRE:
+                case TECH_LACE_WAR:
+                    /** Naval technologies. */
+                case TECH_NAE_GALEON:
+                case TECH_GALLEON_FLUYT:
+                case TECH_BATTERY:
+                case TECH_VESSEL:
+                case TECH_THREE_DECKER:
+                case TECH_SEVENTY_FOUR:
+                    /** Special technologies. */
+                case TECH_TERCIO:
+                case TECH_GALLEASS:
+                    tech = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return tech;
+    }
 }
