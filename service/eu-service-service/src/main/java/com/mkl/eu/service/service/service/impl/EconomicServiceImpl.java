@@ -1513,13 +1513,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         failIfTrue(new CheckForThrow<Boolean>().setTest(techAlreadyPlanned).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
-                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because country limits were exceeded ({4}/{5}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getType(), country.getName(), 1, 1));
 
         failIfNull(new CheckForThrow<>().setTest(request.getRequest().getInvestment()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_INVESTMENT).setParams(METHOD_ADD_ADM_ACT));
 
         failIfTrue(new CheckForThrow<Boolean>().setTest(request.getRequest().getInvestment() != InvestmentEnum.S && otherTechBigInvestment).setCodeError(IConstantsServiceException.TECH_ALREADY_HIGH_INVESTMENT)
-                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the other tech has already a high investment.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+                .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the other tech has already a high investment.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getType(), country.getName(), 1, 1));
 
         CounterFaceTypeEnum type;
         String actualTechName;
@@ -1555,18 +1555,18 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     c -> c.getType() == CounterUtil.getTechnologyType(tech.getName()));
 
             failIfNull(new CheckForThrow<>().setTest(nextTechCounter).setCodeError(IConstantsServiceException.MISSING_COUNTER)
-                    .setMsgFormat(MSG_MISSING_COUNTER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterUtil.getTechnologyType(tech.getName()), country.getName()));
+                    .setMsgFormat(MSG_MISSING_COUNTER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterUtil.getTechnologyType(tech.getName()), "neutral"));
 
             int nextTechBox = GameUtil.getTechnologyBox(nextTechCounter.getOwner().getProvince());
 
-            boolean nextTechUnknown = tech.getBeginTurn() <= game.getTurn();
+            boolean nextTechReachable = tech.getBeginTurn() <= game.getTurn();
 
-            failIfFalse(new CheckForThrow<Boolean>().setTest(nextTechUnknown && nextTechBox > techBox + 1).setCodeError(IConstantsServiceException.TECH_ALREADY_MAX)
-                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the tech is already at max level.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+            failIfFalse(new CheckForThrow<Boolean>().setTest(nextTechReachable || nextTechBox > techBox + 1).setCodeError(IConstantsServiceException.TECH_ALREADY_MAX)
+                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the tech is already at max level.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getType(), country.getName(), 1, 1));
         } else {
             // TODO it is possible to go through box 70. Disable this test when the conception of the 70+ will be made.
             failIfFalse(new CheckForThrow<Boolean>().setTest(techBox < 70).setCodeError(IConstantsServiceException.TECH_ALREADY_MAX)
-                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the tech is already at max level.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, LimitTypeEnum.ACTION_COL, country.getName(), 1, 1));
+                    .setMsgFormat("{1}: {0} The administrative action of type {2} for the country {3} cannot be planned because the tech is already at max level.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getType(), country.getName(), 1, 1));
         }
 
         int adm = oeUtil.getMilitaryValue(country);
