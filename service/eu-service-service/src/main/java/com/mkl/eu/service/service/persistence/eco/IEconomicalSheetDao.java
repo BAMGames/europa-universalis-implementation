@@ -37,7 +37,7 @@ public interface IEconomicalSheetDao extends IGenericDao<EconomicalSheetEntity, 
      *
      * @param idCountry id of the country. Can be <code>null</code>.
      * @param turn      turn of the game.
-     * @param idGame    id of the game.
+     * @param idGame    id of the game. Is ignored if idCountry is not <code>null</code>.
      * @return the sheets.
      */
     List<EconomicalSheetEntity> loadSheets(Long idCountry, Integer turn, Long idGame);

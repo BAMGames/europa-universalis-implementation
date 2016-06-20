@@ -5,6 +5,7 @@ import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
+import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -269,5 +270,53 @@ public class EconomicalSheetDaoImplTest {
         Assert.assertEquals(null, economicalSheetDao.getExoResIncome("france", 2L));
         Assert.assertEquals(null, economicalSheetDao.getExoResIncome("angleterre", 2L));
         Assert.assertEquals(null, economicalSheetDao.getExoResIncome("suede", 2L));
+    }
+
+    @Test
+    public void testLoadSheets() {
+        List<EconomicalSheetEntity> sheets = economicalSheetDao.loadSheets(null, null, null);
+
+        Assert.assertEquals(0, sheets.size());
+
+        sheets = economicalSheetDao.loadSheets(1L, 1, null);
+
+        Assert.assertEquals(1, sheets.size());
+        Assert.assertEquals(100, sheets.get(0).getRtStart().intValue());
+
+        sheets = economicalSheetDao.loadSheets(1L, 2, null);
+
+        Assert.assertEquals(1, sheets.size());
+        Assert.assertEquals(101, sheets.get(0).getRtStart().intValue());
+
+        sheets = economicalSheetDao.loadSheets(1L, 3, null);
+
+        Assert.assertEquals(1, sheets.size());
+        Assert.assertEquals(102, sheets.get(0).getRtStart().intValue());
+
+        sheets = economicalSheetDao.loadSheets(1L, 4, null);
+
+        Assert.assertEquals(0, sheets.size());
+
+        sheets = economicalSheetDao.loadSheets(null, 1, 1L);
+
+        Assert.assertEquals(3, sheets.size());
+        Assert.assertEquals(100, sheets.get(0).getRtStart().intValue());
+        Assert.assertEquals(200, sheets.get(1).getRtStart().intValue());
+        Assert.assertEquals(300, sheets.get(2).getRtStart().intValue());
+
+        sheets = economicalSheetDao.loadSheets(null, 2, 1L);
+
+        Assert.assertEquals(1, sheets.size());
+        Assert.assertEquals(101, sheets.get(0).getRtStart().intValue());
+
+        sheets = economicalSheetDao.loadSheets(null, 1, 2L);
+
+        Assert.assertEquals(2, sheets.size());
+        Assert.assertEquals(500, sheets.get(0).getRtStart().intValue());
+        Assert.assertEquals(800, sheets.get(1).getRtStart().intValue());
+
+        sheets = economicalSheetDao.loadSheets(null, 2, 2L);
+
+        Assert.assertEquals(0, sheets.size());
     }
 }
