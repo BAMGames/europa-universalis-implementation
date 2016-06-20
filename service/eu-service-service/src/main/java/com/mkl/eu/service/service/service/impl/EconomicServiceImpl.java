@@ -1574,33 +1574,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         // threshold to -4/4
         column = Math.min(Math.max(column, -4), 4);
-        if (land) {
-            CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                    c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_PLUS || c.getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS)
-                            && StringUtils.equals(c.getCountry(), country.getName()));
-            if (mnu != null) {
-                column += 2;
-            } else {
-                mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                        c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_MINUS || c.getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS)
-                                && StringUtils.equals(c.getCountry(), country.getName()));
-                if (mnu != null) {
-                    column += 1;
-                }
-            }
-        } else {
-            CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                    c -> c.getType() == CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS && StringUtils.equals(c.getCountry(), country.getName()));
-            if (mnu != null) {
-                column += 2;
-            } else {
-                mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                        c -> c.getType() == CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS && StringUtils.equals(c.getCountry(), country.getName()));
-                if (mnu != null) {
-                    column += 1;
-                }
-            }
-        }
+        column += getTechColumnBonus(game, country, land);
         column += EconomicUtil.getAdminActionColumnBonus(request.getRequest().getType(), request.getRequest().getInvestment());
         // threshold to -4/4
         column = Math.min(Math.max(column, -4), 4);
@@ -1630,6 +1604,45 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setBonus(bonus);
 
         return admAct;
+    }
+
+    /**
+     * @param game containing all the counters (including the manufactures).
+     * @param country checking the bonus.
+     * @param land <code>true</code> for land technology, <code>false</code> for naval technology.
+     * @return the column bonus given by a manufacture for a technology enhancement.
+     */
+    protected int getTechColumnBonus(GameEntity game, PlayableCountryEntity country, boolean land) {
+        int column = 0;
+        if (land) {
+            CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                                                     c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_PLUS || c
+                                                             .getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS) && StringUtils
+                                                             .equals(c.getCountry(), country.getName()));
+            if (mnu != null) {
+                column = 2;
+            } else {
+                mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                        c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_MINUS || c.getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS)
+                                && StringUtils.equals(c.getCountry(), country.getName()));
+                if (mnu != null) {
+                    column = 1;
+                }
+            }
+        } else {
+            CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                    c -> c.getType() == CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS && StringUtils.equals(c.getCountry(), country.getName()));
+            if (mnu != null) {
+                column = 2;
+            } else {
+                mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                        c -> c.getType() == CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS && StringUtils.equals(c.getCountry(), country.getName()));
+                if (mnu != null) {
+                    column = 1;
+                }
+            }
+        }
+        return column;
     }
 
     /** {@inheritDoc} */

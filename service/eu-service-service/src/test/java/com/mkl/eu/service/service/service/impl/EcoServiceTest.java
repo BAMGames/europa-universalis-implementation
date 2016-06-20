@@ -8,14 +8,18 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
+import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -102,6 +106,9 @@ public class EcoServiceTest {
 
     @Mock
     private GameMapping gameMapping;
+
+    @Mock
+    private EconomicalSheetMapping ecoSheetMapping;
 
     @Mock
     private ChatMapping chatMapping;
@@ -340,6 +347,50 @@ public class EcoServiceTest {
         Assert.assertEquals(18, sheetEntity.getTpIncome().longValue());
         Assert.assertEquals(8, sheetEntity.getExoResIncome().longValue());
         Assert.assertEquals(48, sheetEntity.getRotwIncome().longValue());
+    }
+
+    @Test
+    public void testLoadEcoSheets() {
+        try {
+            economicService.loadEconomicSheets(null);
+            Assert.fail("Should break because loadEcoSheets is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadEcoSheets", e.getParams()[0]);
+        }
+
+        Request<LoadEcoSheetsRequest> request = new Request<>();
+
+        try {
+            economicService.loadEconomicSheets(request);
+            Assert.fail("Should break because loadEcoSheets.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadEcoSheets.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new LoadEcoSheetsRequest(1L, null, 2));
+
+        List<EconomicalSheetEntity> sheets = new ArrayList<>();
+        sheets.add(new EconomicalSheetEntity());
+        when(economicalSheetDao.loadSheets(null, 2, 1L)).thenReturn(sheets);
+        List<EconomicalSheetCountry> sheetCountries = new ArrayList<>();
+        sheetCountries.add(new EconomicalSheetCountry());
+        sheetCountries.add(new EconomicalSheetCountry());
+        when(ecoSheetMapping.oesToVosCountry(sheets)).thenReturn(sheetCountries);
+
+        try {
+            List<EconomicalSheetCountry> ecoSheets = economicService.loadEconomicSheets(request);
+
+            InOrder inOrder = inOrder(economicalSheetDao, ecoSheetMapping);
+
+            inOrder.verify(economicalSheetDao).loadSheets(null, 2, 1L);
+            inOrder.verify(ecoSheetMapping).oesToVosCountry(sheets);
+
+            Assert.assertEquals(ecoSheets, sheetCountries);
+        } catch (FunctionalException e) {
+            Assert.fail("Should not break " + e.getMessage());
+        }
     }
 
     @Test
@@ -4220,6 +4271,71 @@ public class EcoServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
+    public void testTechColumnBonus() {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(22);
+        PlayableCountryEntity turquie = new PlayableCountryEntity();
+        turquie.setName("turquie");
+        game.getCountries().add(turquie);
+        PlayableCountryEntity hollande = new PlayableCountryEntity();
+        hollande.setName("hollande");
+        game.getCountries().add(hollande);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity prusse = new PlayableCountryEntity();
+        prusse.setName("prusse");
+        game.getCountries().add(prusse);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("eTrakya");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_METAL_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setCountry("turquie");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("eIdf");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_METAL_PLUS);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setProvince("eLorraine");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_METAL_MINUS);
+        game.getStacks().get(2).getCounters().get(0).setCountry("france");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(3).setProvince("eHollande");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS);
+        game.getStacks().get(3).getCounters().get(0).setCountry("hollande");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(1).setType(CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS);
+        game.getStacks().get(3).getCounters().get(1).setCountry("hollande");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(2).setType(CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS);
+        game.getStacks().get(3).getCounters().get(2).setCountry("hollande");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(4).setProvince("eSaxe");
+        game.getStacks().get(4).getCounters().add(new CounterEntity());
+        game.getStacks().get(4).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_METAL_MINUS);
+        game.getStacks().get(4).getCounters().get(0).setCountry("prusse");
+        game.getStacks().get(4).getCounters().add(new CounterEntity());
+        game.getStacks().get(4).getCounters().get(1).setType(CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS);
+        game.getStacks().get(4).getCounters().get(1).setCountry("prusse");
+
+        Assert.assertEquals(1, economicService.getTechColumnBonus(game, turquie, true));
+        Assert.assertEquals(0, economicService.getTechColumnBonus(game, turquie, false));
+
+        Assert.assertEquals(2, economicService.getTechColumnBonus(game, france, true));
+        Assert.assertEquals(0, economicService.getTechColumnBonus(game, france, false));
+
+        Assert.assertEquals(0, economicService.getTechColumnBonus(game, hollande, true));
+        Assert.assertEquals(2, economicService.getTechColumnBonus(game, hollande, false));
+
+        Assert.assertEquals(2, economicService.getTechColumnBonus(game, prusse, true));
+        Assert.assertEquals(0, economicService.getTechColumnBonus(game, prusse, false));
     }
 
     @Test
