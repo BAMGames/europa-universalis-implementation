@@ -12,6 +12,7 @@ import org.dbunit.dataset.xml.FlatXmlWriter;
 import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Statement;
 
 /**
  * Class used to create DataSet from a real database.
@@ -34,11 +35,19 @@ public class ExportDataSet {
         // The driver doesn't seem to be mandatory.
         // Class driverClass = Class.forName("com.mysql.jdbc.Driver");
         // database connection, try to avoid the commit of the password, even if it is a localhost database.
-        Connection jdbcConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/eu", "eu", "1212");
+        Connection jdbcConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/eu", "eu", "");
         IDatabaseConnection connection = new DatabaseConnection(jdbcConnection);
+
+        // DBUnit does not like circular reference. So we drop the foreign key and recreate it later.
+        Statement statement = connection.getConnection().createStatement();
+        statement.execute("ALTER TABLE COUNTRY DROP FOREIGN KEY FK_COUNTRY_MONARCH");
 
         exportTables(connection);
         exportProvinces(connection);
+        exportChat(connection);
+
+        statement = connection.getConnection().createStatement();
+        statement.execute("ALTER TABLE COUNTRY ADD CONSTRAINT FK_COUNTRY_MONARCH FOREIGN KEY (ID_MONARCH) REFERENCES MONARCH (ID)");
     }
 
     /**
@@ -62,6 +71,18 @@ public class ExportDataSet {
         export(new String[]{"R_PROVINCE", "R_PROVINCE_BOX", "R_PROVINCE_EU", "R_PROVINCE_ROTW", "R_PROVINCE_SEA",
                             "R_PROVINCE_TZ", "R_REGION", "R_BORDER"},
                "src/test/resources/com/mkl/eu/service/service/persistence/provinces", connection);
+    }
+
+    /**
+     * Create a DataSet for the chat objects.
+     *
+     * @param connection to the database.
+     * @throws Exception exception.
+     */
+    private static void exportChat(IDatabaseConnection connection) throws Exception {
+        export(new String[]{"C_CHAT", "C_MESSAGE", "C_MESSAGE_GLOBAL", "C_PRESENT", "C_ROOM",
+                            "C_ROOM_GLOBAL", "GAME", "COUNTRY"},
+               "src/test/resources/com/mkl/eu/service/service/persistence/chatExport", connection);
     }
 
     /**
