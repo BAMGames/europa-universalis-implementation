@@ -12,13 +12,12 @@ import java.util.List;
  */
 public interface IChatDao extends IGenericDao<RoomEntity, Long> {
     /**
-     * Retrieve the messages that can be seen by the country for a game.
+     * Retrieve the messages that can be seen by the country.
      *
-     * @param idGame    id of the game.
      * @param idCountry id of the country.
      * @return the messages.
      */
-    List<ChatEntity> getMessages(Long idGame, Long idCountry);
+    List<ChatEntity> getMessages(Long idCountry);
 
     /**
      * Retrieve the global messages for a game.

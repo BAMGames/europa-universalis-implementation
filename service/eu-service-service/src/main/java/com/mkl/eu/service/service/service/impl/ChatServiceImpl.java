@@ -345,7 +345,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_ROOM).setParams(METHOD_LOAD_ROOM));
 
         RoomEntity roomEntity = chatDao.getRoom(request.getRequest().getIdGame(), request.getRequest().getIdRoom());
-        List<ChatEntity> messages = chatDao.getMessages(request.getRequest().getIdGame(), request.getRequest().getIdRoom());
+        List<ChatEntity> messages = chatDao.getMessages(request.getRequest().getIdCountry());
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
         Room room = chatMapping.oeToVo(roomEntity, objectsCreated, request.getRequest().getIdCountry());

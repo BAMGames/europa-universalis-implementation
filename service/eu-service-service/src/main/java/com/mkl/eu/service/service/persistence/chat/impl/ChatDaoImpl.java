@@ -31,14 +31,10 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
 
     /** {@inheritDoc} */
     @Override
-    public List<ChatEntity> getMessages(Long idGame, Long idCountry) {
+    public List<ChatEntity> getMessages(Long idCountry) {
         Criteria criteria = getSession().createCriteria(ChatEntity.class);
 
         criteria.add(Restrictions.eq("receiver.id", idCountry));
-
-        Criteria criteriaRoom = criteria.createCriteria("room", "room");
-
-        criteriaRoom.add(Restrictions.eq("game.id", idGame));
 
         //noinspection unchecked
         return criteria.list();

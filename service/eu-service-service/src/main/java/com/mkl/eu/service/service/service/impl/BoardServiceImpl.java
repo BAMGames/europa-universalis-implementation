@@ -148,7 +148,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         List<RoomEntity> rooms = null;
         if (idCountry != null) {
             rooms = chatDao.getRooms(idGame, idCountry);
-            messages = chatDao.getMessages(idGame, idCountry);
+            messages = chatDao.getMessages(idCountry);
         }
         Chat chat = chatMapping.getChat(globalMessages, rooms, messages, idCountry);
         returnValue.setChat(chat);

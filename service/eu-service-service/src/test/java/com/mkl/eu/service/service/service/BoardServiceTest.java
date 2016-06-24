@@ -142,7 +142,7 @@ public class BoardServiceTest {
         when(gameMapping.oeToVo(gameOe, idCountry)).thenReturn(gameVo);
         when(chatDao.getGlobalMessages(idGame)).thenReturn(globalMessages);
         when(chatDao.getRooms(idGame, idCountry)).thenReturn(rooms);
-        when(chatDao.getMessages(idGame, idCountry)).thenReturn(messages);
+        when(chatDao.getMessages(idCountry)).thenReturn(messages);
         when(chatMapping.getChat(globalMessages, rooms, messages, idCountry)).thenReturn(new Chat());
 
         boardService.loadGame(request);
@@ -176,7 +176,7 @@ public class BoardServiceTest {
         inOrder.verify(gameMapping).oeToVo(gameOe, idCountry);
         inOrder.verify(chatDao).getGlobalMessages(idGame);
         inOrder.verify(chatDao).getRooms(idGame, idCountry);
-        inOrder.verify(chatDao).getMessages(idGame, idCountry);
+        inOrder.verify(chatDao).getMessages(idCountry);
         inOrder.verify(chatMapping).getChat(globalMessages, rooms, messages, idCountry);
     }
 
