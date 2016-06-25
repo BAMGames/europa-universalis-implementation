@@ -52,6 +52,8 @@ public class PlayableCountry extends EuObject {
     private String landTech;
     /** Current naval technology of the country. */
     private String navalTech;
+    /** Flag saying that the country is ready for the next phase (currant phase ok). */
+    private boolean ready;
     /**
      * Actual Monarch ruling the country.
      */
@@ -159,6 +161,16 @@ public class PlayableCountry extends EuObject {
     /** @param navalTech the navalTech to set. */
     public void setNavalTech(String navalTech) {
         this.navalTech = navalTech;
+    }
+
+    /** @return the ready. */
+    public boolean isReady() {
+        return ready;
+    }
+
+    /** @param ready the ready to set. */
+    public void setReady(boolean ready) {
+        this.ready = ready;
     }
 
     /** @return the monarch. */

@@ -38,6 +38,8 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     private String landTech;
     /** Current naval technology of the country. */
     private String navalTech;
+    /** Flag saying that the country is ready for the next phase (currant phase ok). */
+    private boolean ready;
     /**
      * Economical sheet of the country.
      */
@@ -163,6 +165,17 @@ public class PlayableCountryEntity implements IEntity, Serializable {
     /** @param navalTech the navalTech to set. */
     public void setNavalTech(String navalTech) {
         this.navalTech = navalTech;
+    }
+
+    /** @return the ready. */
+    @Column(name = "READY")
+    public boolean isReady() {
+        return ready;
+    }
+
+    /** @param ready the ready to set. */
+    public void setReady(boolean ready) {
+        this.ready = ready;
     }
 
     /** @return the economicalSheets. */

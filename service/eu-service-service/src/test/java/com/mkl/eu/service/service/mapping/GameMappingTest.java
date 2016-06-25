@@ -55,6 +55,7 @@ public class GameMappingTest {
         FRA_VO.setUsername("MKL");
         FRA_VO.setDti(3);
         FRA_VO.setColonisationPenalty(3);
+        FRA_VO.setReady(true);
 
         PRU_VO = new PlayableCountry();
         PRU_VO.setId(2L);
@@ -62,6 +63,7 @@ public class GameMappingTest {
         PRU_VO.setUsername("Fogia");
         PRU_VO.setFti(4);
         PRU_VO.setFtiRotw(4);
+        PRU_VO.setReady(false);
 
         FRA_OE = new PlayableCountryEntity();
         FRA_OE.setId(1L);
@@ -69,6 +71,7 @@ public class GameMappingTest {
         FRA_OE.setUsername("MKL");
         FRA_OE.setDti(3);
         FRA_OE.setColonisationPenalty(3);
+        FRA_OE.setReady(true);
 
         PRU_OE = new PlayableCountryEntity();
         PRU_OE.setId(2L);
@@ -76,6 +79,7 @@ public class GameMappingTest {
         PRU_OE.setUsername("Fogia");
         PRU_OE.setFti(4);
         PRU_OE.setFtiRotw(4);
+        PRU_OE.setReady(false);
     }
 
     @Test
