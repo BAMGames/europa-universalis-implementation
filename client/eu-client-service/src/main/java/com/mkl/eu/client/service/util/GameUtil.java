@@ -128,4 +128,12 @@ public final class GameUtil {
 
         return tech;
     }
+
+    /**
+     * @param province to test.
+     * @return <code>true</code> if the province is in the rotw, <code>false</code> otherwise. Does not work for sea provinces.
+     */
+    public static boolean isRotwProvince(String province) {
+        return StringUtils.isNotEmpty(province) && province.startsWith("r");
+    }
 }

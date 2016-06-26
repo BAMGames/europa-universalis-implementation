@@ -83,4 +83,12 @@ public class GameUtilTest {
         Assert.assertEquals(25, GameUtil.getTechnologyBox("B_TECH_25").intValue());
         Assert.assertEquals(60, GameUtil.getTechnologyBox("B_TECH_60").intValue());
     }
+
+    @Test
+    public void testRotwProvince() {
+        Assert.assertEquals(false, GameUtil.isRotwProvince(null));
+        Assert.assertEquals(false, GameUtil.isRotwProvince(""));
+        Assert.assertEquals(false, GameUtil.isRotwProvince("eTangers"));
+        Assert.assertEquals(true, GameUtil.isRotwProvince("rTangers"));
+    }
 }
