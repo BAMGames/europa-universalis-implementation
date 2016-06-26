@@ -86,14 +86,14 @@
     <STACK ID="504" ID_GAME="1" R_PROVINCE="B_PH_0G" />
     <COUNTER ID="504" ID_STACK="504" TYPE="SILK_PRICE" />
 
-    <COUNTRY ID="1" ID_GAME="1" NAME="france" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="2" ID_GAME="1" NAME="angleterre" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="3" ID_GAME="1" NAME="hollande" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="4" ID_GAME="1" NAME="portugal" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="5" ID_GAME="2" NAME="france" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="6" ID_GAME="2" NAME="angleterre" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="7" ID_GAME="2" NAME="hollande" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
-    <COUNTRY ID="8" ID_GAME="2" NAME="portugal" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" />
+    <COUNTRY ID="1" ID_GAME="1" NAME="france" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="2" ID_GAME="1" NAME="angleterre" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="3" ID_GAME="1" NAME="hollande" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="4" ID_GAME="1" NAME="portugal" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="5" ID_GAME="2" NAME="france" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="6" ID_GAME="2" NAME="angleterre" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="7" ID_GAME="2" NAME="hollande" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="8" ID_GAME="2" NAME="portugal" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
     <ECONOMICAL_SHEET ID="10" ID_COUNTRY="1" TURN="1" RT_START="100" />
     <ECONOMICAL_SHEET ID="11" ID_COUNTRY="1" TURN="2" RT_START="101" />
     <ECONOMICAL_SHEET ID="12" ID_COUNTRY="1" TURN="3" RT_START="102" />
