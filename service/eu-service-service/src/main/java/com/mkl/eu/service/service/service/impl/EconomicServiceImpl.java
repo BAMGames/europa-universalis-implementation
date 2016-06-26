@@ -8,10 +8,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IEconomicService;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.EconomicUtil;
 import com.mkl.eu.client.service.util.GameUtil;
@@ -1708,7 +1705,166 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse computeAdminActions(Long idGame) throws FunctionalException, TechnicalException {
-        return null;
+    public DiffResponse validateAdminActions(Request<ValidateAdminActionsRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT).setParams(METHOD_VALIDATE_ADM_ACT));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_AUTHENT).setParams(METHOD_VALIDATE_ADM_ACT));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_VALIDATE_ADM_ACT, PARAMETER_VALIDATE_ADM_ACT);
+        GameEntity game = gameDiffs.getGame();
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST).setParams(METHOD_VALIDATE_ADM_ACT));
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_ADM_ACT));
+
+        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getRequest().getIdCountry()));
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_ADM_ACT, request.getRequest().getIdCountry()));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_VALIDATE_ADM_ACT, request.getAuthent().getUsername(), country.getUsername()));
+
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+
+        if (country.isReady() != request.getRequest().isValidate()) {
+            country.setReady(request.getRequest().isValidate());
+
+            long countriesNotReady = game.getCountries().stream()
+                    .filter(c -> StringUtils.isNotEmpty(c.getUsername()) && !c.isReady())
+                    .count();
+
+            if (countriesNotReady == 0) {
+                List<PlayableCountryEntity> countries = game.getCountries().stream()
+                        .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
+                        .collect(Collectors.toList());
+                for (PlayableCountryEntity countryAct : countries) {
+                    diffs.addAll(computeAdministrativeActions(countryAct, game));
+                    countryAct.setReady(false);
+                }
+
+                DiffEntity diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                diff.setType(DiffTypeEnum.INVALIDATE);
+                diff.setTypeObject(DiffTypeObjectEnum.ECO_SHEET);
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.TURN);
+                diffAttributes.setValue(Integer.toString(game.getTurn()));
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                diffs.add(diff);
+
+                diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                diff.setType(DiffTypeEnum.VALIDATE);
+                diff.setTypeObject(DiffTypeObjectEnum.ADM_ACT);
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.TURN);
+                diffAttributes.setValue(Integer.toString(game.getTurn()));
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                diffs.add(diff);
+
+                diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                diff.setType(DiffTypeEnum.INVALIDATE);
+                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
+                diffs.add(diff);
+
+                game.setStatus(GameStatusEnum.MILITARY);
+
+                diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                diff.setType(DiffTypeEnum.MODIFY);
+                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+                diffAttributes.setValue(GameStatusEnum.MILITARY.name());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                diffs.add(diff);
+            } else {
+                DiffEntity diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                if (request.getRequest().isValidate()) {
+                    diff.setType(DiffTypeEnum.VALIDATE);
+                } else {
+                    diff.setType(DiffTypeEnum.INVALIDATE);
+                }
+                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
+                diff.setIdObject(country.getId());
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
+                diffAttributes.setValue(country.getId().toString());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                diffs.add(diff);
+            }
+        }
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
+    }
+
+    /**
+     * Compute the planned administrative actions of the current game turn for the specified country.
+     * Will also fill the economical sheet of the country if there is one (does not create one if none).
+     *
+     * @param country owner of the administrative actions.
+     * @param game    current game.
+     * @return a List of Diff containing all the modifications due to the administrative actions.
+     */
+    List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        Integer unitMaintenance = null;
+        Integer fortMaintenance = null;
+        Integer missMaintenance = null;
+        Integer unitPurchase = null;
+        Integer fortPurchase = null;
+        Integer admAct = null;
+        Integer other = null;
+        Integer excTaxesMod = null;
+
+        List<AdministrativeActionEntity> actions = country.getAdministrativeActions().stream()
+                .filter(a -> a.getStatus() == AdminActionStatusEnum.PLANNED && a.getTurn().equals(game.getTurn()))
+                .collect(Collectors.toList());
+        for (AdministrativeActionEntity action : actions) {
+
+            action.setStatus(AdminActionStatusEnum.DONE);
+        }
+
+        EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(game.getTurn()));
+        if (sheet != null) {
+            sheet.setUnitMaintExpense(unitMaintenance);
+            sheet.setFortMaintExpense(fortMaintenance);
+            sheet.setMissMaintExpense(missMaintenance);
+            sheet.setUnitPurchExpense(unitPurchase);
+            sheet.setFortPurchExpense(fortPurchase);
+            sheet.setAdminActExpense(admAct);
+            sheet.setOtherExpense(other);
+
+            sheet.setAdmTotalExpense(CommonUtil.add(sheet.getOptRefundExpense(), sheet.getUnitMaintExpense(), sheet.getFortMaintExpense(),
+                    sheet.getMissMaintExpense(), sheet.getUnitPurchExpense(), sheet.getFortPurchExpense(), sheet.getAdminActExpense(),
+                    sheet.getAdminReactExpense(), sheet.getOtherExpense()));
+
+            sheet.setExcTaxesMod(excTaxesMod);
+        }
+
+        return diffs;
     }
 }

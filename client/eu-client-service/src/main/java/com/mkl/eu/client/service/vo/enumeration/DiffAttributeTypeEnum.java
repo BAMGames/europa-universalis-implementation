@@ -43,5 +43,7 @@ public enum DiffAttributeTypeEnum {
     /** Column of the action. */
     COLUMN,
     /** Bonus of the action. */
-    BONUS
+    BONUS,
+    /** Status of the game. */
+    STATUS
 }

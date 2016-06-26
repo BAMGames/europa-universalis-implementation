@@ -117,7 +117,53 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#TURN to know the turn of the sheets that are invalidated.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#STATUS in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which playable country status is invalidated.
+     * Can be <code>null</code> in which case it means that all countries are invalidated.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
-    INVALIDATE
+    INVALIDATE,
+    /**
+     * <p>
+     * Invalidate something.
+     * </p>
+     * <p>
+     * Can be used with:
+     * </li>
+     * <li>DiffTypeObjectEnum#STATUS in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which playable country status is validated.
+     * Can be <code>null</code> in which case it means that all countries are validated.</li>
+     * </ul>
+     * </li>
+     * </li>
+     * <li>DiffTypeObjectEnum#ADM_ACT in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which playable country administrative actions are validated.
+     * Can be <code>null</code> in which case it means that administrative actions of all countries are validated.</li>
+     * <li>DiffAttributeTypeEnum#TURN to know the turn of the administrative actions that are validated.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     */
+    VALIDATE,
+    /**
+     * <p>
+     * Modifying something.
+     * </p>
+     * <p>
+     * Can be used with:
+     * </li>
+     * <li>DiffTypeObjectEnum#STATUS in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#STATUS to know at which new status should be the game.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     */
+    MODIFY
+
 }

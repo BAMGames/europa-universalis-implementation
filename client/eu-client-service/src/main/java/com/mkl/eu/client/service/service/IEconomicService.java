@@ -4,10 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -68,14 +65,15 @@ public interface IEconomicService extends INameConstants {
 
 
     /**
-     * Compute the administrative actions of the game for the current turn.
+     * Validate/Invalidate the administrative actions for a country.
+     * If all countries have their administrative actions validated, compute the administrative actions.
      *
-     * @param idGame id of the game.
+     * @param request info about whose country wants to validate/invalidate its administrative actions
      * @return the diffs.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse computeAdminActions(@WebParam(name = PARAMETER_ID_GAME) Long idGame) throws FunctionalException, TechnicalException;
+    DiffResponse validateAdminActions(@WebParam(name = PARAMETER_VALIDATE_ADM_ACT) Request<ValidateAdminActionsRequest> request) throws FunctionalException, TechnicalException;
 
 }

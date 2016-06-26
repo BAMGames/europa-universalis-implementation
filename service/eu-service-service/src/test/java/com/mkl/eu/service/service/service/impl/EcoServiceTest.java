@@ -7,13 +7,9 @@ import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.GameMapping;
@@ -124,6 +120,9 @@ public class EcoServiceTest {
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
+
+    /** Variable used to store something coming from a mock. */
+    private List<DiffEntity> diffEntities;
 
     /** Variable used to store something coming from a mock. */
     private EconomicalSheetEntity sheetEntity;
@@ -725,8 +724,8 @@ public class EcoServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
-                                                        request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
-                                                        AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
+                request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
+                AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
@@ -739,14 +738,14 @@ public class EcoServiceTest {
         Assert.assertEquals(4, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(request.getRequest().getIdCountry().toString(),
-                            diffEntity.getAttributes().get(0).getValue());
+                diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
         Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.ID_OBJECT, diffEntity.getAttributes().get(3).getType());
         Assert.assertEquals(request.getRequest().getIdObject().toString(),
-                            diffEntity.getAttributes().get(3).getValue());
+                diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
@@ -4660,5 +4659,293 @@ public class EcoServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
+    public void testValidateAdmActFail() {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(22);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        try {
+            economicService.validateAdminActions(null);
+            Assert.fail("Should break because request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateAdminActions", e.getParams()[0]);
+        }
+
+        Request<ValidateAdminActionsRequest> request = new Request<>();
+
+        try {
+            economicService.validateAdminActions(request);
+            Assert.fail("Should break because request.authent is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateAdminActions.authent", e.getParams()[0]);
+        }
+
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("toto");
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+
+        try {
+            economicService.validateAdminActions(request);
+            Assert.fail("Should break because request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateAdminActions.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ValidateAdminActionsRequest());
+
+        try {
+            economicService.validateAdminActions(request);
+            Assert.fail("Should break because request.request.idCountry is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateAdminActions.request.idCountry", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCountry(666L);
+
+        try {
+            economicService.validateAdminActions(request);
+            Assert.fail("Should break because request.request.idCountry is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("validateAdminActions.request.idCountry", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCountry(13L);
+
+        try {
+            economicService.validateAdminActions(request);
+            Assert.fail("Should break because request.authent can't do this action");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("validateAdminActions.authent.username", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testValidateAdmActSuccessSimple() throws FunctionalException {
+        Request<ValidateAdminActionsRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new ValidateAdminActionsRequest());
+        request.getRequest().setIdCountry(13L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(22);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntities = ((List<DiffEntity>) invocation.getArguments()[0]);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.validateAdminActions(request);
+
+        InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
+                oeUtil);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(0, diffEntities.size());
+    }
+
+    @Test
+    public void testValidateAdmActSuccessMedium() throws FunctionalException {
+        Request<ValidateAdminActionsRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new ValidateAdminActionsRequest());
+        request.getRequest().setIdCountry(13L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(22);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(true);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntities = ((List<DiffEntity>) invocation.getArguments()[0]);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.validateAdminActions(request);
+
+        InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
+                oeUtil);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(1, diffEntities.size());
+        Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
+        Assert.assertEquals(13L, diffEntities.get(0).getIdObject().longValue());
+        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(0).getTypeObject());
+        Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntities.get(0).getAttributes().get(0).getType());
+        Assert.assertEquals("13", diffEntities.get(0).getAttributes().get(0).getValue());
+    }
+
+    @Test
+    public void testValidateAdmActSuccessComplex() throws FunctionalException {
+        Request<ValidateAdminActionsRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.setRequest(new ValidateAdminActionsRequest());
+        request.getRequest().setIdCountry(13L);
+        request.getRequest().setValidate(true);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setTurn(22);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(14L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().get(1).setReady(false);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
+            AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
+            action.setId(13L);
+            return action;
+        });
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            diffEntities = ((List<DiffEntity>) invocation.getArguments()[0]);
+            return diffAfter;
+        });
+
+        DiffResponse response = economicService.validateAdminActions(request);
+
+        InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
+                oeUtil);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(4, diffEntities.size());
+        Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(0).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ECO_SHEET, diffEntities.get(0).getTypeObject());
+        Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntities.get(0).getAttributes().get(0).getType());
+        Assert.assertEquals("22", diffEntities.get(0).getAttributes().get(0).getValue());
+
+        Assert.assertEquals(12L, diffEntities.get(1).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(1).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(1).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.VALIDATE, diffEntities.get(1).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntities.get(1).getTypeObject());
+        Assert.assertEquals(1, diffEntities.get(1).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntities.get(1).getAttributes().get(0).getType());
+        Assert.assertEquals("22", diffEntities.get(1).getAttributes().get(0).getValue());
+
+        Assert.assertEquals(12L, diffEntities.get(2).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(2).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(2).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(2).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(2).getTypeObject());
+        Assert.assertEquals(0, diffEntities.get(2).getAttributes().size());
+
+        Assert.assertEquals(12L, diffEntities.get(3).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(3).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(3).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntities.get(3).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(3).getTypeObject());
+        Assert.assertEquals(1, diffEntities.get(3).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(3).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY.name(), diffEntities.get(3).getAttributes().get(0).getValue());
     }
 }

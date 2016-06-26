@@ -5,10 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IEconomicService;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,7 +52,7 @@ public class EconomicWsServiceImpl extends SpringBeanAutowiringSupport implement
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse computeAdminActions(Long idGame) throws FunctionalException, TechnicalException {
-        return economicService.computeAdminActions(idGame);
+    public DiffResponse validateAdminActions(Request<ValidateAdminActionsRequest> request) throws FunctionalException, TechnicalException {
+        return economicService.validateAdminActions(request);
     }
 }

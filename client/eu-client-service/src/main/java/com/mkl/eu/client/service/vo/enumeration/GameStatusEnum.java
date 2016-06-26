@@ -9,6 +9,10 @@ public enum GameStatusEnum {
     /** Economical event segment. */
     ECONOMICAL_EVENT,
     /** Political event segment. */
-    POLITICAL_EVENT;
+    POLITICAL_EVENT,
+    /** Choice of administrative actions segment. */
+    ADMINISTRATIVE_ACTIONS_CHOICE,
+    /** Military segment. */
+    MILITARY
 
 }

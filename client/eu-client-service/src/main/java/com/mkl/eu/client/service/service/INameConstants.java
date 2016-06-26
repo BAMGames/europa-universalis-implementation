@@ -44,6 +44,8 @@ public interface INameConstants {
     String PARAMETER_ADD_ADM_ACT = "addAdminAction";
     /** Name of the parameter removeAdminAction. */
     String PARAMETER_REMOVE_ADM_ACT = "removeAdminAction";
+    /** Name of the parameter removeAdminAction. */
+    String PARAMETER_VALIDATE_ADM_ACT = "validateAdminActions";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
     /** Name of the parameter versionGame. */
@@ -118,4 +120,6 @@ public interface INameConstants {
     String METHOD_ADD_ADM_ACT = "addAdminAction";
     /** Name of the method removeAdminAction. */
     String METHOD_REMOVE_ADM_ACT = "removeAdminAction";
+    /** Name of the method removeAdminAction. */
+    String METHOD_VALIDATE_ADM_ACT = "validateAdminActions";
 }
