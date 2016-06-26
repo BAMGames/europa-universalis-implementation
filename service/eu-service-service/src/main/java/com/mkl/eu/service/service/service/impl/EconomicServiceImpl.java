@@ -43,6 +43,7 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,14 +60,6 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class EconomicServiceImpl extends AbstractService implements IEconomicService {
-    /** Counter Face Type for armies. */
-    private static final List<CounterFaceTypeEnum> ARMY_TYPES = new ArrayList<>();
-    /** Counter Face Type for land armies. */
-    private static final List<CounterFaceTypeEnum> ARMY_LAND_TYPES = new ArrayList<>();
-    /** Counter Face Type for naval armies. */
-    private static final List<CounterFaceTypeEnum> ARMY_NAVAL_TYPES = new ArrayList<>();
-    /** Counter Face Type for fortresses. */
-    private static final List<CounterFaceTypeEnum> FORTRESS_TYPES = new ArrayList<>();
     /** EconomicalSheet DAO. */
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
@@ -94,48 +87,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** OEUtil. */
     @Autowired
     private IOEUtil oeUtil;
-
-    /**
-     * Filling the static List.
-     */
-    static {
-        ARMY_TYPES.add(CounterFaceTypeEnum.ARMY_PLUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.ARMY_MINUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK);
-        ARMY_TYPES.add(CounterFaceTypeEnum.FLEET_PLUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.FLEET_MINUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_GALLEY);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
-
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_PLUS);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_TIMAR_PLUS);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_MINUS);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_TIMAR_MINUS);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK);
-
-        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.FLEET_PLUS);
-        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.FLEET_MINUS);
-        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT);
-        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION);
-        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_GALLEY);
-        ARMY_NAVAL_TYPES.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
-
-        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_1);
-        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_2);
-        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_3);
-        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_4);
-        FORTRESS_TYPES.add(CounterFaceTypeEnum.FORTRESS_5);
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -469,15 +420,15 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(counter.getCountry(), country.getName())).setCodeError(IConstantsServiceException.COUNTER_NOT_OWNED)
                 .setMsgFormat("{1}: {0} The counter {2} is not owned by the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), request.getRequest().getIdCountry()));
         if (request.getRequest().getType() == AdminActionTypeEnum.LM) {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_LAND_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_MAINTAIN_LOW)
+            failIfFalse(new CheckForThrow<Boolean>().setTest(CounterUtil.isLandArmy(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_MAINTAIN_LOW)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be maintained low.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
         } else if (request.getRequest().getType() == AdminActionTypeEnum.DIS) {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(ARMY_TYPES.contains(counter.getType()) || FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
+            failIfFalse(new CheckForThrow<Boolean>().setTest(CounterUtil.isArmy(counter.getType()) || CounterUtil.isFortress(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_DISBAND)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be disbanded.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
         } else if (request.getRequest().getType() == AdminActionTypeEnum.LF) {
             failIfNull(new CheckForThrow<>().setTest(request.getRequest().getCounterFaceType()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                     .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT));
-            failIfFalse(new CheckForThrow<Boolean>().setTest(FORTRESS_TYPES.contains(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_LOWER_FORTRESS)
+            failIfFalse(new CheckForThrow<Boolean>().setTest(CounterUtil.isFortress(counter.getType())).setCodeError(IConstantsServiceException.COUNTER_CANT_LOWER_FORTRESS)
                     .setMsgFormat("{1}: {0} The counter {2} has the type {3} which cannot be lower fortress.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), counter.getType()));
 
             String province = counter.getOwner().getProvince();
@@ -550,7 +501,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
         }
 
-        boolean isFortress = FORTRESS_TYPES.contains(faceType);
+        boolean isFortress = CounterUtil.isFortress(faceType);
 
         CounterEntity ownCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> counter.getType() == CounterFaceTypeEnum.OWN);
         if (ownCounter != null) {
@@ -572,9 +523,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         boolean faceConsistent = isFortress;
 
         if (port) {
-            faceConsistent |= ARMY_TYPES.contains(faceType);
+            faceConsistent |= CounterUtil.isArmy(faceType);
         } else {
-            faceConsistent |= ARMY_LAND_TYPES.contains(faceType);
+            faceConsistent |= CounterUtil.isLandArmy(faceType);
         }
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(faceConsistent).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
@@ -617,7 +568,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 actualLevel = ((EuropeanProvinceEntity) prov).getFortress();
             }
         }
-        CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()), counter -> StringUtils.equals(country.getName(), counter.getCountry()) && FORTRESS_TYPES.contains(counter.getType()));
+        CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()),
+                counter -> StringUtils.equals(country.getName(), counter.getCountry()) && CounterUtil.isFortress(counter.getType()));
         if (fortressCounter != null) {
             actualLevel = CounterUtil.getFortressLevelFromType(fortressCounter.getType());
         }
@@ -686,21 +638,20 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException
      */
     private Integer computeUnitPurchase(GameEntity game, PlayableCountryEntity country, CounterFaceTypeEnum faceType) throws FunctionalException {
-        boolean land = ARMY_LAND_TYPES.contains(faceType);
-        final List<CounterFaceTypeEnum> faces;
+        boolean land = CounterUtil.isLandArmy(faceType);
+        Integer plannedSize;
         final LimitTypeEnum limitType;
-        if (land) {
-            faces = ARMY_LAND_TYPES;
-            limitType = LimitTypeEnum.PURCHASE_LAND_TROOPS;
-        } else {
-            faces = ARMY_NAVAL_TYPES;
-            limitType = LimitTypeEnum.PURCHASE_NAVAL_TROOPS;
-        }
 
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.PU);
+        if (land) {
+            plannedSize = actions.stream().filter(action -> CounterUtil.isLandArmy(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
+            limitType = LimitTypeEnum.PURCHASE_LAND_TROOPS;
+        } else {
+            plannedSize = actions.stream().filter(action -> CounterUtil.isNavalArmy(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
+            limitType = LimitTypeEnum.PURCHASE_NAVAL_TROOPS;
+        }
 
-        Integer plannedSize = actions.stream().filter(action -> faces.contains(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
         Integer size = CounterUtil.getSizeFromType(faceType);
         Integer maxPurchase = getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
@@ -1831,9 +1782,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
 
-        Integer unitMaintenance = null;
-        Integer fortMaintenance = null;
-        Integer missMaintenance = null;
         Integer unitPurchase = null;
         Integer fortPurchase = null;
         Integer admAct = null;
@@ -1850,9 +1798,58 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(game.getTurn()));
         if (sheet != null) {
-            sheet.setUnitMaintExpense(unitMaintenance);
-            sheet.setFortMaintExpense(fortMaintenance);
-            sheet.setMissMaintExpense(missMaintenance);
+            Map<CounterFaceTypeEnum, Long> forces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                            CounterUtil.isArmy(counter.getType())))
+                    .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
+            List<BasicForce> basicForces = getTables().getBasicForces().stream()
+                    .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
+                            basicForce.getPeriod().getBegin() <= game.getTurn() &&
+                            basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
+            // TODO manage wars
+            List<Unit> units = getTables().getUnits().stream()
+                    .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                            (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
+                            !unit.isSpecial() &&
+                            (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
+            Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
+
+            Map<CounterFaceTypeEnum, Long> conscriptForces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                            CounterUtil.isArmy(counter.getType())))
+                    .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
+            List<Unit> conscriptUnits = getTables().getUnits().stream()
+                    .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                            unit.getAction() == UnitActionEnum.MAINT_WAR &&
+                            unit.isSpecial() &&
+                            StringUtils.equals(unit.getTech().getName(), country.getLandTech())).collect(Collectors.toList());
+            Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
+
+            sheet.setUnitMaintExpense(CommonUtil.add(unitMaintenanceCost, unitMaintenanceConscriptCost));
+
+            Tech ownerLandTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+            Map<Pair<Integer, Boolean>, Integer> orderedFortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                            CounterUtil.isFortress(counter.getType())))
+                    .collect(Collectors.groupingBy(
+                            this::getFortressKeyFromCounter,
+                            Collectors.summingInt(value -> 1)));
+
+            Integer fortressesMaintenance = MaintenanceUtil.computeFortressesMaintenance(
+                    orderedFortresses,
+                    getTables().getTechs(),
+                    ownerLandTech,
+                    game.getTurn());
+
+            sheet.setFortMaintExpense(fortressesMaintenance);
+
+            Long missionMaintenance = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                            counter.getType() == CounterFaceTypeEnum.MISSION))
+                    .count();
+
+            sheet.setMissMaintExpense(missionMaintenance.intValue());
+
             sheet.setUnitPurchExpense(unitPurchase);
             sheet.setFortPurchExpense(fortPurchase);
             sheet.setAdminActExpense(admAct);
@@ -1866,5 +1863,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         return diffs;
+    }
+
+    /**
+     * @param counter whose we want the key.
+     * @return the key used for computing fortress maintenance. It is a Pair consisting of level and location (<code>true</code> for ROTW).
+     */
+    private Pair<Integer, Boolean> getFortressKeyFromCounter(CounterEntity counter) {
+        return new ImmutablePair<>(CounterUtil.getFortressLevelFromType(counter.getType()), GameUtil.isRotwProvince(counter.getOwner().getProvince()));
     }
 }

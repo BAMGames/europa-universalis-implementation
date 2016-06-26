@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -70,12 +71,6 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminActionsWindow.class);
-    /** Counter Face Type for armies. */
-    private static final List<CounterFaceTypeEnum> ARMY_TYPES = new ArrayList<>();
-    /** Counter Face Type for land armies. */
-    private static final List<CounterFaceTypeEnum> ARMY_LAND_TYPES = new ArrayList<>();
-    /** Counter Face Type for land armies. */
-    private static final List<CounterFaceTypeEnum> FORT_TYPES = new ArrayList<>();
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
@@ -118,53 +113,6 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private ChoiceBox<IMapMarker> purchaseProvincesChoice;
     /** The ChoiceBox containing the type of counters that can be added. */
     private ChoiceBox<CounterFaceTypeEnum> purchaseTypeChoice;
-
-    /**
-     * Filling the static List.
-     */
-    static {
-        ARMY_TYPES.add(CounterFaceTypeEnum.ARMY_PLUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.ARMY_MINUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK);
-        ARMY_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK);
-        ARMY_TYPES.add(CounterFaceTypeEnum.FLEET_PLUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.FLEET_MINUS);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_GALLEY);
-        ARMY_TYPES.add(CounterFaceTypeEnum.NAVAL_TRANSPORT);
-
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_PLUS);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.ARMY_MINUS);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK);
-        ARMY_LAND_TYPES.add(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK);
-
-        FORT_TYPES.add(CounterFaceTypeEnum.FORT);
-        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_1);
-        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_2);
-        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_3);
-        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_4);
-        FORT_TYPES.add(CounterFaceTypeEnum.FORTRESS_5);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_0_ST_PETER);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_1_ST_PETER);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2_SEBASTOPOL);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_2_ST_PETER);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3_GIBRALTAR);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3_SEBASTOPOL);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_3_ST_PETER);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_4);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_4_ST_PETER);
-        FORT_TYPES.add(CounterFaceTypeEnum.ARSENAL_5_ST_PETER);
-    }
 
     /**
      * Constructor.
@@ -303,11 +251,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             if (newValue != oldValue) {
                 if (newValue == null) {
                     choiceType.setItems(FXCollections.observableArrayList());
-                } else if (ARMY_LAND_TYPES.contains(newValue.getType())) {
+                } else if (CounterUtil.isLandArmy(newValue.getType())) {
                     choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS, AdminActionTypeEnum.LM));
-                } else if (ARMY_TYPES.contains(newValue.getType())) {
+                } else if (CounterUtil.isArmy(newValue.getType())) {
                     choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS));
-                } else if (FORT_TYPES.contains(newValue.getType())) {
+                } else if (CounterUtil.isFortress(newValue.getType())) {
                     choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF));
                 }
             }
@@ -438,12 +386,12 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
             List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            ARMY_TYPES.contains(counter.getType())))
+                            CounterUtil.isArmy(counter.getType())))
                     .collect(Collectors.toList());
             List<Counter> conscriptCounters = new ArrayList<>();
             List<Counter> fortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            FORT_TYPES.contains(counter.getType())))
+                            CounterUtil.isFortress(counter.getType())))
                     .collect(Collectors.toList());
             Map<Pair<Integer, Boolean>, Integer> orderedFortresses = fortresses.stream().collect(Collectors.groupingBy(
                     this::getFortressKeyFromCounter,
@@ -518,7 +466,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @return the key used for computing fortress maintenance. It is a Pair consisting of level and location (<code>true</code> for ROTW).
      */
     private Pair<Integer, Boolean> getFortressKeyFromCounter(Counter counter) {
-        return new ImmutablePair<>(CounterUtil.getFortressLevelFromType(counter.getType()), counter.getOwner().getProvince().startsWith("r"));
+        return new ImmutablePair<>(CounterUtil.getFortressLevelFromType(counter.getType()), GameUtil.isRotwProvince(counter.getOwner().getProvince()));
     }
 
     /**
