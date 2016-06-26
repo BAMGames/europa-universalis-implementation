@@ -67,6 +67,124 @@ public class CounterUtilTest {
     }
 
     @Test
+    public void testFortress() {
+        Assert.assertEquals(false, CounterUtil.isFortress(null));
+        Assert.assertEquals(false, CounterUtil.isFortress(CounterFaceTypeEnum.ARMY_PLUS));
+
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.FORT));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_0_ST_PETER));
+
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.FORTRESS_1));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_1_ST_PETER));
+
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.FORTRESS_2));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_2_ST_PETER));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_2));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_2_GIBRALTAR));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_2_SEBASTOPOL));
+
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.FORTRESS_3));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_3_ST_PETER));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_3));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_3_GIBRALTAR));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_3_SEBASTOPOL));
+
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.FORTRESS_4));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_4_ST_PETER));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_4));
+
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.FORTRESS_5));
+        Assert.assertEquals(true, CounterUtil.isFortress(CounterFaceTypeEnum.ARSENAL_5_ST_PETER));
+    }
+
+    @Test
+    public void testArmy() {
+        Assert.assertEquals(false, CounterUtil.isArmy(null));
+        Assert.assertEquals(false, CounterUtil.isArmy(CounterFaceTypeEnum.FORTRESS_3));
+
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.NAVAL_GALLEY));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(true, CounterUtil.isArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+    }
+
+    @Test
+    public void testLandArmy() {
+        Assert.assertEquals(false, CounterUtil.isLandArmy(null));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.FORTRESS_3));
+
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_GALLEY));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+    }
+
+    @Test
+    public void testNavalArmy() {
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(null));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.FORTRESS_3));
+
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(false, CounterUtil.isNavalArmy(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.NAVAL_GALLEY));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(true, CounterUtil.isNavalArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+    }
+
+    @Test
     public void testManufacture() {
         Assert.assertFalse(CounterUtil.isManufacture(null));
         Assert.assertTrue(CounterUtil.isManufacture(CounterFaceTypeEnum.MNU_ART_MINUS));

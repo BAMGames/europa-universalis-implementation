@@ -105,6 +105,144 @@ public final class CounterUtil {
     }
 
     /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is a fortress, <code>false</code> otherwise.
+     */
+    public static boolean isFortress(CounterFaceTypeEnum face) {
+        boolean fortress = false;
+
+        if (face != null) {
+            switch (face) {
+                case FORTRESS_5:
+                case ARSENAL_5_ST_PETER:
+                case FORTRESS_4:
+                case ARSENAL_4:
+                case ARSENAL_4_ST_PETER:
+                case FORTRESS_3:
+                case ARSENAL_3:
+                case ARSENAL_3_GIBRALTAR:
+                case ARSENAL_3_SEBASTOPOL:
+                case ARSENAL_3_ST_PETER:
+                case FORTRESS_2:
+                case ARSENAL_2:
+                case ARSENAL_2_GIBRALTAR:
+                case ARSENAL_2_SEBASTOPOL:
+                case ARSENAL_2_ST_PETER:
+                case FORTRESS_1:
+                case MISSION:
+                case ARSENAL_1_ST_PETER:
+                case FORT:
+                case ARSENAL_0_ST_PETER:
+                    fortress = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return fortress;
+    }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is an army (land or naval), <code>false</code> otherwise.
+     */
+    public static boolean isArmy(CounterFaceTypeEnum face) {
+        boolean army = false;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_TIMAR_PLUS:
+                case ARMY_MINUS:
+                case ARMY_TIMAR_MINUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN:
+                case LAND_SEPOY:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY_EXPLORATION:
+                case FLEET_PLUS:
+                case FLEET_MINUS:
+                case FLEET_TRANSPORT_PLUS:
+                case FLEET_TRANSPORT_MINUS:
+                case NAVAL_DETACHMENT:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                case NAVAL_GALLEY:
+                case NAVAL_TRANSPORT:
+                    army = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return army;
+    }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is an army (land, not naval), <code>false</code> otherwise.
+     */
+    public static boolean isLandArmy(CounterFaceTypeEnum face) {
+        boolean army = false;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_TIMAR_PLUS:
+                case ARMY_MINUS:
+                case ARMY_TIMAR_MINUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN:
+                case LAND_SEPOY:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY_EXPLORATION:
+                    army = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return army;
+    }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is an army (naval, not land), <code>false</code> otherwise.
+     */
+    public static boolean isNavalArmy(CounterFaceTypeEnum face) {
+        boolean army = false;
+
+        if (face != null) {
+            switch (face) {
+                case FLEET_PLUS:
+                case FLEET_MINUS:
+                case FLEET_TRANSPORT_PLUS:
+                case FLEET_TRANSPORT_MINUS:
+                case NAVAL_DETACHMENT:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                case NAVAL_GALLEY:
+                case NAVAL_TRANSPORT:
+                    army = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return army;
+    }
+
+    /**
      * Transform a force to a size.
      *
      * @param force to transform in size.
