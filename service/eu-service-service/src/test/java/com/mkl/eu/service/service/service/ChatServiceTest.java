@@ -76,6 +76,9 @@ public class ChatServiceTest {
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
 
+    /** Variable used to store something coming from a mock. */
+    private List<ChatEntity> chatEntities;
+
     @Test
     public void testCreateRoomFail() {
         try {
@@ -468,12 +471,30 @@ public class ChatServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
-
-        PlayableCountryEntity sender = new PlayableCountryEntity();
-        sender.setId(4L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(4L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(5L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(2).setId(6L);
+        game.getCountries().get(2).setName("espagne");
 
         RoomEntity room = new RoomEntity();
         room.setId(9L);
+        room.getPresents().add(new PresentEntity());
+        room.getPresents().get(0).setRoom(room);
+        room.getPresents().get(0).setPresent(true);
+        room.getPresents().get(0).setCountry(game.getCountries().get(0));
+        room.getPresents().add(new PresentEntity());
+        room.getPresents().get(1).setRoom(room);
+        room.getPresents().get(1).setPresent(false);
+        room.getPresents().get(1).setCountry(game.getCountries().get(1));
+        room.getPresents().add(new PresentEntity());
+        room.getPresents().get(2).setRoom(room);
+        room.getPresents().get(2).setPresent(true);
+        room.getPresents().get(2).setCountry(game.getCountries().get(2));
 
         List<ChatEntity> messages = new ArrayList<>();
         messages.add(new ChatEntity());
@@ -497,9 +518,14 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(4L)).thenReturn(sender);
+        when(playableCountryDao.load(4L)).thenReturn(game.getCountries().get(0));
 
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
+
+        doAnswer(invocation -> {
+            chatEntities = (List<ChatEntity>) invocation.getArguments()[0];
+            return null;
+        }).when(chatDao).createMessage((List<ChatEntity>) anyObject());
 
         List<Diff> diffAfter = new ArrayList<>();
         diffAfter.add(new Diff());
@@ -534,6 +560,16 @@ public class ChatServiceTest {
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
+
+        Assert.assertEquals(2, chatEntities.size());
+        Assert.assertEquals(room, chatEntities.get(0).getRoom());
+        Assert.assertEquals(game.getCountries().get(0), chatEntities.get(0).getReceiver());
+        Assert.assertEquals("Message", chatEntities.get(0).getMessage().getMessage());
+        Assert.assertNotNull(chatEntities.get(0).getDateRead());
+        Assert.assertEquals(room, chatEntities.get(1).getRoom());
+        Assert.assertEquals(game.getCountries().get(2), chatEntities.get(1).getReceiver());
+        Assert.assertEquals("Message", chatEntities.get(1).getMessage().getMessage());
+        Assert.assertNull(chatEntities.get(1).getDateRead());
     }
 
     @Test

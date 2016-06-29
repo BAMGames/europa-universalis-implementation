@@ -69,15 +69,11 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
 
     /** {@inheritDoc} */
     @Override
-    public long getUnreadMessagesNumber(Long idGame, Long idCountry) {
+    public long getUnreadMessagesNumber(Long idCountry) {
         Criteria criteria = getSession().createCriteria(ChatEntity.class);
 
         criteria.add(Restrictions.eq("receiver.id", idCountry));
         criteria.add(Restrictions.isNull("dateRead"));
-
-        Criteria criteriaRoom = criteria.createCriteria("room", "room");
-
-        criteriaRoom.add(Restrictions.eq("game.id", idGame));
 
         criteria.setProjection(Projections.rowCount());
 

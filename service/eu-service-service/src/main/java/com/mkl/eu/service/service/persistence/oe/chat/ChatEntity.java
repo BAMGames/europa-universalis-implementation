@@ -46,7 +46,7 @@ public class ChatEntity implements IEntity, Serializable {
 
     /** @return the room. */
     @ManyToOne
-    @JoinColumn(name = "ID_C_ROOM")
+    @JoinColumn(name = "ID_C_ROOM", nullable = false)
     public RoomEntity getRoom() {
         return room;
     }

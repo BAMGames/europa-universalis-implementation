@@ -7,6 +7,8 @@
         </encoder>
     </appender>
 
+    <logger name="org.hibernate.type" level="trace" />
+
     <logger name="com.mkl.eu" level="debug"/>
 
     <root level="warn">

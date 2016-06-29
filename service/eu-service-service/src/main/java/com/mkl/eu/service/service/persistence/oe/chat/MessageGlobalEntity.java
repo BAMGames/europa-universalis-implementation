@@ -18,7 +18,7 @@ public class MessageGlobalEntity extends AbstractMessageEntity {
 
     /** @return the room. */
     @ManyToOne
-    @JoinColumn(name = "ID_C_ROOM_GLOBAL")
+    @JoinColumn(name = "ID_C_ROOM_GLOBAL", nullable = false)
     public RoomGlobalEntity getRoom() {
         return room;
     }

@@ -40,11 +40,10 @@ public interface IChatDao extends IGenericDao<RoomEntity, Long> {
      * Returns the number of unread message of the country.
      * The global messages are not concerned by this method.
      *
-     * @param idGame    id of the game.
      * @param idCountry id of the country.
      * @return the number of unread message of the country.
      */
-    long getUnreadMessagesNumber(Long idGame, Long idCountry);
+    long getUnreadMessagesNumber(Long idCountry);
 
     /**
      * Returns the global room of a game.

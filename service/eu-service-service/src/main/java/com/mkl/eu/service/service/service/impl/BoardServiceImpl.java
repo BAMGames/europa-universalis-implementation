@@ -97,7 +97,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                         games.add(game);
                         game.setIdCountry(country.getId());
                         game.setCountry(country.getName());
-                        game.setUnreadMessages(chatDao.getUnreadMessagesNumber(gameEntity.getId(), country.getId()));
+                        game.setUnreadMessages(chatDao.getUnreadMessagesNumber(country.getId()));
                         game.setActive(false);
                     }
                     parsed = true;
