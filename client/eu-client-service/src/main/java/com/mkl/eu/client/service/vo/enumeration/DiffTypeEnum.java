@@ -162,6 +162,12 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#STATUS to know at which new status should be the game.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#TYPE to know the new type of the counter.</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE to know where the counter is.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     MODIFY

@@ -6,18 +6,11 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
-import com.mkl.eu.service.service.persistence.board.ICounterDao;
-import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
-import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
-import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
-import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
@@ -37,6 +30,9 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class GameAdminServiceImpl extends AbstractService implements IGameAdminService {
+    /** Counter Domain. */
+    @Autowired
+    private ICounterDomain counterDomain;
     /** Game DAO. */
     @Autowired
     private IGameDao gameDao;
@@ -46,12 +42,6 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
     /** Country DAO. */
     @Autowired
     private ICountryDao countryDao;
-    /** Stack DAO. */
-    @Autowired
-    private IStackDao stackDao;
-    /** Counter DAO. */
-    @Autowired
-    private ICounterDao counterDao;
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
@@ -95,57 +85,9 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, province));
 
-        StackEntity stack = new StackEntity();
-        stack.setProvince(province);
-        stack.setGame(game);
-
-        CounterEntity counterEntity = new CounterEntity();
-        counterEntity.setCountry(counter.getCountry());
-        counterEntity.setType(counter.getType());
-        counterEntity.setOwner(stack);
-
-        stack.getCounters().add(counterEntity);
-
-        /*
-         Thanks Hibernate to have 7 years old bugs.
-         https://hibernate.atlassian.net/browse/HHH-6776
-         https://hibernate.atlassian.net/browse/HHH-7404
-          */
-
-        stackDao.create(stack);
-
-        game.getStacks().add(stack);
+        DiffEntity diff = counterDomain.createCounter(counter.getType(), counter.getCountry(), province, game);
 
         gameDao.update(game, true);
-
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.ADD);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(counterEntity.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(province);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.TYPE);
-        diffAttributes.setValue(counter.getType().name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.COUNTRY);
-        diffAttributes.setValue(counter.getCountry());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STACK);
-        diffAttributes.setValue(stack.getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-
-        diffDao.create(diff);
 
         diffs.add(diff);
 
@@ -176,55 +118,12 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
-        CounterEntity counter = null;
-        for (StackEntity stackEntity : game.getStacks()) {
-            for (CounterEntity counterEntity : stackEntity.getCounters()) {
-                if (counterEntity.getId().equals(idCounter)) {
-                    counter = counterEntity;
-                    break;
-                }
-            }
-            if (counter != null) {
-                break;
-            }
-        }
+        DiffEntity diff = counterDomain.removeCounter(idCounter, game);
 
-        failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+        failIfNull(new CheckForThrow<>().setTest(diff).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER, idGame));
 
-        StackEntity stack = counter.getOwner();
-        stack.getCounters().remove(counter);
-        counter.setOwner(null);
-        counterDao.delete(counter);
-
-        if (stack.getCounters().isEmpty()) {
-            stack.setGame(null);
-            game.getStacks().remove(stack);
-        }
-
         gameDao.update(game, true);
-
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.REMOVE);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(idCounter);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(stack.getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-
-        if (stack.getCounters().isEmpty()) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
-            diffAttributes.setValue(stack.getId().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        }
-
-        diffDao.create(diff);
 
         diffs.add(diff);
 
