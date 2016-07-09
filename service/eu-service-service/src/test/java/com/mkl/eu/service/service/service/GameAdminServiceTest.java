@@ -6,9 +6,7 @@ import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -49,6 +47,9 @@ public class GameAdminServiceTest {
     private GameAdminServiceImpl gameAdminService;
 
     @Mock
+    private ICounterDomain counterDomain;
+
+    @Mock
     private IGameDao gameDao;
 
     @Mock
@@ -68,9 +69,6 @@ public class GameAdminServiceTest {
 
     @Mock
     private DiffMapping diffMapping;
-
-    /** Variable used to store something coming from a mock. */
-    private DiffEntity diffEntity;
 
     @Test
     public void testCreateCounterFailSimple() {
@@ -220,61 +218,26 @@ public class GameAdminServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
-
         List<Diff> diffAfter = new ArrayList<>();
         diffAfter.add(new Diff());
         diffAfter.add(new Diff());
 
         when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
 
-        when(gameDao.update(game, true)).thenAnswer(invocation -> {
-            game.getStacks().get(0).setId(1L);
-            game.getStacks().get(0).getCounters().get(0).setId(2L);
-            return game;
-        });
-
         DiffResponse response = gameAdminService.createCounter(idGame, versionGame, counter, province);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, countryDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, countryDao, counterDomain, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(countryDao).getCountryByName("FRA");
         inOrder.verify(provinceDao).getProvinceByName("IdF");
+        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.ARMY_MINUS, "FRA", province, game);
         inOrder.verify(gameDao).update(game, true);
-        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
-
-        Assert.assertEquals(game.getStacks().get(0).getCounters().get(0).getId().longValue(), diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.ADD, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals(idf.getName(), diffEntity.getAttributes().get(0).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(1).getType());
-        Assert.assertEquals(counter.getType().name(), diffEntity.getAttributes().get(1).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.COUNTRY, diffEntity.getAttributes().get(2).getType());
-        Assert.assertEquals(counter.getCountry(), diffEntity.getAttributes().get(2).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK, diffEntity.getAttributes().get(3).getType());
-        Assert.assertEquals(game.getStacks().get(0).getId().toString(), diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
-
-        Assert.assertEquals(1, game.getStacks().size());
-        Assert.assertEquals("IdF", game.getStacks().get(0).getProvince());
-        Assert.assertEquals(game, game.getStacks().get(0).getGame());
-        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
-        Assert.assertEquals(counter.getCountry(), game.getStacks().get(0).getCounters().get(0).getCountry());
-        Assert.assertEquals(counter.getType(), game.getStacks().get(0).getCounters().get(0).getType());
-        Assert.assertEquals(game.getStacks().get(0), game.getStacks().get(0).getCounters().get(0).getOwner());
     }
 
     @Test
@@ -360,16 +323,13 @@ public class GameAdminServiceTest {
 
         when(gameDao.lock(12L)).thenReturn(game);
 
+        when(counterDomain.removeCounter(25L, game)).thenReturn(new DiffEntity());
+
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
         diffBefore.add(new DiffEntity());
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
 
         List<Diff> diffAfter = new ArrayList<>();
         diffAfter.add(new Diff());
@@ -379,94 +339,15 @@ public class GameAdminServiceTest {
 
         DiffResponse response = gameAdminService.removeCounter(idGame, versionGame, idCounter);
 
-        InOrder inOrder = inOrder(gameDao, counterDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, counterDomain, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(counterDao).delete(counter);
+        inOrder.verify(counterDomain).removeCounter(25L, game);
         inOrder.verify(gameDao).update(game, true);
-        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
-
-        Assert.assertEquals(idCounter.longValue(), diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.REMOVE, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(1, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals("IdF", diffEntity.getAttributes().get(0).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
-
-        Assert.assertEquals(1, game.getStacks().size());
-        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
-    }
-
-    @Test
-    public void testRemoveCounterSuccessWithStackDel() throws Exception {
-        Long idGame = 12L;
-        Long versionGame = 1L;
-        Long idCounter = 25L;
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(0).setId(51L);
-        game.getStacks().get(0).setProvince("IdF");
-        CounterEntity counter = new CounterEntity();
-        counter.setId(idCounter);
-        counter.setOwner(game.getStacks().get(0));
-        game.getStacks().get(0).getCounters().add(counter);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
-
-        DiffResponse response = gameAdminService.removeCounter(idGame, versionGame, idCounter);
-
-        InOrder inOrder = inOrder(gameDao, counterDao, diffDao, diffMapping);
-
-        inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(counterDao).delete(counter);
-        inOrder.verify(gameDao).update(game, true);
-        inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(diffMapping).oesToVos(anyObject());
-
-        Assert.assertEquals(idCounter.longValue(), diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.REMOVE, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(2, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals("IdF", diffEntity.getAttributes().get(0).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diffEntity.getAttributes().get(1).getType());
-        Assert.assertEquals("51", diffEntity.getAttributes().get(1).getValue());
-
-        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
-
-        Assert.assertEquals(0, game.getStacks().size());
     }
 }

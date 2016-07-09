@@ -78,6 +78,14 @@ public class CounterDomainTest {
         Assert.assertEquals("france", diff.getAttributes().get(2).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.STACK, diff.getAttributes().get(3).getType());
         Assert.assertEquals("2", diff.getAttributes().get(3).getValue());
+
+        Assert.assertEquals(1, game.getStacks().size());
+        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
+        Assert.assertEquals("idf", game.getStacks().get(0).getProvince());
+        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
+        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
     }
 
     @Test
@@ -134,6 +142,10 @@ public class CounterDomainTest {
         if (stackDel != null) {
             Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diff.getAttributes().get(1).getType());
             Assert.assertEquals(stackDel, diff.getAttributes().get(1).getValue());
+
+            Assert.assertEquals(1, game.getStacks().size());
+        } else {
+            Assert.assertEquals(2, game.getStacks().size());
         }
     }
 
