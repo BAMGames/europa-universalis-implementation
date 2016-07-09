@@ -193,4 +193,49 @@ public class CounterDomainTest {
 
         Assert.assertEquals(CounterFaceTypeEnum.ARMY_PLUS, game.getStacks().get(0).getCounters().get(0).getType());
     }
+
+    @Test
+    public void testchangeVeteransCounter() throws Exception {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(1L);
+        game.getStacks().get(0).setProvince("idf");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(100L);
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setId(101L);
+        game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(2L);
+        game.getStacks().get(1).setProvince("languedoc");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(200L);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+
+        DiffEntity diff = counterDomain.changeVeteransCounter(99L, 2, game);
+
+        Assert.assertNull(diff);
+
+        diff = counterDomain.changeVeteransCounter(101L, 2, game);
+
+        InOrder inOrder = inOrder(diffDao);
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(101L, diff.getIdObject().longValue());
+        Assert.assertEquals(2, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.VETERANS, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("idf", diff.getAttributes().get(1).getValue());
+
+        Assert.assertEquals(2, game.getStacks().get(0).getCounters().get(1).getVeterans().intValue());
+    }
 }

@@ -45,5 +45,7 @@ public enum DiffAttributeTypeEnum {
     /** Bonus of the action. */
     BONUS,
     /** Status of the game. */
-    STATUS
+    STATUS,
+    /** Number of veterans of a counter. */
+    VETERANS
 }

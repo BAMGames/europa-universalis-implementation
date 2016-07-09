@@ -39,4 +39,14 @@ public interface ICounterDomain {
      * @return the diffs related to the switch of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
      */
     DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game);
+
+    /**
+     * Change the number of veterans of a counter from a game.
+     *
+     * @param idCounter the id of the counter to switch.
+     * @param veterans  new number of veterans in the counter.
+     * @param game      the game.
+     * @return the diffs related to the switch of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
+     */
+    DiffEntity changeVeteransCounter(Long idCounter, Integer veterans, GameEntity game);
 }

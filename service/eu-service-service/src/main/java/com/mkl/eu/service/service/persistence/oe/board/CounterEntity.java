@@ -23,6 +23,8 @@ public class CounterEntity implements IEntity, Serializable {
     private StackEntity owner;
     /** Type of the counter. */
     private CounterFaceTypeEnum type;
+    /** Number of veterans in the counter. */
+    private Integer veterans;
     /** If the counter is an establishment, all the info about. */
     private EstablishmentEntity establishment;
 
@@ -72,6 +74,17 @@ public class CounterEntity implements IEntity, Serializable {
     /** @param type the type to set. */
     public void setType(CounterFaceTypeEnum type) {
         this.type = type;
+    }
+
+    /** @return the veterans. */
+    @Column(name = "VETERANS")
+    public Integer getVeterans() {
+        return veterans;
+    }
+
+    /** @param veterans the veterans to set. */
+    public void setVeterans(Integer veterans) {
+        this.veterans = veterans;
     }
 
     /** @return the establishment. */

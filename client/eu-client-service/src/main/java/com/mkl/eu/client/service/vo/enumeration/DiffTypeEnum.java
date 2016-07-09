@@ -165,6 +165,7 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#TYPE to know the new type of the counter.</li>
+     * <li>DiffAttributeTypeEnum#VETERANS to know the new number of veterans in the counter.</li>
      * <li>DiffAttributeTypeEnum#PROVINCE to know where the counter is.</li>
      * </ul>
      * </li>

@@ -61,6 +61,7 @@ public class CounterMapping extends AbstractMapping {
         target.setType(source.getType());
         target.setOwner(parent);
         target.setCountry(source.getCountry());
+        target.setVeterans(source.getVeterans());
 
         return target;
     }

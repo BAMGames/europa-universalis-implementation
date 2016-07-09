@@ -17,6 +17,8 @@ public class Counter extends EuObject {
     private Stack owner;
     /** Type of the counter. */
     private CounterFaceTypeEnum type;
+    /** Number of veterans in the counter. */
+    private Integer veterans;
 
     /** @return the country. */
     public String getCountry() {
@@ -47,5 +49,15 @@ public class Counter extends EuObject {
     /** @param type the type to set. */
     public void setType(CounterFaceTypeEnum type) {
         this.type = type;
+    }
+
+    /** @return the veterans. */
+    public Integer getVeterans() {
+        return veterans;
+    }
+
+    /** @param veterans the veterans to set. */
+    public void setVeterans(Integer veterans) {
+        this.veterans = veterans;
     }
 }

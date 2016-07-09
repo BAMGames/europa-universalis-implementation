@@ -131,6 +131,7 @@ public class CounterDomainImpl implements ICounterDomain {
         }
 
         diffDao.create(diff);
+
         return diff;
     }
 
@@ -164,6 +165,41 @@ public class CounterDomainImpl implements ICounterDomain {
         diff.getAttributes().add(diffAttributes);
 
         diffDao.create(diff);
+
+        return diff;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffEntity changeVeteransCounter(Long idCounter, Integer veterans, GameEntity game) {
+        CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                c -> c.getId().equals(idCounter));
+
+        if (counter == null) {
+            return null;
+        }
+
+        counter.setVeterans(veterans);
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+        diff.setIdObject(idCounter);
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.VETERANS);
+        diffAttributes.setValue(veterans.toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
+        diffAttributes.setValue(counter.getOwner().getProvince());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        diffDao.create(diff);
+
         return diff;
     }
 }
