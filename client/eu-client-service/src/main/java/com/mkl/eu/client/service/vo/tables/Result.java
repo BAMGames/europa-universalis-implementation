@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.vo.tables;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
+import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
 
 /**
  * VO for the result of an action (tables).
@@ -16,7 +16,7 @@ public class Result extends EuObject {
     /** Column of the result. */
     private Integer column;
     /** Result. */
-    private AdminActionResultEnum result;
+    private ResultEnum result;
 
     /** @return the id. */
     public Long getId() {
@@ -49,12 +49,12 @@ public class Result extends EuObject {
     }
 
     /** @return the result. */
-    public AdminActionResultEnum getResult() {
+    public ResultEnum getResult() {
         return result;
     }
 
     /** @param result the result to set. */
-    public void setResult(AdminActionResultEnum result) {
+    public void setResult(ResultEnum result) {
         this.result = result;
     }
 }

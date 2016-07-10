@@ -1,9 +1,9 @@
 package com.mkl.eu.service.service.persistence.oe.eco;
 
-import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 
@@ -36,7 +36,7 @@ public class AdministrativeActionEntity implements IEntity, Serializable {
     /** Result of the die of the test of the administrative action. */
     private Integer die;
     /** Result of the administrative action. */
-    private AdminActionResultEnum result;
+    private ResultEnum result;
     /** Status of the administrative action. */
     private AdminActionStatusEnum status;
     /** Eventual if of object subject of the administrative action. */
@@ -142,12 +142,12 @@ public class AdministrativeActionEntity implements IEntity, Serializable {
     /** @return the result. */
     @Column(name = "RESULT")
     @Enumerated(EnumType.STRING)
-    public AdminActionResultEnum getResult() {
+    public ResultEnum getResult() {
         return result;
     }
 
     /** @param result the result to set. */
-    public void setResult(AdminActionResultEnum result) {
+    public void setResult(ResultEnum result) {
         this.result = result;
     }
 

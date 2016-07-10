@@ -3,11 +3,11 @@ package com.mkl.eu.client.service.vo.enumeration;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Enumeration of the administrative actions.
+ * Enumeration of the results.
  *
  * @author MKL
  */
-public enum AdminActionResultEnum {
+public enum ResultEnum {
     /** Fumble (big failaure). */
     FUMBLE("F*"),
     /** Failed. */
@@ -28,7 +28,7 @@ public enum AdminActionResultEnum {
      * Constructor.
      * @param code the code to set.
      */
-    private AdminActionResultEnum(String code) {
+    private ResultEnum(String code) {
         this.code = code;
     }
 
@@ -43,9 +43,9 @@ public enum AdminActionResultEnum {
      * @param code of the adminActionResult.
      * @return the adminActionResult.
      */
-    public static AdminActionResultEnum getByCode(String code) {
-        AdminActionResultEnum adminActionResult = null;
-        for (AdminActionResultEnum e: values()) {
+    public static ResultEnum getByCode(String code) {
+        ResultEnum adminActionResult = null;
+        for (ResultEnum e : values()) {
             if (StringUtils.equals(code, e.getCode())) {
                 adminActionResult = e;
                 break;

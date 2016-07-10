@@ -1,10 +1,10 @@
 package com.mkl.eu.client.service.vo.eco;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
 
 import javax.persistence.Column;
 import javax.persistence.EnumType;
@@ -30,7 +30,7 @@ public class AdministrativeAction extends EuObject {
     /** Result of the die of the test of the administrative action. */
     private Integer die;
     /** Result of the administrative action. */
-    private AdminActionResultEnum result;
+    private ResultEnum result;
     /** Status of the administrative action. */
     private AdminActionStatusEnum status;
     /** Eventual if of object subject of the administrative action. */
@@ -101,12 +101,12 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the result. */
-    public AdminActionResultEnum getResult() {
+    public ResultEnum getResult() {
         return result;
     }
 
     /** @param result the result to set. */
-    public void setResult(AdminActionResultEnum result) {
+    public void setResult(ResultEnum result) {
         this.result = result;
     }
 

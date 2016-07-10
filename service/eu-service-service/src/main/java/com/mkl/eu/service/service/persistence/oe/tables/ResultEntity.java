@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.tables;
 
-import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
+import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 
 import javax.persistence.*;
@@ -21,7 +21,7 @@ public class ResultEntity implements IEntity, Serializable {
     /** Column of the result. */
     private Integer column;
     /** Result. */
-    private AdminActionResultEnum result;
+    private ResultEnum result;
 
     /** @return the id. */
     @Id
@@ -61,12 +61,12 @@ public class ResultEntity implements IEntity, Serializable {
     /** @return the result. */
     @Column(name = "RESULT")
     @Enumerated(EnumType.STRING)
-    public AdminActionResultEnum getResult() {
+    public ResultEnum getResult() {
         return result;
     }
 
     /** @param result the result to set. */
-    public void setResult(AdminActionResultEnum result) {
+    public void setResult(ResultEnum result) {
         this.result = result;
     }
 }

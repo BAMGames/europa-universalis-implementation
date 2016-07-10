@@ -5,9 +5,9 @@ import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.ITablesService;
-import com.mkl.eu.client.service.vo.enumeration.AdminActionResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.LimitTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
 import com.mkl.eu.client.service.vo.enumeration.UnitActionEnum;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
@@ -89,22 +89,22 @@ public class TableDaoImplTest {
         Assert.assertEquals(90, tables.getResults().size());
         Result result = CommonUtil.findFirst(tables.getResults().stream(),
                 r -> r.getColumn() == -4 && r.getDie() == 2);
-        Assert.assertEquals(AdminActionResultEnum.FUMBLE, result.getResult());
+        Assert.assertEquals(ResultEnum.FUMBLE, result.getResult());
         result = CommonUtil.findFirst(tables.getResults().stream(),
                 r -> r.getColumn() == 2 && r.getDie() == 1);
-        Assert.assertEquals(AdminActionResultEnum.FAILED, result.getResult());
+        Assert.assertEquals(ResultEnum.FAILED, result.getResult());
         result = CommonUtil.findFirst(tables.getResults().stream(),
                 r -> r.getColumn() == 0 && r.getDie() == 5);
-        Assert.assertEquals(AdminActionResultEnum.AVERAGE, result.getResult());
+        Assert.assertEquals(ResultEnum.AVERAGE, result.getResult());
         result = CommonUtil.findFirst(tables.getResults().stream(),
                 r -> r.getColumn() == 0 && r.getDie() == 6);
-        Assert.assertEquals(AdminActionResultEnum.AVERAGE_PLUS, result.getResult());
+        Assert.assertEquals(ResultEnum.AVERAGE_PLUS, result.getResult());
         result = CommonUtil.findFirst(tables.getResults().stream(),
                 r -> r.getColumn() == -3 && r.getDie() == 10);
-        Assert.assertEquals(AdminActionResultEnum.SUCCESS, result.getResult());
+        Assert.assertEquals(ResultEnum.SUCCESS, result.getResult());
         result = CommonUtil.findFirst(tables.getResults().stream(),
                 r -> r.getColumn() == 4 && r.getDie() == 9);
-        Assert.assertEquals(AdminActionResultEnum.CRITICAL_HIT, result.getResult());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, result.getResult());
     }
 
     @Test
