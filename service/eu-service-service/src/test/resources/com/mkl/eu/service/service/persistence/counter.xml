@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <dataset>
-    <GAME ID="1" VERSION="1" />
-    <GAME ID="2" VERSION="1" />
+    <GAME ID="1" VERSION="1" SEED="123"/>
+    <GAME ID="2" VERSION="1" SEED="123"/>
 
     <STACK ID="1" ID_GAME="1" R_PROVINCE="idf" />
     <STACK ID="2" />
