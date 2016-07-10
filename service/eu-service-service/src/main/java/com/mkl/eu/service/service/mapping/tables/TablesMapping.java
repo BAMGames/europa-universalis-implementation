@@ -248,4 +248,39 @@ public class TablesMapping extends AbstractMapping {
 
         return target;
     }
+
+    /**
+     * Fill the results tables.
+     *
+     * @param sources        List of results entity.
+     * @param tables         the target tables.
+     */
+    public void fillResultsTables(List<ResultEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (ResultEntity source : sources) {
+                tables.getResults().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source         object source.
+     * @return object mapped.
+     */
+    public Result oeToVo(ResultEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        Result target = new Result();
+
+        target.setId(source.getId());
+        target.setDie(source.getDie());
+        target.setColumn(source.getColumn());
+        target.setResult(source.getResult());
+
+        return target;
+    }
 }

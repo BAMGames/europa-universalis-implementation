@@ -83,4 +83,13 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
         //noinspection unchecked
         return criteria.list();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ResultEntity> getResults() {
+        Criteria criteria = getSession().createCriteria(ResultEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
 }

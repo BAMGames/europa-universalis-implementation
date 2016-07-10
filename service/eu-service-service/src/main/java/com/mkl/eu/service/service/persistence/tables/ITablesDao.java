@@ -45,4 +45,9 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the actions limits tables.
      */
     List<LimitTableEntity> getLimits();
+
+    /**
+     * @return the results tables.
+     */
+    List<ResultEntity> getResults();
 }

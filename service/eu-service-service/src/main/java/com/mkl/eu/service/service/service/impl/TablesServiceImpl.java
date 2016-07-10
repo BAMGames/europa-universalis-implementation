@@ -70,5 +70,7 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
         tablesMapping.fillUnitsTables(units, objectsCreated, TABLES);
         List<LimitTableEntity> limits = tablesDao.getLimits();
         tablesMapping.fillLimitsTables(limits, objectsCreated, TABLES);
+        List<ResultEntity> results = tablesDao.getResults();
+        tablesMapping.fillResultsTables(results, TABLES);
     }
 }

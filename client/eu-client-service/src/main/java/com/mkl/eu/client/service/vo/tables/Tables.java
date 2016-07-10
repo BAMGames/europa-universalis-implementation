@@ -25,6 +25,8 @@ public class Tables {
     private List<Unit> units = new ArrayList<>();
     /** Actions limits of major powers. */
     private List<Limit> limits = new ArrayList<>();
+    /** Results of actions. */
+    private List<Result> results = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -94,5 +96,15 @@ public class Tables {
     /** @param limits the limits to set. */
     public void setLimits(List<Limit> limits) {
         this.limits = limits;
+    }
+
+    /** @return the results. */
+    public List<Result> getResults() {
+        return results;
+    }
+
+    /** @param results the results to set. */
+    public void setResults(List<Result> results) {
+        this.results = results;
     }
 }
