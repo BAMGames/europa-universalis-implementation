@@ -168,4 +168,18 @@ public class OEUtilTest {
         Assert.assertEquals(-1, oeUtil.settleDistance(panama, discoveries, sources, friendlies, 0));
         Assert.assertEquals(12, oeUtil.settleDistance(ecuador, discoveries, sources, friendlies, 0));
     }
+
+    @Test
+    public void testRollDie() {
+        GameEntity game = new GameEntity();
+        long seed = System.nanoTime();
+
+        game.setSeed(seed);
+
+        int die = oeUtil.rollDie(game, (String) null);
+
+        game.setSeed(seed);
+
+        Assert.assertEquals(die, oeUtil.rollDie(game, (PlayableCountryEntity) null));
+    }
 }

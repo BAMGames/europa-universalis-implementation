@@ -10,6 +10,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.util.IOEUtil;
+import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +72,36 @@ public final class OEUtilImpl implements IOEUtil {
     @Override
     public boolean canSettle(AbstractProvinceEntity province, List<String> discoveries, List<String> sources, List<String> friendlies) {
         return settleDistance(province, discoveries, sources, friendlies, 0) <= 12;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int rollDie(GameEntity game, String country) {
+        PlayableCountryEntity countryEntity = CommonUtil.findFirst(game.getCountries(), c -> StringUtils.equals(country, c.getName()));
+        return rollDie(game, countryEntity);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int rollDie(GameEntity game, PlayableCountryEntity country) {
+        /**
+         * For the moment, only one seed is stored in tha game.
+         * But it will be easy to switch to a seed per player basis later on.
+         */
+        long seed = game.getSeed();
+
+        SavableRandom rand = new SavableRandom();
+        rand.setSeed(seed);
+        int die = rand.nextInt(10) + 1;
+        game.setSeed(rand.getSeed());
+
+        return die;
     }
 
     /**

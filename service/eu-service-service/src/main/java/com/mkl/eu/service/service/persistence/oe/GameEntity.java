@@ -51,6 +51,11 @@ public class GameEntity implements IEntity, Serializable {
     private String indianCommCenterOwner;
     /** Province where Saint-Petersburg has been build (<code>null</code> if not build yet or in process). */
     private String stPeterProvince;
+    /**
+     * Seed stored for global roll dice (and all roll dice until seeds are stored in PlayableCountry).
+     * Should NEVER be accessed by the client.
+     */
+    private long seed;
 
     /** @return the id. */
     @Id
@@ -219,5 +224,16 @@ public class GameEntity implements IEntity, Serializable {
     /** @param stPeterProvince the stPeterProvince to set. */
     public void setStPeterProvince(String stPeterProvince) {
         this.stPeterProvince = stPeterProvince;
+    }
+
+    /** @return the seed. */
+    @Column(name = "SEED")
+    public long getSeed() {
+        return seed;
+    }
+
+    /** @param seed the seed to set. */
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 }

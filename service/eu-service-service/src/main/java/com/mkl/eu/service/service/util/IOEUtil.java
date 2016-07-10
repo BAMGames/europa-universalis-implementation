@@ -39,4 +39,22 @@ public interface IOEUtil {
      * @return <code>true</code> if the province can be settled, <code>false</code> otherwise.
      */
     boolean canSettle(AbstractProvinceEntity province, List<String> discoveries, List<String> sources, List<String> friendlies);
+
+    /**
+     * Rolls a die for a country in the given game. The country can ben <code>null</code> for general die roll.
+     *
+     * @param game    the game.
+     * @param country the country rolling the die. Can be <code>null</code>.
+     * @return the result of a die 10.
+     */
+    int rollDie(GameEntity game, String country);
+
+    /**
+     * Rolls a die for a country in the given game. The country can ben <code>null</code> for general die roll.
+     *
+     * @param game    the game.
+     * @param country the country rolling the die. Can be <code>null</code>.
+     * @return the result of a die 10.
+     */
+    int rollDie(GameEntity game, PlayableCountryEntity country);
 }
