@@ -19,6 +19,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.client.service.vo.tables.*;
+import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -60,6 +61,19 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class EconomicServiceImpl extends AbstractService implements IEconomicService {
+    /** Constant used in the costs Map to retrieve the cost for unit purchase. */
+    private static final String COST_UNIT_PURCHASE = "unitPurchase";
+    /** Constant used in the costs Map to retrieve the cost for fort purchase. */
+    private static final String COST_FORT_PURCHASE = "fortPurchase";
+    /** Constant used in the costs Map to retrieve the cost for other. */
+    private static final String COST_OTHER = "other";
+    /** Constant used in the costs Map to retrieve the cost for administrative actions. */
+    private static final String COST_ACTION = "action";
+    /** Constant used in the costs Map to retrieve the cost for exceptional levies (even if it is not a cost, or not always). */
+    private static final String COST_EXC_LEVIES = "excLevies";
+    /** Counter Domain. */
+    @Autowired
+    private ICounterDomain counterDomain;
     /** EconomicalSheet DAO. */
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
@@ -1555,18 +1569,18 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     }
 
     /**
-     * @param game containing all the counters (including the manufactures).
+     * @param game    containing all the counters (including the manufactures).
      * @param country checking the bonus.
-     * @param land <code>true</code> for land technology, <code>false</code> for naval technology.
+     * @param land    <code>true</code> for land technology, <code>false</code> for naval technology.
      * @return the column bonus given by a manufacture for a technology enhancement.
      */
     protected int getTechColumnBonus(GameEntity game, PlayableCountryEntity country, boolean land) {
         int column = 0;
         if (land) {
             CounterEntity mnu = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                                                     c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_PLUS || c
-                                                             .getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS) && StringUtils
-                                                             .equals(c.getCountry(), country.getName()));
+                    c -> (c.getType() == CounterFaceTypeEnum.MNU_METAL_PLUS || c
+                            .getType() == CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS) && StringUtils
+                            .equals(c.getCountry(), country.getName()));
             if (mnu != null) {
                 column = 2;
             } else {
@@ -1782,16 +1796,52 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
 
-        Integer unitPurchase = null;
-        Integer fortPurchase = null;
-        Integer admAct = null;
-        Integer other = null;
-        Integer excTaxesMod = null;
+        Map<String, Integer> costs = new HashMap<>();
 
         List<AdministrativeActionEntity> actions = country.getAdministrativeActions().stream()
                 .filter(a -> a.getStatus() == AdminActionStatusEnum.PLANNED && a.getTurn().equals(game.getTurn()))
                 .collect(Collectors.toList());
         for (AdministrativeActionEntity action : actions) {
+            switch (action.getType()) {
+                case LM:
+                    // TODO check if country is at war
+                    diffs.add(executeLowMaintenance(action, game));
+                    break;
+                case LF:
+                    diffs.add(executeLowerFortress(action, game));
+                    break;
+                case DIS:
+                    diffs.add(executeDisband(action, game));
+                    break;
+                case PU:
+                    diffs.add(executePurchase(action, game, country, costs));
+                    break;
+                case TFI:
+//                    diffs = executeTradeFleetImplantation(action, game, country, costs);
+                    break;
+                case MNU:
+//                    diffs = executeManufacture(action, game, country, costs);
+                    break;
+                case FTI:
+                case DTI:
+//                    diffs = executeFtiDti(action, game, country, costs);
+                    break;
+                case EXL:
+//                    diffs = executeExceptionalTaxes(action, game, country, costs);
+                    break;
+                case COL:
+//                    diffs = executeColonisation(action, game, country, costs);
+                    break;
+                case TP:
+//                    diffs = executeTradingPost(action, game, country, costs);
+                    break;
+                case ELT:
+//                    diffs = executeTechnology(action, game, country, true, costs);
+                    break;
+                case ENT:
+//                    diffs = executeTechnology(action, game, country, false, costs);
+                    break;
+            }
 
             action.setStatus(AdminActionStatusEnum.DONE);
         }
@@ -1850,19 +1900,92 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             sheet.setMissMaintExpense(missionMaintenance.intValue());
 
-            sheet.setUnitPurchExpense(unitPurchase);
-            sheet.setFortPurchExpense(fortPurchase);
-            sheet.setAdminActExpense(admAct);
-            sheet.setOtherExpense(other);
+            sheet.setUnitPurchExpense(costs.get(COST_UNIT_PURCHASE));
+            sheet.setFortPurchExpense(costs.get(COST_FORT_PURCHASE));
+            sheet.setAdminActExpense(costs.get(COST_ACTION));
+            sheet.setOtherExpense(costs.get(COST_OTHER));
 
             sheet.setAdmTotalExpense(CommonUtil.add(sheet.getOptRefundExpense(), sheet.getUnitMaintExpense(), sheet.getFortMaintExpense(),
                     sheet.getMissMaintExpense(), sheet.getUnitPurchExpense(), sheet.getFortPurchExpense(), sheet.getAdminActExpense(),
                     sheet.getAdminReactExpense(), sheet.getOtherExpense()));
 
-            sheet.setExcTaxesMod(excTaxesMod);
+            sheet.setExcTaxesMod(costs.get(COST_EXC_LEVIES));
         }
 
         return diffs;
+    }
+
+    /**
+     * Execute a planned administrative action of type low maintenance.
+     *
+     * @param action the planned administrative action.
+     * @param game   the game.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeLowMaintenance(AdministrativeActionEntity action, GameEntity game) {
+        return counterDomain.changeVeteransCounter(action.getIdObject(), 0, game);
+    }
+
+    /**
+     * Execute a planned administrative action of type lower fortress.
+     *
+     * @param action the planned administrative action.
+     * @param game   the game.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeLowerFortress(AdministrativeActionEntity action, GameEntity game) {
+        return counterDomain.switchCounter(action.getIdObject(), action.getCounterFaceType(), game);
+    }
+
+    /**
+     * Execute a planned administrative action of type disband.
+     *
+     * @param action the planned administrative action.
+     * @param game   the game.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeDisband(AdministrativeActionEntity action, GameEntity game) {
+        return counterDomain.removeCounter(action.getIdObject(), game);
+    }
+
+    /**
+     * Execute a planned administrative action of type purchase.
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executePurchase(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
+        DiffEntity diff = counterDomain.createCounter(action.getCounterFaceType(), country.getName(), action.getProvince(), game);
+
+        if (CounterUtil.isFortress(action.getCounterFaceType())) {
+            addInMap(costs, COST_FORT_PURCHASE, action.getColumn());
+        } else {
+            addInMap(costs, COST_UNIT_PURCHASE, action.getColumn());
+        }
+
+        return diff;
+    }
+
+    /**
+     * Add the number add to the Map costs given its key. Manages <code>null</code> values.
+     *
+     * @param costs Map holding various costs regrouped by keys.
+     * @param key   the key related to the cost to be added.
+     * @param add   the number to add.
+     */
+    private void addInMap(Map<String, Integer> costs, String key, Integer add) {
+        if (add != null) {
+            Integer oldCost = costs.get(key);
+
+            if (oldCost == null) {
+                oldCost = 0;
+            }
+
+            costs.put(key, oldCost + add);
+        }
     }
 
     /**
