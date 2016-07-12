@@ -1797,6 +1797,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         List<DiffEntity> diffs = new ArrayList<>();
 
         Map<String, Integer> costs = new HashMap<>();
+        /**
+         * New tfis grouped by TZ then by country in order to minimize the diffs created.
+         * For example, if a country gains a tfi and becomes lvl 6 and then is reduced
+         * during global concurrency, then he will go back to its former 5 and no diff
+         * will be created.
+         */
+        Map<String, Map<String, Integer>> newTfis = new HashMap<>();
 
         List<AdministrativeActionEntity> actions = country.getAdministrativeActions().stream()
                 .filter(a -> a.getStatus() == AdminActionStatusEnum.PLANNED && a.getTurn().equals(game.getTurn()))
@@ -1817,7 +1824,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     diffs.add(executePurchase(action, game, country, costs));
                     break;
                 case TFI:
-//                    diffs = executeTradeFleetImplantation(action, game, country, costs);
+                    executeTradeFleetImplantation(action, game, country, costs, newTfis);
                     break;
                 case MNU:
 //                    diffs = executeManufacture(action, game, country, costs);
@@ -1967,6 +1974,51 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         return diff;
+    }
+
+    /**
+     * Execute a planned administrative action of type trade fleet implantation.
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @param newTfis map of the new tfis ordered by TZ and country.
+     */
+    private void executeTradeFleetImplantation(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs, Map<String, Map<String, Integer>> newTfis) {
+        addInMap(costs, COST_ACTION, action.getCost());
+        Integer die = oeUtil.rollDie(game, country);
+        action.setDie(die);
+
+        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
+        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
+                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+
+        action.setResult(result.getResult());
+
+        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
+            return;
+        }
+
+        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
+            die = oeUtil.rollDie(game, country);
+            action.setSecondaryDie(die);
+
+            if (die > country.getFti()) {
+                return;
+            } else {
+                action.setSecondaryResult(true);
+            }
+        }
+
+        if (!newTfis.containsKey(action.getProvince())) {
+            newTfis.put(action.getProvince(), new HashMap<>());
+        }
+        if (!newTfis.get(action.getProvince()).containsKey(country.getName())) {
+            newTfis.get(action.getProvince()).put(country.getName(), 1);
+        } else {
+            newTfis.get(action.getProvince()).put(country.getName(), newTfis.get(action.getProvince()).get(country.getName()) + 1);
+        }
     }
 
     /**

@@ -64,7 +64,9 @@ public class AdministrativeActionMapping extends AbstractMapping {
         target.setColumn(source.getColumn());
         target.setBonus(source.getBonus());
         target.setDie(source.getDie());
+        target.setSecondaryDie(source.getSecondaryDie());
         target.setResult(source.getResult());
+        target.setSecondaryResult(source.isSecondaryResult());
         target.setStatus(source.getStatus());
         target.setIdObject(source.getIdObject());
         target.setProvince(source.getProvince());

@@ -33,10 +33,14 @@ public class AdministrativeActionEntity implements IEntity, Serializable {
     private Integer column;
     /** Bonus to the die of the test of the administrative action. */
     private Integer bonus;
-    /** Result of the die of the test of the administrative action. */
+    /** Result of the die (without bonus) of the test of the administrative action. */
     private Integer die;
+    /** Result of the die (without bonus) of an eventual secondary test of the administrative action (often test under FTI). */
+    private Integer secondaryDie;
     /** Result of the administrative action. */
     private ResultEnum result;
+    /** Secondary result of the administrative action (when secondary tests are needed). */
+    private Boolean secondaryResult;
     /** Status of the administrative action. */
     private AdminActionStatusEnum status;
     /** Eventual if of object subject of the administrative action. */
@@ -139,6 +143,17 @@ public class AdministrativeActionEntity implements IEntity, Serializable {
         this.die = die;
     }
 
+    /** @return the secondaryDie. */
+    @Column(name = "SECONDARY_DIE")
+    public Integer getSecondaryDie() {
+        return secondaryDie;
+    }
+
+    /** @param secondaryDie the secondaryDie to set. */
+    public void setSecondaryDie(Integer secondaryDie) {
+        this.secondaryDie = secondaryDie;
+    }
+
     /** @return the result. */
     @Column(name = "RESULT")
     @Enumerated(EnumType.STRING)
@@ -149,6 +164,17 @@ public class AdministrativeActionEntity implements IEntity, Serializable {
     /** @param result the result to set. */
     public void setResult(ResultEnum result) {
         this.result = result;
+    }
+
+    /** @return the secondaryResult. */
+    @Column(name = "SECONDARY_RESULT")
+    public Boolean isSecondaryResult() {
+        return secondaryResult;
+    }
+
+    /** @param secondaryResult the secondaryResult to set. */
+    public void setSecondaryResult(Boolean secondaryResult) {
+        this.secondaryResult = secondaryResult;
     }
 
     /** @return the status. */

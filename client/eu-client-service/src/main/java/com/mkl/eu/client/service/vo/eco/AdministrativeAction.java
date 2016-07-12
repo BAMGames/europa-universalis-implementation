@@ -29,8 +29,12 @@ public class AdministrativeAction extends EuObject {
     private Integer bonus;
     /** Result of the die of the test of the administrative action. */
     private Integer die;
+    /** Result of the die (without bonus) of an eventual secondary test of the administrative action (often test under FTI). */
+    private Integer secondaryDie;
     /** Result of the administrative action. */
     private ResultEnum result;
+    /** Secondary result of the administrative action (when secondary tests are needed). */
+    private Boolean secondaryResult;
     /** Status of the administrative action. */
     private AdminActionStatusEnum status;
     /** Eventual if of object subject of the administrative action. */
@@ -100,6 +104,16 @@ public class AdministrativeAction extends EuObject {
         this.die = die;
     }
 
+    /** @return the secondaryDie. */
+    public Integer getSecondaryDie() {
+        return secondaryDie;
+    }
+
+    /** @param secondaryDie the secondaryDie to set. */
+    public void setSecondaryDie(Integer secondaryDie) {
+        this.secondaryDie = secondaryDie;
+    }
+
     /** @return the result. */
     public ResultEnum getResult() {
         return result;
@@ -108,6 +122,16 @@ public class AdministrativeAction extends EuObject {
     /** @param result the result to set. */
     public void setResult(ResultEnum result) {
         this.result = result;
+    }
+
+    /** @return the secondaryResult. */
+    public Boolean isSecondaryResult() {
+        return secondaryResult;
+    }
+
+    /** @param secondaryResult the secondaryResult to set. */
+    public void setSecondaryResult(Boolean secondaryResult) {
+        this.secondaryResult = secondaryResult;
     }
 
     /** @return the status. */
