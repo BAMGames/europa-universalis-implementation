@@ -363,6 +363,120 @@ public final class CounterUtil {
 
     /**
      * @param type of the counter to test.
+     * @return the level one of the manufacture, if the type is a manufacture.
+     */
+    public static CounterFaceTypeEnum getManufactureLevel1(CounterFaceTypeEnum type) {
+        CounterFaceTypeEnum mnu = null;
+
+        if (type != null) {
+            switch (type) {
+                case MNU_ART_MINUS:
+                case MNU_ART_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_ART_MINUS;
+                    break;
+                case MNU_CEREALS_MINUS:
+                case MNU_CEREALS_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_CEREALS_MINUS;
+                    break;
+                case MNU_CLOTHES_MINUS:
+                case MNU_CLOTHES_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_CLOTHES_MINUS;
+                    break;
+                case MNU_FISH_MINUS:
+                case MNU_FISH_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_FISH_MINUS;
+                    break;
+                case MNU_INSTRUMENTS_MINUS:
+                case MNU_INSTRUMENTS_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS;
+                    break;
+                case MNU_METAL_MINUS:
+                case MNU_METAL_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_METAL_MINUS;
+                    break;
+                case MNU_METAL_SCHLESIEN_MINUS:
+                case MNU_METAL_SCHLESIEN_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS;
+                    break;
+                case MNU_SALT_MINUS:
+                case MNU_SALT_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_SALT_MINUS;
+                    break;
+                case MNU_WINE_MINUS:
+                case MNU_WINE_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_WINE_MINUS;
+                    break;
+                case MNU_WOOD_MINUS:
+                case MNU_WOOD_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_WOOD_MINUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return mnu;
+    }
+
+    /**
+     * @param type of the counter to test.
+     * @return the level two of the manufacture, if the type is a manufacture.
+     */
+    public static CounterFaceTypeEnum getManufactureLevel2(CounterFaceTypeEnum type) {
+        CounterFaceTypeEnum mnu = null;
+
+        if (type != null) {
+            switch (type) {
+                case MNU_ART_MINUS:
+                case MNU_ART_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_ART_PLUS;
+                    break;
+                case MNU_CEREALS_MINUS:
+                case MNU_CEREALS_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_CEREALS_PLUS;
+                    break;
+                case MNU_CLOTHES_MINUS:
+                case MNU_CLOTHES_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_CLOTHES_PLUS;
+                    break;
+                case MNU_FISH_MINUS:
+                case MNU_FISH_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_FISH_PLUS;
+                    break;
+                case MNU_INSTRUMENTS_MINUS:
+                case MNU_INSTRUMENTS_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS;
+                    break;
+                case MNU_METAL_MINUS:
+                case MNU_METAL_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_METAL_PLUS;
+                    break;
+                case MNU_METAL_SCHLESIEN_MINUS:
+                case MNU_METAL_SCHLESIEN_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS;
+                    break;
+                case MNU_SALT_MINUS:
+                case MNU_SALT_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_SALT_PLUS;
+                    break;
+                case MNU_WINE_MINUS:
+                case MNU_WINE_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_WINE_PLUS;
+                    break;
+                case MNU_WOOD_MINUS:
+                case MNU_WOOD_PLUS:
+                    mnu = CounterFaceTypeEnum.MNU_WOOD_PLUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return mnu;
+    }
+
+    /**
+     * @param type of the counter to test.
      * @return <code>true</code> if the counter face type is the one of an arsenal, <code>false</code> otherwise.
      */
     public static boolean isArsenal(CounterFaceTypeEnum type) {
