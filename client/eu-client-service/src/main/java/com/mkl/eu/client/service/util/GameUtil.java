@@ -47,6 +47,16 @@ public final class GameUtil {
     }
 
     /**
+     * Get the stability box for a given stab.
+     *
+     * @param stab actual stability.
+     * @return the stability box.
+     */
+    public static String getStabilityBox(int stab) {
+        return "B_STAB_" + stab;
+    }
+
+    /**
      * Get the inflation from the box (province) where the counter is.
      *
      * @param provinceBox name of the province/box where the inflation counter is.

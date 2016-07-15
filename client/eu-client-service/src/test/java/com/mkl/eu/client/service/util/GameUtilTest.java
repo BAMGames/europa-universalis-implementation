@@ -20,6 +20,10 @@ public class GameUtilTest {
         Assert.assertEquals(new Integer(0), GameUtil.getStability("B_STAB_0"));
         Assert.assertEquals(new Integer(3), GameUtil.getStability("B_STAB_3"));
         Assert.assertEquals(new Integer(-3), GameUtil.getStability("B_STAB_-3"));
+
+        Assert.assertEquals("B_STAB_0", GameUtil.getStabilityBox(0));
+        Assert.assertEquals("B_STAB_3", GameUtil.getStabilityBox(3));
+        Assert.assertEquals("B_STAB_-3", GameUtil.getStabilityBox(-3));
     }
 
     @Test
