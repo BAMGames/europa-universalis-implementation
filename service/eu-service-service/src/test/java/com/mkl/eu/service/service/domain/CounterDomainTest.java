@@ -238,4 +238,128 @@ public class CounterDomainTest {
 
         Assert.assertEquals(2, game.getStacks().get(0).getCounters().get(1).getVeterans().intValue());
     }
+
+    @Test
+    public void testMoveSpecialCounter() throws Exception {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(1L);
+        game.getStacks().get(0).setProvince("B_1");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(7L);
+        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.STABILITY);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stack.setId(2L);
+
+            return stack;
+        });
+
+        DiffEntity diff = counterDomain.moveSpecialCounter(CounterFaceTypeEnum.STABILITY, "espagne", "B_2", game);
+
+        Assert.assertNull(diff);
+
+        diff = counterDomain.moveSpecialCounter(CounterFaceTypeEnum.STABILITY, "france", "B_2", game);
+
+        InOrder inOrder = inOrder(stackDao, diffDao);
+        inOrder.verify(stackDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MOVE, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(7L, diff.getIdObject().longValue());
+        Assert.assertEquals(5, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("1", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("B_1", diff.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diff.getAttributes().get(3).getType());
+        Assert.assertEquals("B_2", diff.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diff.getAttributes().get(4).getType());
+        Assert.assertEquals("1", diff.getAttributes().get(4).getValue());
+
+        Assert.assertEquals(1, game.getStacks().size());
+        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
+        Assert.assertEquals("B_2", game.getStacks().get(0).getProvince());
+        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
+        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.STABILITY, game.getStacks().get(0).getCounters().get(0).getType());
+    }
+
+    @Test
+    public void testMoveSpecialCounter2() throws Exception {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(1L);
+        game.getStacks().get(0).setProvince("B_1");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(7L);
+        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setId(8L);
+        game.getStacks().get(0).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_LAND_LATIN);
+        game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(2L);
+        game.getStacks().get(1).setProvince("B_2");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(9L);
+        game.getStacks().get(1).getCounters().get(0).setCountry("espagne");
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAVAL);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+
+        DiffEntity diff = counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_LATIN, null, "B_2", game);
+
+        InOrder inOrder = inOrder(diffDao);
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MOVE, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(8L, diff.getIdObject().longValue());
+        Assert.assertEquals(4, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("1", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("B_1", diff.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diff.getAttributes().get(3).getType());
+        Assert.assertEquals("B_2", diff.getAttributes().get(3).getValue());
+
+        Assert.assertEquals(2, game.getStacks().size());
+        Assert.assertEquals(1L, game.getStacks().get(0).getId().longValue());
+        Assert.assertEquals("B_1", game.getStacks().get(0).getProvince());
+        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
+        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND, game.getStacks().get(0).getCounters().get(0).getType());
+
+        Assert.assertEquals(2L, game.getStacks().get(1).getId().longValue());
+        Assert.assertEquals("B_2", game.getStacks().get(1).getProvince());
+        Assert.assertEquals(2, game.getStacks().get(1).getCounters().size());
+        Assert.assertEquals(9L, game.getStacks().get(1).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("espagne", game.getStacks().get(1).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_NAVAL, game.getStacks().get(1).getCounters().get(0).getType());
+        Assert.assertEquals(8L, game.getStacks().get(1).getCounters().get(1).getId().longValue());
+        Assert.assertEquals(null, game.getStacks().get(1).getCounters().get(1).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_LATIN, game.getStacks().get(1).getCounters().get(1).getType());
+    }
 }

@@ -14,6 +14,7 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -199,6 +200,81 @@ public class CounterDomainImpl implements ICounterDomain {
         diff.getAttributes().add(diffAttributes);
 
         diffDao.create(diff);
+
+        return diff;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffEntity moveSpecialCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game) {
+        CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                c -> StringUtils.equals(country, c.getCountry()) && c.getType() == type);
+
+        if (counter == null) {
+            return null;
+        }
+
+        StackEntity stack = CommonUtil.findFirst(game.getStacks().stream(), s -> StringUtils.equals(province, s.getProvince()));
+        if (stack == null) {
+            stack = new StackEntity();
+            stack.setProvince(province);
+            stack.setGame(game);
+
+            /**
+             Thanks Hibernate to have 7 years old bugs.
+             https://hibernate.atlassian.net/browse/HHH-6776
+             https://hibernate.atlassian.net/browse/HHH-7404
+             */
+
+            stackDao.create(stack);
+
+            game.getStacks().add(stack);
+        }
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MOVE);
+        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+        diff.setIdObject(counter.getId());
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STACK_FROM);
+        diffAttributes.setValue(counter.getOwner().getId().toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STACK_TO);
+        diffAttributes.setValue(stack.getId().toString());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_FROM);
+        diffAttributes.setValue(counter.getOwner().getProvince());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_TO);
+        diffAttributes.setValue(stack.getProvince());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        if (counter.getOwner().getCounters().size() == 1) {
+            diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
+            diffAttributes.setValue(counter.getOwner().getId().toString());
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+        }
+
+        diffDao.create(diff);
+
+        StackEntity oldStack = counter.getOwner();
+        counter.setOwner(stack);
+        oldStack.getCounters().remove(counter);
+        stack.getCounters().add(counter);
+        if (oldStack.getCounters().isEmpty()) {
+            oldStack.setGame(null);
+            game.getStacks().remove(oldStack);
+        }
 
         return diff;
     }
