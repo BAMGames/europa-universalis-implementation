@@ -428,11 +428,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 stackTo = new Stack();
                 stackTo.setId(idStack);
 
-                attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+                attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_TO);
                 if (attribute != null) {
                     stackTo.setProvince(attribute.getValue());
                 } else {
-                    LOGGER.error("Missing province in counter move event.");
+                    LOGGER.error("Missing province_to in counter move event.");
                 }
 
                 game.getStacks().add(stackTo);

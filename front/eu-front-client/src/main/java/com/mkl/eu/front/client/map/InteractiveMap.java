@@ -300,6 +300,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
             LOGGER.error("Missing stack id in counter add event.");
             return;
         }
+        // FIXME stack may already exist
 
         StackMarker stackMarker = new StackMarker(Long.parseLong(attribute.getValue()), province);
         stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, markerUtils.getImageFromCounter(nameCountry, type.name())));
@@ -312,23 +313,35 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
      * @param diff involving a move counter.
      */
     private void moveCounter(Diff diff) {
-        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_FROM);
         if (attribute == null) {
-            LOGGER.error("Missing province in counter move event.");
+            LOGGER.error("Missing province_from in counter move event.");
             return;
         }
-        Marker prov = countryMarkers.get(attribute.getValue());
-        if (!(prov instanceof IMapMarker)) {
-            LOGGER.error("province is not a IMapMarker.");
+        Marker provFrom = countryMarkers.get(attribute.getValue());
+        if (!(provFrom instanceof IMapMarker)) {
+            LOGGER.error("province_from is not a IMapMarker.");
             return;
         }
-        IMapMarker province = (IMapMarker) prov;
+        IMapMarker provinceFrom = (IMapMarker) provFrom;
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_TO);
+        if (attribute == null) {
+            LOGGER.error("Missing province_to in counter move event.");
+            return;
+        }
+        Marker provTo = countryMarkers.get(attribute.getValue());
+        if (!(provTo instanceof IMapMarker)) {
+            LOGGER.error("province_to is not a IMapMarker.");
+            return;
+        }
+        IMapMarker provinceTo = (IMapMarker) provTo;
 
         StackMarker stack = null;
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_FROM);
         if (attribute != null) {
             Long idStack = Long.parseLong(attribute.getValue());
-            stack = findFirst(province.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+            stack = findFirst(provinceTo.getStacks(), stack1 -> idStack.equals(stack1.getId()));
         }
         if (stack == null) {
             LOGGER.error("Missing stack from in counter move event.");
@@ -345,10 +358,10 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_TO);
         if (attribute != null) {
             Long idStack = Long.parseLong(attribute.getValue());
-            stackTo = findFirst(province.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+            stackTo = findFirst(provinceTo.getStacks(), stack1 -> idStack.equals(stack1.getId()));
             if (stackTo == null) {
-                stackTo = new StackMarker(idStack, province);
-                province.addStack(stackTo);
+                stackTo = new StackMarker(idStack, provinceTo);
+                provinceTo.addStack(stackTo);
             }
         } else {
             LOGGER.error("Missing stack id in counter add event.");
@@ -359,7 +372,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
 
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_DEL);
         if (attribute != null) {
-            destroyStack(province, attribute);
+            destroyStack(provinceFrom, attribute);
         }
     }
 

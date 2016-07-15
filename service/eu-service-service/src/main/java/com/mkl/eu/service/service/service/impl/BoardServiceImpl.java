@@ -346,8 +346,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
         diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
+        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_FROM);
         diffAttributes.setValue(counter.getOwner().getProvince());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_TO);
+        diffAttributes.setValue(stack.getProvince());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
         if (counter.getOwner().getCounters().size() == 1) {
