@@ -5,10 +5,12 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -95,6 +97,151 @@ public class BoardServiceTest {
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
+
+    @Test
+    public void testFindGamesSimple() throws Exception {
+        try {
+            boardService.findGames(null);
+            Assert.fail("Should break because findGames is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("findGames", e.getParams()[0]);
+        }
+
+        Request<FindGamesRequest> request = new Request<>();
+
+        List<GameEntity> games = new ArrayList<>();
+        GameEntity game = new GameEntity();
+        game.setId(1L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(11L);
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(12L);
+        game.getCountries().get(1).setUsername("jym");
+        game.getCountries().get(1).setName("espagne");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(13L);
+        game.getCountries().get(1).setUsername("MKL");
+        game.getCountries().get(1).setName("russie");
+        games.add(game);
+        game = new GameEntity();
+        game.setId(2L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(11L);
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(12L);
+        game.getCountries().get(1).setUsername("jym");
+        game.getCountries().get(1).setName("espagne");
+        games.add(game);
+
+        when(gameDao.findGames(null)).thenReturn(games);
+        when(gameMapping.oeToVoLight(anyObject())).thenAnswer(invocationOnMock -> {
+            GameLight light = new GameLight();
+
+            light.setId(((GameEntity) invocationOnMock.getArguments()[0]).getId());
+
+            return light;
+        });
+
+        List<GameLight> gameLights = boardService.findGames(request);
+
+        InOrder inOrder = inOrder(gameDao, gameMapping);
+        inOrder.verify(gameDao).findGames(null);
+        inOrder.verify(gameMapping).oeToVoLight(games.get(0));
+        inOrder.verify(gameMapping).oeToVoLight(games.get(1));
+
+        Assert.assertEquals(2, gameLights.size());
+        Assert.assertEquals(1L, gameLights.get(0).getId().longValue());
+        Assert.assertEquals(null, gameLights.get(0).getCountry());
+        Assert.assertEquals(null, gameLights.get(0).getIdCountry());
+        Assert.assertEquals(0, gameLights.get(0).getUnreadMessages());
+        Assert.assertEquals(2L, gameLights.get(1).getId().longValue());
+        Assert.assertEquals(null, gameLights.get(1).getCountry());
+        Assert.assertEquals(null, gameLights.get(1).getIdCountry());
+        Assert.assertEquals(0, gameLights.get(1).getUnreadMessages());
+    }
+
+    @Test
+    public void testFindGamesComplex() throws Exception {
+        try {
+            boardService.findGames(null);
+            Assert.fail("Should break because findGames is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("findGames", e.getParams()[0]);
+        }
+
+        Request<FindGamesRequest> request = new Request<>();
+        request.setRequest(new FindGamesRequest());
+        request.getRequest().setUsername("MKL");
+
+        List<GameEntity> games = new ArrayList<>();
+        GameEntity game = new GameEntity();
+        game.setId(1L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(11L);
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setName("france");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(12L);
+        game.getCountries().get(1).setUsername("jym");
+        game.getCountries().get(1).setName("espagne");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(13L);
+        game.getCountries().get(1).setUsername("MKL");
+        game.getCountries().get(1).setName("russie");
+        games.add(game);
+        game = new GameEntity();
+        game.setId(2L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(21L);
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setName("angleterre");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(22L);
+        game.getCountries().get(1).setUsername("jym");
+        game.getCountries().get(1).setName("pologne");
+        games.add(game);
+
+        when(gameDao.findGames(request.getRequest())).thenReturn(games);
+        when(gameMapping.oeToVoLight(anyObject())).thenAnswer(invocationOnMock -> {
+            GameLight light = new GameLight();
+
+            light.setId(((GameEntity) invocationOnMock.getArguments()[0]).getId());
+
+            return light;
+        });
+        when(chatDao.getUnreadMessagesNumber(anyLong())).thenAnswer(invocationOnMock -> invocationOnMock.getArguments()[0]);
+
+        List<GameLight> gameLights = boardService.findGames(request);
+
+        InOrder inOrder = inOrder(gameDao, chatDao, gameMapping);
+        inOrder.verify(gameDao).findGames(request.getRequest());
+        inOrder.verify(gameMapping).oeToVoLight(games.get(0));
+        inOrder.verify(chatDao).getUnreadMessagesNumber(11L);
+        inOrder.verify(gameMapping).oeToVoLight(games.get(0));
+        inOrder.verify(chatDao).getUnreadMessagesNumber(13L);
+        inOrder.verify(gameMapping).oeToVoLight(games.get(1));
+        inOrder.verify(chatDao).getUnreadMessagesNumber(21L);
+
+        Assert.assertEquals(3, gameLights.size());
+        Assert.assertEquals(1L, gameLights.get(0).getId().longValue());
+        Assert.assertEquals("france", gameLights.get(0).getCountry());
+        Assert.assertEquals(11L, gameLights.get(0).getIdCountry().longValue());
+        Assert.assertEquals(11L, gameLights.get(0).getUnreadMessages());
+        Assert.assertEquals(1L, gameLights.get(1).getId().longValue());
+        Assert.assertEquals("russie", gameLights.get(1).getCountry());
+        Assert.assertEquals(13L, gameLights.get(1).getIdCountry().longValue());
+        Assert.assertEquals(13L, gameLights.get(1).getUnreadMessages());
+        Assert.assertEquals(2L, gameLights.get(2).getId().longValue());
+        Assert.assertEquals("angleterre", gameLights.get(2).getCountry());
+        Assert.assertEquals(21L, gameLights.get(2).getIdCountry().longValue());
+        Assert.assertEquals(21L, gameLights.get(2).getUnreadMessages());
+    }
 
     @Test
     public void testLoadGame() throws Exception {

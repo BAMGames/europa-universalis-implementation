@@ -90,7 +90,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             if (request.getRequest() != null
                     && !StringUtils.isEmpty(request.getRequest().getUsername())
                     && !StringUtils.equals(AuthentInfo.USERNAME_ANONYMOUS, request.getRequest().getUsername())) {
-                List<PlayableCountryEntity> countries = gameEntity.getCountries().stream().filter(playableCountryEntity -> StringUtils.equals(playableCountryEntity.getUsername(), request.getRequest().getUsername())).collect(Collectors.toList());
+                List<PlayableCountryEntity> countries = gameEntity.getCountries().stream()
+                        .filter(playableCountryEntity -> StringUtils.equals(playableCountryEntity.getUsername(), request.getRequest().getUsername()))
+                        .collect(Collectors.toList());
                 if (!countries.isEmpty()) {
                     for (PlayableCountryEntity country : countries) {
                         GameLight game = gameMapping.oeToVoLight(gameEntity);
