@@ -669,7 +669,7 @@ public final class CounterUtil {
                 case TECH_BAROQUE:
                 case TECH_MANOEUVRE:
                 case TECH_LACE_WAR:
-                    stack = land;
+                    stack = !land;
                     break;
                 /** Naval technologies cannot stack with naval technology counters. */
                 case TECH_NAE_GALEON:
@@ -678,7 +678,7 @@ public final class CounterUtil {
                 case TECH_VESSEL:
                 case TECH_THREE_DECKER:
                 case TECH_SEVENTY_FOUR:
-                    stack = !land;
+                    stack = land;
                     break;
                 /** Special technologies can stack with all. */
                 case TECH_TERCIO:
