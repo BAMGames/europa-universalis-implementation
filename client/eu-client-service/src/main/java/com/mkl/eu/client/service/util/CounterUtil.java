@@ -651,4 +651,43 @@ public final class CounterUtil {
 
         return tech;
     }
+
+    /**
+     * @param type of the counter to test.
+     * @param land if we want to know if the counter can stack with a land technology counter (naval technology counter if <code>false</code>).
+     * @return <code>true</code> if the counter face type can be stack with a technology counter of the given type, <code>false</code> otherwise.
+     */
+    public static boolean canTechnologyStack(CounterFaceTypeEnum type, boolean land) {
+        boolean stack = true;
+
+        if (type != null) {
+            switch (type) {
+                /** Land technologies cannot stack with land technology counters. */
+                case TECH_RENAISSANCE:
+                case TECH_ARQUEBUS:
+                case TECH_MUSKET:
+                case TECH_BAROQUE:
+                case TECH_MANOEUVRE:
+                case TECH_LACE_WAR:
+                    stack = land;
+                    break;
+                /** Naval technologies cannot stack with naval technology counters. */
+                case TECH_NAE_GALEON:
+                case TECH_GALLEON_FLUYT:
+                case TECH_BATTERY:
+                case TECH_VESSEL:
+                case TECH_THREE_DECKER:
+                case TECH_SEVENTY_FOUR:
+                    stack = !land;
+                    break;
+                /** Special technologies can stack with all. */
+                case TECH_TERCIO:
+                case TECH_GALLEASS:
+                default:
+                    break;
+            }
+        }
+
+        return stack;
+    }
 }

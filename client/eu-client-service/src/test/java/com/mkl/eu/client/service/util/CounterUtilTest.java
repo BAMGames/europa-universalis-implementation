@@ -398,4 +398,41 @@ public class CounterUtilTest {
         Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_ASIA, CounterUtil.getTechnologyGroup(CultureEnum.ROTW, true));
         Assert.assertEquals(CounterFaceTypeEnum.TECH_NAVAL_ASIA, CounterUtil.getTechnologyGroup(CultureEnum.ROTW, false));
     }
+
+    @Test
+    public void testStackTech() {
+        Assert.assertTrue(CounterUtil.canTechnologyStack(null, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_RENAISSANCE, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_ARQUEBUS, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_MUSKET, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_BAROQUE, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_MANOEUVRE, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_LACE_WAR, true));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_NAE_GALEON, true));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_GALLEON_FLUYT, true));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_BATTERY, true));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_VESSEL, true));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_THREE_DECKER, true));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_SEVENTY_FOUR, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_TERCIO, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_GALLEASS, true));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.ARMY_MINUS, true));
+
+        Assert.assertTrue(CounterUtil.canTechnologyStack(null, false));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_RENAISSANCE, false));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_ARQUEBUS, false));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_MUSKET, false));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_BAROQUE, false));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_MANOEUVRE, false));
+        Assert.assertFalse(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_LACE_WAR, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_NAE_GALEON, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_GALLEON_FLUYT, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_BATTERY, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_VESSEL, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_THREE_DECKER, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_SEVENTY_FOUR, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_TERCIO, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_GALLEASS, false));
+        Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.ARMY_MINUS, false));
+    }
 }
