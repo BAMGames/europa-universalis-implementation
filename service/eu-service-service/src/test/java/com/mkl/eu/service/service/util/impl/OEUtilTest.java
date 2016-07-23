@@ -72,11 +72,15 @@ public class OEUtilTest {
         Assert.assertEquals(0, oeUtil.getStability(game, "angleterre"));
         Assert.assertEquals(0, oeUtil.getStability(game, "russie"));
         game.getStacks().add(new StackEntity());
-        game.getStacks().get(1).setProvince("B_STAB_-2");
+        game.getStacks().get(1).setProvince("B_TECH_2");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.STABILITY);
         game.getStacks().get(1).getCounters().get(0).setCountry("angleterre");
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        Assert.assertEquals(1, oeUtil.getStability(game, "france"));
+        Assert.assertEquals(0, oeUtil.getStability(game, "angleterre"));
+        Assert.assertEquals(0, oeUtil.getStability(game, "russie"));
+        game.getStacks().get(1).setProvince("B_STAB_-2");
         Assert.assertEquals(1, oeUtil.getStability(game, "france"));
         Assert.assertEquals(-2, oeUtil.getStability(game, "angleterre"));
         Assert.assertEquals(0, oeUtil.getStability(game, "russie"));
@@ -87,6 +91,55 @@ public class OEUtilTest {
         Assert.assertEquals(1, oeUtil.getStability(game, "france"));
         Assert.assertEquals(-2, oeUtil.getStability(game, "angleterre"));
         Assert.assertEquals(1, oeUtil.getStability(game, "russie"));
+    }
+
+    @Test
+    public void testTechnology() {
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(null, null, true));
+        GameEntity game = new GameEntity();
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, null, true));
+        game.getStacks().add(new StackEntity());
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, null, true));
+        game.getStacks().get(0).setProvince("B_TECH_1");
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, null, true));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, null, true));
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAVAL);
+        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, null, true));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "france", true));
+        Assert.assertEquals(1, oeUtil.getTechnologyAdvance(game, "france", false));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "angleterre", true));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "angleterre", false));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("B_TECH_25");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND);
+        game.getStacks().get(1).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "france", true));
+        Assert.assertEquals(1, oeUtil.getTechnologyAdvance(game, "france", false));
+        Assert.assertEquals(25, oeUtil.getTechnologyAdvance(game, "angleterre", true));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "angleterre", false));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL);
+        game.getStacks().get(0).getCounters().get(1).setCountry("angleterre");
+        game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "france", true));
+        Assert.assertEquals(1, oeUtil.getTechnologyAdvance(game, "france", false));
+        Assert.assertEquals(25, oeUtil.getTechnologyAdvance(game, "angleterre", true));
+        Assert.assertEquals(1, oeUtil.getTechnologyAdvance(game, "angleterre", false));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setProvince("B_STAB_3");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND);
+        game.getStacks().get(2).getCounters().get(0).setCountry("france");
+        game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
+        Assert.assertEquals(0, oeUtil.getTechnologyAdvance(game, "france", true));
+        Assert.assertEquals(1, oeUtil.getTechnologyAdvance(game, "france", false));
+        Assert.assertEquals(25, oeUtil.getTechnologyAdvance(game, "angleterre", true));
+        Assert.assertEquals(1, oeUtil.getTechnologyAdvance(game, "angleterre", false));
     }
 
     @Test

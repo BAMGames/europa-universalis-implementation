@@ -37,6 +37,30 @@ public class GameUtilTest {
     }
 
     @Test
+    public void testTechnology() {
+        Assert.assertNull(GameUtil.getTechnology(null));
+        Assert.assertNull(GameUtil.getTechnology(""));
+        Assert.assertNull(GameUtil.getTechnology("eIdf"));
+        Assert.assertEquals(new Integer(1), GameUtil.getTechnology("B_TECH_1"));
+        Assert.assertEquals(new Integer(3), GameUtil.getTechnology("B_TECH_3"));
+        Assert.assertEquals(new Integer(12), GameUtil.getTechnology("B_TECH_12"));
+
+        Assert.assertEquals("B_TECH_1", GameUtil.getTechnologyBox(1));
+        Assert.assertEquals("B_TECH_3", GameUtil.getTechnologyBox(3));
+        Assert.assertEquals("B_TECH_12", GameUtil.getTechnologyBox(12));
+    }
+
+    @Test
+    public void testIsTechnology() {
+        Assert.assertFalse(GameUtil.isTechnologyBox(null));
+        Assert.assertFalse(GameUtil.isTechnologyBox(""));
+        Assert.assertFalse(GameUtil.isTechnologyBox("eIdf"));
+        Assert.assertTrue(GameUtil.isTechnologyBox("B_TECH_1"));
+        Assert.assertTrue(GameUtil.isTechnologyBox("B_TECH_3"));
+        Assert.assertTrue(GameUtil.isTechnologyBox("B_TECH_12"));
+    }
+
+    @Test
     public void testInflation() {
         Assert.assertEquals(new Integer(0), GameUtil.getInflation(null, false));
         Assert.assertEquals(new Integer(0), GameUtil.getInflation("", false));

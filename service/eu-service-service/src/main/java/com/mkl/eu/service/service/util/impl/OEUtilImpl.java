@@ -70,6 +70,30 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
+    public int getTechnologyAdvance(GameEntity game, String country, boolean land) {
+        int tech = 0;
+        CounterFaceTypeEnum face;
+        if (land) {
+            face = CounterFaceTypeEnum.TECH_LAND;
+        } else {
+            face = CounterFaceTypeEnum.TECH_NAVAL;
+        }
+        if (game != null) {
+            CounterEntity techCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isTechnologyBox(stack.getProvince()))
+                            .flatMap(stack -> stack.getCounters().stream()),
+                    counter -> StringUtils.equals(country, counter.getCountry()) && counter.getType() == face);
+            if (techCounter != null) {
+                String box = techCounter.getOwner().getProvince();
+                tech = GameUtil.getTechnologyBox(box);
+            }
+        }
+        return tech;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean canSettle(AbstractProvinceEntity province, List<String> discoveries, List<String> sources, List<String> friendlies) {
         return settleDistance(province, discoveries, sources, friendlies, 0) <= 12;
     }

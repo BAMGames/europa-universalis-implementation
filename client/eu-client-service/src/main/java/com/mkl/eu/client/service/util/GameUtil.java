@@ -57,6 +57,44 @@ public final class GameUtil {
     }
 
     /**
+     * Get the technology advance from the box (province) where the counter is.
+     *
+     * @param provinceBox name of the province/box where the technology counter is.
+     * @return the technology advance.
+     */
+    public static Integer getTechnology(String provinceBox) {
+        Integer tech = null;
+        if (!StringUtils.isEmpty(provinceBox)) {
+            Matcher matcher = Pattern.compile("B_TECH_(\\d*)").matcher(provinceBox);
+            if (matcher.matches()) {
+                tech = Integer.parseInt(matcher.group(1));
+            }
+        }
+
+        return tech;
+    }
+
+    /**
+     * Filter to use to filter the provinces which can hold technology counters.
+     *
+     * @param provinceBox name of the province/box.
+     * @return <code>true</code> if the province can hold a technology counter, <code>false</code> otherwise.
+     */
+    public static boolean isTechnologyBox(String provinceBox) {
+        return !StringUtils.isEmpty(provinceBox) && provinceBox.startsWith("B_TECH_");
+    }
+
+    /**
+     * Get the technology box for a given advance.
+     *
+     * @param tech the technology advance.
+     * @return the technology box.
+     */
+    public static String getTechnologyBox(int tech) {
+        return "B_TECH_" + tech;
+    }
+
+    /**
      * Get the inflation from the box (province) where the counter is.
      *
      * @param provinceBox name of the province/box where the inflation counter is.

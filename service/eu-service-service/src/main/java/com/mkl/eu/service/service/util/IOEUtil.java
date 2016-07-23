@@ -32,6 +32,14 @@ public interface IOEUtil {
     int getStability(GameEntity game, String country);
 
     /**
+     * @param game    game containing all the counters.
+     * @param country whom we want the technology box.
+     * @param land    to wether we want the land or the naval technology advance.
+     * @return the number of the box where the appropriate technology counter of the country is.
+     */
+    int getTechnologyAdvance(GameEntity game, String country, boolean land);
+
+    /**
      * @param province    the province to settle.
      * @param discoveries the provinces that have been discovered.
      * @param sources     the sources (COL/TP/Owned european province) of supply of the settlement.
