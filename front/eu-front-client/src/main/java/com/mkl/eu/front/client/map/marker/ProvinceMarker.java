@@ -114,7 +114,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
             if (getProperties().get(PROP_TERRAIN) == null
                     && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
-                drawStacksInCircle(stacks, xy, relativeSize, pg, stacksToIgnore);
+                drawStacksInCircle(stacks, xy, relativeSize, pg, stacksToIgnore, getId().startsWith("ZP"));
             } else {
                 drawStacks(stacks, xy, relativeSize, pg, stacksToIgnore);
             }
@@ -168,8 +168,9 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
      * @param relativeSize   size of the counters.
      * @param pg             graphics.
      * @param stacksToIgnore stacks not to draw.
+     * @param zp             flag saying that the province is a ZP.
      */
-    protected void drawStacksInCircle(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksToIgnore) {
+    protected void drawStacksInCircle(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksToIgnore, boolean zp) {
         for (int i = 0; i < stacks.size(); i++) {
             // The stack being dragged or hovered is drawn by the MarkerManager.
             if (stacksToIgnore.contains(stacks.get(i))) {
@@ -181,6 +182,11 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 float degree = 360 * i / stacks.size();
                 float x0 = (float) (xy[0] - relativeSize / 2 + Math.sin(Math.toRadians(degree)) * relativeSize);
                 float y0 = (float) (xy[1] - relativeSize / 2 - Math.cos(Math.toRadians(degree)) * relativeSize);
+                // ZP are not centered, so we twit that a bit.
+                if (zp) {
+                    x0 += relativeSize / 5;
+                    y0 -= relativeSize / 5;
+                }
                 pg.image(counter.getImage(), x0 + relativeSize * j / 10
                         , y0 + relativeSize * j / 10, relativeSize, relativeSize);
             }
