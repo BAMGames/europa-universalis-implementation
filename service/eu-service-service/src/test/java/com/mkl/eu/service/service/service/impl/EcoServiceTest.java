@@ -727,6 +727,7 @@ public class EcoServiceTest {
                 request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
                 AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -827,9 +828,10 @@ public class EcoServiceTest {
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("idf");
         inOrder.verify(adminActionDao).findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
-                                                        request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
-                                                        AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
+                request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
+                AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -920,9 +922,10 @@ public class EcoServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
-                                                        request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
-                                                        AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
+                request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
+                AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -1398,6 +1401,7 @@ public class EcoServiceTest {
         inOrder.verify(stackDao).getStacksOnProvince("corn", 12L);
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.PU);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -1571,6 +1575,7 @@ public class EcoServiceTest {
         inOrder.verify(provinceDao).getProvinceByName("corn");
         inOrder.verify(stackDao).getStacksOnProvince("corn", 12L);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -2290,6 +2295,7 @@ public class EcoServiceTest {
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.TFI);
         inOrder.verify(provinceDao).getProvinceByName(province);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -2894,11 +2900,12 @@ public class EcoServiceTest {
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao)
                .findAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
-                                 AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+                       AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
         inOrder.verify(provinceDao).getProvinceByName("idf");
         inOrder.verify(oeUtil).getAdministrativeValue(countryEntity);
         inOrder.verify(oeUtil).getStability(game, country);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -3157,10 +3164,11 @@ public class EcoServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
-                                                        AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+                AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
         inOrder.verify(oeUtil).getAdministrativeValue(game.getCountries().get(0));
         inOrder.verify(oeUtil).getStability(game, "france");
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -3306,10 +3314,11 @@ public class EcoServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
-                                                        AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
+                AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
         inOrder.verify(oeUtil).getStability(game, "france");
         inOrder.verify(oeUtil).getAdministrativeValue(game.getCountries().get(0));
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -3318,7 +3327,7 @@ public class EcoServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(5, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(request.getRequest().getIdCountry().toString(),
                             diffEntity.getAttributes().get(0).getValue());
@@ -3326,8 +3335,10 @@ public class EcoServiceTest {
         Assert.assertEquals(game.getTurn().toString(), diffEntity.getAttributes().get(1).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diffEntity.getAttributes().get(2).getType());
         Assert.assertEquals(request.getRequest().getType().name(), diffEntity.getAttributes().get(2).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(3).getType());
-        Assert.assertEquals("10", diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COLUMN, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("-1", diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("10", diffEntity.getAttributes().get(4).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
@@ -3846,6 +3857,7 @@ public class EcoServiceTest {
         inOrder.verify(adminActionDao).getCountriesInlandAdvance("quebec", 12L);
         inOrder.verify(provinceDao).getRegionByName("Canada");
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -4241,6 +4253,7 @@ public class EcoServiceTest {
         inOrder.verify(provinceDao).getRegionByName("Canada");
         inOrder.verify(adminActionDao).countOtherTpsInRegion("france", "Canada", 12L);
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -4634,6 +4647,7 @@ public class EcoServiceTest {
         inOrder.verify(oeUtil).getMilitaryValue(game.getCountries().get(0));
         inOrder.verify(countryDao).getCountryByName("turquie");
         inOrder.verify(adminActionDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());

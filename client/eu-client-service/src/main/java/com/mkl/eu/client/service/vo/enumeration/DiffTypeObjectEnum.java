@@ -17,5 +17,9 @@ public enum DiffTypeObjectEnum {
     /** Economical sheet. */
     ECO_SHEET,
     /** Administrative action. */
-    ADM_ACT
+    ADM_ACT,
+    /** Country. */
+    COUNTRY,
+    /** ESTABLISHMENT. */
+    ESTABLISHMENT
 }

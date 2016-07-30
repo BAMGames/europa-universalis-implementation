@@ -84,7 +84,7 @@ public final class OEUtilImpl implements IOEUtil {
                     counter -> StringUtils.equals(country, counter.getCountry()) && counter.getType() == face);
             if (techCounter != null) {
                 String box = techCounter.getOwner().getProvince();
-                tech = GameUtil.getTechnologyBox(box);
+                tech = GameUtil.getTechnology(box);
             }
         }
         return tech;

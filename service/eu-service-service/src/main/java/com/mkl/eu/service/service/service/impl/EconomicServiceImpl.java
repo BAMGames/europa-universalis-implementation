@@ -36,6 +36,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
@@ -402,6 +403,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
             }
+
+            diffDao.create(diff);
 
             diffs.add(diff);
         }
@@ -1135,6 +1138,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setStatus(AdminActionStatusEnum.PLANNED);
         admAct.setTurn(game.getTurn());
         admAct.setBonus(bonus);
+        // use column to know if stab has to be lowered or not
+        admAct.setColumn(-1);
 
         return admAct;
     }
@@ -1498,14 +1503,15 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfNull(new CheckForThrow<>().setTest(techCounter).setCodeError(IConstantsServiceException.MISSING_COUNTER)
                 .setMsgFormat(MSG_MISSING_COUNTER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, country.getName()));
 
-        int techBox = GameUtil.getTechnologyBox(techCounter.getOwner().getProvince());
+        int techBox = GameUtil.getTechnology(techCounter.getOwner().getProvince());
         Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), t -> StringUtils.equals(t.getName(), actualTechName));
 
         failIfNull(new CheckForThrow<>().setTest(actualTech).setCodeError(IConstantsServiceException.MISSING_TABLE_ENTRY)
                 .setMsgFormat("{1}: {0} The entry {3} of the table {2} is missing. Please ask an admin for correction.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, "TECH", actualTechName));
 
+        // FIXME land and naval techs should be filtered
         List<Tech> higherTechs = getTables().getTechs().stream()
-                .filter(t -> t.getBeginTurn() > actualTech.getBeginTurn())
+                .filter(t -> t.getBeginTurn() > actualTech.getBeginTurn() && t.isLand() == land)
                 .collect(Collectors.toList());
 
         Collections.sort(higherTechs);
@@ -1519,7 +1525,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             failIfNull(new CheckForThrow<>().setTest(nextTechCounter).setCodeError(IConstantsServiceException.MISSING_COUNTER)
                     .setMsgFormat(MSG_MISSING_COUNTER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterUtil.getTechnologyType(tech.getName()), "neutral"));
 
-            int nextTechBox = GameUtil.getTechnologyBox(nextTechCounter.getOwner().getProvince());
+            int nextTechBox = GameUtil.getTechnology(nextTechCounter.getOwner().getProvince());
 
             boolean nextTechReachable = tech.getBeginTurn() <= game.getTurn();
 
@@ -1551,7 +1557,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         CounterEntity groupTechCounter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
                 c -> c.getType() == groupTechType);
         if (groupTechCounter != null) {
-            int groupBox = GameUtil.getTechnologyBox(groupTechCounter.getOwner().getProvince());
+            int groupBox = GameUtil.getTechnology(groupTechCounter.getOwner().getProvince());
             if (groupBox > techBox + 5) {
                 bonus += groupBox - techBox - 5;
             }
@@ -1707,10 +1713,33 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 List<PlayableCountryEntity> countries = game.getCountries().stream()
                         .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
                         .collect(Collectors.toList());
+
+                /**
+                 * New tfis grouped by TZ then by country in order to minimize the diffs created.
+                 * For example, if a country gains a tfi and becomes lvl 6 and then is reduced
+                 * during global concurrency, then he will go back to its former 5 and no diff
+                 * will be created.
+                 */
+                Map<String, Map<String, Integer>> newTfis = new HashMap<>();
+
+                /**
+                 * New colonies and trading posts will trigger the concurrency check on the
+                 * province they appear.
+                 */
+                Set<String> newEstablishments = new HashSet<>();
+
+                // automatic refit of tfis
+
                 for (PlayableCountryEntity countryAct : countries) {
-                    diffs.addAll(computeAdministrativeActions(countryAct, game));
+                    diffs.addAll(computeAdministrativeActions(countryAct, game, newTfis, newEstablishments));
                     countryAct.setReady(false);
                 }
+
+                // tfs concurrencies
+                // tp/col concurrencies
+                // exotic resources concurrencies
+                // minor technologies
+                // neutral technologies
 
                 DiffEntity diff = new DiffEntity();
                 diff.setIdGame(game.getId());
@@ -1789,25 +1818,29 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * Compute the planned administrative actions of the current game turn for the specified country.
      * Will also fill the economical sheet of the country if there is one (does not create one if none).
      *
-     * @param country owner of the administrative actions.
-     * @param game    current game.
+     * @param country           owner of the administrative actions.
+     * @param game              current game.
+     * @param newTfis           New tfis grouped by TZ then by country in order to minimize the diffs created.
+     *                          For example, if a country gains a tfi and becomes lvl 6 and then is reduced
+     *                          during global concurrency, then he will go back to its former 5 and no diff
+     *                          will be created.
+     * @param newEstablishments New colonies and trading posts will trigger the concurrency check on the
+     *                          province they appear.
      * @return a List of Diff containing all the modifications due to the administrative actions.
      */
-    List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game) {
+    List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game, Map<String, Map<String, Integer>> newTfis, Set<String> newEstablishments) {
         List<DiffEntity> diffs = new ArrayList<>();
 
         Map<String, Integer> costs = new HashMap<>();
-        /**
-         * New tfis grouped by TZ then by country in order to minimize the diffs created.
-         * For example, if a country gains a tfi and becomes lvl 6 and then is reduced
-         * during global concurrency, then he will go back to its former 5 and no diff
-         * will be created.
-         */
-        Map<String, Map<String, Integer>> newTfis = new HashMap<>();
+
+        // We stock the techs because if there is a technology advance, the maintenance should be of former technology.
+        String landTech = country.getLandTech();
+        String navalTech = country.getNavalTech();
 
         List<AdministrativeActionEntity> actions = country.getAdministrativeActions().stream()
                 .filter(a -> a.getStatus() == AdminActionStatusEnum.PLANNED && a.getTurn().equals(game.getTurn()))
                 .collect(Collectors.toList());
+        DiffEntity diff;
         for (AdministrativeActionEntity action : actions) {
             switch (action.getType()) {
                 case LM:
@@ -1827,23 +1860,27 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     executeTradeFleetImplantation(action, game, country, costs, newTfis);
                     break;
                 case MNU:
-//                    diffs = executeManufacture(action, game, country, costs);
+                    diff = executeManufacture(action, game, country, costs);
+                    if (diff != null) {
+                        diffs.add(diff);
+                    }
                     break;
                 case FTI:
                 case DTI:
-//                    diffs = executeFtiDti(action, game, country, costs);
+                    diff = executeFtiDti(action, game, country, costs);
+                    if (diff != null) {
+                        diffs.add(diff);
+                    }
                     break;
                 case EXL:
-//                    diffs = executeExceptionalTaxes(action, game, country, costs);
+                    diffs.add(executeExceptionalTaxes(action, game, country, costs));
                     break;
                 case COL:
-//                    diffs = executeColonisation(action, game, country, costs);
-                    break;
                 case TP:
-//                    diffs = executeTradingPost(action, game, country, costs);
+                    diffs.addAll(executeEstablishment(action, game, country, costs, newEstablishments));
                     break;
                 case ELT:
-//                    diffs = executeTechnology(action, game, country, true, costs);
+                    diffs.addAll(executeTechnology(action, game, country, costs));
                     break;
                 case ENT:
 //                    diffs = executeTechnology(action, game, country, false, costs);
@@ -1868,7 +1905,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
                             (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
                             !unit.isSpecial() &&
-                            (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
+                            (StringUtils.equals(unit.getTech().getName(), landTech) || StringUtils.equals(unit.getTech().getName(), navalTech))).collect(Collectors.toList());
             Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
 
             Map<CounterFaceTypeEnum, Long> conscriptForces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
@@ -1879,12 +1916,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
                             unit.getAction() == UnitActionEnum.MAINT_WAR &&
                             unit.isSpecial() &&
-                            StringUtils.equals(unit.getTech().getName(), country.getLandTech())).collect(Collectors.toList());
+                            StringUtils.equals(unit.getTech().getName(), landTech)).collect(Collectors.toList());
             Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
 
             sheet.setUnitMaintExpense(CommonUtil.add(unitMaintenanceCost, unitMaintenanceConscriptCost));
 
-            Tech ownerLandTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+            Tech ownerLandTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), landTech));
             Map<Pair<Integer, Boolean>, Integer> orderedFortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
                             CounterUtil.isFortress(counter.getType())))
@@ -2019,6 +2056,358 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         } else {
             newTfis.get(action.getProvince()).put(country.getName(), newTfis.get(action.getProvince()).get(country.getName()) + 1);
         }
+    }
+
+    /**
+     * Execute a planned administrative action of type manufacture.
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeManufacture(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
+        addInMap(costs, COST_ACTION, action.getCost());
+        Integer die = oeUtil.rollDie(game, country);
+        action.setDie(die);
+
+        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
+        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
+                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+
+        action.setResult(result.getResult());
+
+        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
+            return null;
+        }
+
+        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
+            die = oeUtil.rollDie(game, country);
+            action.setSecondaryDie(die);
+
+            if (die > country.getFti()) {
+                return null;
+            } else {
+                action.setSecondaryResult(true);
+            }
+        }
+
+        if (action.getIdObject() != null) {
+            return counterDomain.switchCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), game);
+        } else {
+            // FIXME regroup mnu counter with other economic counters ?
+            return counterDomain.createCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), game);
+        }
+    }
+
+    /**
+     * Execute a planned administrative action of type enhance DTI/FTI.
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeFtiDti(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
+        addInMap(costs, COST_ACTION, action.getCost());
+        Integer die = oeUtil.rollDie(game, country);
+        action.setDie(die);
+
+        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
+        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
+                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+
+        action.setResult(result.getResult());
+
+        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
+            return null;
+        }
+
+        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
+            die = oeUtil.rollDie(game, country);
+            action.setSecondaryDie(die);
+
+            if (die > country.getFti()) {
+                return null;
+            } else {
+                action.setSecondaryResult(true);
+            }
+        }
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
+        diff.setIdObject(country.getId());
+        if (action.getType() == AdminActionTypeEnum.DTI) {
+            country.setDti(country.getDti() + 1);
+
+            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.DTI);
+            diffAttributes.setValue(Integer.toString(country.getDti()));
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+        } else {
+            Map<LimitTypeEnum, Integer> maxi = getTables().getLimits().stream().filter(
+                    limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                            (limit.getType() == LimitTypeEnum.MAX_FTI ||
+                                    limit.getType() == LimitTypeEnum.MAX_FTI_ROTW) &&
+                            limit.getPeriod().getBegin() <= game.getTurn() &&
+                            limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors
+                    .groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
+
+            if (country.getFti() < maxi.get(LimitTypeEnum.MAX_FTI)) {
+                country.setFti(country.getFti() + 1);
+
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.FTI);
+                diffAttributes.setValue(Integer.toString(country.getFti()));
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+            if (country.getFtiRotw() < maxi.get(LimitTypeEnum.MAX_FTI_ROTW) || country.getFtiRotw() < country.getFti()) {
+                country.setFtiRotw(country.getFtiRotw() + 1);
+
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.FTI_ROTW);
+                diffAttributes.setValue(Integer.toString(country.getFtiRotw()));
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+        }
+
+        diffDao.create(diff);
+
+        return diff;
+    }
+
+    /**
+     * Execute a planned administrative action of type exceptional levies.
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeExceptionalTaxes(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
+        addInMap(costs, COST_EXC_LEVIES, action.getBonus());
+
+        if (action.getColumn() == -1) {
+            int stab = oeUtil.getStability(game, country.getName());
+            stab--;
+            String box = GameUtil.getStabilityBox(stab);
+
+            return counterDomain.moveSpecialCounter(CounterFaceTypeEnum.STABILITY, country.getName(), box, game);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Execute a planned administrative action of type manufacture.
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @return a List of Diff related to the action.
+     */
+    private List<DiffEntity> executeEstablishment(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs, Set<String> newEstablishments) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        addInMap(costs, COST_ACTION, action.getCost());
+        Integer die = oeUtil.rollDie(game, country);
+        action.setDie(die);
+
+        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
+        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
+                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+
+        action.setResult(result.getResult());
+
+        // TODO check activation
+
+        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
+            return diffs;
+        }
+
+        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
+            die = oeUtil.rollDie(game, country);
+            action.setSecondaryDie(die);
+
+            if (die > country.getFtiRotw()) {
+                return diffs;
+            } else {
+                action.setSecondaryResult(true);
+            }
+        }
+
+        Pair<DiffEntity, CounterEntity> pair;
+        if (action.getIdObject() != null) {
+
+            pair = counterDomain.switchAndGetCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), game);
+        } else {
+            newEstablishments.add(action.getProvince());
+            // FIXME regroup mnu counter with other economic counters ?
+            List<CounterEntity> forts = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), action.getProvince()))
+                    .flatMap(s -> s.getCounters().stream()).filter(c -> c.getType() == CounterFaceTypeEnum.FORT).collect(Collectors.toList());
+            for (CounterEntity fort : forts) {
+                diffs.add(counterDomain.removeCounter(fort.getId(), game));
+            }
+            pair = counterDomain.createAndGetCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), game);
+        }
+
+        // TODO exotic resources
+
+        diffs.add(pair.getLeft());
+        CounterEntity counter = pair.getRight();
+        if (counter.getEstablishment() == null) {
+            EstablishmentEntity establishment = new EstablishmentEntity();
+            establishment.setLevel(1);
+            establishment.setCounter(counter);
+            if (action.getType() == AdminActionTypeEnum.COL) {
+                establishment.setType(EstablishmentTypeEnum.COLONY);
+            } else {
+                establishment.setType(EstablishmentTypeEnum.TRADING_POST);
+            }
+            AbstractProvinceEntity prov = provinceDao.getProvinceByName(action.getProvince());
+            if (prov instanceof RotwProvinceEntity) {
+                establishment.setRegion(((RotwProvinceEntity) prov).getRegion());
+            }
+            counter.setEstablishment(establishment);
+        } else {
+            counter.getEstablishment().setLevel(counter.getEstablishment().getLevel() + 1);
+        }
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.ESTABLISHMENT);
+        diff.setIdObject(counter.getId());
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.LEVEL);
+        diffAttributes.setValue(Integer.toString(counter.getEstablishment().getLevel()));
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        return diffs;
+    }
+
+    /**
+     * Execute a planned administrative action of type enhance technology (land or naval).
+     *
+     * @param action  the planned administrative action.
+     * @param game    the game.
+     * @param country the country doing the action.
+     * @param costs   various costs that could change with the action.
+     * @return a List of Diff related to the action.
+     */
+    private List<DiffEntity> executeTechnology(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        boolean land = action.getType() == AdminActionTypeEnum.ELT;
+        CounterFaceTypeEnum face;
+        String actualTechName;
+        Tech nextTech = null;
+        if (land) {
+            face = CounterFaceTypeEnum.TECH_LAND;
+            actualTechName = country.getLandTech();
+        } else {
+            face = CounterFaceTypeEnum.TECH_NAVAL;
+            actualTechName = country.getNavalTech();
+        }
+        addInMap(costs, COST_ACTION, action.getCost());
+        Integer die = oeUtil.rollDie(game, country);
+        action.setDie(die);
+
+        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
+        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
+                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+
+        action.setResult(result.getResult());
+
+
+        boolean nextTechKnown = false;
+        Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), t -> StringUtils.equals(t.getName(), actualTechName));
+        List<Tech> higherTechs = getTables().getTechs().stream()
+                .filter(t -> t.getBeginTurn() > actualTech.getBeginTurn() && t.isLand() == land)
+                .collect(Collectors.toList());
+        Collections.sort(higherTechs);
+
+        if (higherTechs.size() > 0) {
+            nextTech = higherTechs.get(0);
+            nextTechKnown = nextTech.getBeginTurn() <= game.getTurn();
+        }
+
+        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
+            return diffs;
+        }
+
+        if (!nextTechKnown && (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS)) {
+            die = oeUtil.rollDie(game, country);
+            action.setSecondaryDie(die);
+
+            if (die > country.getFti()) {
+                return diffs;
+            } else {
+                action.setSecondaryResult(true);
+            }
+        }
+
+        int boxesToImprove = 1;
+        if (result.getResult() == ResultEnum.CRITICAL_HIT || (nextTechKnown && result.getResult() == ResultEnum.SUCCESS)) {
+            boxesToImprove = 2;
+        }
+
+        int actualTechAdvance = oeUtil.getTechnologyAdvance(game, country.getName(), land);
+        int targetBox = actualTechAdvance + boxesToImprove;
+        // TODO it is possible to go through box 70. Disable this behaviour when the conception of the 70+ will be made.
+        targetBox = Math.min(targetBox, 70);
+        String box = GameUtil.getTechnologyBox(targetBox);
+        List<CounterEntity> neutralCounters = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), box))
+                .flatMap(s -> s.getCounters().stream()).filter(c -> CounterUtil.canTechnologyStack(c.getType(), land))
+                .collect(Collectors.toList());
+        // A technology counter cannot stack with a neutral technology counter of same type. Go one box further if this would be the case.
+        if (!neutralCounters.isEmpty()) {
+            targetBox++;
+        }
+        diffs.add(counterDomain.moveSpecialCounter(face, country.getName(), GameUtil.getTechnologyBox(targetBox), game));
+
+        if (nextTech != null) {
+            String nextTechName = nextTech.getName();
+            CounterEntity nextTechCounter = CommonUtil.findFirst(game.getStacks().stream().filter(s -> GameUtil.isTechnologyBox(s.getProvince()))
+                            .flatMap(s -> s.getCounters().stream()),
+                    c -> c.getType() == CounterUtil.getTechnologyType(nextTechName));
+
+            int nextTechBox = GameUtil.getTechnology(nextTechCounter.getOwner().getProvince());
+
+            if (nextTechBox < targetBox) {
+                DiffEntity diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                diff.setType(DiffTypeEnum.MODIFY);
+                diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
+                diff.setIdObject(country.getId());
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                if (land) {
+                    diffAttributes.setType(DiffAttributeTypeEnum.TECH_LAND);
+                } else {
+                    diffAttributes.setType(DiffAttributeTypeEnum.TECH_NAVAL);
+                }
+                diffAttributes.setValue(nextTech.getName());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+
+                diffDao.create(diff);
+
+                diffs.add(diff);
+            }
+        }
+
+        return diffs;
     }
 
     /**

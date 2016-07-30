@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.eco;
 
+import com.mkl.eu.client.service.vo.enumeration.EstablishmentTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 
@@ -18,11 +19,11 @@ public class EstablishmentEntity implements IEntity, Serializable {
     private Long id;
     /** Region where the establishment is. */
     private String region;
-    /** Name of the province where the trade fleet is located. */
-    private String type;
-    /** Level of the trade fleet. */
+    /** Type of the establishment. */
+    private EstablishmentTypeEnum type;
+    /** Level of the establishment. */
     private Integer level;
-    /** Game in which the trade fleet is. */
+    /** Counter related to the establishment. */
     private CounterEntity counter;
 
     /** @return the id. */
@@ -51,13 +52,14 @@ public class EstablishmentEntity implements IEntity, Serializable {
     }
 
     /** @return the type. */
+    @Enumerated(EnumType.STRING)
     @Column(name = "TYPE")
-    public String getType() {
+    public EstablishmentTypeEnum getType() {
         return type;
     }
 
     /** @param type the type to set. */
-    public void setType(String type) {
+    public void setType(EstablishmentTypeEnum type) {
         this.type = type;
     }
 

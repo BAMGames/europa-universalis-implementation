@@ -67,7 +67,7 @@ public abstract class AbstractService implements INameConstants {
     protected IGameDao gameDao;
     /** Diff DAO. */
     @Autowired
-    private IDiffDao diffDao;
+    protected IDiffDao diffDao;
     /** Chat DAO. */
     @Autowired
     protected IChatDao chatDao;

@@ -80,7 +80,8 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffAttributeTypeEnum#STACK_FROM</li>
      * <li>DiffAttributeTypeEnum#STACK_TO (can be a new one)</li>
-     * <li>DiffAttributeTypeEnum#PROVINCE where the move is done</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE_FROM where the STACK_FROM is</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE_TO where the STACK_TO is</li>
      * <li>DiffAttributeTypeEnum#STACK_DEL (if STACK_FROM has no counter anymore) - optional attribute</li>
      * </ul>
      * </li>
@@ -167,6 +168,13 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#TYPE to know the new type of the counter.</li>
      * <li>DiffAttributeTypeEnum#VETERANS to know the new number of veterans in the counter.</li>
      * <li>DiffAttributeTypeEnum#PROVINCE to know where the counter is.</li>
+     * </ul>
+     * </li>
+     * <li>DiffTypeObjectEnum#COUNTRY in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#DTI to know the new DTI of the country.</li>
+     * <li>DiffAttributeTypeEnum#FTI to know the new FTI of the country.</li>
+     * <li>DiffAttributeTypeEnum#FTI_ROTW to know the new FTI_ROTW of the country.</li>
      * </ul>
      * </li>
      * </ul>

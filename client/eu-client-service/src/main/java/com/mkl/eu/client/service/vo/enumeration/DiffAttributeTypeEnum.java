@@ -47,5 +47,17 @@ public enum DiffAttributeTypeEnum {
     /** Status of the game. */
     STATUS,
     /** Number of veterans of a counter. */
-    VETERANS
+    VETERANS,
+    /** DTI of a country. */
+    DTI,
+    /** FTI of a country. */
+    FTI,
+    /** FTI for the Rotw of a country. */
+    FTI_ROTW,
+    /** Level of the item (can be colony, trading post, trade fleet,...). */
+    LEVEL,
+    /** Name of the land technology of the country. */
+    TECH_LAND,
+    /** Name of the naval technology of the country. */
+    TECH_NAVAL
 }
