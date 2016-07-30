@@ -2,7 +2,9 @@ package com.mkl.eu.service.service.domain;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Interface for cross service methods around counter manipulation.
@@ -22,6 +24,17 @@ public interface ICounterDomain {
     DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
 
     /**
+     * Creates a counter in a new stack.
+     *
+     * @param type     of the counter to create.
+     * @param country  owner of the counter to create.
+     * @param province where the counter will be.
+     * @param game     the game.
+     * @return the diffs related to the creation of the counter and the counter created.
+     */
+    Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
+
+    /**
      * Removes a counter from a game.
      *
      * @param idCounter the id of the counter to remove.
@@ -39,6 +52,16 @@ public interface ICounterDomain {
      * @return the diffs related to the switch of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
      */
     DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game);
+
+    /**
+     * Switch a counter from a game to a given type.
+     *
+     * @param idCounter the id of the counter to switch.
+     * @param type      new type of the counter.
+     * @param game      the game.
+     * @return the diffs related to the switch of the counter and the counter switched. Returns <code>null</code> if the idCounter is not found in the given game.
+     */
+    Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game);
 
     /**
      * Change the number of veterans of a counter from a game.

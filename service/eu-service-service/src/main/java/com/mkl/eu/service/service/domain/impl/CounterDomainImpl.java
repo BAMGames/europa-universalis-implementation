@@ -15,6 +15,8 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,12 @@ public class CounterDomainImpl implements ICounterDomain {
     /** {@inheritDoc} */
     @Override
     public DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game) {
+        return createAndGetCounter(type, country, province, game).getLeft();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game) {
         StackEntity stack = new StackEntity();
         stack.setProvince(province);
         stack.setGame(game);
@@ -88,7 +96,7 @@ public class CounterDomainImpl implements ICounterDomain {
 
         diffDao.create(diff);
 
-        return diff;
+        return new ImmutablePair<>(diff, counterEntity);
     }
 
     /** {@inheritDoc} */
@@ -139,6 +147,18 @@ public class CounterDomainImpl implements ICounterDomain {
     /** {@inheritDoc} */
     @Override
     public DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game) {
+        Pair<DiffEntity, CounterEntity> pair = switchAndGetCounter(idCounter, type, game);
+
+        if (pair == null) {
+            return null;
+        }
+
+        return pair.getLeft();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game) {
         CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
                 c -> c.getId().equals(idCounter));
 
@@ -167,7 +187,7 @@ public class CounterDomainImpl implements ICounterDomain {
 
         diffDao.create(diff);
 
-        return diff;
+        return new ImmutablePair<>(diff, counter);
     }
 
     /** {@inheritDoc} */
