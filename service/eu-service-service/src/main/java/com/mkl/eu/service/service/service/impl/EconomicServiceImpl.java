@@ -49,6 +49,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -2424,7 +2425,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         for (String province : provinces) {
             computeAutomaticTfCompetition(game, province, newTfis);
-            // TODO partial tf competition
         }
     }
 
@@ -2450,14 +2450,34 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         TradeZoneProvinceEntity prov = (TradeZoneProvinceEntity) provinceDao.getProvinceByName(province);
 
-        boolean multiple = tfPresents.size() > 1;
-        boolean has6 = tfPresents.values().stream().filter(level -> level == 6).count() > 1;
-        if (multiple && has6) {
+        computeSingleTfCompetition(game, prov, CompetitionTypeEnum.TF_6, map -> {
+            boolean multiple = map.size() > 1;
+            boolean has6 = map.values().stream().filter(level -> level == 6).count() > 1;
+            return multiple && has6;
+        }, tfPresents, newTfis);
+
+        Map<String, Integer> tfPresents4More = tfPresents.entrySet().stream().filter(map -> map.getValue() >= 4)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        computeSingleTfCompetition(game, prov, CompetitionTypeEnum.TF_4, map -> map.size() > 1, tfPresents4More, newTfis);
+    }
+
+    /**
+     * Compute either a total trade fleet competition or a partial trade fleet competition.
+     *
+     * @param game       the game.
+     * @param prov       the trade zone where the competition occurs.
+     * @param type       wether total (TF_6) or partial (TF_4) competition.
+     * @param predicate6 the predicate to known the condition for continuing the competition.
+     * @param tfPresents the trade fleets concerned by the competition, grouped by country.
+     * @param newTfis    the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
+     */
+    private void computeSingleTfCompetition(GameEntity game, TradeZoneProvinceEntity prov, CompetitionTypeEnum type, Predicate<Map<String, Integer>> predicate6, Map<String, Integer> tfPresents, Map<String, Map<String, Integer>> newTfis) {
+        if (predicate6.test(tfPresents)) {
             CompetitionEntity competition = new CompetitionEntity();
             competition.setGame(game);
-            competition.setProvince(province);
+            competition.setProvince(prov.getName());
             competition.setTurn(game.getTurn());
-            competition.setType(CompetitionTypeEnum.TF_6);
+            competition.setType(type);
 
             List<CompetitionInfo> infoList = new ArrayList<>();
 
@@ -2473,22 +2493,25 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 infoList.add(info);
             }
 
-            computeAutomaticTfTotalCompetition(competition, 1, infoList, game, tfPresents, newTfis);
+            computeAutomaticTfCompetitionRound(competition, 1, infoList, game, tfPresents, newTfis, predicate6);
 
             game.getCompetitions().add(competition);
         }
     }
 
     /**
-     * Computes a round of total trade competition between fleet competition, if necessary.
-     * A total competition between trade fleets ends if there is no trade fleet of level 6 left or there is only a single trade fleet.
+     * Computes a round of trade competition between fleet competition, if necessary.
+     * A competition between trade fleets ends if the predicate returns <code>false</code>.
      *
      * @param competition the current competition.
      * @param roundNumber the number of the round to compute.
+     * @param infoList    Info about the countries computing the competition.
+     * @param game        the game.
      * @param tfPresents  the present trade fleets in the trade zone.
      * @param newTfis     the trade fleets to add/remove grouped by province then by country.
+     * @param predicate   Function that will return <code>true</code> if the competition should go on.
      */
-    private void computeAutomaticTfTotalCompetition(CompetitionEntity competition, int roundNumber, List<CompetitionInfo> infoList, GameEntity game, Map<String, Integer> tfPresents, Map<String, Map<String, Integer>> newTfis) {
+    private void computeAutomaticTfCompetitionRound(CompetitionEntity competition, int roundNumber, List<CompetitionInfo> infoList, GameEntity game, Map<String, Integer> tfPresents, Map<String, Map<String, Integer>> newTfis, Predicate<Map<String, Integer>> predicate) {
         for (String country : tfPresents.keySet()) {
             CompetitionRoundEntity round = new CompetitionRoundEntity();
             round.setCountry(country);
@@ -2525,13 +2548,14 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             if (removeTfFromMaps(tfPresents, newTfis, competition.getProvince(), country)) {
                 infoList.remove(info);
+            } else if (competition.getType() == CompetitionTypeEnum.TF_4 && tfPresents.get(country) < 4) {
+                tfPresents.remove(country);
+                infoList.remove(info);
             }
         }
 
-        boolean multiple = tfPresents.size() > 1;
-        boolean has6 = tfPresents.values().stream().filter(level -> level == 6).count() > 1;
-        if (multiple && has6) {
-            computeAutomaticTfTotalCompetition(competition, roundNumber + 1, infoList, game, tfPresents, newTfis);
+        if (predicate.test(tfPresents)) {
+            computeAutomaticTfCompetitionRound(competition, roundNumber + 1, infoList, game, tfPresents, newTfis, predicate);
         }
     }
 
