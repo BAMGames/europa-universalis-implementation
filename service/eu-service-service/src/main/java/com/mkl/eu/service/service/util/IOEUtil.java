@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.util;
 
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
@@ -12,6 +13,9 @@ import java.util.List;
  * @author MKL.
  */
 public interface IOEUtil {
+    /** Mercantile countries that have a higher FTI/DTI. */
+    String[] MERCANTILE_COUNTRIES = new String[]{"danemark", "genes", "hollande", "portugal", "provincesne", "suede", "venise"};
+
     /**
      * @param country whom we want the administrative value.
      * @return the administrative value of a country.
@@ -23,6 +27,20 @@ public interface IOEUtil {
      * @return the military value of a country.
      */
     int getMilitaryValue(PlayableCountryEntity country);
+
+    /**
+     * @param country which we want the fti.
+     * @param tables  the tables (period is needed in the calculation).
+     * @return the fti of the country, which can be minor, given the game (and so the period).
+     */
+    int getFti(GameEntity game, Tables tables, String country);
+
+    /**
+     * @param country which we want the dti.
+     * @param tables  the tables (period is needed in the calculation).
+     * @return the dti of the country, which can be minor, given the game (and so the period).
+     */
+    int getDti(GameEntity game, Tables tables, String country);
 
     /**
      * @param game    game containing all the counters.

@@ -4,6 +4,8 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.client.service.vo.tables.Period;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
@@ -14,6 +16,7 @@ import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,6 +49,53 @@ public final class OEUtilImpl implements IOEUtil {
             mil = country.getMonarch().getMilitary();
         }
         return mil;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getFti(GameEntity game, Tables tables, String country) {
+        // Default value for fti is 2
+        int fti = 2;
+        // If the country is a major, then we take its own fti value
+        PlayableCountryEntity major = CommonUtil.findFirst(game.getCountries(), c -> StringUtils.equals(c.getName(), country));
+        if (major != null) {
+            fti = major.getFti();
+        } else {
+            boolean commercialMinor = Arrays.binarySearch(MERCANTILE_COUNTRIES, country) >= 0;
+            Period period = CommonUtil.findFirst(tables.getPeriods(), per -> per.getBegin() <= game.getTurn() && per.getEnd() >= game.getTurn());
+            boolean period4OrMore = period != null && period.getName().compareTo(Period.PERIOD_IV) >= 0;
+            // Mercantile minor countries have a FTI of 3 in period I-III then 4. The others have a FTI of 2 then 3
+            if (commercialMinor) {
+                fti++;
+            }
+            if (period4OrMore) {
+                fti++;
+            }
+        }
+
+        return fti;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getDti(GameEntity game, Tables tables, String country) {
+        // If the country is a major, then we take its own dti value
+        PlayableCountryEntity major = CommonUtil.findFirst(game.getCountries(), c -> StringUtils.equals(c.getName(), country));
+        if (major != null) {
+            return major.getDti();
+        } else {
+            if (StringUtils.equals("provincesne", country) || StringUtils.equals("hollande", country)) {
+                // Hollande has a DTI of 4
+                return 4;
+            } else {
+                // Other minor countries have a DTI equals to their FTI
+                return getFti(game, tables, country);
+            }
+        }
     }
 
     /**

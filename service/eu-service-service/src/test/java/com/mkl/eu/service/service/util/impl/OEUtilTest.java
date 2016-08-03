@@ -3,6 +3,8 @@ package com.mkl.eu.service.service.util.impl;
 import com.mkl.eu.client.service.vo.enumeration.BorderEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.client.service.vo.tables.Period;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -234,5 +236,123 @@ public class OEUtilTest {
         game.setSeed(seed);
 
         Assert.assertEquals(die, oeUtil.rollDie(game, (PlayableCountryEntity) null));
+    }
+
+    @Test
+    public void testFti() {
+        GameEntity game = new GameEntity();
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setFti(1);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().get(1).setFti(3);
+        game.setTurn(15);
+
+        Tables tables = new Tables();
+        tables.getPeriods().add(new Period());
+        tables.getPeriods().get(0).setName(Period.PERIOD_III);
+        tables.getPeriods().get(0).setBegin(14);
+        tables.getPeriods().get(0).setEnd(25);
+        tables.getPeriods().add(new Period());
+        tables.getPeriods().get(1).setName(Period.PERIOD_IV);
+        tables.getPeriods().get(1).setBegin(25);
+        tables.getPeriods().get(1).setEnd(30);
+
+        Assert.assertEquals(1, oeUtil.getFti(game, tables, "france"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "angleterre"));
+        Assert.assertEquals(2, oeUtil.getFti(game, tables, "sabaudia"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "danemark"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "genes"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "hollande"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "portugal"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "provincesne"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "suede"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "venise"));
+
+        game.setTurn(27);
+
+        Assert.assertEquals(1, oeUtil.getFti(game, tables, "france"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "angleterre"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "sabaudia"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "danemark"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "genes"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "hollande"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "portugal"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "provincesne"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "suede"));
+        Assert.assertEquals(4, oeUtil.getFti(game, tables, "venise"));
+
+        game.setTurn(35);
+
+        Assert.assertEquals(1, oeUtil.getFti(game, tables, "france"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "angleterre"));
+        Assert.assertEquals(2, oeUtil.getFti(game, tables, "sabaudia"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "danemark"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "genes"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "hollande"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "portugal"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "provincesne"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "suede"));
+        Assert.assertEquals(3, oeUtil.getFti(game, tables, "venise"));
+    }
+
+    @Test
+    public void testDti() {
+        GameEntity game = new GameEntity();
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setDti(3);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().get(1).setDti(1);
+        game.setTurn(15);
+
+        Tables tables = new Tables();
+        tables.getPeriods().add(new Period());
+        tables.getPeriods().get(0).setName(Period.PERIOD_III);
+        tables.getPeriods().get(0).setBegin(14);
+        tables.getPeriods().get(0).setEnd(25);
+        tables.getPeriods().add(new Period());
+        tables.getPeriods().get(1).setName(Period.PERIOD_IV);
+        tables.getPeriods().get(1).setBegin(25);
+        tables.getPeriods().get(1).setEnd(30);
+
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "france"));
+        Assert.assertEquals(1, oeUtil.getDti(game, tables, "angleterre"));
+        Assert.assertEquals(2, oeUtil.getDti(game, tables, "sabaudia"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "danemark"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "genes"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "hollande"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "portugal"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "provincesne"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "suede"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "venise"));
+
+        game.setTurn(27);
+
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "france"));
+        Assert.assertEquals(1, oeUtil.getDti(game, tables, "angleterre"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "sabaudia"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "danemark"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "genes"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "hollande"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "portugal"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "provincesne"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "suede"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "venise"));
+
+        game.setTurn(35);
+
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "france"));
+        Assert.assertEquals(1, oeUtil.getDti(game, tables, "angleterre"));
+        Assert.assertEquals(2, oeUtil.getDti(game, tables, "sabaudia"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "danemark"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "genes"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "hollande"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "portugal"));
+        Assert.assertEquals(4, oeUtil.getDti(game, tables, "provincesne"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "suede"));
+        Assert.assertEquals(3, oeUtil.getDti(game, tables, "venise"));
     }
 }
