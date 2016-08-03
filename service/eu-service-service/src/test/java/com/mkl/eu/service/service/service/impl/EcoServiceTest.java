@@ -2262,6 +2262,9 @@ public class EcoServiceTest {
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
 
+        when(oeUtil.getDti(game, EconomicServiceImpl.TABLES, "france")).thenReturn(3);
+        when(oeUtil.getDti(game, EconomicServiceImpl.TABLES, "angleterre")).thenReturn(3);
+
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
         diffBefore.add(new DiffEntity());
@@ -2288,12 +2291,13 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, oeUtil, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.TFI);
         inOrder.verify(provinceDao).getProvinceByName(province);
+        inOrder.verify(oeUtil).getDti(anyObject(), anyObject(), anyObject());
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());

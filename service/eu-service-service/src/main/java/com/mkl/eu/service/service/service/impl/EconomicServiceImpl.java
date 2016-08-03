@@ -34,10 +34,7 @@ import com.mkl.eu.service.service.persistence.oe.country.DiscoveryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.*;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
@@ -774,14 +771,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         Integer column = country.getFti();
         if (tradeZone.getType() == TradeZoneTypeEnum.ZP) {
+            int dti = oeUtil.getDti(game, getTables(), tradeZone.getCountryName());
             if (StringUtils.equals(country.getName(), tradeZone.getCountryName())) {
-                column += country.getDti();
+                column += dti;
             } else if (!StringUtils.isEmpty(tradeZone.getCountryName())) {
-                PlayableCountryEntity enemy = CommonUtil.findFirst(game.getCountries(), playableCountryEntity -> StringUtils.equals(tradeZone.getCountryName(), playableCountryEntity.getName()));
-                // REMINDER : check if minor countries who were major are still playable countries
-                if (enemy != null) {
-                    column -= enemy.getDti();
-                }
+                column -= dti;
             }
         }
         int otherTfs = game.getTradeFleets().stream().filter(tradeFleetEntity -> StringUtils.equals(province, tradeFleetEntity.getProvince())
@@ -1735,7 +1729,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     countryAct.setReady(false);
                 }
 
-                // tfs concurrencies
+                computeAutomaticTfCompetitions(game, newTfis);
                 // tp/col concurrencies
                 // exotic resources concurrencies
                 // minor technologies
@@ -2411,6 +2405,137 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     }
 
     /**
+     * @param counter whose we want the key.
+     * @return the key used for computing fortress maintenance. It is a Pair consisting of level and location (<code>true</code> for ROTW).
+     */
+    private Pair<Integer, Boolean> getFortressKeyFromCounter(CounterEntity counter) {
+        return new ImmutablePair<>(CounterUtil.getFortressLevelFromType(counter.getType()), GameUtil.isRotwProvince(counter.getOwner().getProvince()));
+    }
+
+    /**
+     * Compute the automatic competitions for trade fleets. The trade fleet to destroy will be added to the newTfis.
+     *
+     * @param game    the game.
+     * @param newTfis the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
+     */
+    private void computeAutomaticTfCompetitions(GameEntity game, Map<String, Map<String, Integer>> newTfis) {
+        List<String> provinces = game.getTradeFleets().stream().map(TradeFleetEntity::getProvince).distinct().collect(Collectors.toList());
+        provinces.addAll(newTfis.keySet());
+
+        for (String province : provinces) {
+            computeAutomaticTfCompetition(game, province, newTfis);
+            // TODO partial tf competition
+        }
+    }
+
+    /**
+     * Compute the automatic competitions for trade fleets for a single province. The trade fleet to destroy will be added to the newTfis.
+     *
+     * @param game     the game.
+     * @param province the province where the competition occurs.
+     * @param newTfis  the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
+     */
+    private void computeAutomaticTfCompetition(GameEntity game, String province, Map<String, Map<String, Integer>> newTfis) {
+        Map<String, Integer> tfPresents = game.getTradeFleets().stream().filter(tf -> StringUtils.equals(tf.getProvince(), province))
+                .collect(Collectors.groupingBy(TradeFleetEntity::getCountry, Collectors.summingInt(TradeFleetEntity::getLevel)));
+        if (newTfis.get(province) != null) {
+            for (String country : newTfis.get(province).keySet()) {
+                if (tfPresents.containsKey(country)) {
+                    tfPresents.put(country, tfPresents.get(country) + newTfis.get(province).get(country));
+                } else {
+                    tfPresents.put(country, newTfis.get(province).get(country));
+                }
+            }
+        }
+
+        TradeZoneProvinceEntity prov = (TradeZoneProvinceEntity) provinceDao.getProvinceByName(province);
+
+        boolean multiple = tfPresents.size() > 1;
+        boolean has6 = tfPresents.values().stream().filter(level -> level == 6).count() > 1;
+        if (multiple && has6) {
+            CompetitionEntity competition = new CompetitionEntity();
+            competition.setGame(game);
+            competition.setProvince(province);
+            competition.setTurn(game.getTurn());
+            competition.setType(CompetitionTypeEnum.TF_6);
+
+            List<CompetitionInfo> infoList = new ArrayList<>();
+
+            for (String country : tfPresents.keySet()) {
+                CompetitionInfo info = new CompetitionInfo();
+
+                info.country = country;
+                info.fti = oeUtil.getFti(game, getTables(), country);
+                if (StringUtils.equals(prov.getCountryName(), country)) {
+                    info.dti = oeUtil.getDti(game, getTables(), country);
+                }
+
+                infoList.add(info);
+            }
+
+            computeAutomaticTfTotalCompetition(competition, 1, infoList, game, tfPresents, newTfis);
+
+            game.getCompetitions().add(competition);
+        }
+    }
+
+    /**
+     * Computes a round of total trade competition between fleet competition, if necessary.
+     * A total competition between trade fleets ends if there is no trade fleet of level 6 left or there is only a single trade fleet.
+     *
+     * @param competition the current competition.
+     * @param roundNumber the number of the round to compute.
+     * @param tfPresents  the present trade fleets in the trade zone.
+     * @param newTfis     the trade fleets to add/remove grouped by province then by country.
+     */
+    private void computeAutomaticTfTotalCompetition(CompetitionEntity competition, int roundNumber, List<CompetitionInfo> infoList, GameEntity game, Map<String, Integer> tfPresents, Map<String, Map<String, Integer>> newTfis) {
+        for (String country : tfPresents.keySet()) {
+            CompetitionRoundEntity round = new CompetitionRoundEntity();
+            round.setCountry(country);
+            round.setCompetition(competition);
+            competition.getRounds().add(round);
+            round.setRound(roundNumber);
+
+            CompetitionInfo info = CommonUtil.findFirst(infoList, inf -> StringUtils.equals(inf.country, country));
+            int otherMaxFti = infoList.stream().filter(inf -> !StringUtils.equals(inf.country, country)).map(inf -> inf.fti).max((o1, o2) -> o1 - o2).get();
+            round.setColumn(info.fti + info.dti - otherMaxFti);
+
+            Integer die = oeUtil.rollDie(game, country);
+            round.setDie(die);
+
+            Integer modifiedDie = Math.min(Math.max(die, 1), 10);
+            Result result = CommonUtil.findFirst(getTables().getResults().stream(),
+                    r -> r.getColumn().equals(round.getColumn()) && r.getDie().equals(modifiedDie));
+
+            round.setResult(result.getResult());
+
+            if (result.getResult() == ResultEnum.CRITICAL_HIT || result.getResult() == ResultEnum.SUCCESS) {
+                continue;
+            }
+
+            if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
+                die = oeUtil.rollDie(game, country);
+                round.setSecondaryDie(die);
+
+                if (die <= info.fti) {
+                    round.setSecondaryResult(true);
+                    continue;
+                }
+            }
+
+            if (removeTfFromMaps(tfPresents, newTfis, competition.getProvince(), country)) {
+                infoList.remove(info);
+            }
+        }
+
+        boolean multiple = tfPresents.size() > 1;
+        boolean has6 = tfPresents.values().stream().filter(level -> level == 6).count() > 1;
+        if (multiple && has6) {
+            computeAutomaticTfTotalCompetition(competition, roundNumber + 1, infoList, game, tfPresents, newTfis);
+        }
+    }
+
+    /**
      * Add the number add to the Map costs given its key. Manages <code>null</code> values.
      *
      * @param costs Map holding various costs regrouped by keys.
@@ -2430,10 +2555,46 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     }
 
     /**
-     * @param counter whose we want the key.
-     * @return the key used for computing fortress maintenance. It is a Pair consisting of level and location (<code>true</code> for ROTW).
+     * Remove one trade fleet from both the current trade fleets map and the new trade fleets map.
+     * Remove the key if the number become zero.
+     *
+     * @param tfs      The current trade fleets grouped by country.
+     * @param newTfis  the trade fleets to add/remove grouped by province then by country.
+     * @param province the trade zone where to remove the trade fleet.
+     * @param country  the country loosing a trade fleet.
+     * @return <code>true</code> if the trade fleet is destroyed (level 0).
      */
-    private Pair<Integer, Boolean> getFortressKeyFromCounter(CounterEntity counter) {
-        return new ImmutablePair<>(CounterUtil.getFortressLevelFromType(counter.getType()), GameUtil.isRotwProvince(counter.getOwner().getProvince()));
+    private boolean removeTfFromMaps(Map<String, Integer> tfs, Map<String, Map<String, Integer>> newTfis, String province, String country) {
+        boolean destroyed = false;
+
+        if (tfs.get(country) == 1) {
+            tfs.remove(country);
+            destroyed = true;
+        } else {
+            tfs.put(country, tfs.get(country) - 1);
+        }
+
+        if (!newTfis.containsKey(province)) {
+            newTfis.put(province, new HashMap<>());
+        }
+        if (!newTfis.get(province).containsKey(country)) {
+            newTfis.get(province).put(country, -1);
+        } else if (newTfis.get(province).get(country) == 1) {
+            newTfis.get(province).remove(country);
+        } else {
+            newTfis.get(province).put(country, newTfis.get(province).get(country) - 1);
+        }
+
+        return destroyed;
+    }
+
+    /** Additional info when computing automatic competitions. */
+    private class CompetitionInfo {
+        /** Country on which the infos are. */
+        private String country;
+        /** Fti of the country. */
+        private int fti;
+        /** Dti of the country if it is used. */
+        private int dti;
     }
 }

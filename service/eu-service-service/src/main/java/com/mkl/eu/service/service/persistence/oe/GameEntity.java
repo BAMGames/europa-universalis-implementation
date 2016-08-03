@@ -5,6 +5,7 @@ import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
 
@@ -35,6 +36,8 @@ public class GameEntity implements IEntity, Serializable {
     private List<TradeFleetEntity> tradeFleets = new ArrayList<>();
     /** Special forces of the game (native, militia,...). */
     private List<OtherForcesEntity> otherForces = new ArrayList<>();
+    /** Automatic competitions (administrative actions). */
+    private List<CompetitionEntity> competitions = new ArrayList<>();
     /** Turn of the game. */
     private Integer turn;
     /** Status of the game. */
@@ -135,6 +138,17 @@ public class GameEntity implements IEntity, Serializable {
     /** @param otherForces the otherForces to set. */
     public void setOtherForces(List<OtherForcesEntity> otherForces) {
         this.otherForces = otherForces;
+    }
+
+    /** @return the competitions. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<CompetitionEntity> getCompetitions() {
+        return competitions;
+    }
+
+    /** @param competitions the competitions to set. */
+    public void setCompetitions(List<CompetitionEntity> competitions) {
+        this.competitions = competitions;
     }
 
     /** @return the turn. */
