@@ -174,6 +174,10 @@ public enum CounterFaceTypeEnum {
 
     // NEUTRAL COUNTERS //
 
+    /** Minor establishment -. */
+    MINOR_ESTABLISHMENT_MINUS,
+    /** Minor establishment +. */
+    MINOR_ESTABLISHMENT_PLUS,
     /** Revolt-. */
     REVOLT_MINUS,
     /** Revolt+. */
