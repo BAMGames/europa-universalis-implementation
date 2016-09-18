@@ -88,7 +88,7 @@ public class CounterEntity implements IEntity, Serializable {
     }
 
     /** @return the establishment. */
-    @OneToOne(mappedBy = "counter")
+    @OneToOne(mappedBy = "counter", cascade = CascadeType.ALL)
     public EstablishmentEntity getEstablishment() {
         return establishment;
     }
