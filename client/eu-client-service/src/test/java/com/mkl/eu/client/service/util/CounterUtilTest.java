@@ -435,4 +435,16 @@ public class CounterUtilTest {
         Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.TECH_GALLEASS, false));
         Assert.assertTrue(CounterUtil.canTechnologyStack(CounterFaceTypeEnum.ARMY_MINUS, false));
     }
+
+    @Test
+    public void testEstablishment() {
+        Assert.assertFalse(CounterUtil.isEstablishment(null));
+        Assert.assertFalse(CounterUtil.isEstablishment(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertTrue(CounterUtil.isEstablishment(CounterFaceTypeEnum.TRADING_POST_MINUS));
+        Assert.assertTrue(CounterUtil.isEstablishment(CounterFaceTypeEnum.TRADING_POST_PLUS));
+        Assert.assertTrue(CounterUtil.isEstablishment(CounterFaceTypeEnum.COLONY_MINUS));
+        Assert.assertTrue(CounterUtil.isEstablishment(CounterFaceTypeEnum.COLONY_PLUS));
+        Assert.assertTrue(CounterUtil.isEstablishment(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_MINUS));
+        Assert.assertTrue(CounterUtil.isEstablishment(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_PLUS));
+    }
 }

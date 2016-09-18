@@ -690,4 +690,29 @@ public final class CounterUtil {
 
         return stack;
     }
+
+    /**
+     * @param type of the counter to test.
+     * @return <code>true</code> if the counter face type is an establishment, <code>false</code> otherwise.
+     */
+    public static boolean isEstablishment(CounterFaceTypeEnum type) {
+        boolean establishment = false;
+
+        if (type != null) {
+            switch (type) {
+                case TRADING_POST_MINUS:
+                case TRADING_POST_PLUS:
+                case COLONY_MINUS:
+                case COLONY_PLUS:
+                case MINOR_ESTABLISHMENT_MINUS:
+                case MINOR_ESTABLISHMENT_PLUS:
+                    establishment = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return establishment;
+    }
 }
