@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
+import com.mkl.eu.client.service.vo.enumeration.EstablishmentTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
 
 /**
@@ -714,5 +715,34 @@ public final class CounterUtil {
         }
 
         return establishment;
+    }
+
+    /**
+     * @param type of the counter to test.
+     * @return the type of establishment given the type of counter face.
+     */
+    public static EstablishmentTypeEnum getEstablishmentType(CounterFaceTypeEnum type) {
+        EstablishmentTypeEnum estType = null;
+
+        if (type != null) {
+            switch (type) {
+                case TRADING_POST_MINUS:
+                case TRADING_POST_PLUS:
+                    estType = EstablishmentTypeEnum.TRADING_POST;
+                    break;
+                case COLONY_MINUS:
+                case COLONY_PLUS:
+                    estType = EstablishmentTypeEnum.COLONY;
+                    break;
+                case MINOR_ESTABLISHMENT_MINUS:
+                case MINOR_ESTABLISHMENT_PLUS:
+                    estType = EstablishmentTypeEnum.MINOR_ESTABLISHMENT;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return estType;
     }
 }
