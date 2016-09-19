@@ -1,9 +1,6 @@
 package com.mkl.eu.client.service.util;
 
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
-import com.mkl.eu.client.service.vo.enumeration.EstablishmentTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 
 /**
  * Utility around counters.
@@ -744,5 +741,53 @@ public final class CounterUtil {
         }
 
         return estType;
+    }
+
+    /**
+     * @param type of the admin action to test.
+     * @return the type of counter face of an establishment given the admin type.
+     */
+    public static CounterFaceTypeEnum getEstablishmentType(AdminActionTypeEnum type) {
+        CounterFaceTypeEnum estType = null;
+
+        if (type != null) {
+            switch (type) {
+                case TP:
+                    estType = CounterFaceTypeEnum.TRADING_POST_MINUS;
+                    break;
+                case COL:
+                    estType = CounterFaceTypeEnum.COLONY_MINUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return estType;
+    }
+
+    /**
+     * @param type face type which we want the face plus.
+     * @return the face plus of a face type.
+     */
+    public static CounterFaceTypeEnum getFacePlus(CounterFaceTypeEnum type) {
+        CounterFaceTypeEnum facePlus = null;
+
+        if (type != null) {
+            switch (type) {
+                case TRADING_POST_MINUS:
+                case TRADING_POST_PLUS:
+                    facePlus = CounterFaceTypeEnum.TRADING_POST_PLUS;
+                    break;
+                case COLONY_MINUS:
+                case COLONY_PLUS:
+                    facePlus = CounterFaceTypeEnum.COLONY_PLUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return facePlus;
     }
 }
