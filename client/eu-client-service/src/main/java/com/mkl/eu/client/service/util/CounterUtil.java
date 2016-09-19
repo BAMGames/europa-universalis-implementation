@@ -790,4 +790,29 @@ public final class CounterUtil {
 
         return facePlus;
     }
+
+    /**
+     * @param type face type which we want the face minus.
+     * @return the face minus of a face type.
+     */
+    public static CounterFaceTypeEnum getFaceMinus(CounterFaceTypeEnum type) {
+        CounterFaceTypeEnum facePlus = null;
+
+        if (type != null) {
+            switch (type) {
+                case TRADING_POST_MINUS:
+                case TRADING_POST_PLUS:
+                    facePlus = CounterFaceTypeEnum.TRADING_POST_MINUS;
+                    break;
+                case COLONY_MINUS:
+                case COLONY_PLUS:
+                    facePlus = CounterFaceTypeEnum.COLONY_MINUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return facePlus;
+    }
 }

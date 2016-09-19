@@ -462,12 +462,23 @@ public class CounterUtilTest {
         Assert.assertNull(CounterUtil.getEstablishmentType(AdminActionTypeEnum.ELT));
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS, CounterUtil.getEstablishmentType(AdminActionTypeEnum.TP));
         Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS, CounterUtil.getEstablishmentType(AdminActionTypeEnum.COL));
+    }
 
+    @Test
+    public void testFace() {
         Assert.assertNull(CounterUtil.getFacePlus(null));
         Assert.assertNull(CounterUtil.getFacePlus(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN));
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_PLUS, CounterUtil.getFacePlus(CounterFaceTypeEnum.TRADING_POST_MINUS));
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_PLUS, CounterUtil.getFacePlus(CounterFaceTypeEnum.TRADING_POST_PLUS));
         Assert.assertEquals(CounterFaceTypeEnum.COLONY_PLUS, CounterUtil.getFacePlus(CounterFaceTypeEnum.COLONY_MINUS));
         Assert.assertEquals(CounterFaceTypeEnum.COLONY_PLUS, CounterUtil.getFacePlus(CounterFaceTypeEnum.COLONY_PLUS));
+
+        Assert.assertNull(CounterUtil.getFaceMinus(null));
+        Assert.assertNull(CounterUtil.getFaceMinus(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN));
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.TRADING_POST_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.TRADING_POST_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.COLONY_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.COLONY_PLUS));
+
     }
 }
