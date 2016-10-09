@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="tech.culture">
+        <![CDATA[
+			SELECT
+  				max(CAST(SUBSTRING(stack.r_province, 8, 2) AS INTEGER))
+			FROM counter counter
+    			INNER JOIN stack stack ON counter.id_stack = stack.id
+    			INNER JOIN r_country country ON counter.r_country = country.name
+			WHERE counter.type = ':techType'
+    			AND country.culture in :cultures
+    			AND stack.ID_GAME = :idGame
+			;
+		]]>
+    </entry>
+</properties>

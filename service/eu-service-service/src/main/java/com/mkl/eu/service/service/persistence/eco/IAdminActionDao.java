@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.persistence.eco;
 
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 
@@ -44,4 +45,12 @@ public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity,
      * @return the countries that qualify for the trade fleet access in the ROTW rule for the given trade zone.
      */
     List<String> getCountriesTradeFleetAccessRotw(String province, Long idGame);
+
+    /**
+     * @param land     flag saying if we seek for land or naval tech.
+     * @param cultures List of cultures.
+     * @param idGame   the id of the game.
+     * @return the greater tech box of all countries of the specified cultures for the given tech.
+     */
+    Integer getMaxTechBox(boolean land, List<CultureEnum> cultures, Long idGame);
 }

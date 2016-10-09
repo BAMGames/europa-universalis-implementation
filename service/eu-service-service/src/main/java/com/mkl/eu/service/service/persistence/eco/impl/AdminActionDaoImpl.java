@@ -2,6 +2,8 @@ package com.mkl.eu.service.service.persistence.eco.impl;
 
 import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the EconomicalSheet DAO.
@@ -54,7 +57,7 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
         if (idObject != null) {
             criteria.add(Restrictions.eq("idObject", idObject));
         }
-        if (types != null) {
+        if (types != null && types.length > 0) {
             criteria.add(Restrictions.in("type", types));
         }
         criteria.add(Restrictions.eq("status", AdminActionStatusEnum.PLANNED));
@@ -82,7 +85,12 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
         sql = sql.replace(":idGame", Long.toString(idGame));
         results = jdbcTemplate.queryForList(sql);
 
-        results.stream().forEach(input -> countries.add((String) input.get("OWNER")));
+        results.stream().forEach(input -> {
+            String country = (String) input.get("OWNER");
+            if (!countries.contains(country)) {
+                countries.add(country);
+            }
+        });
 
         return countries;
     }
@@ -113,5 +121,23 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
         results.stream().forEach(input -> countries.add((String) input.get("OWNER")));
 
         return countries;
+    }
+
+    @Override
+    public Integer getMaxTechBox(boolean land, List<CultureEnum> cultures, Long idGame) {
+        String sql = queryProps.getProperty("tech.culture");
+
+        CounterFaceTypeEnum type;
+        if (land) {
+            type = CounterFaceTypeEnum.TECH_LAND;
+        } else {
+            type = CounterFaceTypeEnum.TECH_NAVAL;
+        }
+        String cultureNames = cultures.stream().map(Enum::name).collect(Collectors.joining("','", "('", "')"));
+        sql = sql.replace(":techType", type.name());
+        sql = sql.replace(":cultures", cultureNames);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 }

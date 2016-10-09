@@ -47,6 +47,7 @@ public class ExportDataSet {
             exportTables(connection);
             exportProvinces(connection);
             exportChat(connection);
+            exportReferentiel(connection);
         } finally {
             Statement statement = connection.getConnection().createStatement();
             statement.execute("ALTER TABLE COUNTRY ADD CONSTRAINT FK_COUNTRY_MONARCH FOREIGN KEY (ID_MONARCH) REFERENCES MONARCH (ID)");
@@ -86,6 +87,17 @@ public class ExportDataSet {
         export(new String[]{"C_CHAT", "C_MESSAGE", "C_MESSAGE_GLOBAL", "C_PRESENT", "C_ROOM",
                             "C_ROOM_GLOBAL", "GAME", "COUNTRY"},
                "src/test/resources/com/mkl/eu/service/service/persistence/chatExport", connection);
+    }
+
+    /**
+     * Create a DataSet for the referentiel objects.
+     *
+     * @param connection to the database.
+     * @throws Exception exception.
+     */
+    private static void exportReferentiel(IDatabaseConnection connection) throws Exception {
+        export(new String[]{"R_COUNTRY"},
+                "src/test/resources/com/mkl/eu/service/service/persistence/referentiel", connection);
     }
 
     /**

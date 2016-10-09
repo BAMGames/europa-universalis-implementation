@@ -204,7 +204,7 @@
 	<entry key="colony.inlandAdvance.rotw">
 		<![CDATA[
 			SELECT
-				DISTINCT c.R_COUNTRY
+				DISTINCT c.R_COUNTRY AS OWNER
 			FROM r_province_rotw pr
   				INNER JOIN r_province p ON pr.id = p.id
  				LEFT OUTER JOIN STACK s ON s.R_PROVINCE = p.NAME
@@ -261,7 +261,7 @@
 				INNER JOIN r_province_rotw pr ON pr.id = p.id
 			WHERE s.ID_GAME = :idGame
 				AND c.R_COUNTRY <> ':countryName'
-				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_MINUS')
+				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_PLUS')
 				AND pr.region = ':region'
 			;
 		]]>
@@ -310,6 +310,19 @@
   				LEFT OUTER JOIN counter c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
 			WHERE p.NAME = ':province'
 			GROUP BY pe1.R_COUNTRY;
+		]]>
+	</entry>
+	<entry key="tech.culture">
+		<![CDATA[
+			SELECT
+  				max(CAST(SUBSTRING(stack.r_province, 8, 2) AS SIGNED INTEGER))
+			FROM counter counter
+    			INNER JOIN stack stack ON counter.id_stack = stack.id
+    			INNER JOIN r_country country ON counter.r_country = country.name
+			WHERE counter.type = ':techType'
+    			AND country.culture in :cultures
+    			AND stack.ID_GAME = :idGame
+			;
 		]]>
 	</entry>
 </properties>
