@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
@@ -14,6 +15,11 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,19 +39,22 @@ public class CounterDomainImpl implements ICounterDomain {
     /** Stack DAO. */
     @Autowired
     private IStackDao stackDao;
+    /** Province DAO. */
+    @Autowired
+    private IProvinceDao provinceDao;
     /** Diff DAO. */
     @Autowired
     private IDiffDao diffDao;
 
     /** {@inheritDoc} */
     @Override
-    public DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game) {
-        return createAndGetCounter(type, country, province, game).getLeft();
+    public DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game) {
+        return createAndGetCounter(type, country, province, level, game).getLeft();
     }
 
     /** {@inheritDoc} */
     @Override
-    public Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game) {
+    public Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game) {
         StackEntity stack = new StackEntity();
         stack.setProvince(province);
         stack.setGame(game);
@@ -66,6 +75,8 @@ public class CounterDomainImpl implements ICounterDomain {
         stackDao.create(stack);
 
         game.getStacks().add(stack);
+
+        level = computeLevel(counterEntity, province, level, game);
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
@@ -93,6 +104,13 @@ public class CounterDomainImpl implements ICounterDomain {
         diffAttributes.setValue(stack.getId().toString());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        if (level != null) {
+            diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.LEVEL);
+            diffAttributes.setValue(level.toString());
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+        }
 
         diffDao.create(diff);
 
@@ -107,6 +125,14 @@ public class CounterDomainImpl implements ICounterDomain {
 
         if (counter == null) {
             return null;
+        }
+
+        if (counter.getType() == CounterFaceTypeEnum.TRADING_FLEET_MINUS || counter.getType() == CounterFaceTypeEnum.TRADING_FLEET_PLUS) {
+            TradeFleetEntity tradeFleet = CommonUtil.findFirst(game.getTradeFleets(),
+                    tf -> StringUtils.equals(counter.getCountry(), tf.getCountry()) && StringUtils.equals(counter.getOwner().getProvince(), tf.getProvince()));
+            if (tradeFleet != null) {
+                tradeFleet.setLevel(0);
+            }
         }
 
         StackEntity stack = counter.getOwner();
@@ -146,8 +172,8 @@ public class CounterDomainImpl implements ICounterDomain {
 
     /** {@inheritDoc} */
     @Override
-    public DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game) {
-        Pair<DiffEntity, CounterEntity> pair = switchAndGetCounter(idCounter, type, game);
+    public DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game) {
+        Pair<DiffEntity, CounterEntity> pair = switchAndGetCounter(idCounter, type, level, game);
 
         if (pair == null) {
             return null;
@@ -158,7 +184,7 @@ public class CounterDomainImpl implements ICounterDomain {
 
     /** {@inheritDoc} */
     @Override
-    public Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game) {
+    public Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game) {
         CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
                 c -> c.getId().equals(idCounter));
 
@@ -167,6 +193,9 @@ public class CounterDomainImpl implements ICounterDomain {
         }
 
         counter.setType(type);
+        String province = counter.getOwner().getProvince();
+
+        level = computeLevel(counter, province, level, game);
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
@@ -181,13 +210,67 @@ public class CounterDomainImpl implements ICounterDomain {
         diff.getAttributes().add(diffAttributes);
         diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(counter.getOwner().getProvince());
+        diffAttributes.setValue(province);
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        if (level != null) {
+            diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.LEVEL);
+            diffAttributes.setValue(level.toString());
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+        }
 
         diffDao.create(diff);
 
         return new ImmutablePair<>(diff, counter);
+    }
+
+    /**
+     * Creates an establishment or a trading fleet if necessary, and sets it to the new level.
+     *
+     * @param counter  being created or modified.
+     * @param province where the counter is.
+     * @param level    new level of the counter (trading fleet / establishment).
+     * @param game     the game.
+     * @return the level (and <code>null</code> if there should not be a level).
+     */
+    private Integer computeLevel(CounterEntity counter, String province, Integer level, GameEntity game) {
+        if (level != null) {
+            if (CounterUtil.isEstablishment(counter.getType())) {
+                if (counter.getEstablishment() == null) {
+                    EstablishmentEntity establishment = new EstablishmentEntity();
+
+                    establishment.setCounter(counter);
+                    establishment.setType(CounterUtil.getEstablishmentType(counter.getType()));
+                    AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
+                    if (prov instanceof RotwProvinceEntity) {
+                        establishment.setRegion(((RotwProvinceEntity) prov).getRegion());
+                    }
+
+                    counter.setEstablishment(establishment);
+                }
+
+                counter.getEstablishment().setLevel(level);
+            } else if (counter.getType() == CounterFaceTypeEnum.TRADING_FLEET_MINUS ||
+                    counter.getType() == CounterFaceTypeEnum.TRADING_FLEET_PLUS) {
+                TradeFleetEntity tradeFleet = CommonUtil.findFirst(game.getTradeFleets(),
+                        tf -> StringUtils.equals(tf.getCountry(), counter.getCountry()) && StringUtils.equals(tf.getProvince(), province));
+
+                if (tradeFleet == null) {
+                    tradeFleet = new TradeFleetEntity();
+                    tradeFleet.setCountry(counter.getCountry());
+                    tradeFleet.setProvince(province);
+                    tradeFleet.setGame(game);
+                    game.getTradeFleets().add(tradeFleet);
+                }
+
+                tradeFleet.setLevel(level);
+            } else {
+                level = null;
+            }
+        }
+        return level;
     }
 
     /** {@inheritDoc} */

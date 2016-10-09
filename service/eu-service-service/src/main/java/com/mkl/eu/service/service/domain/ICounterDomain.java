@@ -18,10 +18,11 @@ public interface ICounterDomain {
      * @param type     of the counter to create.
      * @param country  owner of the counter to create.
      * @param province where the counter will be.
+     * @param level    new level of the trade fleet or establishment.
      * @param game     the game.
      * @return the diffs related to the creation of the counter.
      */
-    DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
+    DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game);
 
     /**
      * Creates a counter in a new stack.
@@ -29,10 +30,11 @@ public interface ICounterDomain {
      * @param type     of the counter to create.
      * @param country  owner of the counter to create.
      * @param province where the counter will be.
+     * @param level    new level of the trade fleet or establishment.
      * @param game     the game.
      * @return the diffs related to the creation of the counter and the counter created.
      */
-    Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
+    Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game);
 
     /**
      * Removes a counter from a game.
@@ -48,20 +50,22 @@ public interface ICounterDomain {
      *
      * @param idCounter the id of the counter to switch.
      * @param type      new type of the counter.
+     * @param level     new level of the trade fleet or establishment.
      * @param game      the game.
      * @return the diffs related to the switch of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
      */
-    DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game);
+    DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game);
 
     /**
      * Switch a counter from a game to a given type.
      *
      * @param idCounter the id of the counter to switch.
      * @param type      new type of the counter.
+     * @param level     new level of the trade fleet or establishment.
      * @param game      the game.
      * @return the diffs related to the switch of the counter and the counter switched. Returns <code>null</code> if the idCounter is not found in the given game.
      */
-    Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, GameEntity game);
+    Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game);
 
     /**
      * Change the number of veterans of a counter from a game.

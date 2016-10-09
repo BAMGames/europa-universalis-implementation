@@ -1,9 +1,6 @@
 package com.mkl.eu.service.service.domain;
 
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -12,6 +9,10 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +42,9 @@ public class CounterDomainTest {
     private IStackDao stackDao;
 
     @Mock
+    private IProvinceDao provinceDao;
+
+    @Mock
     private IDiffDao diffDao;
 
     @Test
@@ -58,7 +62,7 @@ public class CounterDomainTest {
             return stack;
         });
 
-        DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", game);
+        DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game);
 
         InOrder inOrder = inOrder(stackDao, diffDao);
         inOrder.verify(stackDao).create(anyObject());
@@ -86,6 +90,165 @@ public class CounterDomainTest {
         Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
         Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
         Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
+    }
+
+    @Test
+    public void testCreateCounterEstablishment() throws Exception {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+
+        RotwProvinceEntity prov = new RotwProvinceEntity();
+        prov.setRegion("regionTest");
+
+        when(provinceDao.getProvinceByName("rAzteca~C")).thenReturn(prov);
+
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stack.getCounters().get(0).setId(7L);
+            stack.setId(2L);
+
+            return stack;
+        });
+
+        DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.TRADING_POST_MINUS, "france", "rAzteca~C", 3, game);
+
+        InOrder inOrder = inOrder(stackDao, diffDao);
+        inOrder.verify(stackDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(7L, diff.getIdObject().longValue());
+        Assert.assertEquals(5, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("rAzteca~C", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS.name(), diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTRY, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("france", diff.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK, diff.getAttributes().get(3).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(4).getType());
+        Assert.assertEquals("3", diff.getAttributes().get(4).getValue());
+
+        Assert.assertEquals(1, game.getStacks().size());
+        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
+        Assert.assertEquals("rAzteca~C", game.getStacks().get(0).getProvince());
+        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
+        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
+        Assert.assertEquals(EstablishmentTypeEnum.TRADING_POST, game.getStacks().get(0).getCounters().get(0).getEstablishment().getType());
+        Assert.assertEquals("regionTest", game.getStacks().get(0).getCounters().get(0).getEstablishment().getRegion());
+        Assert.assertEquals(3, game.getStacks().get(0).getCounters().get(0).getEstablishment().getLevel().intValue());
+    }
+
+    @Test
+    public void testCreateCounterTradeFleet() throws Exception {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stack.getCounters().get(0).setId(7L);
+            stack.setId(2L);
+
+            return stack;
+        });
+
+        DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.TRADING_FLEET_MINUS, "france", "ZPFrance", 1, game);
+
+        InOrder inOrder = inOrder(stackDao, diffDao);
+        inOrder.verify(stackDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(7L, diff.getIdObject().longValue());
+        Assert.assertEquals(5, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("ZPFrance", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS.name(), diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTRY, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("france", diff.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK, diff.getAttributes().get(3).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(4).getType());
+        Assert.assertEquals("1", diff.getAttributes().get(4).getValue());
+
+        Assert.assertEquals(1, game.getStacks().size());
+        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
+        Assert.assertEquals("ZPFrance", game.getStacks().get(0).getProvince());
+        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
+        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
+        Assert.assertEquals("france", game.getTradeFleets().get(0).getCountry());
+        Assert.assertEquals("ZPFrance", game.getTradeFleets().get(0).getProvince());
+        Assert.assertEquals(1, game.getTradeFleets().get(0).getLevel().intValue());
+    }
+
+    @Test
+    public void testCreateCounterExistingTradeFleet() throws Exception {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(0).setCountry("france");
+        game.getTradeFleets().get(0).setProvince("ZPFrance");
+        game.getTradeFleets().get(0).setLevel(4);
+
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stack.getCounters().get(0).setId(7L);
+            stack.setId(2L);
+
+            return stack;
+        });
+
+        DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.TRADING_FLEET_MINUS, "france", "ZPFrance", 1, game);
+
+        InOrder inOrder = inOrder(stackDao, diffDao);
+        inOrder.verify(stackDao).create(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(7L, diff.getIdObject().longValue());
+        Assert.assertEquals(5, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("ZPFrance", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS.name(), diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTRY, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("france", diff.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK, diff.getAttributes().get(3).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(4).getType());
+        Assert.assertEquals("1", diff.getAttributes().get(4).getValue());
+
+        Assert.assertEquals(1, game.getStacks().size());
+        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
+        Assert.assertEquals("ZPFrance", game.getStacks().get(0).getProvince());
+        Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
+        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
+        Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
+        Assert.assertEquals("france", game.getTradeFleets().get(0).getCountry());
+        Assert.assertEquals("ZPFrance", game.getTradeFleets().get(0).getProvince());
+        Assert.assertEquals(1, game.getTradeFleets().get(0).getLevel().intValue());
     }
 
     @Test
@@ -150,32 +313,73 @@ public class CounterDomainTest {
     }
 
     @Test
-    public void testSwitchCounter() throws Exception {
+    public void testRemoveCounter4() {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(0).setCountry("france");
+        game.getTradeFleets().get(0).setProvince("ZPFrance");
+        game.getTradeFleets().get(0).setLevel(3);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(1).setCountry("angleterre");
+        game.getTradeFleets().get(1).setProvince("ZPFrance");
+        game.getTradeFleets().get(1).setLevel(5);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(2).setCountry("france");
+        game.getTradeFleets().get(2).setProvince("ZMNord");
+        game.getTradeFleets().get(2).setLevel(2);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setId(1L);
         game.getStacks().get(0).setProvince("idf");
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(0).setId(100L);
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
         game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(1).setId(101L);
         game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setId(2L);
-        game.getStacks().get(1).setProvince("languedoc");
+        game.getStacks().get(1).setProvince("ZPFrance");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setId(200L);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_FLEET_MINUS);
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
 
-        DiffEntity diff = counterDomain.switchCounter(99L, CounterFaceTypeEnum.ARMY_PLUS, game);
+        DiffEntity diff = counterDomain.removeCounter(200L, game);
+
+        InOrder inOrder = inOrder(counterDao, diffDao);
+        inOrder.verify(counterDao).delete(anyObject());
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.REMOVE, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(200L, diff.getIdObject().longValue());
+        Assert.assertEquals(2, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals("ZPFrance", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_DEL, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("2", diff.getAttributes().get(1).getValue());
+
+        Assert.assertEquals(1, game.getStacks().size());
+        Assert.assertEquals(3, game.getTradeFleets().size());
+        Assert.assertEquals(0, game.getTradeFleets().get(0).getLevel().intValue());
+        Assert.assertEquals("angleterre", game.getTradeFleets().get(1).getCountry());
+        Assert.assertEquals("ZMNord", game.getTradeFleets().get(2).getProvince());
+    }
+
+    @Test
+    public void testSwitchCounter() throws Exception {
+        GameEntity game = createSwitchCounterGame();
+
+        DiffEntity diff = counterDomain.switchCounter(99L, CounterFaceTypeEnum.ARMY_PLUS, null, game);
 
         Assert.assertNull(diff);
 
-        diff = counterDomain.switchCounter(100L, CounterFaceTypeEnum.ARMY_PLUS, game);
+        diff = counterDomain.switchCounter(100L, CounterFaceTypeEnum.ARMY_PLUS, null, game);
 
         InOrder inOrder = inOrder(diffDao);
         inOrder.verify(diffDao).create(anyObject());
@@ -192,6 +396,180 @@ public class CounterDomainTest {
         Assert.assertEquals("idf", diff.getAttributes().get(1).getValue());
 
         Assert.assertEquals(CounterFaceTypeEnum.ARMY_PLUS, game.getStacks().get(0).getCounters().get(0).getType());
+    }
+
+    @Test
+    public void testSwitchCounterTradeFleet1() throws Exception {
+        GameEntity game = createSwitchCounterGame();
+
+        DiffEntity diff = counterDomain.switchCounter(300L, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game);
+
+        InOrder inOrder = inOrder(diffDao);
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(300L, diff.getIdObject().longValue());
+        Assert.assertEquals(3, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS.name(), diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("ZPFrance", diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("3", diff.getAttributes().get(2).getValue());
+
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS, game.getStacks().get(2).getCounters().get(0).getType());
+        Assert.assertEquals(3, game.getTradeFleets().get(2).getLevel().intValue());
+    }
+
+    @Test
+    public void testSwitchCounterTradeFleet2() throws Exception {
+        GameEntity game = createSwitchCounterGame();
+
+        DiffEntity diff = counterDomain.switchCounter(301L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game);
+
+        InOrder inOrder = inOrder(diffDao);
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(301L, diff.getIdObject().longValue());
+        Assert.assertEquals(3, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_PLUS.name(), diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("ZPFrance", diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("4", diff.getAttributes().get(2).getValue());
+
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_PLUS, game.getStacks().get(2).getCounters().get(1).getType());
+        Assert.assertEquals(4, game.getTradeFleets().get(1).getLevel().intValue());
+    }
+
+    @Test
+    public void testSwitchCounterEstablishment1() throws Exception {
+        GameEntity game = createSwitchCounterGame();
+
+        RotwProvinceEntity prov = new RotwProvinceEntity();
+        prov.setRegion("regionTest");
+
+        when(provinceDao.getProvinceByName("rAzteca~C")).thenReturn(prov);
+
+        DiffEntity diff = counterDomain.switchCounter(400L, CounterFaceTypeEnum.TRADING_POST_PLUS, 6, game);
+
+        InOrder inOrder = inOrder(diffDao, provinceDao);
+        inOrder.verify(provinceDao).getProvinceByName("rAzteca~C");
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(400L, diff.getIdObject().longValue());
+        Assert.assertEquals(3, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_PLUS.name(), diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("rAzteca~C", diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("6", diff.getAttributes().get(2).getValue());
+
+        Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_PLUS, game.getStacks().get(3).getCounters().get(0).getType());
+        Assert.assertEquals(6, game.getStacks().get(3).getCounters().get(0).getEstablishment().getLevel().intValue());
+        Assert.assertEquals("regionTest", game.getStacks().get(3).getCounters().get(0).getEstablishment().getRegion());
+        Assert.assertEquals(EstablishmentTypeEnum.TRADING_POST, game.getStacks().get(3).getCounters().get(0).getEstablishment().getType());
+    }
+
+    @Test
+    public void testSwitchCounterEstablishment2() throws Exception {
+        GameEntity game = createSwitchCounterGame();
+
+        DiffEntity diff = counterDomain.switchCounter(401L, CounterFaceTypeEnum.COLONY_MINUS, 1, game);
+
+        InOrder inOrder = inOrder(diffDao);
+        inOrder.verify(diffDao).create(anyObject());
+
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(401L, diff.getIdObject().longValue());
+        Assert.assertEquals(3, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TYPE, diff.getAttributes().get(0).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS.name(), diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(1).getType());
+        Assert.assertEquals("rAzteca~C", diff.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.LEVEL, diff.getAttributes().get(2).getType());
+        Assert.assertEquals("1", diff.getAttributes().get(2).getValue());
+
+        Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS, game.getStacks().get(3).getCounters().get(1).getType());
+        Assert.assertEquals(1, game.getStacks().get(3).getCounters().get(1).getEstablishment().getLevel().intValue());
+    }
+
+    private GameEntity createSwitchCounterGame() {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(0).setId(1L);
+        game.getTradeFleets().get(0).setProvince("ZPFrance");
+        game.getTradeFleets().get(0).setCountry("france");
+        game.getTradeFleets().get(0).setLevel(5);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(1).setId(2L);
+        game.getTradeFleets().get(1).setProvince("ZPFrance");
+        game.getTradeFleets().get(1).setCountry("angleterre");
+        game.getTradeFleets().get(1).setLevel(2);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(1L);
+        game.getStacks().get(0).setProvince("idf");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(100L);
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setId(101L);
+        game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(2L);
+        game.getStacks().get(1).setProvince("languedoc");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(200L);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setId(3L);
+        game.getStacks().get(2).setProvince("ZPFrance");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setId(300L);
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_FLEET_PLUS);
+        game.getStacks().get(2).getCounters().get(0).setCountry("espagne");
+        game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(1).setId(301L);
+        game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.TRADING_FLEET_MINUS);
+        game.getStacks().get(2).getCounters().get(1).setCountry("angleterre");
+        game.getStacks().get(2).getCounters().get(1).setOwner(game.getStacks().get(2));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(3).setId(4L);
+        game.getStacks().get(3).setProvince("rAzteca~C");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(0).setId(400L);
+        game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        game.getStacks().get(3).getCounters().get(0).setCountry("france");
+        game.getStacks().get(3).getCounters().get(0).setOwner(game.getStacks().get(3));
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(1).setId(401L);
+        game.getStacks().get(3).getCounters().get(1).setType(CounterFaceTypeEnum.COLONY_PLUS);
+        game.getStacks().get(3).getCounters().get(1).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(3).getCounters().get(1).getEstablishment().setLevel(5);
+        game.getStacks().get(3).getCounters().get(1).setCountry("espagne");
+        game.getStacks().get(3).getCounters().get(1).setOwner(game.getStacks().get(3));
+
+        return game;
     }
 
     @Test

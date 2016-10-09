@@ -9,5 +9,7 @@ public enum EstablishmentTypeEnum {
     /** Type colony. */
     COLONY,
     /** Type trading post. */
-    TRADING_POST
+    TRADING_POST,
+    /** Type minor establishment. */
+    MINOR_ESTABLISHMENT
 }

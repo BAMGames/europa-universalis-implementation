@@ -19,7 +19,5 @@ public enum DiffTypeObjectEnum {
     /** Administrative action. */
     ADM_ACT,
     /** Country. */
-    COUNTRY,
-    /** ESTABLISHMENT. */
-    ESTABLISHMENT
+    COUNTRY
 }

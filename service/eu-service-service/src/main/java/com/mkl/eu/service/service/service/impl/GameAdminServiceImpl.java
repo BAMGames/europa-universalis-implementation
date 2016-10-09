@@ -85,7 +85,7 @@ public class GameAdminServiceImpl extends AbstractService implements IGameAdminS
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, province));
 
-        DiffEntity diff = counterDomain.createCounter(counter.getType(), counter.getCountry(), province, game);
+        DiffEntity diff = counterDomain.createCounter(counter.getType(), counter.getCountry(), province, null, game);
 
         gameDao.update(game, true);
 

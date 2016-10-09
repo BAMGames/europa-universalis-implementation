@@ -168,6 +168,7 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#TYPE to know the new type of the counter.</li>
      * <li>DiffAttributeTypeEnum#VETERANS to know the new number of veterans in the counter.</li>
      * <li>DiffAttributeTypeEnum#PROVINCE to know where the counter is.</li>
+     * <li>DiffAttributeTypeEnum#LEVEL to know the new level of the counter (for trade fleet or establishment only).</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#COUNTRY in which case it will use:

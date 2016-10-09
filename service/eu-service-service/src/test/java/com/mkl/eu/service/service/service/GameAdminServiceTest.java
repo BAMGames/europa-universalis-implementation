@@ -232,7 +232,7 @@ public class GameAdminServiceTest {
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(countryDao).getCountryByName("FRA");
         inOrder.verify(provinceDao).getProvinceByName("IdF");
-        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.ARMY_MINUS, "FRA", province, game);
+        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.ARMY_MINUS, "FRA", province, null, game);
         inOrder.verify(gameDao).update(game, true);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 

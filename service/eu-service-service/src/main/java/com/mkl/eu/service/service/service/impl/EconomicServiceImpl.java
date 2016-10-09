@@ -49,6 +49,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -1730,8 +1731,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     countryAct.setReady(false);
                 }
 
-                computeAutomaticTfCompetitions(game, newTfis);
-                // tp/col concurrencies
+                diffs.addAll(computeAutomaticTfCompetitions(game, newTfis));
+                diffs.addAll(computeAutomaticEstablishmentCompetitions(game, newEstablishments));
                 // exotic resources concurrencies
                 // minor technologies
                 // neutral technologies
@@ -1973,7 +1974,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return a List of Diff related to the action.
      */
     private DiffEntity executeLowerFortress(AdministrativeActionEntity action, GameEntity game) {
-        return counterDomain.switchCounter(action.getIdObject(), action.getCounterFaceType(), game);
+        return counterDomain.switchCounter(action.getIdObject(), action.getCounterFaceType(), null, game);
     }
 
     /**
@@ -1997,7 +1998,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return a List of Diff related to the action.
      */
     private DiffEntity executePurchase(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
-        DiffEntity diff = counterDomain.createCounter(action.getCounterFaceType(), country.getName(), action.getProvince(), game);
+        DiffEntity diff = counterDomain.createCounter(action.getCounterFaceType(), country.getName(), action.getProvince(), null, game);
 
         if (CounterUtil.isFortress(action.getCounterFaceType())) {
             addInMap(costs, COST_FORT_PURCHASE, action.getColumn());
@@ -2089,10 +2090,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         if (action.getIdObject() != null) {
-            return counterDomain.switchCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), game);
+            return counterDomain.switchCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), null, game);
         } else {
             // FIXME regroup mnu counter with other economic counters ?
-            return counterDomain.createCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), game);
+            return counterDomain.createCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), null, game);
         }
     }
 
@@ -2240,10 +2241,18 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
         }
 
-        Pair<DiffEntity, CounterEntity> pair;
         if (action.getIdObject() != null) {
-
-            pair = counterDomain.switchAndGetCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), game);
+            CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                    c -> c.getId().equals(action.getIdObject()));
+            if (counter == null) {
+                diffs.add(counterDomain.createCounter(CounterUtil.getEstablishmentType(action.getType()), country.getName(), action.getProvince(), 1, game));
+            } else if (counter.getEstablishment() == null || counter.getEstablishment().getLevel() == null) {
+                diffs.add(counterDomain.switchCounter(action.getIdObject(), counter.getType(), 1, game));
+            } else if (counter.getEstablishment().getLevel() == 3) {
+                diffs.add(counterDomain.switchCounter(action.getIdObject(), CounterUtil.getFacePlus(counter.getType()), 1, game));
+            } else {
+                diffs.add(counterDomain.switchCounter(action.getIdObject(), counter.getType(), counter.getEstablishment().getLevel() + 1, game));
+            }
         } else {
             newEstablishments.add(action.getProvince());
             // FIXME regroup mnu counter with other economic counters ?
@@ -2252,42 +2261,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             for (CounterEntity fort : forts) {
                 diffs.add(counterDomain.removeCounter(fort.getId(), game));
             }
-            pair = counterDomain.createAndGetCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), game);
+
+            diffs.add(counterDomain.createCounter(CounterUtil.getEstablishmentType(action.getType()), country.getName(), action.getProvince(), 1, game));
         }
 
         // TODO exotic resources
-
-        diffs.add(pair.getLeft());
-        CounterEntity counter = pair.getRight();
-        if (counter.getEstablishment() == null) {
-            EstablishmentEntity establishment = new EstablishmentEntity();
-            establishment.setLevel(1);
-            establishment.setCounter(counter);
-            if (action.getType() == AdminActionTypeEnum.COL) {
-                establishment.setType(EstablishmentTypeEnum.COLONY);
-            } else {
-                establishment.setType(EstablishmentTypeEnum.TRADING_POST);
-            }
-            AbstractProvinceEntity prov = provinceDao.getProvinceByName(action.getProvince());
-            if (prov instanceof RotwProvinceEntity) {
-                establishment.setRegion(((RotwProvinceEntity) prov).getRegion());
-            }
-            counter.setEstablishment(establishment);
-        } else {
-            counter.getEstablishment().setLevel(counter.getEstablishment().getLevel() + 1);
-        }
-
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.ESTABLISHMENT);
-        diff.setIdObject(counter.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.LEVEL);
-        diffAttributes.setValue(Integer.toString(counter.getEstablishment().getLevel()));
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
 
         return diffs;
     }
@@ -2419,13 +2397,66 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @param game    the game.
      * @param newTfis the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
      */
-    private void computeAutomaticTfCompetitions(GameEntity game, Map<String, Map<String, Integer>> newTfis) {
+    private List<DiffEntity> computeAutomaticTfCompetitions(GameEntity game, Map<String, Map<String, Integer>> newTfis) {
         List<String> provinces = game.getTradeFleets().stream().map(TradeFleetEntity::getProvince).distinct().collect(Collectors.toList());
         provinces.addAll(newTfis.keySet());
 
         for (String province : provinces) {
             computeAutomaticTfCompetition(game, province, newTfis);
         }
+
+        List<DiffEntity> diffs = new ArrayList<>();
+        for (String tz : newTfis.keySet()) {
+            for (String country : newTfis.get(tz).keySet()) {
+                Integer levelChange = newTfis.get(tz).get(country);
+                if (levelChange != null && levelChange != 0) {
+                    CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream()
+                                    .filter(s -> StringUtils.equals(tz, s.getProvince()))
+                                    .flatMap(s -> s.getCounters().stream()),
+                            c -> StringUtils.equals(country, c.getCountry()) &&
+                                    (c.getType() == CounterFaceTypeEnum.TRADING_FLEET_MINUS || c.getType() == CounterFaceTypeEnum.TRADING_FLEET_PLUS));
+                    TradeFleetEntity tradeFleet = CommonUtil.findFirst(game.getTradeFleets(),
+                            tf -> StringUtils.equals(tz, tf.getProvince()) && StringUtils.equals(country, tf.getCountry()));
+                    int newLevel;
+                    if (tradeFleet != null && tradeFleet.getLevel() != null) {
+                        newLevel = tradeFleet.getLevel() + levelChange;
+                    } else {
+                        newLevel = levelChange;
+                    }
+                    CounterFaceTypeEnum newType;
+                    if (newLevel >= 4) {
+                        newType = CounterFaceTypeEnum.TRADING_FLEET_PLUS;
+                    } else {
+                        newType = CounterFaceTypeEnum.TRADING_FLEET_MINUS;
+                    }
+
+                    if (counter == null) {
+                        // case newLevel is 0 ?
+                        diffs.add(counterDomain.createCounter(newType, country, tz, newLevel, game));
+                    } else if (newLevel != 0) {
+                        diffs.add(counterDomain.switchCounter(counter.getId(), newType, newLevel, game));
+                    } else {
+                        diffs.add(counterDomain.removeCounter(counter.getId(), game));
+                    }
+                }
+            }
+        }
+        return diffs;
+    }
+
+    /**
+     * Compute the automatic competitions for establishments.
+     *
+     * @param game           the game.
+     * @param establishments List of provinces where an establishment was created to check an automatic competition.
+     */
+    private List<DiffEntity> computeAutomaticEstablishmentCompetitions(GameEntity game, Set<String> establishments) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        for (String province : establishments) {
+            diffs.addAll(computeAutomaticEstablishmentCompetition(game, province));
+        }
+
+        return diffs;
     }
 
     /**
@@ -2448,31 +2479,106 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
         }
 
-        TradeZoneProvinceEntity prov = (TradeZoneProvinceEntity) provinceDao.getProvinceByName(province);
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(province);
 
-        computeSingleTfCompetition(game, prov, CompetitionTypeEnum.TF_6, map -> {
+        computeSingleCompetition(game, prov, CompetitionTypeEnum.TF_6, tfPresents, map -> {
             boolean multiple = map.size() > 1;
             boolean has6 = map.values().stream().filter(level -> level == 6).count() > 1;
             return multiple && has6;
-        }, tfPresents, newTfis);
+        }, country -> additionalRemoveTfFromMaps(newTfis, province, country));
 
         Map<String, Integer> tfPresents4More = tfPresents.entrySet().stream().filter(map -> map.getValue() >= 4)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        computeSingleTfCompetition(game, prov, CompetitionTypeEnum.TF_4, map -> map.size() > 1, tfPresents4More, newTfis);
+        computeSingleCompetition(game, prov, CompetitionTypeEnum.TF_4, tfPresents4More, map -> map.size() > 1,
+                country -> additionalRemoveTfFromMaps(newTfis, province, country));
     }
 
     /**
-     * Compute either a total trade fleet competition or a partial trade fleet competition.
+     * Compute the automatic competitions for establishments for a single province.
+     *
+     * @param game     the game.
+     * @param province the province where the competition occurs.
+     */
+    private List<DiffEntity> computeAutomaticEstablishmentCompetition(GameEntity game, String province) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        Map<String, Integer> estPresents = new HashMap<>();
+
+        RotwProvinceEntity prov = (RotwProvinceEntity) provinceDao.getProvinceByName(province);
+
+        Map<CounterFaceTypeEnum, List<CounterEntity>> establishmentsByType = game.getStacks().stream()
+                .filter(s -> StringUtils.equals(s.getProvince(), province))
+                .flatMap(s -> s.getCounters().stream()).filter(c -> CounterUtil.isEstablishment(c.getType()))
+                .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.toList()));
+
+        List<CounterEntity> counterToDelete = new ArrayList<>();
+        List<CounterEntity> counterInCompetition = new ArrayList<>();
+
+
+        if (establishmentsByType.containsKey(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_MINUS)
+                || establishmentsByType.containsKey(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_PLUS)) {
+            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
+            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
+            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_MINUS));
+            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_PLUS));
+        } else if (establishmentsByType.containsKey(CounterFaceTypeEnum.COLONY_MINUS)
+                || establishmentsByType.containsKey(CounterFaceTypeEnum.COLONY_PLUS)) {
+            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
+            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
+            counterInCompetition.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_MINUS));
+            counterInCompetition.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_PLUS));
+        } else {
+            counterInCompetition.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
+            counterInCompetition.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
+        }
+
+        estPresents.putAll(counterInCompetition.stream()
+                .collect(Collectors.groupingBy(CounterEntity::getCountry,
+                        Collectors.summingInt(c -> c.getEstablishment() == null ? 0 : c.getEstablishment().getLevel()))));
+
+        diffs.addAll(counterToDelete.stream().map(establishment -> counterDomain.removeCounter(establishment.getId(), game)).collect(Collectors.toList()));
+
+        Map<String, Integer> lostLevelInCompetition = new HashMap<>();
+
+        computeSingleCompetition(game, prov, CompetitionTypeEnum.ESTABLISHMENT, estPresents,
+                map -> map.size() > 1, country -> removeEstablishmentInCompetition(lostLevelInCompetition, country));
+
+        for (String country : lostLevelInCompetition.keySet()) {
+            Integer levelLost = lostLevelInCompetition.get(country);
+            CounterEntity establishment = CommonUtil.findFirst(counterInCompetition, c -> StringUtils.equals(c.getCountry(), country));
+            if (establishment != null && establishment.getEstablishment() != null && establishment.getEstablishment().getLevel() != null) {
+                if (levelLost >= establishment.getEstablishment().getLevel()) {
+                    diffs.add(counterDomain.removeCounter(establishment.getId(), game));
+                } else {
+                    int newLevel = establishment.getEstablishment().getLevel() - levelLost;
+                    if (establishment.getEstablishment().getLevel() >= 4 && newLevel < 4) {
+                        diffs.add(counterDomain.switchCounter(establishment.getId(), CounterUtil.getFaceMinus(establishment.getType()), newLevel, game));
+                    } else {
+                        diffs.add(counterDomain.switchCounter(establishment.getId(), establishment.getType(), newLevel, game));
+                    }
+                }
+
+                // TODO loss of exotic resources
+            }
+        }
+
+        return diffs;
+    }
+
+    /**
+     * Compute an automatic competition (given the type, the predicate and the func, it can be either
+     * a partial trade fleet competition, a total trade fleet competition or an establishment competition.
      *
      * @param game       the game.
-     * @param prov       the trade zone where the competition occurs.
-     * @param type       wether total (TF_6) or partial (TF_4) competition.
-     * @param predicate6 the predicate to known the condition for continuing the competition.
+     * @param prov       the province where the competition occurs.
+     * @param type       type of the competition.
      * @param tfPresents the trade fleets concerned by the competition, grouped by country.
-     * @param newTfis    the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
+     * @param predicate  the predicate to know the condition for continuing the competition.
+     * @param func       additional function to call when a country loses a round of competition. Will be called with the parameter country.
      */
-    private void computeSingleTfCompetition(GameEntity game, TradeZoneProvinceEntity prov, CompetitionTypeEnum type, Predicate<Map<String, Integer>> predicate6, Map<String, Integer> tfPresents, Map<String, Map<String, Integer>> newTfis) {
-        if (predicate6.test(tfPresents)) {
+    private void computeSingleCompetition(GameEntity game, AbstractProvinceEntity prov, CompetitionTypeEnum type,
+                                          Map<String, Integer> tfPresents, Predicate<Map<String, Integer>> predicate,
+                                          Consumer<String> func) {
+        if (predicate.test(tfPresents)) {
             CompetitionEntity competition = new CompetitionEntity();
             competition.setGame(game);
             competition.setProvince(prov.getName());
@@ -2486,32 +2592,34 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
                 info.country = country;
                 info.fti = oeUtil.getFti(game, getTables(), country);
-                if (StringUtils.equals(prov.getCountryName(), country)) {
+                if (prov instanceof TradeZoneProvinceEntity &&
+                        StringUtils.equals(((TradeZoneProvinceEntity) prov).getCountryName(), country)) {
                     info.dti = oeUtil.getDti(game, getTables(), country);
                 }
 
                 infoList.add(info);
             }
 
-            computeAutomaticTfCompetitionRound(competition, 1, infoList, game, tfPresents, newTfis, predicate6);
+            computeAutomaticCompetitionRound(competition, 1, infoList, game, tfPresents, predicate, func);
 
             game.getCompetitions().add(competition);
         }
     }
 
     /**
-     * Computes a round of trade competition between fleet competition, if necessary.
-     * A competition between trade fleets ends if the predicate returns <code>false</code>.
+     * Computes a round of competition (trade fleet or establishment), if necessary.
+     * A competition ends when the predicate returns <code>false</code>.
      *
      * @param competition the current competition.
      * @param roundNumber the number of the round to compute.
      * @param infoList    Info about the countries computing the competition.
      * @param game        the game.
-     * @param tfPresents  the present trade fleets in the trade zone.
-     * @param newTfis     the trade fleets to add/remove grouped by province then by country.
      * @param predicate   Function that will return <code>true</code> if the competition should go on.
+     * @param func        additional function to call when a country loses a round of competition. Will be called with the parameter country.
      */
-    private void computeAutomaticTfCompetitionRound(CompetitionEntity competition, int roundNumber, List<CompetitionInfo> infoList, GameEntity game, Map<String, Integer> tfPresents, Map<String, Map<String, Integer>> newTfis, Predicate<Map<String, Integer>> predicate) {
+    private void computeAutomaticCompetitionRound(CompetitionEntity competition, int roundNumber, List<CompetitionInfo> infoList,
+                                                  GameEntity game, Map<String, Integer> tfPresents,
+                                                  Predicate<Map<String, Integer>> predicate, Consumer<String> func) {
         for (String country : tfPresents.keySet()) {
             CompetitionRoundEntity round = new CompetitionRoundEntity();
             round.setCountry(country);
@@ -2546,7 +2654,16 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 }
             }
 
-            if (removeTfFromMaps(tfPresents, newTfis, competition.getProvince(), country)) {
+            if (tfPresents.get(country) == 1) {
+                tfPresents.remove(country);
+            } else {
+                tfPresents.put(country, tfPresents.get(country) - 1);
+            }
+            if (func != null) {
+                func.accept(country);
+            }
+            if ((competition.getType() == CompetitionTypeEnum.TF_6 || competition.getType() == CompetitionTypeEnum.ESTABLISHMENT)
+                    && !tfPresents.containsKey(country)) {
                 infoList.remove(info);
             } else if (competition.getType() == CompetitionTypeEnum.TF_4 && tfPresents.get(country) < 4) {
                 tfPresents.remove(country);
@@ -2555,7 +2672,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         if (predicate.test(tfPresents)) {
-            computeAutomaticTfCompetitionRound(competition, roundNumber + 1, infoList, game, tfPresents, newTfis, predicate);
+            computeAutomaticCompetitionRound(competition, roundNumber + 1, infoList, game, tfPresents, predicate, func);
         }
     }
 
@@ -2582,22 +2699,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * Remove one trade fleet from both the current trade fleets map and the new trade fleets map.
      * Remove the key if the number become zero.
      *
-     * @param tfs      The current trade fleets grouped by country.
      * @param newTfis  the trade fleets to add/remove grouped by province then by country.
      * @param province the trade zone where to remove the trade fleet.
      * @param country  the country loosing a trade fleet.
-     * @return <code>true</code> if the trade fleet is destroyed (level 0).
      */
-    private boolean removeTfFromMaps(Map<String, Integer> tfs, Map<String, Map<String, Integer>> newTfis, String province, String country) {
-        boolean destroyed = false;
-
-        if (tfs.get(country) == 1) {
-            tfs.remove(country);
-            destroyed = true;
-        } else {
-            tfs.put(country, tfs.get(country) - 1);
-        }
-
+    private void additionalRemoveTfFromMaps(Map<String, Map<String, Integer>> newTfis, String province, String country) {
         if (!newTfis.containsKey(province)) {
             newTfis.put(province, new HashMap<>());
         }
@@ -2608,13 +2714,25 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         } else {
             newTfis.get(province).put(country, newTfis.get(province).get(country) - 1);
         }
+    }
 
-        return destroyed;
+    /**
+     * Add an estrablishment that will be removed at the end of the competition.
+     *
+     * @param lostLevelInCompetition tracks the summary of all establishment lost in the competition.
+     * @param country                country losing a level of establishment.
+     */
+    private void removeEstablishmentInCompetition(Map<String, Integer> lostLevelInCompetition, String country) {
+        if (!lostLevelInCompetition.containsKey(country)) {
+            lostLevelInCompetition.put(country, 1);
+        } else {
+            lostLevelInCompetition.put(country, lostLevelInCompetition.get(country) + 1);
+        }
     }
 
     /** Additional info when computing automatic competitions. */
     private class CompetitionInfo {
-        /** Country on which the infos are. */
+        /** Country on which the info are. */
         private String country;
         /** Fti of the country. */
         private int fti;
