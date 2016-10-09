@@ -217,6 +217,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             frame.setBounds(0, 0, 1000, 600);
             frame.pack();
             frame.setVisible(true);
+            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
             frames.add(frame);
         });
