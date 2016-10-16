@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
+import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
@@ -56,9 +57,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Test of BoardService.
@@ -69,6 +71,9 @@ import static org.mockito.Mockito.when;
 public class EcoServiceTest {
     @InjectMocks
     private EconomicServiceImpl economicService;
+
+    @Mock
+    private ICounterDomain counterDomain;
 
     @Mock
     private IGameDao gameDao;
@@ -2387,12 +2392,12 @@ public class EcoServiceTest {
         AdministrativeActionEntity action = new AdministrativeActionEntity();
         actionsFor11.add(action);
         when(adminActionDao.findAdminActions(11L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
-                                             AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL))
+                AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL))
                 .thenReturn(actionsFor11);
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
-                                             AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL))
+                AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL))
                 .thenReturn(actionsFor12);
 
         request.getRequest().setType(AdminActionTypeEnum.MNU);
@@ -4965,5 +4970,296 @@ public class EcoServiceTest {
         Assert.assertEquals(1, diffEntities.get(3).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(3).getAttributes().get(0).getType());
         Assert.assertEquals(GameStatusEnum.MILITARY.name(), diffEntities.get(3).getAttributes().get(0).getValue());
+    }
+
+    @Test
+    public void testComputeAdministrativeActions() {
+        GameEntity game = new GameEntity();
+        game.setTurn(3);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(100L);
+        game.getStacks().get(0).setProvince("idf");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(100L);
+        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(101L);
+        game.getStacks().get(1).setProvince("lyonnais");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(101L);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        game.getCountries().add(france);
+        france.setName("france");
+        france.setFti(3);
+        france.getEconomicalSheets().add(new EconomicalSheetEntity());
+        france.getEconomicalSheets().get(0).setTurn(game.getTurn());
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(0).setId(1L);
+        france.getAdministrativeActions().get(0).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(0).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(0).setType(AdminActionTypeEnum.LM);
+        france.getAdministrativeActions().get(0).setIdObject(101L);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(1).setId(2L);
+        france.getAdministrativeActions().get(1).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(1).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(1).setType(AdminActionTypeEnum.LF);
+        france.getAdministrativeActions().get(1).setIdObject(102L);
+        france.getAdministrativeActions().get(1).setCounterFaceType(CounterFaceTypeEnum.FORTRESS_1);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(2).setId(3L);
+        france.getAdministrativeActions().get(2).setStatus(AdminActionStatusEnum.DONE);
+        france.getAdministrativeActions().get(2).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(2).setType(AdminActionTypeEnum.DIS);
+        france.getAdministrativeActions().get(2).setIdObject(103L);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(3).setId(4L);
+        france.getAdministrativeActions().get(3).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(3).setTurn(game.getTurn() + 1);
+        france.getAdministrativeActions().get(3).setType(AdminActionTypeEnum.DIS);
+        france.getAdministrativeActions().get(3).setIdObject(103L);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(4).setId(5L);
+        france.getAdministrativeActions().get(4).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(4).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(4).setType(AdminActionTypeEnum.DIS);
+        france.getAdministrativeActions().get(4).setIdObject(103L);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(5).setId(6L);
+        france.getAdministrativeActions().get(5).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(5).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(5).setType(AdminActionTypeEnum.PU);
+        france.getAdministrativeActions().get(5).setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
+        france.getAdministrativeActions().get(5).setCost(45);
+        france.getAdministrativeActions().get(5).setProvince("idf");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(6).setId(7L);
+        france.getAdministrativeActions().get(6).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(6).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(6).setType(AdminActionTypeEnum.PU);
+        france.getAdministrativeActions().get(6).setCounterFaceType(CounterFaceTypeEnum.NAVAL_DETACHMENT);
+        france.getAdministrativeActions().get(6).setCost(18);
+        france.getAdministrativeActions().get(6).setProvince("gironde");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(7).setId(8L);
+        france.getAdministrativeActions().get(7).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(7).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(7).setType(AdminActionTypeEnum.PU);
+        france.getAdministrativeActions().get(7).setCounterFaceType(CounterFaceTypeEnum.FORTRESS_2);
+        france.getAdministrativeActions().get(7).setCost(30);
+        france.getAdministrativeActions().get(7).setProvince("idf");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(8).setId(9L);
+        france.getAdministrativeActions().get(8).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(8).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(8).setType(AdminActionTypeEnum.TFI);
+        france.getAdministrativeActions().get(8).setColumn(0);
+        france.getAdministrativeActions().get(8).setBonus(0);
+        france.getAdministrativeActions().get(8).setCost(10);
+        france.getAdministrativeActions().get(8).setProvince("ZPfrance");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(9).setId(10L);
+        france.getAdministrativeActions().get(9).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(9).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(9).setType(AdminActionTypeEnum.TFI);
+        france.getAdministrativeActions().get(9).setColumn(0);
+        france.getAdministrativeActions().get(9).setBonus(0);
+        france.getAdministrativeActions().get(9).setCost(10);
+        france.getAdministrativeActions().get(9).setProvince("ZPfrance");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(10).setId(11L);
+        france.getAdministrativeActions().get(10).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(10).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(10).setType(AdminActionTypeEnum.TFI);
+        france.getAdministrativeActions().get(10).setColumn(0);
+        france.getAdministrativeActions().get(10).setBonus(0);
+        france.getAdministrativeActions().get(10).setCost(10);
+        france.getAdministrativeActions().get(10).setProvince("ZPfrance");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(11).setId(12L);
+        france.getAdministrativeActions().get(11).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(11).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(11).setType(AdminActionTypeEnum.TFI);
+        france.getAdministrativeActions().get(11).setColumn(0);
+        france.getAdministrativeActions().get(11).setBonus(0);
+        france.getAdministrativeActions().get(11).setCost(10);
+        france.getAdministrativeActions().get(11).setProvince("ZPfrance");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(12).setId(13L);
+        france.getAdministrativeActions().get(12).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(12).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(12).setType(AdminActionTypeEnum.MNU);
+        france.getAdministrativeActions().get(12).setCounterFaceType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        france.getAdministrativeActions().get(12).setColumn(1);
+        france.getAdministrativeActions().get(12).setBonus(-1);
+        france.getAdministrativeActions().get(12).setCost(30);
+        france.getAdministrativeActions().get(12).setProvince("idf");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(13).setId(14L);
+        france.getAdministrativeActions().get(13).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(13).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(13).setType(AdminActionTypeEnum.MNU);
+        france.getAdministrativeActions().get(13).setCounterFaceType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        france.getAdministrativeActions().get(13).setIdObject(105L);
+        france.getAdministrativeActions().get(13).setColumn(1);
+        france.getAdministrativeActions().get(13).setBonus(-1);
+        france.getAdministrativeActions().get(13).setCost(30);
+        france.getAdministrativeActions().get(13).setProvince("lyonnais");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(14).setId(15L);
+        france.getAdministrativeActions().get(14).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(14).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(14).setType(AdminActionTypeEnum.MNU);
+        france.getAdministrativeActions().get(14).setCounterFaceType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        france.getAdministrativeActions().get(14).setIdObject(105L);
+        france.getAdministrativeActions().get(14).setColumn(1);
+        france.getAdministrativeActions().get(14).setBonus(-1);
+        france.getAdministrativeActions().get(14).setCost(30);
+        france.getAdministrativeActions().get(14).setProvince("lyonnais");
+
+
+        Map<String, Map<String, Integer>> newTfis = new HashMap<>();
+        Set<String> provinces = new HashSet<>();
+        List<DiffEntity> diffs;
+
+        DiffEntity diffVeteran = new DiffEntity();
+        when(counterDomain.changeVeteransCounter(101L, 0, game)).thenReturn(diffVeteran);
+
+        DiffEntity diffLowerFortress = new DiffEntity();
+        when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.FORTRESS_1, null, game)).thenReturn(diffLowerFortress);
+
+        DiffEntity diffRemove = new DiffEntity();
+        when(counterDomain.removeCounter(103L, game)).thenReturn(diffRemove);
+
+        DiffEntity diffAddLand = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game)).thenReturn(diffAddLand);
+
+        DiffEntity diffAddSea = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.NAVAL_DETACHMENT, "france", "gironde", null, game)).thenReturn(diffAddSea);
+
+        DiffEntity diffAddFortress = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.FORTRESS_2, "france", "idf", null, game)).thenReturn(diffAddFortress);
+
+        DiffEntity diffAddMnu = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.MNU_ART_MINUS, "france", "idf", null, game)).thenReturn(diffAddMnu);
+
+        DiffEntity diffUpMnu = new DiffEntity();
+        when(counterDomain.switchCounter(105L, CounterFaceTypeEnum.MNU_ART_PLUS, null, game)).thenReturn(diffUpMnu);
+
+        Tables tables = new Tables();
+        List<Result> results = new ArrayList<>();
+        Result result = new Result();
+        result.setColumn(0);
+        result.setDie(4);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(0);
+        result.setDie(5);
+        result.setResult(ResultEnum.AVERAGE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(0);
+        result.setDie(6);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        tables.setResults(results);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(4);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(5);
+        result.setResult(ResultEnum.AVERAGE_PLUS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(6);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        tables.setResults(results);
+        EconomicServiceImpl.TABLES = tables;
+
+        when(oeUtil.rollDie(game, france))
+                // First four rolls: success, failure, 1/2 with success, 1/2 with failure for TFI
+                .thenReturn(6, 4, 5, 3, 5, 4)
+                        // Then a critical hit, a 1/2 with success and a fumble for MNU
+                .thenReturn(7, 6, 1, 5);
+
+        diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
+
+        InOrder inOrder = inOrder(counterDomain, oeUtil);
+        inOrder.verify(counterDomain).changeVeteransCounter(101L, 0, game);
+        inOrder.verify(counterDomain).switchCounter(102L, CounterFaceTypeEnum.FORTRESS_1, null, game);
+        inOrder.verify(counterDomain).removeCounter(103L, game);
+        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game);
+        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.NAVAL_DETACHMENT, "france", "gironde", null, game);
+        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.FORTRESS_2, "france", "idf", null, game);
+        inOrder.verify(oeUtil, times(7)).rollDie(game, france);
+        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.MNU_ART_MINUS, "france", "idf", null, game);
+        inOrder.verify(oeUtil, times(2)).rollDie(game, france);
+        inOrder.verify(counterDomain).switchCounter(105L, CounterFaceTypeEnum.MNU_ART_PLUS, null, game);
+        inOrder.verify(oeUtil, times(1)).rollDie(game, france);
+        inOrder.verifyNoMoreInteractions();
+
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(0).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(1).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(4).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(5).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(6).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(7).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(8).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(8).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(8).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(9).getStatus());
+        Assert.assertEquals(4, france.getAdministrativeActions().get(9).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, france.getAdministrativeActions().get(9).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(10).getStatus());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(10).getDie().intValue());
+        Assert.assertEquals(ResultEnum.AVERAGE, france.getAdministrativeActions().get(10).getResult());
+        Assert.assertEquals(true, france.getAdministrativeActions().get(10).isSecondaryResult());
+        Assert.assertEquals(3, france.getAdministrativeActions().get(10).getSecondaryDie().intValue());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(11).getStatus());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(11).getDie().intValue());
+        Assert.assertEquals(ResultEnum.AVERAGE, france.getAdministrativeActions().get(11).getResult());
+        Assert.assertEquals(false, france.getAdministrativeActions().get(11).isSecondaryResult());
+        Assert.assertEquals(4, france.getAdministrativeActions().get(11).getSecondaryDie().intValue());
+        Assert.assertEquals(7, france.getAdministrativeActions().get(12).getDie().intValue());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, france.getAdministrativeActions().get(12).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(12).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(13).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(13).getDie().intValue());
+        Assert.assertEquals(ResultEnum.AVERAGE_PLUS, france.getAdministrativeActions().get(13).getResult());
+        Assert.assertEquals(true, france.getAdministrativeActions().get(13).isSecondaryResult());
+        Assert.assertEquals(1, france.getAdministrativeActions().get(13).getSecondaryDie().intValue());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(14).getStatus());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(14).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FUMBLE, france.getAdministrativeActions().get(14).getResult());
+
+        Assert.assertEquals(63, france.getEconomicalSheets().get(0).getUnitPurchExpense().intValue());
+        Assert.assertEquals(30, france.getEconomicalSheets().get(0).getFortPurchExpense().intValue());
+        Assert.assertEquals(130, france.getEconomicalSheets().get(0).getAdminActExpense().intValue());
+
+        Assert.assertEquals(8, diffs.size());
+        Assert.assertEquals(diffVeteran, diffs.get(0));
+        Assert.assertEquals(diffLowerFortress, diffs.get(1));
+        Assert.assertEquals(diffRemove, diffs.get(2));
+        Assert.assertEquals(diffAddLand, diffs.get(3));
+        Assert.assertEquals(diffAddSea, diffs.get(4));
+        Assert.assertEquals(diffAddFortress, diffs.get(5));
+        Assert.assertEquals(diffAddMnu, diffs.get(6));
+        Assert.assertEquals(diffUpMnu, diffs.get(7));
+
+        Assert.assertEquals(1, newTfis.size());
+        Assert.assertEquals(1, newTfis.get("ZPfrance").size());
+        Assert.assertEquals(2, newTfis.get("ZPfrance").get("france").intValue());
     }
 }

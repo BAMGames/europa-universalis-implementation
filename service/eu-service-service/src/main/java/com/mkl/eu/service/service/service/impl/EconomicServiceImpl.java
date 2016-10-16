@@ -1876,10 +1876,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     diffs.addAll(executeEstablishment(action, game, country, costs, newEstablishments));
                     break;
                 case ELT:
-                    diffs.addAll(executeTechnology(action, game, country, costs));
-                    break;
                 case ENT:
-//                    diffs = executeTechnology(action, game, country, false, costs);
+                    diffs.addAll(executeTechnology(action, game, country, costs));
                     break;
             }
 
@@ -1890,7 +1888,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         if (sheet != null) {
             Map<CounterFaceTypeEnum, Long> forces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            CounterUtil.isArmy(counter.getType())))
+                            counter.getVeterans() != null && counter.getVeterans() > 0 && CounterUtil.isArmy(counter.getType())))
                     .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
             List<BasicForce> basicForces = getTables().getBasicForces().stream()
                     .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
@@ -1906,7 +1904,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             Map<CounterFaceTypeEnum, Long> conscriptForces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            CounterUtil.isArmy(counter.getType())))
+                            (counter.getVeterans() == null || counter.getVeterans() == 0) && CounterUtil.isArmy(counter.getType())))
                     .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
             List<Unit> conscriptUnits = getTables().getUnits().stream()
                     .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
@@ -2001,9 +1999,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         DiffEntity diff = counterDomain.createCounter(action.getCounterFaceType(), country.getName(), action.getProvince(), null, game);
 
         if (CounterUtil.isFortress(action.getCounterFaceType())) {
-            addInMap(costs, COST_FORT_PURCHASE, action.getColumn());
+            addInMap(costs, COST_FORT_PURCHASE, action.getCost());
         } else {
-            addInMap(costs, COST_UNIT_PURCHASE, action.getColumn());
+            addInMap(costs, COST_UNIT_PURCHASE, action.getCost());
         }
 
         return diff;
@@ -2020,6 +2018,25 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      */
     private void executeTradeFleetImplantation(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs, Map<String, Map<String, Integer>> newTfis) {
         addInMap(costs, COST_ACTION, action.getCost());
+        if (rollDie(action, game, country)) {
+            if (!newTfis.containsKey(action.getProvince())) {
+                newTfis.put(action.getProvince(), new HashMap<>());
+            }
+            if (!newTfis.get(action.getProvince()).containsKey(country.getName())) {
+                newTfis.get(action.getProvince()).put(country.getName(), 1);
+            } else {
+                newTfis.get(action.getProvince()).put(country.getName(), newTfis.get(action.getProvince()).get(country.getName()) + 1);
+            }
+        }
+    }
+
+    /**
+     * @param action  administrative action that need some die rolls.
+     * @param game    the game.
+     * @param country the country.
+     * @return <code>true</code> if the action is a globally a success.
+     */
+    private boolean rollDie(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country) {
         Integer die = oeUtil.rollDie(game, country);
         action.setDie(die);
 
@@ -2030,7 +2047,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         action.setResult(result.getResult());
 
         if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
-            return;
+            return false;
         }
 
         if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
@@ -2038,20 +2055,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             action.setSecondaryDie(die);
 
             if (die > country.getFti()) {
-                return;
+                action.setSecondaryResult(false);
+                return false;
             } else {
                 action.setSecondaryResult(true);
             }
         }
-
-        if (!newTfis.containsKey(action.getProvince())) {
-            newTfis.put(action.getProvince(), new HashMap<>());
-        }
-        if (!newTfis.get(action.getProvince()).containsKey(country.getName())) {
-            newTfis.get(action.getProvince()).put(country.getName(), 1);
-        } else {
-            newTfis.get(action.getProvince()).put(country.getName(), newTfis.get(action.getProvince()).get(country.getName()) + 1);
-        }
+        return true;
     }
 
     /**
@@ -2065,35 +2075,15 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      */
     private DiffEntity executeManufacture(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
         addInMap(costs, COST_ACTION, action.getCost());
-        Integer die = oeUtil.rollDie(game, country);
-        action.setDie(die);
-
-        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
-        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
-                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
-
-        action.setResult(result.getResult());
-
-        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
-            return null;
-        }
-
-        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
-            die = oeUtil.rollDie(game, country);
-            action.setSecondaryDie(die);
-
-            if (die > country.getFti()) {
-                return null;
+        if (rollDie(action, game, country)) {
+            if (action.getIdObject() != null) {
+                return counterDomain.switchCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), null, game);
             } else {
-                action.setSecondaryResult(true);
+                // FIXME regroup mnu counter with other economic counters ?
+                return counterDomain.createCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), null, game);
             }
-        }
-
-        if (action.getIdObject() != null) {
-            return counterDomain.switchCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), null, game);
         } else {
-            // FIXME regroup mnu counter with other economic counters ?
-            return counterDomain.createCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), null, game);
+            return null;
         }
     }
 
