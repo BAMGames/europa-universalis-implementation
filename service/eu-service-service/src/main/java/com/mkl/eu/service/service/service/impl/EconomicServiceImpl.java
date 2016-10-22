@@ -1869,7 +1869,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     }
                     break;
                 case EXL:
-                    diffs.add(executeExceptionalTaxes(action, game, country, costs));
+                    diff = executeExceptionalTaxes(action, game, country, costs);
+                    if (diff != null) {
+                        diffs.add(diff);
+                    }
                     break;
                 case COL:
                 case TP:
@@ -2098,76 +2101,56 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      */
     private DiffEntity executeFtiDti(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
         addInMap(costs, COST_ACTION, action.getCost());
-        Integer die = oeUtil.rollDie(game, country);
-        action.setDie(die);
+        if (rollDie(action, game, country)) {
+            DiffEntity diff = new DiffEntity();
+            diff.setIdGame(game.getId());
+            diff.setVersionGame(game.getVersion());
+            diff.setType(DiffTypeEnum.MODIFY);
+            diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
+            diff.setIdObject(country.getId());
+            if (action.getType() == AdminActionTypeEnum.DTI) {
+                country.setDti(country.getDti() + 1);
 
-        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
-        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
-                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.DTI);
+                diffAttributes.setValue(Integer.toString(country.getDti()));
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            } else {
+                Map<LimitTypeEnum, Integer> maxi = getTables().getLimits().stream().filter(
+                        limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                                (limit.getType() == LimitTypeEnum.MAX_FTI ||
+                                        limit.getType() == LimitTypeEnum.MAX_FTI_ROTW) &&
+                                limit.getPeriod().getBegin() <= game.getTurn() &&
+                                limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors
+                        .groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
 
-        action.setResult(result.getResult());
+                if (country.getFti() < maxi.get(LimitTypeEnum.MAX_FTI)) {
+                    country.setFti(country.getFti() + 1);
 
-        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
+                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                    diffAttributes.setType(DiffAttributeTypeEnum.FTI);
+                    diffAttributes.setValue(Integer.toString(country.getFti()));
+                    diffAttributes.setDiff(diff);
+                    diff.getAttributes().add(diffAttributes);
+                }
+                if ((maxi.get(LimitTypeEnum.MAX_FTI_ROTW) != null && country.getFtiRotw() < maxi.get(LimitTypeEnum.MAX_FTI_ROTW)) || country.getFtiRotw() < country.getFti()) {
+                    country.setFtiRotw(country.getFtiRotw() + 1);
+
+                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                    diffAttributes.setType(DiffAttributeTypeEnum.FTI_ROTW);
+                    diffAttributes.setValue(Integer.toString(country.getFtiRotw()));
+                    diffAttributes.setDiff(diff);
+                    diff.getAttributes().add(diffAttributes);
+                }
+            }
+
+            diffDao.create(diff);
+
+            return diff;
+        } else {
             return null;
         }
-
-        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
-            die = oeUtil.rollDie(game, country);
-            action.setSecondaryDie(die);
-
-            if (die > country.getFti()) {
-                return null;
-            } else {
-                action.setSecondaryResult(true);
-            }
-        }
-
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
-        diff.setIdObject(country.getId());
-        if (action.getType() == AdminActionTypeEnum.DTI) {
-            country.setDti(country.getDti() + 1);
-
-            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.DTI);
-            diffAttributes.setValue(Integer.toString(country.getDti()));
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        } else {
-            Map<LimitTypeEnum, Integer> maxi = getTables().getLimits().stream().filter(
-                    limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
-                            (limit.getType() == LimitTypeEnum.MAX_FTI ||
-                                    limit.getType() == LimitTypeEnum.MAX_FTI_ROTW) &&
-                            limit.getPeriod().getBegin() <= game.getTurn() &&
-                            limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors
-                    .groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
-
-            if (country.getFti() < maxi.get(LimitTypeEnum.MAX_FTI)) {
-                country.setFti(country.getFti() + 1);
-
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.FTI);
-                diffAttributes.setValue(Integer.toString(country.getFti()));
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-            if (country.getFtiRotw() < maxi.get(LimitTypeEnum.MAX_FTI_ROTW) || country.getFtiRotw() < country.getFti()) {
-                country.setFtiRotw(country.getFtiRotw() + 1);
-
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.FTI_ROTW);
-                diffAttributes.setValue(Integer.toString(country.getFtiRotw()));
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-        }
-
-        diffDao.create(diff);
-
-        return diff;
     }
 
     /**
@@ -2205,58 +2188,43 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     private List<DiffEntity> executeEstablishment(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs, Set<String> newEstablishments) {
         List<DiffEntity> diffs = new ArrayList<>();
         addInMap(costs, COST_ACTION, action.getCost());
-        Integer die = oeUtil.rollDie(game, country);
-        action.setDie(die);
 
-        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
-        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
-                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
+        if (rollDie(action, game, country)) {
+            // TODO check activation
+            CounterEntity counter = null;
+            if (action.getIdObject() != null) {
+                counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
+                        c -> c.getId().equals(action.getIdObject()));
 
-        action.setResult(result.getResult());
-
-        // TODO check activation
-
-        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
-            return diffs;
-        }
-
-        if (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS) {
-            die = oeUtil.rollDie(game, country);
-            action.setSecondaryDie(die);
-
-            if (die > country.getFtiRotw()) {
-                return diffs;
-            } else {
-                action.setSecondaryResult(true);
             }
-        }
 
-        if (action.getIdObject() != null) {
-            CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                    c -> c.getId().equals(action.getIdObject()));
             if (counter == null) {
+                // If establishment was not found, we try to find one of the good type belonging to the right country on the same province
+                counter = CommonUtil.findFirst(game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), action.getProvince()))
+                        .flatMap(s -> s.getCounters().stream()), c -> StringUtils.equals(c.getCountry(), country.getName()) &&
+                        CounterUtil.getEstablishmentType(action.getType()) == CounterUtil.getFaceMinus(c.getType()));
+            }
+
+            if (counter == null) {
+                newEstablishments.add(action.getProvince());
+                List<CounterEntity> forts = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), action.getProvince()))
+                        .flatMap(s -> s.getCounters().stream()).filter(c -> c.getType() == CounterFaceTypeEnum.FORT).collect(Collectors.toList());
+                for (CounterEntity fort : forts) {
+                    diffs.add(counterDomain.removeCounter(fort.getId(), game));
+                }
+
+                // FIXME regroup mnu counter with other economic counters ?
                 diffs.add(counterDomain.createCounter(CounterUtil.getEstablishmentType(action.getType()), country.getName(), action.getProvince(), 1, game));
             } else if (counter.getEstablishment() == null || counter.getEstablishment().getLevel() == null) {
-                diffs.add(counterDomain.switchCounter(action.getIdObject(), counter.getType(), 1, game));
+                diffs.add(counterDomain.switchCounter(counter.getId(), counter.getType(), 1, game));
             } else if (counter.getEstablishment().getLevel() == 3) {
-                diffs.add(counterDomain.switchCounter(action.getIdObject(), CounterUtil.getFacePlus(counter.getType()), 1, game));
+                diffs.add(counterDomain.switchCounter(counter.getId(), CounterUtil.getFacePlus(counter.getType()), 4, game));
             } else {
-                diffs.add(counterDomain.switchCounter(action.getIdObject(), counter.getType(), counter.getEstablishment().getLevel() + 1, game));
-            }
-        } else {
-            newEstablishments.add(action.getProvince());
-            // FIXME regroup mnu counter with other economic counters ?
-            List<CounterEntity> forts = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), action.getProvince()))
-                    .flatMap(s -> s.getCounters().stream()).filter(c -> c.getType() == CounterFaceTypeEnum.FORT).collect(Collectors.toList());
-            for (CounterEntity fort : forts) {
-                diffs.add(counterDomain.removeCounter(fort.getId(), game));
+                diffs.add(counterDomain.switchCounter(counter.getId(), counter.getType(), counter.getEstablishment().getLevel() + 1, game));
             }
 
-            diffs.add(counterDomain.createCounter(CounterUtil.getEstablishmentType(action.getType()), country.getName(), action.getProvince(), 1, game));
+            // TODO exotic resources
         }
-
-        // TODO exotic resources
-
         return diffs;
     }
 

@@ -8,6 +8,7 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.eco.*;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -57,10 +58,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
 /**
  * Test of BoardService.
@@ -4975,28 +4975,67 @@ public class EcoServiceTest {
     @Test
     public void testComputeAdministrativeActions() {
         GameEntity game = new GameEntity();
+        game.setId(33L);
+        game.setVersion(365);
         game.setTurn(3);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setId(100L);
-        game.getStacks().get(0).setProvince("idf");
+        game.getStacks().get(0).setProvince("rAzteca~W");
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(0).setId(100L);
         game.getStacks().get(0).getCounters().get(0).setCountry("france");
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
         game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setId(101L);
-        game.getStacks().get(1).setProvince("lyonnais");
+        game.getStacks().get(1).setProvince("rAzteca~N");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setId(101L);
         game.getStacks().get(1).getCounters().get(0).setCountry("france");
-        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.COLONY_MINUS);
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().get(0).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(1).getCounters().get(0).getEstablishment().setLevel(3);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setId(102L);
+        game.getStacks().get(2).setProvince("rAzteca~E");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setId(102L);
+        game.getStacks().get(2).getCounters().get(0).setCountry("france");
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
+        game.getStacks().get(2).getCounters().get(0).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(2).getCounters().get(0).getEstablishment().setLevel(1);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(3).setId(201L);
+        game.getStacks().get(3).setProvince("rAzteca~S");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(0).setId(200L);
+        game.getStacks().get(3).getCounters().get(0).setCountry("angleterre");
+        game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.FORT);
+        game.getStacks().get(3).getCounters().get(0).setOwner(game.getStacks().get(3));
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(1).setId(201L);
+        game.getStacks().get(3).getCounters().get(1).setCountry("france");
+        game.getStacks().get(3).getCounters().get(1).setType(CounterFaceTypeEnum.TRADING_POST_PLUS);
+        game.getStacks().get(3).getCounters().get(1).setOwner(game.getStacks().get(3));
+        game.getStacks().get(3).getCounters().get(1).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(3).getCounters().get(1).getEstablishment().setLevel(4);
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(2).setId(199L);
+        game.getStacks().get(3).getCounters().get(2).setCountry("angleterre");
+        game.getStacks().get(3).getCounters().get(2).setType(CounterFaceTypeEnum.COLONY_PLUS);
+        game.getStacks().get(3).getCounters().get(2).setOwner(game.getStacks().get(3));
+        game.getStacks().get(3).getCounters().get(2).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(3).getCounters().get(2).getEstablishment().setLevel(4);
 
         PlayableCountryEntity france = new PlayableCountryEntity();
         game.getCountries().add(france);
+        france.setId(65L);
         france.setName("france");
+        france.setDti(4);
         france.setFti(3);
+        france.setFtiRotw(3);
         france.getEconomicalSheets().add(new EconomicalSheetEntity());
         france.getEconomicalSheets().get(0).setTurn(game.getTurn());
         france.getAdministrativeActions().add(new AdministrativeActionEntity());
@@ -5122,6 +5161,99 @@ public class EcoServiceTest {
         france.getAdministrativeActions().get(14).setBonus(-1);
         france.getAdministrativeActions().get(14).setCost(30);
         france.getAdministrativeActions().get(14).setProvince("lyonnais");
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(15).setId(16L);
+        france.getAdministrativeActions().get(15).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(15).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(15).setType(AdminActionTypeEnum.DTI);
+        france.getAdministrativeActions().get(15).setColumn(0);
+        france.getAdministrativeActions().get(15).setBonus(0);
+        france.getAdministrativeActions().get(15).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(16).setId(17L);
+        france.getAdministrativeActions().get(16).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(16).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(16).setType(AdminActionTypeEnum.FTI);
+        france.getAdministrativeActions().get(16).setColumn(0);
+        france.getAdministrativeActions().get(16).setBonus(0);
+        france.getAdministrativeActions().get(16).setCost(50);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(17).setId(18L);
+        france.getAdministrativeActions().get(17).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(17).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(17).setType(AdminActionTypeEnum.FTI);
+        france.getAdministrativeActions().get(17).setColumn(0);
+        france.getAdministrativeActions().get(17).setBonus(0);
+        france.getAdministrativeActions().get(17).setCost(50);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(18).setId(19L);
+        france.getAdministrativeActions().get(18).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(18).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(18).setType(AdminActionTypeEnum.EXL);
+        france.getAdministrativeActions().get(18).setColumn(0);
+        france.getAdministrativeActions().get(18).setBonus(6);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(19).setId(20L);
+        france.getAdministrativeActions().get(19).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(19).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(19).setType(AdminActionTypeEnum.EXL);
+        france.getAdministrativeActions().get(19).setColumn(-1);
+        france.getAdministrativeActions().get(19).setBonus(9);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(20).setId(21L);
+        france.getAdministrativeActions().get(20).setIdObject(666L);
+        france.getAdministrativeActions().get(20).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(20).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(20).setType(AdminActionTypeEnum.COL);
+        france.getAdministrativeActions().get(20).setProvince("rAzteca~W");
+        france.getAdministrativeActions().get(20).setColumn(0);
+        france.getAdministrativeActions().get(20).setBonus(0);
+        france.getAdministrativeActions().get(20).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(21).setId(22L);
+        france.getAdministrativeActions().get(21).setIdObject(100L);
+        france.getAdministrativeActions().get(21).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(21).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(21).setType(AdminActionTypeEnum.TP);
+        france.getAdministrativeActions().get(21).setColumn(0);
+        france.getAdministrativeActions().get(21).setBonus(0);
+        france.getAdministrativeActions().get(21).setCost(10);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(22).setId(23L);
+        france.getAdministrativeActions().get(22).setIdObject(101L);
+        france.getAdministrativeActions().get(22).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(22).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(22).setType(AdminActionTypeEnum.COL);
+        france.getAdministrativeActions().get(22).setColumn(0);
+        france.getAdministrativeActions().get(22).setBonus(0);
+        france.getAdministrativeActions().get(22).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(23).setId(24L);
+        france.getAdministrativeActions().get(23).setIdObject(102L);
+        france.getAdministrativeActions().get(23).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(23).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(23).setType(AdminActionTypeEnum.TP);
+        france.getAdministrativeActions().get(23).setColumn(0);
+        france.getAdministrativeActions().get(23).setBonus(0);
+        france.getAdministrativeActions().get(23).setCost(10);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(24).setId(25L);
+        france.getAdministrativeActions().get(24).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(24).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(24).setType(AdminActionTypeEnum.COL);
+        france.getAdministrativeActions().get(24).setProvince("rAzteca~S");
+        france.getAdministrativeActions().get(24).setColumn(0);
+        france.getAdministrativeActions().get(24).setBonus(0);
+        france.getAdministrativeActions().get(24).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(25).setId(26L);
+        france.getAdministrativeActions().get(25).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(25).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(25).setType(AdminActionTypeEnum.TP);
+        france.getAdministrativeActions().get(25).setProvince("rAzteca~S");
+        france.getAdministrativeActions().get(25).setColumn(0);
+        france.getAdministrativeActions().get(25).setBonus(0);
+        france.getAdministrativeActions().get(25).setCost(30);
 
 
         Map<String, Map<String, Integer>> newTfis = new HashMap<>();
@@ -5151,6 +5283,32 @@ public class EcoServiceTest {
 
         DiffEntity diffUpMnu = new DiffEntity();
         when(counterDomain.switchCounter(105L, CounterFaceTypeEnum.MNU_ART_PLUS, null, game)).thenReturn(diffUpMnu);
+
+        when(oeUtil.getStability(game, "france")).thenReturn(2);
+
+        DiffEntity diffLowerStab = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.STABILITY, "france", GameUtil.getStabilityBox(1), game)).thenReturn(diffLowerStab);
+
+        DiffEntity diffAddExistingCol = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.COLONY_MINUS, "france", "rAzteca~W", 1, game)).thenReturn(diffAddExistingCol);
+
+        DiffEntity diffUpTp1 = new DiffEntity();
+        when(counterDomain.switchCounter(100L, CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(diffUpTp1);
+
+        DiffEntity diffUpCol = new DiffEntity();
+        when(counterDomain.switchCounter(101L, CounterFaceTypeEnum.COLONY_PLUS, 4, game)).thenReturn(diffUpCol);
+
+        DiffEntity diffUpTp2 = new DiffEntity();
+        when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.TRADING_POST_MINUS, 2, game)).thenReturn(diffUpTp2);
+
+        DiffEntity diffDestroyFort = new DiffEntity();
+        when(counterDomain.removeCounter(200L, game)).thenReturn(diffDestroyFort);
+
+        DiffEntity diffAddCol = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.COLONY_MINUS, "france", "rAzteca~S", 1, game)).thenReturn(diffAddCol);
+
+        DiffEntity diffUpTp3 = new DiffEntity();
+        when(counterDomain.switchCounter(201L, CounterFaceTypeEnum.TRADING_POST_PLUS, 5, game)).thenReturn(diffUpTp3);
 
         Tables tables = new Tables();
         List<Result> results = new ArrayList<>();
@@ -5186,29 +5344,29 @@ public class EcoServiceTest {
         result.setResult(ResultEnum.CRITICAL_HIT);
         results.add(result);
         tables.setResults(results);
+        List<Limit> limits = new ArrayList<>();
+        Limit limit = new Limit();
+        limit.setCountry("france");
+        limit.setPeriod(new Period());
+        limit.getPeriod().setBegin(1);
+        limit.getPeriod().setEnd(game.getTurn());
+        limit.setType(LimitTypeEnum.MAX_FTI);
+        limit.setNumber(4);
+        limits.add(limit);
+        tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
 
         when(oeUtil.rollDie(game, france))
                 // First four rolls: success, failure, 1/2 with success, 1/2 with failure for TFI
                 .thenReturn(6, 4, 5, 3, 5, 4)
                         // Then a critical hit, a 1/2 with success and a fumble for MNU
-                .thenReturn(7, 6, 1, 5);
+                .thenReturn(7, 6, 1, 5)
+                        // Then two successes and a failure for DTI/FTI
+                .thenReturn(6, 6, 4)
+                        // Then 6 successes for COL/TP
+                .thenReturn(6, 6, 6, 6, 6, 6);
 
         diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
-
-        InOrder inOrder = inOrder(counterDomain, oeUtil);
-        inOrder.verify(counterDomain).changeVeteransCounter(101L, 0, game);
-        inOrder.verify(counterDomain).switchCounter(102L, CounterFaceTypeEnum.FORTRESS_1, null, game);
-        inOrder.verify(counterDomain).removeCounter(103L, game);
-        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game);
-        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.NAVAL_DETACHMENT, "france", "gironde", null, game);
-        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.FORTRESS_2, "france", "idf", null, game);
-        inOrder.verify(oeUtil, times(7)).rollDie(game, france);
-        inOrder.verify(counterDomain).createCounter(CounterFaceTypeEnum.MNU_ART_MINUS, "france", "idf", null, game);
-        inOrder.verify(oeUtil, times(2)).rollDie(game, france);
-        inOrder.verify(counterDomain).switchCounter(105L, CounterFaceTypeEnum.MNU_ART_PLUS, null, game);
-        inOrder.verify(oeUtil, times(1)).rollDie(game, france);
-        inOrder.verifyNoMoreInteractions();
 
         Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(0).getStatus());
         Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(1).getStatus());
@@ -5232,9 +5390,9 @@ public class EcoServiceTest {
         Assert.assertEquals(ResultEnum.AVERAGE, france.getAdministrativeActions().get(11).getResult());
         Assert.assertEquals(false, france.getAdministrativeActions().get(11).isSecondaryResult());
         Assert.assertEquals(4, france.getAdministrativeActions().get(11).getSecondaryDie().intValue());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(12).getStatus());
         Assert.assertEquals(7, france.getAdministrativeActions().get(12).getDie().intValue());
         Assert.assertEquals(ResultEnum.CRITICAL_HIT, france.getAdministrativeActions().get(12).getResult());
-        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(12).getStatus());
         Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(13).getStatus());
         Assert.assertEquals(6, france.getAdministrativeActions().get(13).getDie().intValue());
         Assert.assertEquals(ResultEnum.AVERAGE_PLUS, france.getAdministrativeActions().get(13).getResult());
@@ -5243,12 +5401,42 @@ public class EcoServiceTest {
         Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(14).getStatus());
         Assert.assertEquals(5, france.getAdministrativeActions().get(14).getDie().intValue());
         Assert.assertEquals(ResultEnum.FUMBLE, france.getAdministrativeActions().get(14).getResult());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(15).getDie().intValue());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(15).getStatus());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(15).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(16).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(16).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(16).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(17).getStatus());
+        Assert.assertEquals(4, france.getAdministrativeActions().get(17).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, france.getAdministrativeActions().get(17).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(18).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(19).getStatus());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(20).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(20).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(20).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(21).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(21).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(21).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(22).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(22).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(22).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(23).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(23).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(23).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(24).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(24).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(24).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(25).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(25).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(25).getResult());
 
         Assert.assertEquals(63, france.getEconomicalSheets().get(0).getUnitPurchExpense().intValue());
         Assert.assertEquals(30, france.getEconomicalSheets().get(0).getFortPurchExpense().intValue());
-        Assert.assertEquals(130, france.getEconomicalSheets().get(0).getAdminActExpense().intValue());
+        Assert.assertEquals(400, france.getEconomicalSheets().get(0).getAdminActExpense().intValue());
+        Assert.assertEquals(15, france.getEconomicalSheets().get(0).getExcTaxesMod().intValue());
 
-        Assert.assertEquals(8, diffs.size());
+        Assert.assertEquals(18, diffs.size());
         Assert.assertEquals(diffVeteran, diffs.get(0));
         Assert.assertEquals(diffLowerFortress, diffs.get(1));
         Assert.assertEquals(diffRemove, diffs.get(2));
@@ -5257,6 +5445,32 @@ public class EcoServiceTest {
         Assert.assertEquals(diffAddFortress, diffs.get(5));
         Assert.assertEquals(diffAddMnu, diffs.get(6));
         Assert.assertEquals(diffUpMnu, diffs.get(7));
+        Assert.assertEquals(game.getId(), diffs.get(8).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(8).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(8).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTRY, diffs.get(8).getTypeObject());
+        Assert.assertEquals(france.getId(), diffs.get(8).getIdObject());
+        Assert.assertEquals(1, diffs.get(8).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.DTI, diffs.get(8).getAttributes().get(0).getType());
+        Assert.assertEquals("5", diffs.get(8).getAttributes().get(0).getValue());
+        Assert.assertEquals(game.getId(), diffs.get(9).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(9).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(9).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTRY, diffs.get(9).getTypeObject());
+        Assert.assertEquals(france.getId(), diffs.get(9).getIdObject());
+        Assert.assertEquals(2, diffs.get(9).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.FTI, diffs.get(9).getAttributes().get(0).getType());
+        Assert.assertEquals("4", diffs.get(9).getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.FTI_ROTW, diffs.get(9).getAttributes().get(1).getType());
+        Assert.assertEquals("4", diffs.get(9).getAttributes().get(1).getValue());
+        Assert.assertEquals(diffLowerStab, diffs.get(10));
+        Assert.assertEquals(diffAddExistingCol, diffs.get(11));
+        Assert.assertEquals(diffUpTp1, diffs.get(12));
+        Assert.assertEquals(diffUpCol, diffs.get(13));
+        Assert.assertEquals(diffUpTp2, diffs.get(14));
+        Assert.assertEquals(diffDestroyFort, diffs.get(15));
+        Assert.assertEquals(diffAddCol, diffs.get(16));
+        Assert.assertEquals(diffUpTp3, diffs.get(17));
 
         Assert.assertEquals(1, newTfis.size());
         Assert.assertEquals(1, newTfis.get("ZPfrance").size());
