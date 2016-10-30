@@ -815,4 +815,67 @@ public final class CounterUtil {
 
         return facePlus;
     }
+
+    /**
+     * @param type of the counter.
+     * @param land or naval, or <code>null</code> for both.
+     * @return the upgrade cost of a counter type (technology upgrade).
+     */
+    public static int getUpgradeCost(CounterFaceTypeEnum type, Boolean land) {
+        int cost = 0;
+
+        if (type != null) {
+            switch (type) {
+                case ARMY_PLUS:
+                case ARMY_TIMAR_PLUS:
+                    if (land == null || land) {
+                        cost = 10;
+                    }
+                    break;
+                case ARMY_MINUS:
+                case ARMY_TIMAR_MINUS:
+                    if (land == null || land) {
+                        cost = 5;
+                    }
+                    break;
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN:
+                case LAND_SEPOY:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY_EXPLORATION:
+                    if (land == null || land) {
+                        cost = 1;
+                    }
+                    break;
+                case FLEET_PLUS:
+                case FLEET_TRANSPORT_PLUS:
+                    if (land == null || !land) {
+                        cost = 10;
+                    }
+                    break;
+                case FLEET_MINUS:
+                case FLEET_TRANSPORT_MINUS:
+                    if (land == null || !land) {
+                        cost = 5;
+                    }
+                    break;
+                case NAVAL_DETACHMENT:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                case NAVAL_TRANSPORT:
+                    if (land == null || !land) {
+                        cost = 1;
+                    }
+                    break;
+                case NAVAL_GALLEY:
+                default:
+                    break;
+            }
+        }
+
+        return cost;
+    }
 }

@@ -479,6 +479,80 @@ public class CounterUtilTest {
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.TRADING_POST_PLUS));
         Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.COLONY_MINUS));
         Assert.assertEquals(CounterFaceTypeEnum.COLONY_MINUS, CounterUtil.getFaceMinus(CounterFaceTypeEnum.COLONY_PLUS));
+    }
 
+    @Test
+    public void testUpgradeCost() {
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(null, null));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN, null));
+
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_PLUS, null));
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, null));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_MINUS, null));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_INDIAN, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_SEPOY, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION, null));
+
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_PLUS, null));
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS, null));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_MINUS, null));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_DETACHMENT, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, null));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_TRANSPORT, null));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_GALLEY, null));
+
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_PLUS, true));
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, true));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_MINUS, true));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_INDIAN, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_SEPOY, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION, true));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION, true));
+
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_PLUS, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_MINUS, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_DETACHMENT, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_TRANSPORT, true));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_GALLEY, true));
+
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_PLUS, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_MINUS, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_INDIAN, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_SEPOY, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION, false));
+
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_PLUS, false));
+        Assert.assertEquals(10, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS, false));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_MINUS, false));
+        Assert.assertEquals(5, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS, false));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_DETACHMENT, false));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, false));
+        Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_TRANSPORT, false));
+        Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_GALLEY, false));
     }
 }
