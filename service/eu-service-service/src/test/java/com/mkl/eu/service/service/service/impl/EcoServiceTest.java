@@ -5028,6 +5028,62 @@ public class EcoServiceTest {
         game.getStacks().get(3).getCounters().get(2).setOwner(game.getStacks().get(3));
         game.getStacks().get(3).getCounters().get(2).setEstablishment(new EstablishmentEntity());
         game.getStacks().get(3).getCounters().get(2).getEstablishment().setLevel(4);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(4).setId(1000L);
+        game.getStacks().get(4).setProvince("B_TECH_3");
+        game.getStacks().get(4).getCounters().add(new CounterEntity());
+        game.getStacks().get(4).getCounters().get(0).setId(1000L);
+        game.getStacks().get(4).getCounters().get(0).setCountry("france");
+        game.getStacks().get(4).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND);
+        game.getStacks().get(4).getCounters().get(0).setOwner(game.getStacks().get(4));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(5).setId(1001L);
+        game.getStacks().get(5).setProvince("B_TECH_4");
+        game.getStacks().get(5).getCounters().add(new CounterEntity());
+        game.getStacks().get(5).getCounters().get(0).setId(1001L);
+        game.getStacks().get(5).getCounters().get(0).setCountry("france");
+        game.getStacks().get(5).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAVAL);
+        game.getStacks().get(5).getCounters().get(0).setOwner(game.getStacks().get(5));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(6).setId(1002L);
+        game.getStacks().get(6).setProvince("B_TECH_5");
+        game.getStacks().get(6).getCounters().add(new CounterEntity());
+        game.getStacks().get(6).getCounters().get(0).setId(1002L);
+        game.getStacks().get(6).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAE_GALEON);
+        game.getStacks().get(6).getCounters().get(0).setOwner(game.getStacks().get(6));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(7).setId(1001L);
+        game.getStacks().get(7).setProvince("idf");
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(0).setId(500L);
+        game.getStacks().get(7).getCounters().get(0).setCountry("france");
+        game.getStacks().get(7).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(7).getCounters().get(0).setOwner(game.getStacks().get(7));
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(1).setId(501L);
+        game.getStacks().get(7).getCounters().get(1).setCountry("france");
+        game.getStacks().get(7).getCounters().get(1).setType(CounterFaceTypeEnum.FLEET_MINUS);
+        game.getStacks().get(7).getCounters().get(1).setOwner(game.getStacks().get(7));
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(2).setId(502L);
+        game.getStacks().get(7).getCounters().get(2).setCountry("france");
+        game.getStacks().get(7).getCounters().get(2).setType(CounterFaceTypeEnum.NAVAL_TRANSPORT);
+        game.getStacks().get(7).getCounters().get(2).setOwner(game.getStacks().get(7));
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(3).setId(503L);
+        game.getStacks().get(7).getCounters().get(3).setCountry("angleterre");
+        game.getStacks().get(7).getCounters().get(3).setType(CounterFaceTypeEnum.FLEET_PLUS);
+        game.getStacks().get(7).getCounters().get(3).setOwner(game.getStacks().get(7));
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(4).setId(504L);
+        game.getStacks().get(7).getCounters().get(4).setCountry("france");
+        game.getStacks().get(7).getCounters().get(4).setType(CounterFaceTypeEnum.FORTRESS_1);
+        game.getStacks().get(7).getCounters().get(4).setOwner(game.getStacks().get(7));
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(5).setId(505L);
+        game.getStacks().get(7).getCounters().get(5).setCountry("france");
+        game.getStacks().get(7).getCounters().get(5).setType(CounterFaceTypeEnum.MISSION);
+        game.getStacks().get(7).getCounters().get(5).setOwner(game.getStacks().get(7));
 
         PlayableCountryEntity france = new PlayableCountryEntity();
         game.getCountries().add(france);
@@ -5036,6 +5092,8 @@ public class EcoServiceTest {
         france.setDti(4);
         france.setFti(3);
         france.setFtiRotw(3);
+        france.setLandTech(Tech.RENAISSANCE);
+        france.setNavalTech(Tech.CARRACK);
         france.getEconomicalSheets().add(new EconomicalSheetEntity());
         france.getEconomicalSheets().get(0).setTurn(game.getTurn());
         france.getAdministrativeActions().add(new AdministrativeActionEntity());
@@ -5254,6 +5312,30 @@ public class EcoServiceTest {
         france.getAdministrativeActions().get(25).setColumn(0);
         france.getAdministrativeActions().get(25).setBonus(0);
         france.getAdministrativeActions().get(25).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(26).setId(27L);
+        france.getAdministrativeActions().get(26).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(26).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(26).setType(AdminActionTypeEnum.ELT);
+        france.getAdministrativeActions().get(26).setColumn(0);
+        france.getAdministrativeActions().get(26).setBonus(0);
+        france.getAdministrativeActions().get(26).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(27).setId(28L);
+        france.getAdministrativeActions().get(27).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(27).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(27).setType(AdminActionTypeEnum.ENT);
+        france.getAdministrativeActions().get(27).setColumn(0);
+        france.getAdministrativeActions().get(27).setBonus(0);
+        france.getAdministrativeActions().get(27).setCost(30);
+        france.getAdministrativeActions().add(new AdministrativeActionEntity());
+        france.getAdministrativeActions().get(28).setId(29L);
+        france.getAdministrativeActions().get(28).setStatus(AdminActionStatusEnum.PLANNED);
+        france.getAdministrativeActions().get(28).setTurn(game.getTurn());
+        france.getAdministrativeActions().get(28).setType(AdminActionTypeEnum.ELT);
+        france.getAdministrativeActions().get(28).setColumn(1);
+        france.getAdministrativeActions().get(28).setBonus(0);
+        france.getAdministrativeActions().get(28).setCost(30);
 
 
         Map<String, Map<String, Integer>> newTfis = new HashMap<>();
@@ -5310,7 +5392,24 @@ public class EcoServiceTest {
         DiffEntity diffUpTp3 = new DiffEntity();
         when(counterDomain.switchCounter(201L, CounterFaceTypeEnum.TRADING_POST_PLUS, 5, game)).thenReturn(diffUpTp3);
 
+        when(oeUtil.getTechnologyAdvance(game, france.getName(), false)).thenReturn(4);
+
+        DiffEntity diffTechNaval = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL, "france", "B_TECH_6", game)).thenReturn(diffTechNaval);
+
+        when(oeUtil.getTechnologyAdvance(game, france.getName(), true)).thenReturn(3);
+
+        DiffEntity diffTechLand = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND, "france", "B_TECH_5", game)).thenReturn(diffTechLand);
+
         Tables tables = new Tables();
+        List<Period> periods = new ArrayList<>();
+        Period periodI = new Period();
+        periodI.setName(Period.PERIOD_I);
+        periodI.setBegin(1);
+        periodI.setEnd(60);
+        periods.add(periodI);
+        tables.setPeriods(periods);
         List<Result> results = new ArrayList<>();
         Result result = new Result();
         result.setColumn(0);
@@ -5354,6 +5453,55 @@ public class EcoServiceTest {
         limit.setNumber(4);
         limits.add(limit);
         tables.setLimits(limits);
+        List<Tech> techs = new ArrayList<>();
+        Tech renaissance = new Tech();
+        renaissance.setName(Tech.RENAISSANCE);
+        renaissance.setBeginTurn(2);
+        renaissance.setLand(true);
+        techs.add(renaissance);
+        Tech carrack = new Tech();
+        carrack.setName(Tech.CARRACK);
+        carrack.setBeginTurn(1);
+        carrack.setLand(false);
+        techs.add(carrack);
+        Tech naeG = new Tech();
+        naeG.setName(Tech.NAE_GALEON);
+        naeG.setBeginTurn(3);
+        naeG.setLand(false);
+        techs.add(naeG);
+        tables.setTechs(techs);
+        List<Unit> units = new ArrayList<>();
+        Unit unit = new Unit();
+        unit.setCountry("france");
+        unit.setAction(UnitActionEnum.MAINT_WAR);
+        unit.setSpecial(true);
+        unit.setType(ForceTypeEnum.ARMY_PLUS);
+        unit.setTech(renaissance);
+        unit.setPrice(25);
+        units.add(unit);
+        unit = new Unit();
+        unit.setCountry("france");
+        unit.setAction(UnitActionEnum.MAINT);
+        unit.setType(ForceTypeEnum.FLEET_MINUS);
+        unit.setTech(carrack);
+        unit.setPrice(100);
+        units.add(unit);
+        unit = new Unit();
+        unit.setCountry("france");
+        unit.setAction(UnitActionEnum.MAINT);
+        unit.setType(ForceTypeEnum.ND);
+        unit.setTech(carrack);
+        unit.setPrice(40);
+        units.add(unit);
+        tables.setUnits(units);
+        List<BasicForce> basicForces = new ArrayList<>();
+        BasicForce basicForce = new BasicForce();
+        basicForce.setCountry("france");
+        basicForce.setPeriod(periodI);
+        basicForce.setType(ForceTypeEnum.ND);
+        basicForce.setNumber(1);
+        basicForces.add(basicForce);
+        tables.setBasicForces(basicForces);
         EconomicServiceImpl.TABLES = tables;
 
         when(oeUtil.rollDie(game, france))
@@ -5364,7 +5512,9 @@ public class EcoServiceTest {
                         // Then two successes and a failure for DTI/FTI
                 .thenReturn(6, 6, 4)
                         // Then 6 successes for COL/TP
-                .thenReturn(6, 6, 6, 6, 6, 6);
+                .thenReturn(6, 6, 6, 6, 6, 6)
+                        // Then 2 1/2, each with a secondary failure then a critical hit for Techs
+                .thenReturn(5, 5, 5, 5, 6);
 
         diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
 
@@ -5430,13 +5580,34 @@ public class EcoServiceTest {
         Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(25).getStatus());
         Assert.assertEquals(6, france.getAdministrativeActions().get(25).getDie().intValue());
         Assert.assertEquals(ResultEnum.SUCCESS, france.getAdministrativeActions().get(25).getResult());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(26).getStatus());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(26).getDie().intValue());
+        Assert.assertEquals(ResultEnum.AVERAGE, france.getAdministrativeActions().get(26).getResult());
+        Assert.assertEquals(false, france.getAdministrativeActions().get(26).isSecondaryResult());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(26).getSecondaryDie().intValue());
+        Assert.assertEquals(null, france.getAdministrativeActions().get(26).getProvince());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(27).getStatus());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(27).getDie().intValue());
+        Assert.assertEquals(ResultEnum.AVERAGE, france.getAdministrativeActions().get(27).getResult());
+        Assert.assertEquals(false, france.getAdministrativeActions().get(27).isSecondaryResult());
+        Assert.assertEquals(5, france.getAdministrativeActions().get(27).getSecondaryDie().intValue());
+        Assert.assertEquals("1", france.getAdministrativeActions().get(27).getProvince());
+        Assert.assertEquals(AdminActionStatusEnum.DONE, france.getAdministrativeActions().get(28).getStatus());
+        Assert.assertEquals(6, france.getAdministrativeActions().get(28).getDie().intValue());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, france.getAdministrativeActions().get(28).getResult());
+        Assert.assertEquals("2", france.getAdministrativeActions().get(28).getProvince());
 
+        Assert.assertEquals(105, france.getEconomicalSheets().get(0).getUnitMaintExpense().intValue());
+        Assert.assertEquals(1, france.getEconomicalSheets().get(0).getFortMaintExpense().intValue());
+        Assert.assertEquals(1, france.getEconomicalSheets().get(0).getMissMaintExpense().intValue());
         Assert.assertEquals(63, france.getEconomicalSheets().get(0).getUnitPurchExpense().intValue());
         Assert.assertEquals(30, france.getEconomicalSheets().get(0).getFortPurchExpense().intValue());
-        Assert.assertEquals(400, france.getEconomicalSheets().get(0).getAdminActExpense().intValue());
+        Assert.assertEquals(490, france.getEconomicalSheets().get(0).getAdminActExpense().intValue());
+        Assert.assertEquals(6, france.getEconomicalSheets().get(0).getOtherExpense().intValue());
+        Assert.assertEquals(696, france.getEconomicalSheets().get(0).getAdmTotalExpense().intValue());
         Assert.assertEquals(15, france.getEconomicalSheets().get(0).getExcTaxesMod().intValue());
 
-        Assert.assertEquals(18, diffs.size());
+        Assert.assertEquals(21, diffs.size());
         Assert.assertEquals(diffVeteran, diffs.get(0));
         Assert.assertEquals(diffLowerFortress, diffs.get(1));
         Assert.assertEquals(diffRemove, diffs.get(2));
@@ -5471,6 +5642,16 @@ public class EcoServiceTest {
         Assert.assertEquals(diffDestroyFort, diffs.get(15));
         Assert.assertEquals(diffAddCol, diffs.get(16));
         Assert.assertEquals(diffUpTp3, diffs.get(17));
+        Assert.assertEquals(diffTechNaval, diffs.get(18));
+        Assert.assertEquals(game.getId(), diffs.get(19).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(19).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(19).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTRY, diffs.get(19).getTypeObject());
+        Assert.assertEquals(france.getId(), diffs.get(19).getIdObject());
+        Assert.assertEquals(1, diffs.get(19).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.TECH_NAVAL, diffs.get(19).getAttributes().get(0).getType());
+        Assert.assertEquals(Tech.NAE_GALEON, diffs.get(19).getAttributes().get(0).getValue());
+        Assert.assertEquals(diffTechLand, diffs.get(20));
 
         Assert.assertEquals(1, newTfis.size());
         Assert.assertEquals(1, newTfis.get("ZPfrance").size());

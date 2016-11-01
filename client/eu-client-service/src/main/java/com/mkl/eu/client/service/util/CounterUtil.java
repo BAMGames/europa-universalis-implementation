@@ -127,7 +127,6 @@ public final class CounterUtil {
                 case ARSENAL_2_SEBASTOPOL:
                 case ARSENAL_2_ST_PETER:
                 case FORTRESS_1:
-                case MISSION:
                 case ARSENAL_1_ST_PETER:
                 case FORT:
                 case ARSENAL_0_ST_PETER:

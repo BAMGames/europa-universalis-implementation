@@ -1891,7 +1891,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         if (sheet != null) {
             Map<CounterFaceTypeEnum, Long> forces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            counter.getVeterans() != null && counter.getVeterans() > 0 && CounterUtil.isArmy(counter.getType())))
+                            (counter.getVeterans() != null && (counter.getVeterans() > 0) || CounterUtil.isNavalArmy(counter.getType())) && CounterUtil.isArmy(counter.getType())))
                     .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
             List<BasicForce> basicForces = getTables().getBasicForces().stream()
                     .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
@@ -1907,7 +1907,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             Map<CounterFaceTypeEnum, Long> conscriptForces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            (counter.getVeterans() == null || counter.getVeterans() == 0) && CounterUtil.isArmy(counter.getType())))
+                            (counter.getVeterans() == null || counter.getVeterans() == 0) && CounterUtil.isLandArmy(counter.getType())))
                     .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
             List<Unit> conscriptUnits = getTables().getUnits().stream()
                     .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
@@ -2251,15 +2251,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             actualTechName = country.getNavalTech();
         }
         addInMap(costs, COST_ACTION, action.getCost());
-        Integer die = oeUtil.rollDie(game, country);
-        action.setDie(die);
 
-        Integer modifiedDie = Math.min(Math.max(die + action.getBonus(), 1), 10);
-        Result result = CommonUtil.findFirst(getTables().getResults().stream(),
-                r -> r.getColumn().equals(action.getColumn()) && r.getDie().equals(modifiedDie));
-
-        action.setResult(result.getResult());
-
+        rollDie(action, game, country);
 
         boolean nextTechKnown = false;
         Tech actualTech = CommonUtil.findFirst(getTables().getTechs(), t -> StringUtils.equals(t.getName(), actualTechName));
@@ -2273,68 +2266,64 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             nextTechKnown = nextTech.getBeginTurn() <= game.getTurn();
         }
 
-        if (result.getResult() == ResultEnum.FUMBLE || result.getResult() == ResultEnum.FAILED) {
-            return diffs;
-        }
-
-        if (!nextTechKnown && (result.getResult() == ResultEnum.AVERAGE || result.getResult() == ResultEnum.AVERAGE_PLUS)) {
-            die = oeUtil.rollDie(game, country);
-            action.setSecondaryDie(die);
-
-            if (die > country.getFti()) {
-                return diffs;
-            } else {
-                action.setSecondaryResult(true);
+        if (action.getResult() != ResultEnum.FUMBLE && action.getResult() != ResultEnum.FAILED &&
+                (nextTechKnown || ((action.getResult() != ResultEnum.AVERAGE && action.getResult() != ResultEnum.AVERAGE_PLUS)
+                        || (action.isSecondaryResult() != null && action.isSecondaryResult())))) {
+            int boxesToImprove = 1;
+            if (action.getResult() == ResultEnum.CRITICAL_HIT || (nextTechKnown && action.getResult() == ResultEnum.SUCCESS)) {
+                boxesToImprove = 2;
             }
-        }
+            action.setProvince(Integer.toString(boxesToImprove));
 
-        int boxesToImprove = 1;
-        if (result.getResult() == ResultEnum.CRITICAL_HIT || (nextTechKnown && result.getResult() == ResultEnum.SUCCESS)) {
-            boxesToImprove = 2;
-        }
+            int actualTechAdvance = oeUtil.getTechnologyAdvance(game, country.getName(), land);
+            int targetBox = actualTechAdvance + boxesToImprove;
+            // TODO it is possible to go through box 70. Disable this behaviour when the conception of the 70+ will be made.
+            targetBox = Math.min(targetBox, 70);
+            String box = GameUtil.getTechnologyBox(targetBox);
+            List<CounterEntity> neutralCounters = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), box))
+                    .flatMap(s -> s.getCounters().stream()).filter(c -> !CounterUtil.canTechnologyStack(c.getType(), land))
+                    .collect(Collectors.toList());
+            // A technology counter cannot stack with a neutral technology counter of same type. Go one box further if this would be the case.
+            if (!neutralCounters.isEmpty()) {
+                targetBox++;
+            }
+            diffs.add(counterDomain.moveSpecialCounter(face, country.getName(), GameUtil.getTechnologyBox(targetBox), game));
 
-        int actualTechAdvance = oeUtil.getTechnologyAdvance(game, country.getName(), land);
-        int targetBox = actualTechAdvance + boxesToImprove;
-        // TODO it is possible to go through box 70. Disable this behaviour when the conception of the 70+ will be made.
-        targetBox = Math.min(targetBox, 70);
-        String box = GameUtil.getTechnologyBox(targetBox);
-        List<CounterEntity> neutralCounters = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), box))
-                .flatMap(s -> s.getCounters().stream()).filter(c -> CounterUtil.canTechnologyStack(c.getType(), land))
-                .collect(Collectors.toList());
-        // A technology counter cannot stack with a neutral technology counter of same type. Go one box further if this would be the case.
-        if (!neutralCounters.isEmpty()) {
-            targetBox++;
-        }
-        diffs.add(counterDomain.moveSpecialCounter(face, country.getName(), GameUtil.getTechnologyBox(targetBox), game));
+            if (nextTech != null) {
+                String nextTechName = nextTech.getName();
+                CounterEntity nextTechCounter = CommonUtil.findFirst(game.getStacks().stream().filter(s -> GameUtil.isTechnologyBox(s.getProvince()))
+                                .flatMap(s -> s.getCounters().stream()),
+                        c -> c.getType() == CounterUtil.getTechnologyType(nextTechName));
 
-        if (nextTech != null) {
-            String nextTechName = nextTech.getName();
-            CounterEntity nextTechCounter = CommonUtil.findFirst(game.getStacks().stream().filter(s -> GameUtil.isTechnologyBox(s.getProvince()))
-                            .flatMap(s -> s.getCounters().stream()),
-                    c -> c.getType() == CounterUtil.getTechnologyType(nextTechName));
+                int nextTechBox = GameUtil.getTechnology(nextTechCounter.getOwner().getProvince());
 
-            int nextTechBox = GameUtil.getTechnology(nextTechCounter.getOwner().getProvince());
+                if (nextTechBox < targetBox) {
+                    DiffEntity diff = new DiffEntity();
+                    diff.setIdGame(game.getId());
+                    diff.setVersionGame(game.getVersion());
+                    diff.setType(DiffTypeEnum.MODIFY);
+                    diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
+                    diff.setIdObject(country.getId());
+                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                    if (land) {
+                        diffAttributes.setType(DiffAttributeTypeEnum.TECH_LAND);
+                    } else {
+                        diffAttributes.setType(DiffAttributeTypeEnum.TECH_NAVAL);
+                    }
+                    diffAttributes.setValue(nextTech.getName());
+                    diffAttributes.setDiff(diff);
+                    diff.getAttributes().add(diffAttributes);
 
-            if (nextTechBox < targetBox) {
-                DiffEntity diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.MODIFY);
-                diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
-                diff.setIdObject(country.getId());
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                if (land) {
-                    diffAttributes.setType(DiffAttributeTypeEnum.TECH_LAND);
-                } else {
-                    diffAttributes.setType(DiffAttributeTypeEnum.TECH_NAVAL);
+                    diffDao.create(diff);
+
+                    diffs.add(diff);
+
+                    // TODO ignore fleet counters with only galleys
+                    int upgradeCost = game.getStacks().stream().flatMap(s -> s.getCounters().stream())
+                            .filter(c -> StringUtils.equals(c.getCountry(), country.getName()))
+                            .collect(Collectors.summingInt(c -> CounterUtil.getUpgradeCost(c.getType(), land)));
+                    addInMap(costs, COST_OTHER, upgradeCost);
                 }
-                diffAttributes.setValue(nextTech.getName());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-
-                diffDao.create(diff);
-
-                diffs.add(diff);
             }
         }
 
