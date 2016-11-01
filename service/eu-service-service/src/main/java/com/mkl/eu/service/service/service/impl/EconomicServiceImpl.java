@@ -1731,6 +1731,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     countryAct.setReady(false);
                 }
 
+                // automatic tf refill (before competitions)
                 diffs.addAll(computeAutomaticTfCompetitions(game, newTfis));
                 diffs.addAll(computeAutomaticEstablishmentCompetitions(game, newEstablishments));
                 // exotic resources concurrencies
@@ -1824,7 +1825,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      *                          province they appear.
      * @return a List of Diff containing all the modifications due to the administrative actions.
      */
-    List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game, Map<String, Map<String, Integer>> newTfis, Set<String> newEstablishments) {
+    protected List<DiffEntity> computeAdministrativeActions(PlayableCountryEntity country, GameEntity game, Map<String, Map<String, Integer>> newTfis, Set<String> newEstablishments) {
         List<DiffEntity> diffs = new ArrayList<>();
 
         Map<String, Integer> costs = new HashMap<>();
@@ -2344,9 +2345,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @param game    the game.
      * @param newTfis the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
      */
-    private List<DiffEntity> computeAutomaticTfCompetitions(GameEntity game, Map<String, Map<String, Integer>> newTfis) {
+    protected List<DiffEntity> computeAutomaticTfCompetitions(GameEntity game, Map<String, Map<String, Integer>> newTfis) {
         List<String> provinces = game.getTradeFleets().stream().map(TradeFleetEntity::getProvince).distinct().collect(Collectors.toList());
-        provinces.addAll(newTfis.keySet());
+        newTfis.keySet().stream().filter(province -> !provinces.contains(province)).forEach(provinces::add);
 
         for (String province : provinces) {
             computeAutomaticTfCompetition(game, province, newTfis);
@@ -2430,7 +2431,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         computeSingleCompetition(game, prov, CompetitionTypeEnum.TF_6, tfPresents, map -> {
             boolean multiple = map.size() > 1;
-            boolean has6 = map.values().stream().filter(level -> level == 6).count() > 1;
+            boolean has6 = map.values().stream().filter(level -> level == 6).count() >= 1;
             return multiple && has6;
         }, country -> additionalRemoveTfFromMaps(newTfis, province, country));
 
@@ -2567,7 +2568,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     private void computeAutomaticCompetitionRound(CompetitionEntity competition, int roundNumber, List<CompetitionInfo> infoList,
                                                   GameEntity game, Map<String, Integer> tfPresents,
                                                   Predicate<Map<String, Integer>> predicate, Consumer<String> func) {
-        for (String country : tfPresents.keySet()) {
+        List<String> countries = new ArrayList<>(tfPresents.keySet());
+        List<CompetitionInfo> infoToRemove = new ArrayList<>();
+        for (String country : countries) {
             CompetitionRoundEntity round = new CompetitionRoundEntity();
             round.setCountry(country);
             round.setCompetition(competition);
@@ -2576,14 +2579,15 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             CompetitionInfo info = CommonUtil.findFirst(infoList, inf -> StringUtils.equals(inf.country, country));
             int otherMaxFti = infoList.stream().filter(inf -> !StringUtils.equals(inf.country, country)).map(inf -> inf.fti).max((o1, o2) -> o1 - o2).get();
-            round.setColumn(info.fti + info.dti - otherMaxFti);
+            int column = Math.min(Math.max(info.fti + info.dti - otherMaxFti, -4), 4);
+            round.setColumn(column);
 
             Integer die = oeUtil.rollDie(game, country);
             round.setDie(die);
 
             Integer modifiedDie = Math.min(Math.max(die, 1), 10);
             Result result = CommonUtil.findFirst(getTables().getResults().stream(),
-                    r -> r.getColumn().equals(round.getColumn()) && r.getDie().equals(modifiedDie));
+                    r -> r.getColumn().equals(column) && r.getDie().equals(modifiedDie));
 
             round.setResult(result.getResult());
 
@@ -2598,6 +2602,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 if (die <= info.fti) {
                     round.setSecondaryResult(true);
                     continue;
+                } else {
+                    round.setSecondaryResult(false);
                 }
             }
 
@@ -2611,13 +2617,14 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
             if ((competition.getType() == CompetitionTypeEnum.TF_6 || competition.getType() == CompetitionTypeEnum.ESTABLISHMENT)
                     && !tfPresents.containsKey(country)) {
-                infoList.remove(info);
+                infoToRemove.add(info);
             } else if (competition.getType() == CompetitionTypeEnum.TF_4 && tfPresents.get(country) < 4) {
                 tfPresents.remove(country);
-                infoList.remove(info);
+                infoToRemove.add(info);
             }
         }
 
+        infoToRemove.forEach(infoList::remove);
         if (predicate.test(tfPresents)) {
             computeAutomaticCompetitionRound(competition, roundNumber + 1, infoList, game, tfPresents, predicate, func);
         }
