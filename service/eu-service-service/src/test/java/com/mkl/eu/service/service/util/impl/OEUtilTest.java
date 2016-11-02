@@ -355,4 +355,45 @@ public class OEUtilTest {
         Assert.assertEquals(3, oeUtil.getDti(game, tables, "suede"));
         Assert.assertEquals(3, oeUtil.getDti(game, tables, "venise"));
     }
+
+    @Test
+    public void testGetStacksOnProvince() {
+        GameEntity game = new GameEntity();
+        StackEntity idf = new StackEntity();
+        idf.setId(1L);
+        idf.setProvince("idf");
+        game.getStacks().add(idf);
+        StackEntity lyonnais = new StackEntity();
+        lyonnais.setId(2L);
+        lyonnais.setProvince("lyonnais");
+        game.getStacks().add(lyonnais);
+        StackEntity provence1 = new StackEntity();
+        provence1.setId(3L);
+        provence1.setProvince("provence");
+        game.getStacks().add(provence1);
+        StackEntity provence2 = new StackEntity();
+        provence2.setId(4L);
+        provence2.setProvince("provence");
+        game.getStacks().add(provence2);
+
+        List<StackEntity> stacks = oeUtil.getStacksOnProvince(game, "idf");
+
+        Assert.assertEquals(1, stacks.size());
+        Assert.assertEquals(idf, stacks.get(0));
+
+        stacks = oeUtil.getStacksOnProvince(game, "lyonnais");
+
+        Assert.assertEquals(1, stacks.size());
+        Assert.assertEquals(lyonnais, stacks.get(0));
+
+        stacks = oeUtil.getStacksOnProvince(game, "province");
+
+        Assert.assertEquals(0, stacks.size());
+
+        stacks = oeUtil.getStacksOnProvince(game, "provence");
+
+        Assert.assertEquals(2, stacks.size());
+        Assert.assertEquals(provence1, stacks.get(0));
+        Assert.assertEquals(provence2, stacks.get(1));
+    }
 }

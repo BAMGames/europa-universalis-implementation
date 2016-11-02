@@ -184,6 +184,111 @@ public class MaintenanceUtilTest {
         basicForce.setType(ForceTypeEnum.LD);
 
         Assert.assertEquals(37, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 1L);
+
+        Assert.assertEquals(41, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 3L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 15L);
+
+        basicForces = new ArrayList<>();
+        basicForce = new BasicForce();
+        basicForce.setType(ForceTypeEnum.LD);
+        basicForce.setNumber(16);
+        basicForces.add(basicForce);
+
+        units = new ArrayList<>();
+        Unit armyPlus = new Unit();
+        armyPlus.setType(ForceTypeEnum.ARMY_PLUS);
+        units.add(armyPlus);
+        Unit armyMinus = new Unit();
+        armyMinus.setType(ForceTypeEnum.ARMY_MINUS);
+        units.add(armyMinus);
+        Unit detachment = new Unit();
+        detachment.setType(ForceTypeEnum.LD);
+        units.add(detachment);
+        armyPlus.setPrice(45);
+        armyMinus.setPrice(20);
+        detachment.setPrice(8);
+
+        Assert.assertEquals(4, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1L);
+        basicForce.setNumber(3);
+
+        Assert.assertEquals(36, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(35);
+
+        Assert.assertEquals(35, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(45);
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1L);
+        basicForce.setNumber(1);
+
+        Assert.assertEquals(56, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(35);
+
+        Assert.assertEquals(51, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(25);
+        armyMinus.setPrice(15);
+
+        Assert.assertEquals(40, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(45);
+        armyMinus.setPrice(20);
+
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 2L);
+        basicForce.setNumber(2);
+
+        Assert.assertEquals(36, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyMinus.setPrice(30);
+
+        Assert.assertEquals(45, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyMinus.setPrice(20);
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.ARMY_MINUS, 1L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1L);
+        basicForce.setNumber(1);
+
+        Assert.assertEquals(16, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyMinus.setPrice(15);
+
+        Assert.assertEquals(15, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyMinus.setPrice(20);
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.LAND_DETACHMENT, 1L);
+        basicForce.setNumber(3);
+
+        Assert.assertEquals(16, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyMinus.setPrice(15);
+
+        Assert.assertEquals(15, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        // FIXME this case is not properly handled by the algorithm
+//        armyPlus.setPrice(25);
+//
+//        Assert.assertEquals(15, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
     }
 
     @Test
@@ -246,6 +351,10 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(39, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, 40));
 
+        fortresses.put(new ImmutablePair<>(0, true), 1);
+
+        Assert.assertEquals(40, MaintenanceUtil.computeFortressesMaintenance(fortresses, null, null, 40));
+
         List<Tech> techs = new ArrayList<>();
         Tech arquebus = new Tech();
         arquebus.setBeginTurn(17);
@@ -260,10 +369,28 @@ public class MaintenanceUtilTest {
         baroque.setName(Tech.BAROQUE);
         techs.add(baroque);
 
-        Assert.assertEquals(39, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, null, 40));
+        Assert.assertEquals(40, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, null, 40));
 
-        Assert.assertEquals(39, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, renaissance, 40));
+        Assert.assertEquals(40, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, renaissance, 40));
 
-        Assert.assertEquals(27, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, baroque, 40));
+        Assert.assertEquals(28, MaintenanceUtil.computeFortressesMaintenance(fortresses, techs, baroque, 40));
+    }
+
+    @Test
+    public void testGetPurchaseForceFromFace() {
+        Assert.assertEquals(null, MaintenanceUtil.getPurchaseForceFromFace(null));
+        Assert.assertEquals(null, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.MNU_ART_MINUS));
+        Assert.assertEquals(ForceTypeEnum.ARMY_PLUS, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(ForceTypeEnum.ARMY_PLUS, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(ForceTypeEnum.ARMY_MINUS, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(ForceTypeEnum.ARMY_MINUS, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(ForceTypeEnum.LD, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(ForceTypeEnum.LD, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(ForceTypeEnum.LD, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(ForceTypeEnum.FLEET_PLUS, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(ForceTypeEnum.FLEET_MINUS, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(ForceTypeEnum.NWD, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(ForceTypeEnum.NGD, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.NAVAL_GALLEY));
+        Assert.assertEquals(ForceTypeEnum.NTD, MaintenanceUtil.getPurchaseForceFromFace(CounterFaceTypeEnum.NAVAL_TRANSPORT));
     }
 }

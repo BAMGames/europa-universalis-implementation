@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <GAME ID="1" VERSION="1" SEED="123"/>
+    <GAME ID="2" VERSION="1" SEED="123"/>
+    <GAME ID="3" VERSION="1" SEED="123"/>
+    <GAME ID="4" VERSION="1" SEED="123"/>
+    <GAME ID="5" VERSION="1" SEED="123"/>
+
+    <COUNTRY ID="1" ID_GAME="1" USERNAME="toto" NAME="france" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="2" ID_GAME="1" USERNAME="toto"  NAME="angleterre" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="3" ID_GAME="1" USERNAME="titi"  NAME="hollande" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="4" ID_GAME="2" USERNAME="tata"  NAME="portugal" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="5" ID_GAME="2" USERNAME="tutu"  NAME="france" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="6" ID_GAME="2" USERNAME="toto"  NAME="angleterre" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="7" ID_GAME="3" USERNAME="tata"  NAME="hollande" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+    <COUNTRY ID="8" ID_GAME="5" USERNAME="tyty"  NAME="portugal" COL_MALUS="0" DTI="3" FTI="3" FTI_ROTW="3" READY="true"/>
+</dataset>

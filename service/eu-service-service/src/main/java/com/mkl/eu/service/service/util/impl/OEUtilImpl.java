@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Utility for OE class.
@@ -148,7 +150,6 @@ public final class OEUtilImpl implements IOEUtil {
         return settleDistance(province, discoveries, sources, friendlies, 0) <= 12;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -157,7 +158,6 @@ public final class OEUtilImpl implements IOEUtil {
         PlayableCountryEntity countryEntity = CommonUtil.findFirst(game.getCountries(), c -> StringUtils.equals(country, c.getName()));
         return rollDie(game, countryEntity);
     }
-
 
     /**
      * {@inheritDoc}
@@ -252,5 +252,14 @@ public final class OEUtilImpl implements IOEUtil {
         }
 
         return distance;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<StackEntity> getStacksOnProvince(GameEntity game, String province) {
+        return game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), province))
+                .collect(Collectors.toList());
     }
 }

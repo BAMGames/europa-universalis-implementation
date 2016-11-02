@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.util;
 
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 
@@ -83,4 +84,14 @@ public interface IOEUtil {
      * @return the result of a die 10.
      */
     int rollDie(GameEntity game, PlayableCountryEntity country);
+
+    /**
+     * Returns the stacks on the province for a given game.
+     * The main purpose is to have the possibility to mock this method in tests.
+     *
+     * @param game    the game.
+     * @param province the province.
+     * @return the stacks on the province.
+     */
+    List<StackEntity> getStacksOnProvince(GameEntity game, String province);
 }

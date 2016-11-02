@@ -22,7 +22,6 @@ import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
-import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
@@ -86,9 +85,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
-    /** Stack DAO. */
-    @Autowired
-    private IStackDao stackDao;
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
@@ -501,7 +497,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province));
 
-        List<StackEntity> stacks = stackDao.getStacksOnProvince(province, game.getId());
+        List<StackEntity> stacks = oeUtil.getStacksOnProvince(game, province);
         String owner = null;
 
         boolean port = false;

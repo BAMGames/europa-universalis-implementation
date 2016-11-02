@@ -215,7 +215,7 @@ public final class MaintenanceUtil {
 
     /**
      * Subtract from the forces a type of maintenance given its faces that stand for 4, 2, 1 and a half D.
-     * For Example, the LAND type would have a faceForFour of ARMY_PLUS, a feceForTwo of ARMY_MINUS,
+     * For Example, the LAND type would have a faceForFour of ARMY_PLUS, a faceForTwo of ARMY_MINUS,
      * a faceForOne of LAND_DETACHMENT and a faceForHalf of LAND_DETACHMENT_EXPLORATION.
      *
      * @param nbUnit      number of unit in D to subtract.
@@ -227,49 +227,96 @@ public final class MaintenanceUtil {
      */
     private static void SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Long> forces) {
         if (nbUnit != null) {
+            // The aim is to select the most profitable way of using the basic force (nbUnit) by
+            // selecting the most expensive units.
             int disc42 = subtract(infoForFour.getPrice(), infoForTwo.getPrice());
             int disc22 = toInt(infoForTwo.getPrice());
             int disc41 = subtract(infoForFour.getPrice(), infoForTwo.getPrice(), infoForOne.getPrice());
             int disc21 = subtract(infoForTwo.getPrice(), infoForOne.getPrice());
             int disc11 = toInt(infoForOne.getPrice());
+            // The rules force to use basic force for complete counter if possible. So we first
+            // use the basic force for the larger units (size 4).
             nbUnit = subtractMaintenanceForce(nbUnit, infoForFour, forces);
+            // After that, only 0, 1, 2 or 3 can remain in dbUnit or there are no
+            // large force (size 4) left in the forces
             if (nbUnit >= 2 && nbUnit < 4 && disc42 > disc22) {
+                // If using 2 of basic force to partially maintain a large force (size 4)
+                // is more profitable than maintaining a medium force (size 2)
+                // then we remove a large force from the remaining forces but we add
+                // a medium force (size 2).
+                // If nbUnit is more than 4, then there are no more large force left.
                 if (subtractMaintenanceForce(infoForFour, forces)) {
                     addOne(forces, infoForTwo.getFaces()[0]);
                     nbUnit -= infoForTwo.getSize();
                 }
             } else if (nbUnit == 1 && disc41 > disc11 && disc41 > disc21) {
+                // If using 1 of basic force to partially maintain a large force (size 4)
+                // is more profitable than partially maintaining a medium force (size 2)
+                // or maintaining a small force (size 1)
+                // then we remove a large force from the remaining forces but
+                // we had a medium force (size 2) and a small force (size 1).
+                // If nbUnit is different than 1, we must first try to maintain
+                // fully a counter.
                 if (subtractMaintenanceForce(infoForFour, forces)) {
                     addOne(forces, infoForTwo.getFaces()[0]);
                     addOne(forces, infoForOne.getFaces()[0]);
                     nbUnit -= infoForOne.getSize();
                 }
             }
+            // The rules force to use basic force for complete counter if possible.
+            // So we now use basic force for medium units (size 2).
+            // Now, either nbUnit is 0 or 1, either there are no medium force (size 2)
+            // left in the forces.
             nbUnit = subtractMaintenanceForce(nbUnit, infoForTwo, forces);
-            if (nbUnit == 2) {
+            if (nbUnit >= 2 && disc42 > 2 * disc11) {
+                // If using 2 of basic force to partially maintain a large force (size 4)
+                // is more profitable than maintaining 2 small forces (size 1)
+                // then we remove a large force from the remaining forces but we add
+                // a medium force (size 2).
+                // We can do that because if nbUnit is more than 2, then there are
+                // no medium force (size 2) left in the forces.
                 if (subtractMaintenanceForce(infoForFour, forces)) {
                     addOne(forces, infoForTwo.getFaces()[0]);
                     nbUnit -= infoForTwo.getSize();
                 }
             }
+            // If using 1 of basic force to partially maintain a medium force (size 2)
+            // is more profitable than maintaining a small force (size 1)
+            // then we remove a medium force from the remaining forces but
+            // we had a small force.
+            // If nbUnit is more than 2, then there are no more medium force left.
             if (nbUnit == 1 && disc21 > disc11) {
                 if (subtractMaintenanceForce(infoForTwo, forces)) {
                     addOne(forces, infoForOne.getFaces()[0]);
                     nbUnit -= infoForOne.getSize();
                 }
             }
+            // The rules force to use basic force for complete counter if possible.
+            // So we now use basic force for small units (size 1).
+            // Now, either nbUnit is 0, either there are no small force (size 1)
+            // left in the forces
             nbUnit = subtractMaintenanceForce(nbUnit, infoForOne, forces);
             if (nbUnit == 1) {
+                // if there are still large or medium forces in the remaining forces
+                // then we search the most profitable path.
                 if (disc41 > disc21) {
+                    // If using 1 of basic force to partially maintain a large force (size 4)
+                    // is more profitable than partially maintaining a medium force (size 2)
+                    // or maintaining a small force (size 1)
+                    // then we remove a large force from the remaining forces but
+                    // we had a medium force (size 2) and a small force (size 1).
                     if (subtractMaintenanceForce(infoForFour, forces)) {
                         addOne(forces, infoForTwo.getFaces()[0]);
                         addOne(forces, infoForOne.getFaces()[0]);
                         nbUnit -= infoForOne.getSize();
+                        // Otherwise we try to partially maintain a medium force (size 2)
+                        // and then add a small force (size 1).
                     } else if (subtractMaintenanceForce(infoForTwo, forces)) {
                         addOne(forces, infoForOne.getFaces()[0]);
                         nbUnit -= infoForOne.getSize();
                     }
                 } else {
+                    // If it was less profitable, we take the opposite path.
                     if (subtractMaintenanceForce(infoForTwo, forces)) {
                         addOne(forces, infoForOne.getFaces()[0]);
                         nbUnit -= infoForOne.getSize();
@@ -280,6 +327,7 @@ public final class MaintenanceUtil {
                     }
                 }
             }
+            // Finally, we use all the remaining basic forces for tiny forces (size 1/2).
             subtractMaintenanceForce(nbUnit, infoForHalf, forces);
         }
     }

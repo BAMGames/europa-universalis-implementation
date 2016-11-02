@@ -1,22 +1,25 @@
 package com.mkl.eu.service.service.mapping;
 
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Monarch;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
+import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
-import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
+import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
 import org.junit.Assert;
@@ -47,6 +50,8 @@ public class GameMappingTest {
     private static final String IDF = "IdF";
     @Autowired
     private GameMapping gameMapping;
+    @Autowired
+    private EconomicalSheetMapping economicalSheetMapping;
 
     static {
         FRA_VO = new PlayableCountry();
@@ -103,6 +108,21 @@ public class GameMappingTest {
 
         ReflectionAssert.assertReflectionEquals(createGameVo(), vo);
 
+        GameLight voLight = gameMapping.oeToVoLight(entity);
+
+        ReflectionAssert.assertReflectionEquals(createGameVoLight(), voLight);
+    }
+
+    @Test
+    public void testEconomicalSheetMapping() {
+        List<EconomicalSheetCountry> vos = economicalSheetMapping.oesToVosCountry(createEconomicalSheetEntities());
+
+        List<EconomicalSheet> expected = createEconomicalSheetVos();
+
+        Assert.assertEquals(vos.size(), expected.size());
+        for (int i = 0; i < vos.size() && i < expected.size(); i++) {
+            ReflectionAssert.assertReflectionEquals(vos.get(i).getSheet(), expected.get(i));
+        }
     }
 
     private Game createGameVo() {
@@ -117,6 +137,7 @@ public class GameMappingTest {
         object.getCountries().add(PRU_VO);
 
         FRA_VO.setEconomicalSheets(createEconomicalSheetVos());
+        FRA_VO.setAdministrativeActions(createAdministrativeActionsVos());
         FRA_VO.setMonarchs(createMonarchsVos());
         FRA_VO.setMonarch(createMonarchsVos().get(0));
 
@@ -231,6 +252,29 @@ public class GameMappingTest {
         return objects;
     }
 
+    private List<AdministrativeAction> createAdministrativeActionsVos() {
+        List<AdministrativeAction> objects = new ArrayList<>();
+
+        AdministrativeAction object = new AdministrativeAction();
+        object.setId(1L);
+        object.setTurn(2);
+        object.setProvince("province");
+        object.setBonus(6);
+        object.setColumn(-2);
+        object.setCost(30);
+        object.setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
+        object.setDie(9);
+        object.setIdObject(12L);
+        object.setResult(ResultEnum.AVERAGE_PLUS);
+        object.setSecondaryDie(6);
+        object.setSecondaryResult(false);
+        object.setStatus(AdminActionStatusEnum.DONE);
+        object.setType(AdminActionTypeEnum.COL);
+        objects.add(object);
+
+        return objects;
+    }
+
     private List<PoliticalEvent> createEventsVos() {
         List<PoliticalEvent> objects = new ArrayList<>();
 
@@ -338,6 +382,16 @@ public class GameMappingTest {
         return objects;
     }
 
+    private GameLight createGameVoLight() {
+        GameLight game = new GameLight();
+
+        game.setId(12L);
+        game.setStatus(GameStatusEnum.ECONOMICAL_EVENT);
+        game.setTurn(1);
+
+        return game;
+    }
+
     private GameEntity createGameEntity() {
         GameEntity object = new GameEntity();
 
@@ -350,6 +404,7 @@ public class GameMappingTest {
         object.getCountries().add(PRU_OE);
 
         FRA_OE.setEconomicalSheets(createEconomicalSheetEntities());
+        FRA_OE.setAdministrativeActions(createAdministrativeActionsEntities());
         FRA_OE.setMonarchs(createMonarchsEntities());
         FRA_OE.setMonarch(createMonarchsEntities().get(0));
 
@@ -460,6 +515,29 @@ public class GameMappingTest {
         object.setRtBefExch(86);
         object.setRtCollapse(87);
         object.setRtDiplo(88);
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<AdministrativeActionEntity> createAdministrativeActionsEntities() {
+        List<AdministrativeActionEntity> objects = new ArrayList<>();
+
+        AdministrativeActionEntity object = new AdministrativeActionEntity();
+        object.setId(1L);
+        object.setTurn(2);
+        object.setProvince("province");
+        object.setBonus(6);
+        object.setColumn(-2);
+        object.setCost(30);
+        object.setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
+        object.setDie(9);
+        object.setIdObject(12L);
+        object.setResult(ResultEnum.AVERAGE_PLUS);
+        object.setSecondaryDie(6);
+        object.setSecondaryResult(false);
+        object.setStatus(AdminActionStatusEnum.DONE);
+        object.setType(AdminActionTypeEnum.COL);
         objects.add(object);
 
         return objects;

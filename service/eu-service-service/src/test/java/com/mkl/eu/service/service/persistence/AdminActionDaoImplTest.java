@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Test for EconomicalSheetDao.
+ * Test for AdminActionDao.
  *
  * @author MKL
  */

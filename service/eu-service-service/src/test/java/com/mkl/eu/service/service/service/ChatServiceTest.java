@@ -2,15 +2,11 @@ package com.mkl.eu.service.service.service;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
-import com.mkl.eu.client.common.vo.AuthentInfo;
-import com.mkl.eu.client.common.vo.ChatInfo;
-import com.mkl.eu.client.common.vo.GameInfo;
-import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.chat.CreateRoomRequest;
-import com.mkl.eu.client.service.service.chat.InviteKickRoomRequest;
-import com.mkl.eu.client.service.service.chat.SpeakInRoomRequest;
-import com.mkl.eu.client.service.service.chat.ToggleRoomRequest;
+import com.mkl.eu.client.common.vo.*;
+import com.mkl.eu.client.service.service.chat.*;
+import com.mkl.eu.client.service.vo.chat.Message;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
+import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
@@ -37,7 +33,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.*;
@@ -182,7 +180,8 @@ public class ChatServiceTest {
             Assert.assertEquals("createRoom.request.idCountry", e.getParams()[0]);
         }
 
-        when(playableCountryDao.load(4L)).thenReturn(new PlayableCountryEntity());
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(4L);
         when(chatDao.getRoom(12L, "Title")).thenReturn(new RoomEntity());
 
         try {
@@ -212,6 +211,7 @@ public class ChatServiceTest {
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(4L);
+        game.getCountries().add(sender);
 
         when(gameDao.lock(12L)).thenReturn(game);
 
@@ -221,7 +221,6 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(4L)).thenReturn(sender);
 
         when(diffDao.create(anyObject())).thenAnswer(invocation -> {
             diffEntity = (DiffEntity) invocation.getArguments()[0];
@@ -246,7 +245,6 @@ public class ChatServiceTest {
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).load(4L);
         inOrder.verify(chatDao).getRoom(12L, "Title");
         inOrder.verify(chatDao).create(anyObject());
         inOrder.verify(diffDao).create(anyObject());
@@ -387,6 +385,7 @@ public class ChatServiceTest {
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(4L);
+        game.getCountries().add(sender);
 
         RoomGlobalEntity room = new RoomGlobalEntity();
         room.setId(13L);
@@ -413,7 +412,6 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(4L)).thenReturn(sender);
 
         when(chatDao.getRoomGlobal(12L)).thenReturn(room);
 
@@ -436,7 +434,6 @@ public class ChatServiceTest {
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).load(4L);
         inOrder.verify(chatDao).getRoomGlobal(12L);
         inOrder.verify(chatDao).createMessage((MessageGlobalEntity) anyObject());
         inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
@@ -518,8 +515,6 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(4L)).thenReturn(game.getCountries().get(0));
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
         doAnswer(invocation -> {
@@ -546,7 +541,6 @@ public class ChatServiceTest {
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).load(4L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         //noinspection unchecked
         inOrder.verify(chatDao).createMessage((List<ChatEntity>) anyObject());
@@ -685,7 +679,8 @@ public class ChatServiceTest {
             Assert.assertEquals("toggleRoom.request.idCountry", e.getParams()[0]);
         }
 
-        when(playableCountryDao.load(4L)).thenReturn(new PlayableCountryEntity());
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(4L);
 
         try {
             chatService.toggleRoom(request);
@@ -719,6 +714,7 @@ public class ChatServiceTest {
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(4L);
+        game.getCountries().add(sender);
 
         RoomEntity room = new RoomEntity();
         room.setId(9L);
@@ -757,8 +753,6 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(4L)).thenReturn(sender);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
         List<Diff> diffAfter = new ArrayList<>();
@@ -780,7 +774,6 @@ public class ChatServiceTest {
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).load(4L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
         inOrder.verify(chatDao).getMessagesSince(12L, 4L, 21L);
@@ -927,7 +920,11 @@ public class ChatServiceTest {
             Assert.assertEquals("inviteKickRoom.chat.idCountry", e.getParams()[0]);
         }
 
-        when(playableCountryDao.load(5L)).thenReturn(new PlayableCountryEntity());
+
+
+        PlayableCountryEntity sender = new PlayableCountryEntity();
+        sender.setId(5L);
+        game.getCountries().add(sender);
 
         try {
             chatService.inviteKickRoom(request);
@@ -937,7 +934,9 @@ public class ChatServiceTest {
             Assert.assertEquals("inviteKickRoom.request.idCountry", e.getParams()[0]);
         }
 
-        when(playableCountryDao.load(4L)).thenReturn(new PlayableCountryEntity());
+        PlayableCountryEntity receiver = new PlayableCountryEntity();
+        receiver.setId(4L);
+        game.getCountries().add(receiver);
 
         try {
             chatService.inviteKickRoom(request);
@@ -990,9 +989,11 @@ public class ChatServiceTest {
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(5L);
+        game.getCountries().add(sender);
 
         PlayableCountryEntity receiver = new PlayableCountryEntity();
         receiver.setId(4L);
+        game.getCountries().add(receiver);
 
         RoomEntity room = new RoomEntity();
         room.setId(9L);
@@ -1032,9 +1033,6 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(5L)).thenReturn(sender);
-        when(playableCountryDao.load(4L)).thenReturn(receiver);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
         List<Diff> diffAfter = new ArrayList<>();
@@ -1056,8 +1054,6 @@ public class ChatServiceTest {
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).load(5L);
-        inOrder.verify(playableCountryDao).load(4L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         if (presentBefore == presentAfter) {
             inOrder.verify(diffDao, never()).create(anyObject());
@@ -1103,9 +1099,11 @@ public class ChatServiceTest {
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(5L);
+        game.getCountries().add(sender);
 
         PlayableCountryEntity receiver = new PlayableCountryEntity();
         receiver.setId(3L);
+        game.getCountries().add(receiver);
 
         RoomEntity room = new RoomEntity();
         room.setId(9L);
@@ -1145,9 +1143,6 @@ public class ChatServiceTest {
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
 
-        when(playableCountryDao.load(5L)).thenReturn(sender);
-        when(playableCountryDao.load(3L)).thenReturn(receiver);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
         List<Diff> diffAfter = new ArrayList<>();
@@ -1169,8 +1164,6 @@ public class ChatServiceTest {
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(playableCountryDao).load(5L);
-        inOrder.verify(playableCountryDao).load(3L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         inOrder.verify(chatDao).createPresent(anyObject());
         inOrder.verify(diffDao).create(anyObject());
@@ -1185,5 +1178,140 @@ public class ChatServiceTest {
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
+    }
+
+    @Test
+    public void testLoadRoom() throws FunctionalException {
+        try {
+            chatService.loadRoom(null);
+            Assert.fail("Should break because request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadRoom", e.getParams()[0]);
+        }
+
+        SimpleRequest<LoadRoomRequest> request = new SimpleRequest<>();
+        request.setRequest(new LoadRoomRequest());
+        request.getRequest().setIdCountry(12L);
+        request.getRequest().setIdGame(1L);
+        request.getRequest().setIdRoom(8L);
+
+        RoomEntity room = new RoomEntity();
+        room.setId(1L);
+        room.setName("Room 1");
+        when(chatDao.getRoom(1L, 8L)).thenReturn(room);
+
+        List<ChatEntity> messages = new ArrayList<>();
+        messages.add(new ChatEntity());
+        messages.get(0).setId(666L);
+        when(chatDao.getMessages(12L)).thenReturn(messages);
+
+        Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+
+        Room roomVo = new Room();
+        roomVo.setId(1L);
+        roomVo.setName("RoomVO 1");
+        when(chatMapping.oeToVo(room, objectsCreated, 12L)).thenReturn(roomVo);
+
+        List<Message> messagesVo = new ArrayList<>();
+        messagesVo.add(new Message());
+        messagesVo.get(0).setId(667L);
+        when(chatMapping.oesToVosChat(messages, objectsCreated)).thenReturn(messagesVo);
+
+        Room roomReturn = chatService.loadRoom(request);
+
+        Assert.assertEquals(roomVo, roomReturn);
+        Assert.assertEquals("RoomVO 1", roomReturn.getName());
+        Assert.assertEquals(messagesVo, roomReturn.getMessages());
+        Assert.assertEquals(667L, roomReturn.getMessages().get(0).getId().longValue());
+    }
+
+    @Test
+    public void testReadRoom() throws FunctionalException {
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(5L);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        try {
+            chatService.readRoom(null);
+            Assert.fail("Should break because request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom", e.getParams()[0]);
+        }
+
+        Request<ReadRoomRequest> request = new Request<>();
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+
+        try {
+            chatService.readRoom(request);
+            Assert.fail("Should break because request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ReadRoomRequest());
+
+        try {
+            chatService.readRoom(request);
+            Assert.fail("Should break because request.request.idRoom is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom.request.idRoom", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdRoom(8L);
+
+        try {
+            chatService.readRoom(request);
+            Assert.fail("Should break because request.chat is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom.chat", e.getParams()[0]);
+        }
+
+        request.setChat(new ChatInfo());
+
+        try {
+            chatService.readRoom(request);
+            Assert.fail("Should break because request.chat.idCountry is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom.chat.idCountry", e.getParams()[0]);
+        }
+
+        request.getChat().setIdCountry(3L);
+
+        try {
+            chatService.readRoom(request);
+            Assert.fail("Should break because request.chat.idCountry is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom.chat.idCountry", e.getParams()[0]);
+        }
+
+        request.getChat().setIdCountry(5L);
+        request.getRequest().setMaxId(19L);
+
+        try {
+            chatService.readRoom(request);
+            Assert.fail("Should break because request.request.idRoom is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("readRoom.request.idRoom", e.getParams()[0]);
+        }
+
+        when(chatDao.getRoom(12L, 8L)).thenReturn(new RoomEntity());
+
+        chatService.readRoom(request);
+
+        verify(chatDao).readMessagesInRoom(8L, 5L, 19L);
     }
 }

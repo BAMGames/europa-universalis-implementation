@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.chat.Message;
+import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
@@ -17,7 +18,9 @@ import org.unitils.reflectionassert.ReflectionAssert;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Test of ChatMapping.
@@ -99,6 +102,20 @@ public class ChatMappingTest {
         vo = chatMapping.getChat(globalMessages, rooms, messages, idCountry);
 
         ReflectionAssert.assertReflectionEquals(createChatVo(false), vo);
+    }
+
+    @Test
+    public void testMethodWithSince() {
+        Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+        RoomEntity room = new RoomEntity();
+        room.setId(12L);
+        List<MessageDiff> messages = chatMapping.oesToVosChatSince(getMessageEntities(room), objectsCreated);
+
+        ReflectionAssert.assertReflectionEquals(getMessageDiffVos(room.getId()), messages);
+
+        messages = chatMapping.oesToVosMessageSince(getGlobalMessagesEntities(), objectsCreated);
+
+        ReflectionAssert.assertReflectionEquals(getGlobalMessagesDiffVos(), messages);
     }
 
     private List<MessageGlobalEntity> getGlobalMessagesEntities() {
@@ -283,5 +300,56 @@ public class ChatMappingTest {
         room.getMessages().add(message);
 
         return rooms;
+    }
+
+    private List<MessageDiff> getMessageDiffVos(Long idRoom) {
+        List<MessageDiff> chats = new ArrayList<>();
+
+        MessageDiff chat = new MessageDiff();
+        chat.setId(11L);
+        chat.setDateRead(ZonedDateTime.parse("2010-02-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        chat.setIdRoom(idRoom);
+        chat.setIdSender(PRU_OE.getId());
+        chat.setMessage("Room 1 - Message 1");
+        chat.setDateSent(ZonedDateTime.parse("2010-02-01T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        chats.add(chat);
+
+        chat = new MessageDiff();
+        chat.setId(12L);
+        chat.setDateRead(ZonedDateTime.parse("2010-03-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        chat.setIdRoom(3L);
+        chat.setIdSender(PRU_OE.getId());
+        chat.setMessage("Room 3 - Message 1");
+        chat.setDateSent(ZonedDateTime.parse("2010-03-01T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        chats.add(chat);
+
+        chat = new MessageDiff();
+        chat.setId(13L);
+        chat.setDateRead(ZonedDateTime.parse("2010-04-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        chat.setIdRoom(3L);
+        chat.setIdSender(FRA_OE.getId());
+        chat.setMessage("Room 3 - Message 2");
+        chat.setDateSent(ZonedDateTime.parse("2010-04-01T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        chats.add(chat);
+
+        return chats;
+    }
+
+    private List<MessageDiff> getGlobalMessagesDiffVos() {
+        List<MessageDiff> globalMessages = new ArrayList<>();
+        MessageDiff message = new MessageDiff();
+        message.setId(1L);
+        message.setMessage("Global - 1");
+        message.setDateSent(ZonedDateTime.parse("2010-01-01T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        message.setIdSender(FRA_OE.getId());
+        globalMessages.add(message);
+        message = new MessageDiff();
+        message.setId(2L);
+        message.setMessage("Global - 2");
+        message.setDateSent(ZonedDateTime.parse("2010-01-02T10:15:30+01:00[Europe/Paris]", DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        message.setIdSender(PRU_OE.getId());
+        globalMessages.add(message);
+
+        return globalMessages;
     }
 }

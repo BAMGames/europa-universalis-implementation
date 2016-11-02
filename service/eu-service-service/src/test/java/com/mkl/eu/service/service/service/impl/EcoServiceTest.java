@@ -82,9 +82,6 @@ public class EcoServiceTest {
     private ICounterDao counterDao;
 
     @Mock
-    private IStackDao stackDao;
-
-    @Mock
     private IProvinceDao provinceDao;
 
     @Mock
@@ -1041,19 +1038,19 @@ public class EcoServiceTest {
         controlledNotOwn.setName("controlledNotOwn");
         when(provinceDao.getProvinceByName("controlledNotOwn")).thenReturn(controlledNotOwn);
 
-        when(stackDao.getStacksOnProvince("controlledNotOwn", 12L)).thenReturn(Arrays.asList(stackOwnFor, stackCtrl));
+        when(oeUtil.getStacksOnProvince(game, "controlledNotOwn")).thenReturn(Arrays.asList(stackOwnFor, stackCtrl));
 
         EuropeanProvinceEntity ownedNotControlled = new EuropeanProvinceEntity();
         ownedNotControlled.setName("ownedNotControlled");
         when(provinceDao.getProvinceByName("ownedNotControlled")).thenReturn(ownedNotControlled);
 
-        when(stackDao.getStacksOnProvince("ownedNotControlled", 12L)).thenReturn(Arrays.asList(stackOwn, stackCtrlFor));
+        when(oeUtil.getStacksOnProvince(game, "ownedNotControlled")).thenReturn(Arrays.asList(stackOwn, stackCtrlFor));
 
         EuropeanProvinceEntity owned = new EuropeanProvinceEntity();
         owned.setName("owned");
         when(provinceDao.getProvinceByName("owned")).thenReturn(owned);
 
-        when(stackDao.getStacksOnProvince("owned", 12L)).thenReturn(Collections.singletonList(stackOwn));
+        when(oeUtil.getStacksOnProvince(game, "owned")).thenReturn(Collections.singletonList(stackOwn));
 
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setName("IdF");
@@ -1074,7 +1071,7 @@ public class EcoServiceTest {
         corn.setArsenal(true);
         corn.setFortress(1);
         when(provinceDao.getProvinceByName("corn")).thenReturn(corn);
-        when(stackDao.getStacksOnProvince("corn", 12L)).thenReturn(Collections.singletonList(stackFortress));
+        when(oeUtil.getStacksOnProvince(game, "corn")).thenReturn(Collections.singletonList(stackFortress));
 
         try {
             economicService.addAdminAction(request);
@@ -1309,7 +1306,7 @@ public class EcoServiceTest {
         counterOwn.setCountry("france");
         stackOwn.getCounters().add(counterOwn);
 
-        when(stackDao.getStacksOnProvince("corn", 12L)).thenReturn(Collections.singletonList(stackOwn));
+        when(oeUtil.getStacksOnProvince(game, "corn")).thenReturn(Collections.singletonList(stackOwn));
 
         EuropeanProvinceEntity corn = new EuropeanProvinceEntity();
         corn.setName("corn");
@@ -1395,12 +1392,12 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, oeUtil, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("corn");
-        inOrder.verify(stackDao).getStacksOnProvince("corn", 12L);
+        inOrder.verify(oeUtil).getStacksOnProvince(game, "corn");
         inOrder.verify(adminActionDao).findAdminActions(12L, 1, null, AdminActionTypeEnum.PU);
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffDao).create(anyObject());
@@ -1475,7 +1472,7 @@ public class EcoServiceTest {
         counterFortress.setCountry("france");
         stackFortress.getCounters().add(counterFortress);
 
-        when(stackDao.getStacksOnProvince("corn", 12L)).thenReturn(Arrays.asList(stackOwn, stackCtrl, stackFortress));
+        when(oeUtil.getStacksOnProvince(game, "corn")).thenReturn(Arrays.asList(stackOwn, stackCtrl, stackFortress));
 
         RotwProvinceEntity corn = new RotwProvinceEntity();
         corn.setName("corn");
@@ -1570,12 +1567,12 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, oeUtil, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("corn");
-        inOrder.verify(stackDao).getStacksOnProvince("corn", 12L);
+        inOrder.verify(oeUtil).getStacksOnProvince(game, "corn");
         inOrder.verify(adminActionDao).create(anyObject());
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
@@ -2293,7 +2290,7 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, oeUtil, diffDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, oeUtil, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
@@ -2447,19 +2444,19 @@ public class EcoServiceTest {
         controlledNotOwn.setName("controlledNotOwn");
         when(provinceDao.getProvinceByName("controlledNotOwn")).thenReturn(controlledNotOwn);
 
-        when(stackDao.getStacksOnProvince("controlledNotOwn", 12L)).thenReturn(Arrays.asList(stackOwnFor, stackCtrl));
+        when(oeUtil.getStacksOnProvince(game, "controlledNotOwn")).thenReturn(Arrays.asList(stackOwnFor, stackCtrl));
 
         EuropeanProvinceEntity ownedNotControlled = new EuropeanProvinceEntity();
         ownedNotControlled.setName("ownedNotControlled");
         when(provinceDao.getProvinceByName("ownedNotControlled")).thenReturn(ownedNotControlled);
 
-        when(stackDao.getStacksOnProvince("ownedNotControlled", 12L)).thenReturn(Arrays.asList(stackOwn, stackCtrlFor));
+        when(oeUtil.getStacksOnProvince(game, "ownedNotControlled")).thenReturn(Arrays.asList(stackOwn, stackCtrlFor));
 
         EuropeanProvinceEntity owned = new EuropeanProvinceEntity();
         owned.setName("owned");
         when(provinceDao.getProvinceByName("owned")).thenReturn(owned);
 
-        when(stackDao.getStacksOnProvince("owned", 12L)).thenReturn(Collections.singletonList(stackOwn));
+        when(oeUtil.getStacksOnProvince(game, "owned")).thenReturn(Collections.singletonList(stackOwn));
 
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setName("idf");
@@ -2900,7 +2897,7 @@ public class EcoServiceTest {
 
         DiffResponse response = economicService.addAdminAction(request);
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, stackDao, adminActionDao, diffDao, diffMapping, oeUtil);
+        InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
@@ -4801,7 +4798,7 @@ public class EcoServiceTest {
             return diffAfter;
         });
 
-        DiffResponse response = economicService.validateAdminActions(request);
+        economicService.validateAdminActions(request);
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                 oeUtil);
@@ -4856,7 +4853,7 @@ public class EcoServiceTest {
             return diffAfter;
         });
 
-        DiffResponse response = economicService.validateAdminActions(request);
+        economicService.validateAdminActions(request);
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                 oeUtil);
@@ -4924,7 +4921,7 @@ public class EcoServiceTest {
             return diffAfter;
         });
 
-        DiffResponse response = economicService.validateAdminActions(request);
+        economicService.validateAdminActions(request);
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                 oeUtil);

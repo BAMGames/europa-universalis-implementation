@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <D_DIFF ID="101" ID_GAME="1" VERSION_GAME="1" />
+    <D_DIFF ID="102" ID_GAME="1" VERSION_GAME="2" />
+    <D_DIFF ID="103" ID_GAME="1" VERSION_GAME="3" />
+    <D_DIFF ID="104" ID_GAME="1" VERSION_GAME="4" />
+    <D_DIFF ID="105" ID_GAME="1" VERSION_GAME="5" />
+    <D_DIFF ID="201" ID_GAME="2" VERSION_GAME="1" />
+    <D_DIFF ID="202" ID_GAME="2" VERSION_GAME="2" />
+    <D_DIFF ID="203" ID_GAME="2" VERSION_GAME="3" />
+</dataset>

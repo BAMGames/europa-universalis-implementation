@@ -11,14 +11,6 @@ import java.util.List;
  * @author MKL.
  */
 public interface IPlayableCountryDao extends IGenericDao<PlayableCountryEntity, Long> {
-    /**
-     * Returns the country given its name.
-     *
-     * @param name   name of the country.
-     * @param idGame id of the game.
-     * @return the country given its name.
-     */
-    PlayableCountryEntity getCountryByName(String name, Long idGame);
 
     /**
      * Returns the owned provinces of the country.
