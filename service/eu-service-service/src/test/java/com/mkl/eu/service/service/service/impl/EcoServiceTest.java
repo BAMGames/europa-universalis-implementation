@@ -4310,6 +4310,9 @@ public class EcoServiceTest {
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.MNU_METAL_MINUS);
         game.getStacks().get(0).getCounters().get(0).setCountry("turquie");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setType(CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS);
+        game.getStacks().get(0).getCounters().get(1).setCountry("turquie");
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setProvince("eIdf");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
@@ -4341,7 +4344,7 @@ public class EcoServiceTest {
         game.getStacks().get(4).getCounters().get(1).setCountry("prusse");
 
         Assert.assertEquals(1, economicService.getTechColumnBonus(game, turquie, true));
-        Assert.assertEquals(0, economicService.getTechColumnBonus(game, turquie, false));
+        Assert.assertEquals(1, economicService.getTechColumnBonus(game, turquie, false));
 
         Assert.assertEquals(2, economicService.getTechColumnBonus(game, france, true));
         Assert.assertEquals(0, economicService.getTechColumnBonus(game, france, false));
@@ -5666,7 +5669,7 @@ public class EcoServiceTest {
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(2).setProvince("ZMCaraibes");
         game.getTradeFleets().get(2).setCountry("france");
-        game.getTradeFleets().get(2).setLevel(3);
+        game.getTradeFleets().get(2).setLevel(5);
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(3).setProvince("ZMCaraibes");
         game.getTradeFleets().get(3).setCountry("espagne");
@@ -5691,7 +5694,7 @@ public class EcoServiceTest {
         game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setId(200L);
-        game.getStacks().get(1).setProvince("ZPVenise");
+        game.getStacks().get(1).setProvince("ZMCaraibes");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setId(200L);
         game.getStacks().get(1).getCounters().get(0).setCountry("france");
@@ -5921,6 +5924,9 @@ public class EcoServiceTest {
         newTfis.put("ZPVenise", new HashMap<>());
         newTfis.get("ZPVenise").put("venise", 1);
         newTfis.get("ZPVenise").put("angleterre", 1);
+        newTfis.put("ZMCaraibes", new HashMap<>());
+        newTfis.get("ZMCaraibes").put("france", 1);
+        newTfis.get("ZMCaraibes").put("suede", 2);
 
         TradeZoneProvinceEntity zpVenise = new TradeZoneProvinceEntity();
         zpVenise.setName("ZPVenise");
@@ -5944,7 +5950,25 @@ public class EcoServiceTest {
         // Turquie loses its competition on first round with 1 on column -2 => FUMBLE
         when(oeUtil.rollDie(game, "turquie")).thenReturn(1);
         // Angleterre loses its competition on ZPVenise on first round with 4 on column 1 => AVERAGE then 6 fail secondary test
-        when(oeUtil.rollDie(game, "angleterre")).thenReturn(4, 6);
+        when(oeUtil.rollDie(game, "angleterre")).thenReturn(4, 6)
+        // Angleterre loses its first round of competition in ZMCaraibes with 2 on column 1 => FAILED
+        .thenReturn(2);
+        // France wins its first round of competition in ZMCaraibes with 6 on column -1 => AVERAGE_PLUS then 4 succeed secondary test
+        when(oeUtil.rollDie(game, "france")).thenReturn(6, 4)
+        // Then wins the second round with 6 on column 1 => SUCCESS
+        .thenReturn(6)
+        // Then fails the third round with 3 on column 1 => FAILED
+        .thenReturn(3)
+        // Then loses the first round on the second competition in ZMCaraibes with 1 on column 1 => FUMBLE
+        .thenReturn(1);
+        // Espagne wins the three rounds of competition in ZMCaraibes with triple 9 on column -2/-1/-1 => SUCCESS/CRITICAL_HIT/CRITICAL_HIT
+        when(oeUtil.rollDie(game, "espagne")).thenReturn(9, 9, 9)
+        // Then loses the first round on the second competition in ZMCaraibes with 1 on column -1 => FUMBLE
+        .thenReturn(1);
+        // Suede loses the first round of competition in ZMCaraibes with 1 on column -2 => FUBMLE
+        when(oeUtil.rollDie(game, "suede")).thenReturn(1)
+        // Then wins the two others rounds with 10 on column -1 => CRITICAL_HIT
+                .thenReturn(10, 10);
 
         DiffEntity diffSwitch56 = new DiffEntity();
         when(counterDomain.switchCounter(100L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 6, game)).thenReturn(diffSwitch56);
@@ -5952,26 +5976,54 @@ public class EcoServiceTest {
         DiffEntity diffRemove10 = new DiffEntity();
         when(counterDomain.removeCounter(101L, game)).thenReturn(diffRemove10);
 
+        DiffEntity diffSwitch54 = new DiffEntity();
+        when(counterDomain.switchCounter(200L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game)).thenReturn(diffSwitch54);
+
+        DiffEntity diffSwitch43 = new DiffEntity();
+        when(counterDomain.switchCounter(201L, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game)).thenReturn(diffSwitch43);
+
+        DiffEntity diffRemove10Ang = new DiffEntity();
+        when(counterDomain.removeCounter(202L, game)).thenReturn(diffRemove10Ang);
+
+        DiffEntity diffAdd01 = new DiffEntity();
+        when(counterDomain.createCounter(CounterFaceTypeEnum.TRADING_FLEET_MINUS, "suede", "ZMCaraibes", 1, game)).thenReturn(diffAdd01);
+
         List<DiffEntity> diffs = economicService.computeAutomaticTfCompetitions(game, newTfis);
 
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(diffSwitch56, diffs.get(0));
-        Assert.assertEquals(diffRemove10, diffs.get(1));
+        Assert.assertEquals(6, diffs.size());
+        Assert.assertEquals(diffRemove10Ang, diffs.get(0));
+        Assert.assertEquals(diffSwitch43, diffs.get(1));
+        Assert.assertEquals(diffSwitch54, diffs.get(2));
+        Assert.assertEquals(diffAdd01, diffs.get(3));
+        Assert.assertEquals(diffSwitch56, diffs.get(4));
+        Assert.assertEquals(diffRemove10, diffs.get(5));
 
-        Collections.sort(game.getCompetitions().get(0).getRounds(), new Comparator<CompetitionRoundEntity>() {
-            @Override
-            public int compare(CompetitionRoundEntity o1, CompetitionRoundEntity o2) {
-                int diff = o1.getRound().compareTo(o2.getRound());
+        Collections.sort(game.getCompetitions(), (o1, o2) -> {
+            int diff = o2.getProvince().compareTo(o1.getProvince());
 
-                if (diff == 0) {
-                    diff = o2.getCountry().compareTo(o1.getCountry());
-                }
-
-                return diff;
+            if (diff == 0) {
+                diff = o1.getType().compareTo(o2.getType());
             }
+
+            return diff;
         });
 
-        Assert.assertEquals(1, game.getCompetitions().size());
+        Assert.assertEquals(3, game.getCompetitions().size());
+
+        Comparator<CompetitionRoundEntity> comparatorRound = (o1, o2) -> {
+            int diff = o1.getRound().compareTo(o2.getRound());
+
+            if (diff == 0) {
+                diff = o2.getCountry().compareTo(o1.getCountry());
+            }
+
+            return diff;
+        };
+
+        Collections.sort(game.getCompetitions().get(0).getRounds(), comparatorRound);
+        Collections.sort(game.getCompetitions().get(1).getRounds(), comparatorRound);
+        Collections.sort(game.getCompetitions().get(2).getRounds(), comparatorRound);
+
         Assert.assertEquals("ZPVenise", game.getCompetitions().get(0).getProvince());
         Assert.assertEquals(CompetitionTypeEnum.TF_6, game.getCompetitions().get(0).getType());
         Assert.assertEquals(game, game.getCompetitions().get(0).getGame());
@@ -6001,5 +6053,113 @@ public class EcoServiceTest {
         Assert.assertEquals(6, game.getCompetitions().get(0).getRounds().get(2).getSecondaryDie().intValue());
         Assert.assertEquals(false, game.getCompetitions().get(0).getRounds().get(2).isSecondaryResult());
         Assert.assertEquals(game.getCompetitions().get(0), game.getCompetitions().get(0).getRounds().get(2).getCompetition());
+
+        Assert.assertEquals("ZMCaraibes", game.getCompetitions().get(1).getProvince());
+        Assert.assertEquals(CompetitionTypeEnum.TF_6, game.getCompetitions().get(1).getType());
+        Assert.assertEquals(game, game.getCompetitions().get(1).getGame());
+        Assert.assertEquals(game.getTurn(), game.getCompetitions().get(1).getTurn());
+        Assert.assertEquals(10, game.getCompetitions().get(1).getRounds().size());
+        Assert.assertEquals("suede", game.getCompetitions().get(1).getRounds().get(0).getCountry());
+        Assert.assertEquals(-2, game.getCompetitions().get(1).getRounds().get(0).getColumn().intValue());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(0).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FUMBLE, game.getCompetitions().get(1).getRounds().get(0).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(0).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(0).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(0).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(0).getCompetition());
+        Assert.assertEquals("france", game.getCompetitions().get(1).getRounds().get(1).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(1).getColumn().intValue());
+        Assert.assertEquals(6, game.getCompetitions().get(1).getRounds().get(1).getDie().intValue());
+        Assert.assertEquals(ResultEnum.AVERAGE_PLUS, game.getCompetitions().get(1).getRounds().get(1).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(1).getRound().intValue());
+        Assert.assertEquals(4, game.getCompetitions().get(1).getRounds().get(1).getSecondaryDie().intValue());
+        Assert.assertEquals(true, game.getCompetitions().get(1).getRounds().get(1).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(1).getCompetition());
+        Assert.assertEquals("espagne", game.getCompetitions().get(1).getRounds().get(2).getCountry());
+        Assert.assertEquals(-2, game.getCompetitions().get(1).getRounds().get(2).getColumn().intValue());
+        Assert.assertEquals(9, game.getCompetitions().get(1).getRounds().get(2).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(2).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(2).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(2).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(2).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(2).getCompetition());
+        Assert.assertEquals("angleterre", game.getCompetitions().get(1).getRounds().get(3).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(3).getColumn().intValue());
+        Assert.assertEquals(2, game.getCompetitions().get(1).getRounds().get(3).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(3).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(3).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(3).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(3).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(3).getCompetition());
+        Assert.assertEquals("suede", game.getCompetitions().get(1).getRounds().get(4).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(4).getColumn().intValue());
+        Assert.assertEquals(10, game.getCompetitions().get(1).getRounds().get(4).getDie().intValue());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, game.getCompetitions().get(1).getRounds().get(4).getResult());
+        Assert.assertEquals(2, game.getCompetitions().get(1).getRounds().get(4).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(4).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(4).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(4).getCompetition());
+        Assert.assertEquals("france", game.getCompetitions().get(1).getRounds().get(5).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(5).getColumn().intValue());
+        Assert.assertEquals(6, game.getCompetitions().get(1).getRounds().get(5).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(5).getResult());
+        Assert.assertEquals(2, game.getCompetitions().get(1).getRounds().get(5).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(5).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(5).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(5).getCompetition());
+        Assert.assertEquals("espagne", game.getCompetitions().get(1).getRounds().get(6).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(6).getColumn().intValue());
+        Assert.assertEquals(9, game.getCompetitions().get(1).getRounds().get(6).getDie().intValue());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, game.getCompetitions().get(1).getRounds().get(6).getResult());
+        Assert.assertEquals(2, game.getCompetitions().get(1).getRounds().get(6).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(6).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(6).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(6).getCompetition());
+        Assert.assertEquals("suede", game.getCompetitions().get(1).getRounds().get(7).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(7).getColumn().intValue());
+        Assert.assertEquals(10, game.getCompetitions().get(1).getRounds().get(7).getDie().intValue());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, game.getCompetitions().get(1).getRounds().get(7).getResult());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(7).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(7).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(7).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(7).getCompetition());
+        Assert.assertEquals("france", game.getCompetitions().get(1).getRounds().get(8).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(8).getColumn().intValue());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(8).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(8).getResult());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(8).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(8).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(8).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(8).getCompetition());
+        Assert.assertEquals("espagne", game.getCompetitions().get(1).getRounds().get(9).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(9).getColumn().intValue());
+        Assert.assertEquals(9, game.getCompetitions().get(1).getRounds().get(9).getDie().intValue());
+        Assert.assertEquals(ResultEnum.CRITICAL_HIT, game.getCompetitions().get(1).getRounds().get(9).getResult());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(9).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(9).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(9).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(9).getCompetition());
+
+        Assert.assertEquals("ZMCaraibes", game.getCompetitions().get(2).getProvince());
+        Assert.assertEquals(CompetitionTypeEnum.TF_4, game.getCompetitions().get(2).getType());
+        Assert.assertEquals(game, game.getCompetitions().get(2).getGame());
+        Assert.assertEquals(game.getTurn(), game.getCompetitions().get(2).getTurn());
+        Assert.assertEquals(2, game.getCompetitions().get(2).getRounds().size());
+        Assert.assertEquals("france", game.getCompetitions().get(2).getRounds().get(0).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(2).getRounds().get(0).getColumn().intValue());
+        Assert.assertEquals(1, game.getCompetitions().get(2).getRounds().get(0).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FUMBLE, game.getCompetitions().get(2).getRounds().get(0).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(2).getRounds().get(0).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(2).getRounds().get(0).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(2).getRounds().get(0).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(2), game.getCompetitions().get(2).getRounds().get(0).getCompetition());
+        Assert.assertEquals("espagne", game.getCompetitions().get(2).getRounds().get(1).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(2).getRounds().get(1).getColumn().intValue());
+        Assert.assertEquals(1, game.getCompetitions().get(2).getRounds().get(1).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FUMBLE, game.getCompetitions().get(2).getRounds().get(1).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(2).getRounds().get(1).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(2).getRounds().get(1).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(2).getRounds().get(1).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(2), game.getCompetitions().get(2).getRounds().get(1).getCompetition());
     }
 }

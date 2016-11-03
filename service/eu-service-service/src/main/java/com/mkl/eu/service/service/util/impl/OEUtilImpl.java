@@ -147,7 +147,7 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public boolean canSettle(AbstractProvinceEntity province, List<String> discoveries, List<String> sources, List<String> friendlies) {
-        return settleDistance(province, discoveries, sources, friendlies, 0) <= 12;
+        return settleDistance(province, discoveries, sources, friendlies, 0) != -1;
     }
 
     /**

@@ -2394,7 +2394,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @param game           the game.
      * @param establishments List of provinces where an establishment was created to check an automatic competition.
      */
-    private List<DiffEntity> computeAutomaticEstablishmentCompetitions(GameEntity game, Set<String> establishments) {
+    protected List<DiffEntity> computeAutomaticEstablishmentCompetitions(GameEntity game, Set<String> establishments) {
         List<DiffEntity> diffs = new ArrayList<>();
         for (String province : establishments) {
             diffs.addAll(computeAutomaticEstablishmentCompetition(game, province));

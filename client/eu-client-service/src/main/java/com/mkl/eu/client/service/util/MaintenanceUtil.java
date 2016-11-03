@@ -296,39 +296,46 @@ public final class MaintenanceUtil {
             // Now, either nbUnit is 0, either there are no small force (size 1)
             // left in the forces
             nbUnit = subtractMaintenanceForce(nbUnit, infoForOne, forces);
-            if (nbUnit == 1) {
+            // If it was profitable to maintain small units (size 1), then it is
+            // to maintain tiny units (size 1/2) since they have the same cost-effectiveness.
+            nbUnit = subtractMaintenanceForce(nbUnit, infoForHalf, forces);
+            if (nbUnit > 0 && !forces.isEmpty()) {
                 // if there are still large or medium forces in the remaining forces
                 // then we search the most profitable path.
                 if (disc41 > disc21) {
-                    // If using 1 of basic force to partially maintain a large force (size 4)
-                    // is more profitable than partially maintaining a medium force (size 2)
-                    // or maintaining a small force (size 1)
-                    // then we remove a large force from the remaining forces but
-                    // we had a medium force (size 2) and a small force (size 1).
+                    // In the case where there are still medium and large forces left,
+                    // we test the most profitable between the two. We test for one force
+                    // because there can't be 2 basic forces and medium force left.
                     if (subtractMaintenanceForce(infoForFour, forces)) {
-                        addOne(forces, infoForTwo.getFaces()[0]);
-                        addOne(forces, infoForOne.getFaces()[0]);
-                        nbUnit -= infoForOne.getSize();
-                        // Otherwise we try to partially maintain a medium force (size 2)
-                        // and then add a small force (size 1).
+                        nbUnit -= infoForFour.getSize();
                     } else if (subtractMaintenanceForce(infoForTwo, forces)) {
-                        addOne(forces, infoForOne.getFaces()[0]);
-                        nbUnit -= infoForOne.getSize();
+                        nbUnit -= infoForTwo.getSize();
                     }
                 } else {
                     // If it was less profitable, we take the opposite path.
                     if (subtractMaintenanceForce(infoForTwo, forces)) {
-                        addOne(forces, infoForOne.getFaces()[0]);
-                        nbUnit -= infoForOne.getSize();
+                        nbUnit -= infoForTwo.getSize();
                     } else if (subtractMaintenanceForce(infoForFour, forces)) {
-                        addOne(forces, infoForTwo.getFaces()[0]);
-                        addOne(forces, infoForOne.getFaces()[0]);
-                        nbUnit -= infoForOne.getSize();
+                        nbUnit -= infoForFour.getSize();
                     }
                 }
             }
-            // Finally, we use all the remaining basic forces for tiny forces (size 1/2).
-            subtractMaintenanceForce(nbUnit, infoForHalf, forces);
+            if (nbUnit < 0) {
+                // If there was not enough basic forces to fully maintain
+                // the last unit, then we create equivalent of the remaining forces
+                // to pay for maintenance.
+                if (nbUnit <= -2) {
+                    addOne(forces, infoForTwo.getFaces()[0]);
+                    nbUnit +=2;
+                }
+                if (nbUnit <= -1) {
+                    addOne(forces, infoForOne.getFaces()[0]);
+                    nbUnit +=1;
+                }
+                if (nbUnit == -0.5) {
+                    addOne(forces, infoForHalf.getFaces()[0]);
+                }
+            }
         }
     }
 

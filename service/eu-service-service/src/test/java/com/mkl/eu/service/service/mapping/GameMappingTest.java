@@ -122,6 +122,7 @@ public class GameMappingTest {
         Assert.assertEquals(vos.size(), expected.size());
         for (int i = 0; i < vos.size() && i < expected.size(); i++) {
             ReflectionAssert.assertReflectionEquals(vos.get(i).getSheet(), expected.get(i));
+            Assert.assertEquals(vos.get(i).getIdCountry(), FRA_OE.getId());
         }
     }
 
@@ -423,11 +424,13 @@ public class GameMappingTest {
 
         EconomicalSheetEntity object = new EconomicalSheetEntity();
         object.setId(1L);
+        object.setCountry(FRA_OE);
         object.setTurn(1);
         objects.add(object);
 
         object = new EconomicalSheetEntity();
         object.setId(2L);
+        object.setCountry(FRA_OE);
         object.setTurn(2);
         object.setActCampExpense(3);
         object.setWoodSlaves(4);

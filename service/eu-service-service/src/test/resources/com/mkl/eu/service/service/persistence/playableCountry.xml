@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <GAME ID="1" VERSION="1" SEED="123"/>
+    <GAME ID="2" VERSION="1" SEED="123"/>
+
+    <STACK ID="1" ID_GAME="1" R_PROVINCE="eIle-de-France" />
+    <COUNTER ID="1" ID_STACK="1" TYPE="OWN" R_COUNTRY="angleterre" />
+    <STACK ID="2" ID_GAME="1" R_PROVINCE="eCornwall" />
+    <COUNTER ID="2" ID_STACK="2" TYPE="OWN" R_COUNTRY="france" />
+    <COUNTER ID="3" ID_STACK="2" TYPE="CONTROL" R_COUNTRY="angleterre" />
+    <STACK ID="3" ID_GAME="1" R_PROVINCE="eLyonnais" />
+    <COUNTER ID="4" ID_STACK="3" TYPE="CONTROL" R_COUNTRY="angleterre" />
+    <STACK ID="4" ID_GAME="1" R_PROVINCE="eHinterpommern" />
+    <COUNTER ID="5" ID_STACK="4" TYPE="CONTROL" R_COUNTRY="france" />
+    <STACK ID="5" ID_GAME="1" R_PROVINCE="eLanguedoc" />
+    <COUNTER ID="6" ID_STACK="5" TYPE="REVOLT_MINUS" />
+    <STACK ID="6" ID_GAME="1" R_PROVINCE="eQuercy" />
+    <COUNTER ID="7" ID_STACK="6" TYPE="REVOLT_PLUS" />
+    <STACK ID="7" ID_GAME="1" R_PROVINCE="ePoitou" />
+    <COUNTER ID="8" ID_STACK="7" TYPE="PILLAGE_MINUS" />
+    <STACK ID="8" ID_GAME="1" R_PROVINCE="eBearn" />
+    <COUNTER ID="9" ID_STACK="8" TYPE="PILLAGE_PLUS" />
+    <STACK ID="9" ID_GAME="1" R_PROVINCE="eNormandie" />
+    <COUNTER ID="10" ID_STACK="9" TYPE="PILLAGE_PLUS" />
+</dataset>

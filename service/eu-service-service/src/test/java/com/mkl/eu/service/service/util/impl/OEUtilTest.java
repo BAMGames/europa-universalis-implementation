@@ -1,5 +1,8 @@
 package com.mkl.eu.service.service.util.impl;
 
+import com.excilys.ebi.spring.dbunit.config.DBOperation;
+import com.excilys.ebi.spring.dbunit.test.DataSet;
+import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.service.vo.enumeration.BorderEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
@@ -10,12 +13,21 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +37,20 @@ import java.util.List;
  *
  * @author MKL.
  */
-@RunWith(BlockJUnit4ClassRunner.class)
+@Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
+@TestExecutionListeners({
+        DependencyInjectionTestExecutionListener.class,
+        TransactionalTestExecutionListener.class,
+        RollbackTransactionalDataSetTestExecutionListener.class
+})
+@ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
+                                   "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
+@DataSet(value = {"/com/mkl/eu/service/service/persistence/provinces.xml"}, columnSensing = true, tearDownOperation = DBOperation.DELETE_ALL)
 public class OEUtilTest {
+    @Autowired
+    private IProvinceDao provinceDao;
+
     private OEUtilImpl oeUtil = new OEUtilImpl();
 
     @Test
@@ -222,6 +246,17 @@ public class OEUtilTest {
         friendlies.clear();
         Assert.assertEquals(-1, oeUtil.settleDistance(panama, discoveries, sources, friendlies, 0));
         Assert.assertEquals(12, oeUtil.settleDistance(ecuador, discoveries, sources, friendlies, 0));
+
+        discoveries.add("rLena~E");
+        discoveries.add("rYakoutie~W");
+        discoveries.add("rLena~C");
+        sources.add("rYakoutie~W");
+        AbstractProvinceEntity lena = provinceDao.getProvinceByName("rLena~E");
+        Assert.assertEquals(10, oeUtil.settleDistance(lena, discoveries, sources, friendlies, 0));
+        Assert.assertTrue(oeUtil.canSettle(lena, discoveries, sources, friendlies));
+        AbstractProvinceEntity lenaC = provinceDao.getProvinceByName("rLena~C");
+        Assert.assertEquals(-1, oeUtil.settleDistance(lenaC, discoveries, sources, friendlies, 0));
+        Assert.assertFalse(oeUtil.canSettle(lenaC, discoveries, sources, friendlies));
     }
 
     @Test
