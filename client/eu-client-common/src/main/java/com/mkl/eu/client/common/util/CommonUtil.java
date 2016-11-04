@@ -70,6 +70,45 @@ public final class CommonUtil {
     }
 
     /**
+     * Add several Double that can be <code>null</code>.
+     *
+     * @param numbers to add.
+     * @return the sum of the numbers.
+     */
+    public static Double add(Double... numbers) {
+        Double sum = null;
+
+        for (Double number : numbers) {
+            if (sum == null) {
+                sum = number;
+            } else if (number != null) {
+                sum = sum + number;
+            }
+        }
+
+        return sum;
+    }
+
+    /**
+     * @param first  first double.
+     * @param second second double.
+     * @return the minimum of the two doubles. A <code>null</code> double is considered to be 0.
+     */
+    public static Double min(Double first, Double second) {
+        Double firstNotNull = first;
+        Double secondNotNull = second;
+
+        if (firstNotNull == null) {
+            firstNotNull = 0d;
+        }
+        if (secondNotNull == null) {
+            secondNotNull = 0d;
+        }
+
+        return Math.min(firstNotNull, secondNotNull);
+    }
+
+    /**
      * Increment a Map of K->Integer for a given key.
      *
      * @param map the map.

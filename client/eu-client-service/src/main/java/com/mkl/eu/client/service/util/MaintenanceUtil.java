@@ -63,21 +63,31 @@ public final class MaintenanceUtil {
                 }
             }
 
-            SubtractMaintenanceForces(maintenance.get(LAND),
+            // It is too complicated to test where the joker would be the most profitable
+            // So we just use them in naval, and if some of them are not used, they are
+            // then used in land and finally in special units.
+
+            Double joker = maintenance.get(JOKER);
+
+            Double remain = SubtractMaintenanceForces(CommonUtil.add(maintenance.get(NAVAL), joker),
+                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.FLEET_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.FLEET_PLUS)),
+                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.FLEET_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.FLEET_MINUS)),
+                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterFaceTypeEnum.NAVAL_GALLEY, CounterFaceTypeEnum.NAVAL_TRANSPORT}, 1, getPrice(units, CounterFaceTypeEnum.NAVAL_DETACHMENT)),
+                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION}, 0.5, null),
+                                      forcesLeft);
+
+            joker = CommonUtil.min(joker, remain);
+
+            remain = SubtractMaintenanceForces(CommonUtil.add(maintenance.get(LAND), joker),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.ARMY_PLUS)),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.ARMY_MINUS)),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.LAND_DETACHMENT}, 1, getPrice(units, CounterFaceTypeEnum.LAND_DETACHMENT)),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION}, 0.5, null),
                     forcesLeft);
 
-            SubtractMaintenanceForces(maintenance.get(NAVAL),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.FLEET_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.FLEET_PLUS)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.FLEET_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.FLEET_MINUS)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterFaceTypeEnum.NAVAL_GALLEY, CounterFaceTypeEnum.NAVAL_TRANSPORT}, 1, getPrice(units, CounterFaceTypeEnum.NAVAL_DETACHMENT)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION}, 0.5, null),
-                    forcesLeft);
+            joker = CommonUtil.min(joker, remain);
 
-            SubtractMaintenanceForces(maintenance.get(TIMAR),
+            SubtractMaintenanceForces(CommonUtil.add(maintenance.get(TIMAR), joker),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_TIMAR_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.ARMY_PLUS)),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_TIMAR_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.ARMY_MINUS)),
                     new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR}, 1, getPrice(units, CounterFaceTypeEnum.LAND_DETACHMENT)),
@@ -225,7 +235,7 @@ public final class MaintenanceUtil {
      * @param infoForHalf the info on faces that stands for a unit of size 1/2.
      * @param forces      to manage.
      */
-    private static void SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Long> forces) {
+    private static Double SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Long> forces) {
         if (nbUnit != null) {
             // The aim is to select the most profitable way of using the basic force (nbUnit) by
             // selecting the most expensive units.
@@ -334,9 +344,14 @@ public final class MaintenanceUtil {
                 }
                 if (nbUnit == -0.5) {
                     addOne(forces, infoForHalf.getFaces()[0]);
+                    nbUnit +=0.5;
                 }
             }
+        } else {
+            nbUnit = 0d;
         }
+
+        return nbUnit;
     }
 
     /**

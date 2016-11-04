@@ -2460,14 +2460,14 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         if (establishmentsByType.containsKey(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_MINUS)
                 || establishmentsByType.containsKey(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_PLUS)) {
-            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
-            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
-            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_MINUS));
-            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_PLUS));
+            addAll(counterToDelete, establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
+            addAll(counterToDelete, establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
+            addAll(counterToDelete, establishmentsByType.get(CounterFaceTypeEnum.COLONY_MINUS));
+            addAll(counterToDelete, establishmentsByType.get(CounterFaceTypeEnum.COLONY_PLUS));
         } else if (establishmentsByType.containsKey(CounterFaceTypeEnum.COLONY_MINUS)
                 || establishmentsByType.containsKey(CounterFaceTypeEnum.COLONY_PLUS)) {
-            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
-            counterToDelete.addAll(establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
+            addAll(counterToDelete, establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_MINUS));
+            addAll(counterToDelete, establishmentsByType.get(CounterFaceTypeEnum.TRADING_POST_PLUS));
             counterInCompetition.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_MINUS));
             counterInCompetition.addAll(establishmentsByType.get(CounterFaceTypeEnum.COLONY_PLUS));
         } else {
@@ -2477,7 +2477,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         estPresents.putAll(counterInCompetition.stream()
                 .collect(Collectors.groupingBy(CounterEntity::getCountry,
-                        Collectors.summingInt(c -> c.getEstablishment() == null ? 0 : c.getEstablishment().getLevel()))));
+                        Collectors.summingInt(c -> c.getEstablishment() == null ? 1 : c.getEstablishment().getLevel()))));
 
         diffs.addAll(counterToDelete.stream().map(establishment -> counterDomain.removeCounter(establishment.getId(), game)).collect(Collectors.toList()));
 
@@ -2501,6 +2501,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     }
                 }
 
+                // TODO loss of exotic resources
+            } else {
+                diffs.add(counterDomain.removeCounter(establishment.getId(), game));
                 // TODO loss of exotic resources
             }
         }
@@ -2677,6 +2680,18 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             lostLevelInCompetition.put(country, 1);
         } else {
             lostLevelInCompetition.put(country, lostLevelInCompetition.get(country) + 1);
+        }
+    }
+
+    /**
+     * Adds all the elements of the listToAdd to the listSource.
+     * @param listSource initial list.
+     * @param listToAdd list to add.
+     * @param <E> Generic parameter.
+     */
+    private <E> void addAll(List<E> listSource, List<E> listToAdd) {
+        if (listSource != null && listToAdd != null) {
+            listSource.addAll(listToAdd);
         }
     }
 

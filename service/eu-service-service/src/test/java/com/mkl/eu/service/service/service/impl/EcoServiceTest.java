@@ -6162,4 +6162,481 @@ public class EcoServiceTest {
         Assert.assertEquals(null, game.getCompetitions().get(2).getRounds().get(1).isSecondaryResult());
         Assert.assertEquals(game.getCompetitions().get(2), game.getCompetitions().get(2).getRounds().get(1).getCompetition());
     }
+
+    @Test
+    public void testEstablishmentCompetitions() {
+        GameEntity game = new GameEntity();
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(100L);
+        game.getStacks().get(0).setProvince("rBelem~W");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(100L);
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.MINOR_ESTABLISHMENT_PLUS);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setId(101L);
+        game.getStacks().get(0).getCounters().get(1).setCountry("hollande");
+        game.getStacks().get(0).getCounters().get(1).setType(CounterFaceTypeEnum.COLONY_PLUS);
+        game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(2).setId(102L);
+        game.getStacks().get(0).getCounters().get(2).setCountry("portugal");
+        game.getStacks().get(0).getCounters().get(2).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        game.getStacks().get(0).getCounters().get(2).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(200L);
+        game.getStacks().get(1).setProvince("rBenin~E");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(200L);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.COLONY_PLUS);
+        game.getStacks().get(1).getCounters().get(0).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(1).getCounters().get(0).getEstablishment().setLevel(4);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(1).setId(201L);
+        game.getStacks().get(1).getCounters().get(1).setCountry("espagne");
+        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.COLONY_MINUS);
+        game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(2).setId(202L);
+        game.getStacks().get(1).getCounters().get(2).setCountry("angleterre");
+        game.getStacks().get(1).getCounters().get(2).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        game.getStacks().get(1).getCounters().get(2).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(3).setId(203L);
+        game.getStacks().get(1).getCounters().get(3).setCountry("portugal");
+        game.getStacks().get(1).getCounters().get(3).setType(CounterFaceTypeEnum.TRADING_POST_PLUS);
+        game.getStacks().get(1).getCounters().get(3).setOwner(game.getStacks().get(1));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setId(300L);
+        game.getStacks().get(2).setProvince("Congo~S");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setId(300L);
+        game.getStacks().get(2).getCounters().get(0).setCountry("turquie");
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        game.getStacks().get(2).getCounters().get(0).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(2).getCounters().get(0).getEstablishment().setLevel(2);
+        game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(1).setId(301L);
+        game.getStacks().get(2).getCounters().get(1).setCountry("portugal");
+        game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.TRADING_POST_PLUS);
+        game.getStacks().get(2).getCounters().get(1).setEstablishment(new EstablishmentEntity());
+        game.getStacks().get(2).getCounters().get(1).getEstablishment().setLevel(4);
+        game.getStacks().get(2).getCounters().get(1).setOwner(game.getStacks().get(1));
+
+        Tables tables = new Tables();
+        List<Result> results = new ArrayList<>();
+        Result result = new Result();
+        result.setColumn(-2);
+        result.setDie(1);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(2);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(3);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(4);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(5);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(6);
+        result.setResult(ResultEnum.AVERAGE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(7);
+        result.setResult(ResultEnum.AVERAGE_PLUS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(8);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(9);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-2);
+        result.setDie(10);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(1);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(2);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(3);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(4);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(5);
+        result.setResult(ResultEnum.AVERAGE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(6);
+        result.setResult(ResultEnum.AVERAGE_PLUS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(7);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(8);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(9);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        result = new Result();
+        result.setColumn(-1);
+        result.setDie(10);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(1);
+        result.setResult(ResultEnum.FUMBLE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(2);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(3);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(4);
+        result.setResult(ResultEnum.AVERAGE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(5);
+        result.setResult(ResultEnum.AVERAGE_PLUS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(6);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(7);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(8);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(9);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        result = new Result();
+        result.setColumn(1);
+        result.setDie(10);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(1);
+        result.setResult(ResultEnum.FAILED);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(2);
+        result.setResult(ResultEnum.AVERAGE);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(3);
+        result.setResult(ResultEnum.AVERAGE_PLUS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(4);
+        result.setResult(ResultEnum.AVERAGE_PLUS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(5);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(6);
+        result.setResult(ResultEnum.SUCCESS);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(7);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(8);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(9);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+        result = new Result();
+        result.setColumn(4);
+        result.setDie(10);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        results.add(result);
+
+        tables.setResults(results);
+        economicService.TABLES = tables;
+
+        Set<String> establishments = new HashSet<>();
+        establishments.add("rBelem~W");
+        establishments.add("rBenin~E");
+        establishments.add("Congo~S");
+
+        RotwProvinceEntity belem = new RotwProvinceEntity();
+        belem.setName("rBelem~W");
+        when(provinceDao.getProvinceByName("rBelem~W")).thenReturn(belem);
+
+        RotwProvinceEntity benin = new RotwProvinceEntity();
+        benin.setName("rBenin~E");
+        when(provinceDao.getProvinceByName("rBenin~E")).thenReturn(benin);
+
+        RotwProvinceEntity congo = new RotwProvinceEntity();
+        congo.setName("Congo~S");
+        when(provinceDao.getProvinceByName("Congo~S")).thenReturn(congo);
+
+        DiffEntity remove101 = new DiffEntity();
+        when(counterDomain.removeCounter(101L, game)).thenReturn(remove101);
+
+        DiffEntity remove102 = new DiffEntity();
+        when(counterDomain.removeCounter(102L, game)).thenReturn(remove102);
+
+        DiffEntity remove202 = new DiffEntity();
+        when(counterDomain.removeCounter(202L, game)).thenReturn(remove202);
+
+        DiffEntity remove203 = new DiffEntity();
+        when(counterDomain.removeCounter(203L, game)).thenReturn(remove203);
+
+        DiffEntity remove201 = new DiffEntity();
+        when(counterDomain.removeCounter(201L, game)).thenReturn(remove201);
+
+        DiffEntity remove300 = new DiffEntity();
+        when(counterDomain.removeCounter(300L, game)).thenReturn(remove300);
+
+        DiffEntity switch301 = new DiffEntity();
+        when(counterDomain.switchCounter(301L, CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(switch301);
+
+        when(oeUtil.getFti(game, tables, "france")).thenReturn(3);
+        when(oeUtil.getFti(game, tables, "espagne")).thenReturn(2);
+        when(oeUtil.getFti(game, tables, "turquie")).thenReturn(3);
+        when(oeUtil.getFti(game, tables, "portugal")).thenReturn(4);
+
+        // France wins its competition on first round with 6 on column 1 => SUCCESS
+        when(oeUtil.rollDie(game, "france")).thenReturn(6);
+        // Espagne loses its competition on first round with 4 on column -1 => FAILED
+        when(oeUtil.rollDie(game, "espagne")).thenReturn(4);
+        // Turquie wins the first three rounds with 7 on column -1 => SUCCESS
+        when(oeUtil.rollDie(game, "turquie")).thenReturn(7, 7, 7)
+        // Then loses the last two rounds with 4 on column -1 => FAILED
+                .thenReturn(4, 4);
+        // Portugal wins the first round and loses the second and the third with 6/3/3 on column 1 => SUCCESS/FAILED/FAILED
+        when(oeUtil.rollDie(game, "portugal")).thenReturn(6, 3, 3)
+        // Then loses the third round with 3 on column 1 => FAILED
+                .thenReturn(3)
+        // Then wins the last round with 6 on column 1 => SUCCESS
+                .thenReturn(6);
+
+        List<DiffEntity> diffs = economicService.computeAutomaticEstablishmentCompetitions(game, establishments);
+
+        Assert.assertEquals(7, diffs.size());
+
+        Assert.assertEquals(remove102, diffs.get(0));
+        Assert.assertEquals(remove101, diffs.get(1));
+        Assert.assertEquals(remove300, diffs.get(2));
+        Assert.assertEquals(switch301, diffs.get(3));
+        Assert.assertEquals(remove202, diffs.get(4));
+        Assert.assertEquals(remove203, diffs.get(5));
+        Assert.assertEquals(remove201, diffs.get(6));
+
+        Collections.sort(game.getCompetitions(), (o1, o2) -> {
+            int diff = o2.getProvince().compareTo(o1.getProvince());
+
+            if (diff == 0) {
+                diff = o1.getType().compareTo(o2.getType());
+            }
+
+            return diff;
+        });
+
+        Assert.assertEquals(2, game.getCompetitions().size());
+
+        Comparator<CompetitionRoundEntity> comparatorRound = (o1, o2) -> {
+            int diff = o1.getRound().compareTo(o2.getRound());
+
+            if (diff == 0) {
+                diff = o1.getCountry().compareTo(o2.getCountry());
+            }
+
+            return diff;
+        };
+
+        Collections.sort(game.getCompetitions().get(0).getRounds(), comparatorRound);
+        Collections.sort(game.getCompetitions().get(1).getRounds(), comparatorRound);
+
+        Assert.assertEquals("rBenin~E", game.getCompetitions().get(0).getProvince());
+        Assert.assertEquals(CompetitionTypeEnum.ESTABLISHMENT, game.getCompetitions().get(0).getType());
+        Assert.assertEquals(game, game.getCompetitions().get(0).getGame());
+        Assert.assertEquals(game.getTurn(), game.getCompetitions().get(0).getTurn());
+        Assert.assertEquals(2, game.getCompetitions().get(0).getRounds().size());
+        Assert.assertEquals("espagne", game.getCompetitions().get(0).getRounds().get(0).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(0).getRounds().get(0).getColumn().intValue());
+        Assert.assertEquals(4, game.getCompetitions().get(0).getRounds().get(0).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(0).getRounds().get(0).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(0).getRounds().get(0).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(0).getRounds().get(0).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(0).getRounds().get(0).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(0), game.getCompetitions().get(0).getRounds().get(0).getCompetition());
+        Assert.assertEquals("france", game.getCompetitions().get(0).getRounds().get(1).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(0).getRounds().get(1).getColumn().intValue());
+        Assert.assertEquals(6, game.getCompetitions().get(0).getRounds().get(1).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(0).getRounds().get(1).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(0).getRounds().get(1).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(0).getRounds().get(1).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(0).getRounds().get(1).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(0), game.getCompetitions().get(0).getRounds().get(1).getCompetition());
+
+        Assert.assertEquals("Congo~S", game.getCompetitions().get(1).getProvince());
+        Assert.assertEquals(CompetitionTypeEnum.ESTABLISHMENT, game.getCompetitions().get(1).getType());
+        Assert.assertEquals(game, game.getCompetitions().get(1).getGame());
+        Assert.assertEquals(game.getTurn(), game.getCompetitions().get(1).getTurn());
+        Assert.assertEquals(10, game.getCompetitions().get(1).getRounds().size());
+        Assert.assertEquals("portugal", game.getCompetitions().get(1).getRounds().get(0).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(0).getColumn().intValue());
+        Assert.assertEquals(6, game.getCompetitions().get(1).getRounds().get(0).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(0).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(0).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(0).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(0).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(0).getCompetition());
+        Assert.assertEquals("turquie", game.getCompetitions().get(1).getRounds().get(1).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(1).getColumn().intValue());
+        Assert.assertEquals(7, game.getCompetitions().get(1).getRounds().get(1).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(1).getResult());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(1).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(1).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(1).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(1).getCompetition());
+        Assert.assertEquals("portugal", game.getCompetitions().get(1).getRounds().get(2).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(2).getColumn().intValue());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(2).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(2).getResult());
+        Assert.assertEquals(2, game.getCompetitions().get(1).getRounds().get(2).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(2).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(2).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(2).getCompetition());
+        Assert.assertEquals("turquie", game.getCompetitions().get(1).getRounds().get(3).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(3).getColumn().intValue());
+        Assert.assertEquals(7, game.getCompetitions().get(1).getRounds().get(3).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(3).getResult());
+        Assert.assertEquals(2, game.getCompetitions().get(1).getRounds().get(3).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(3).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(3).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(3).getCompetition());
+        Assert.assertEquals("portugal", game.getCompetitions().get(1).getRounds().get(4).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(4).getColumn().intValue());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(4).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(4).getResult());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(4).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(4).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(4).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(4).getCompetition());
+        Assert.assertEquals("turquie", game.getCompetitions().get(1).getRounds().get(5).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(5).getColumn().intValue());
+        Assert.assertEquals(7, game.getCompetitions().get(1).getRounds().get(5).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(5).getResult());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(5).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(5).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(5).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(5).getCompetition());
+        Assert.assertEquals("portugal", game.getCompetitions().get(1).getRounds().get(6).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(6).getColumn().intValue());
+        Assert.assertEquals(3, game.getCompetitions().get(1).getRounds().get(6).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(6).getResult());
+        Assert.assertEquals(4, game.getCompetitions().get(1).getRounds().get(6).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(6).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(6).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(6).getCompetition());
+        Assert.assertEquals("turquie", game.getCompetitions().get(1).getRounds().get(7).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(7).getColumn().intValue());
+        Assert.assertEquals(4, game.getCompetitions().get(1).getRounds().get(7).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(7).getResult());
+        Assert.assertEquals(4, game.getCompetitions().get(1).getRounds().get(7).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(7).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(7).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(7).getCompetition());
+        Assert.assertEquals("portugal", game.getCompetitions().get(1).getRounds().get(8).getCountry());
+        Assert.assertEquals(1, game.getCompetitions().get(1).getRounds().get(8).getColumn().intValue());
+        Assert.assertEquals(6, game.getCompetitions().get(1).getRounds().get(8).getDie().intValue());
+        Assert.assertEquals(ResultEnum.SUCCESS, game.getCompetitions().get(1).getRounds().get(8).getResult());
+        Assert.assertEquals(5, game.getCompetitions().get(1).getRounds().get(8).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(8).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(8).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(8).getCompetition());
+        Assert.assertEquals("turquie", game.getCompetitions().get(1).getRounds().get(9).getCountry());
+        Assert.assertEquals(-1, game.getCompetitions().get(1).getRounds().get(9).getColumn().intValue());
+        Assert.assertEquals(4, game.getCompetitions().get(1).getRounds().get(9).getDie().intValue());
+        Assert.assertEquals(ResultEnum.FAILED, game.getCompetitions().get(1).getRounds().get(9).getResult());
+        Assert.assertEquals(5, game.getCompetitions().get(1).getRounds().get(9).getRound().intValue());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(9).getSecondaryDie());
+        Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(9).isSecondaryResult());
+        Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(9).getCompetition());
+    }
 }

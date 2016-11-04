@@ -290,6 +290,11 @@ public class MaintenanceUtilTest {
         // A- 2LD = 36
         Assert.assertEquals(36, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
 
+        armyMinus.setPrice(25);
+        // A+ = 45
+        // A- 2LD = 41
+        Assert.assertEquals(41, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
         armyMinus.setPrice(30);
         // A+ = 45
         // A- 2LD = 46
@@ -449,6 +454,73 @@ public class MaintenanceUtilTest {
         armyPlus.setPrice(31);
         // A- LD LDe = 27
         Assert.assertEquals(27, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(20);
+        // A- LD LDe = 27
+        Assert.assertEquals(27, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        armyPlus.setPrice(45);
+        armyMinus.setPrice(20);
+        unit = new Unit();
+        unit.setPrice(80);
+        unit.setType(ForceTypeEnum.FLEET_PLUS);
+        units.add(unit);
+        unit = new Unit();
+        unit.setPrice(50);
+        unit.setType(ForceTypeEnum.FLEET_MINUS);
+        units.add(unit);
+        unit = new Unit();
+        unit.setPrice(25);
+        unit.setType(ForceTypeEnum.ND);
+        units.add(unit);
+
+        // Forces: F+ A+ AT+
+        // Basic forces: F- A- AT- LDND
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.FLEET_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.ARMY_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, 1L);
+        basicForces = new ArrayList<>();
+        basicForce = new BasicForce();
+        basicForce.setType(ForceTypeEnum.FLEET_MINUS);
+        basicForce.setNumber(1);
+        basicForces.add(basicForce);
+        basicForce = new BasicForce();
+        basicForce.setType(ForceTypeEnum.ARMY_MINUS);
+        basicForce.setNumber(1);
+        basicForces.add(basicForce);
+        basicForce = new BasicForce();
+        basicForce.setType(ForceTypeEnum.ARMY_TIMAR_MINUS);
+        basicForce.setNumber(1);
+        basicForces.add(basicForce);
+        basicForce = new BasicForce();
+        basicForce.setType(ForceTypeEnum.LDND);
+        basicForce.setNumber(1);
+        basicForces.add(basicForce);
+
+        // ND + A- + AT- = 65
+        Assert.assertEquals(65, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        // Forces: F+ A+ AT+
+        // Basic forces: F- A- AT- 2LDND
+        basicForce.setNumber(2);
+        // A- + AT- = 40
+        Assert.assertEquals(40, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        // Forces: F+ A+ AT+
+        // Basic forces: F- A- AT- 3LDND
+        basicForce.setNumber(3);
+        // LD + AT- = 40
+        Assert.assertEquals(28, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
+
+        // Forces: F+ AT+
+        // Basic forces: F- A- AT- 3LDND
+        forces = new HashMap<>();
+        forces.put(CounterFaceTypeEnum.FLEET_PLUS, 1L);
+        forces.put(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, 1L);
+        basicForce.setNumber(3);
+        // LDT- = 8
+        Assert.assertEquals(8, MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units));
     }
 
     @Test
