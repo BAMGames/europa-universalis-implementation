@@ -20,7 +20,6 @@ import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
-import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
@@ -6638,5 +6637,126 @@ public class EcoServiceTest {
         Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(9).getSecondaryDie());
         Assert.assertEquals(null, game.getCompetitions().get(1).getRounds().get(9).isSecondaryResult());
         Assert.assertEquals(game.getCompetitions().get(1), game.getCompetitions().get(1).getRounds().get(9).getCompetition());
+    }
+
+    @Test
+    public void testAutomaticTechnology() {
+        // Turn 11 = ISLAM, ORTHODOX, ROT
+        // Turn 6 = LATIN, ISLAM
+
+        GameEntity game = new GameEntity();
+        game.setId(1L);
+        game.setTurn(11);
+
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(100L);
+        game.getStacks().get(0).setProvince("B_TECH_1");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(100L);
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND_ASIA);
+        game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(1).setId(101L);
+        game.getStacks().get(0).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL_ASIA);
+        game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(600L);
+        game.getStacks().get(1).setProvince("B_TECH_6");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setId(600L);
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND_ORTHODOX);
+        game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(1).setId(601L);
+        game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL_ISLAM);
+        game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setId(700L);
+        game.getStacks().get(2).setProvince("B_TECH_7");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setId(700L);
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_VESSEL);
+        game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(3).setId(800L);
+        game.getStacks().get(3).setProvince("B_TECH_8");
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(0).setId(800L);
+        game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND_ISLAM);
+        game.getStacks().get(3).getCounters().get(0).setOwner(game.getStacks().get(3));
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(1).setId(801L);
+        game.getStacks().get(3).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL_ORTHODOX);
+        game.getStacks().get(3).getCounters().get(1).setOwner(game.getStacks().get(3));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(4).setId(900L);
+        game.getStacks().get(4).setProvince("B_TECH_9");
+        game.getStacks().get(4).getCounters().add(new CounterEntity());
+        game.getStacks().get(4).getCounters().get(0).setId(900L);
+        game.getStacks().get(4).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_BAROQUE);
+        game.getStacks().get(4).getCounters().get(0).setOwner(game.getStacks().get(4));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(5).setId(1200L);
+        game.getStacks().get(5).setProvince("B_TECH_12");
+        game.getStacks().get(5).getCounters().add(new CounterEntity());
+        game.getStacks().get(5).getCounters().get(0).setId(1200L);
+        game.getStacks().get(5).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LACE_WAR);
+        game.getStacks().get(5).getCounters().get(0).setOwner(game.getStacks().get(5));
+        game.getStacks().get(5).getCounters().add(new CounterEntity());
+        game.getStacks().get(5).getCounters().get(1).setId(1201L);
+        game.getStacks().get(5).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL_LATIN);
+        game.getStacks().get(5).getCounters().get(1).setOwner(game.getStacks().get(5));
+
+        DiffEntity diffOrthLand = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ORTHODOX, null, "B_TECH_7", game)).thenReturn(diffOrthLand);
+
+        DiffEntity diffOrthNaval = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ORTHODOX, null, "B_TECH_9", game)).thenReturn(diffOrthNaval);
+
+        DiffEntity diffIslLand = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ISLAM, null, "B_TECH_10", game)).thenReturn(diffIslLand);
+
+        DiffEntity diffIslNaval = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ISLAM, null, "B_TECH_8", game)).thenReturn(diffIslNaval);
+
+        DiffEntity diffAsiaLand = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ASIA, null, "B_TECH_2", game)).thenReturn(diffAsiaLand);
+
+        DiffEntity diffAsiaNaval = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ASIA, null, "B_TECH_2", game)).thenReturn(diffAsiaNaval);
+
+        List<DiffEntity> diffs = economicService.computeAutomaticTechnologyAdvances(game);
+
+        Assert.assertEquals(6, diffs.size());
+        Assert.assertEquals(diffOrthLand, diffs.get(0));
+        Assert.assertEquals(diffOrthNaval, diffs.get(1));
+        Assert.assertEquals(diffIslLand, diffs.get(2));
+        Assert.assertEquals(diffIslNaval, diffs.get(3));
+        Assert.assertEquals(diffAsiaLand, diffs.get(4));
+        Assert.assertEquals(diffAsiaNaval, diffs.get(5));
+
+        when(adminActionDao.getMaxTechBox(true, CultureEnum.ISLAM.getTechnologyCultures(), game.getId())).thenReturn(18);
+        when(adminActionDao.getMaxTechBox(false, CultureEnum.ISLAM.getTechnologyCultures(), game.getId())).thenReturn(13);
+        when(adminActionDao.getMaxTechBox(false, CultureEnum.LATIN.getTechnologyCultures(), game.getId())).thenReturn(19);
+
+        DiffEntity diffLatNaval = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_LATIN, null, "B_TECH_13", game)).thenReturn(diffLatNaval);
+
+        DiffEntity diffIslLand2 = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ISLAM, null, "B_TECH_13", game)).thenReturn(diffIslLand2);
+
+        DiffEntity diffIslNaval2 = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ISLAM, null, "B_TECH_8", game)).thenReturn(diffIslNaval2);
+
+        game.setTurn(6);
+
+        diffs = economicService.computeAutomaticTechnologyAdvances(game);
+
+        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(diffLatNaval, diffs.get(0));
+        Assert.assertEquals(diffIslLand2, diffs.get(1));
+        Assert.assertEquals(diffIslNaval2, diffs.get(2));
+
     }
 }

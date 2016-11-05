@@ -1731,8 +1731,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffs.addAll(computeAutomaticTfCompetitions(game, newTfis));
                 diffs.addAll(computeAutomaticEstablishmentCompetitions(game, newEstablishments));
                 // exotic resources concurrencies
-                // minor technologies
-                // neutral technologies
+                diffs.addAll(computeAutomaticTechnologyAdvances(game));
 
                 DiffEntity diff = new DiffEntity();
                 diff.setIdGame(game.getId());
@@ -2273,17 +2272,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             action.setProvince(Integer.toString(boxesToImprove));
 
             int actualTechAdvance = oeUtil.getTechnologyAdvance(game, country.getName(), land);
-            int targetBox = actualTechAdvance + boxesToImprove;
-            // TODO it is possible to go through box 70. Disable this behaviour when the conception of the 70+ will be made.
-            targetBox = Math.min(targetBox, 70);
-            String box = GameUtil.getTechnologyBox(targetBox);
-            List<CounterEntity> neutralCounters = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), box))
-                    .flatMap(s -> s.getCounters().stream()).filter(c -> !CounterUtil.canTechnologyStack(c.getType(), land))
-                    .collect(Collectors.toList());
-            // A technology counter cannot stack with a neutral technology counter of same type. Go one box further if this would be the case.
-            if (!neutralCounters.isEmpty()) {
-                targetBox++;
-            }
+
+            int targetBox = getAvailableTechBox(actualTechAdvance + boxesToImprove, land, game);
             diffs.add(counterDomain.moveSpecialCounter(face, country.getName(), GameUtil.getTechnologyBox(targetBox), game));
 
             if (nextTech != null) {
@@ -2325,6 +2315,26 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         return diffs;
+    }
+
+    /**
+     * @param targetBox the number of technology box wanted.
+     * @param land type of technology.
+     * @param game the game.
+     * @return the first available technology box greater or equals than targetBox.
+     */
+    private int getAvailableTechBox(int targetBox, boolean land, GameEntity game) {
+        // TODO it is possible to go through box 70. Disable this behaviour when the conception of the 70+ will be made.
+        targetBox = Math.min(targetBox, 70);
+        String box = GameUtil.getTechnologyBox(targetBox);
+        List<CounterEntity> neutralCounters = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), box))
+                .flatMap(s -> s.getCounters().stream()).filter(c -> !CounterUtil.canTechnologyStack(c.getType(), land))
+                .collect(Collectors.toList());
+        // A technology counter cannot stack with a neutral technology counter of same type. Go one box further if this would be the case.
+        if (!neutralCounters.isEmpty()) {
+            targetBox++;
+        }
+        return targetBox;
     }
 
     /**
@@ -2630,25 +2640,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     }
 
     /**
-     * Add the number add to the Map costs given its key. Manages <code>null</code> values.
-     *
-     * @param costs Map holding various costs regrouped by keys.
-     * @param key   the key related to the cost to be added.
-     * @param add   the number to add.
-     */
-    private void addInMap(Map<String, Integer> costs, String key, Integer add) {
-        if (add != null) {
-            Integer oldCost = costs.get(key);
-
-            if (oldCost == null) {
-                oldCost = 0;
-            }
-
-            costs.put(key, oldCost + add);
-        }
-    }
-
-    /**
      * Remove one trade fleet from both the current trade fleets map and the new trade fleets map.
      * Remove the key if the number become zero.
      *
@@ -2680,6 +2671,81 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             lostLevelInCompetition.put(country, 1);
         } else {
             lostLevelInCompetition.put(country, lostLevelInCompetition.get(country) + 1);
+        }
+    }
+
+    /**
+     * Computes all the automatic technology advances at the end of the administrative phase.
+     * It consists of automatic progression of CultureGroup technology markers as well as
+     * neutral technology adjustments.
+     *
+     * @param game the game.
+     * @return The diffs involving all the technology advances.
+     */
+    protected List<DiffEntity> computeAutomaticTechnologyAdvances(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        // Each culture technology advance one box every few turns.
+        for (CultureEnum culture : CultureEnum.values()) {
+            if ((game.getTurn() - culture.getTechnologyShift()) % culture.getTechnologyFrequency() == 0) {
+                DiffEntity diff = computeAutomaticCultureTechnology(culture, true, game);
+                if (diff != null) {
+                    diffs.add(diff);
+                }
+                diff = computeAutomaticCultureTechnology(culture, false, game);
+                if (diff != null) {
+                    diffs.add(diff);
+                }
+            }
+        }
+
+        // Then, each technology markers drops to the next marker of same type if the tech is already known
+        // or drops one box if it is not already known but is reachable.
+
+        return diffs;
+    }
+
+    /**
+     * Computes the automatic progression of CultureGroup technology markers.
+     *
+     * @param culture the culture to adjust.
+     * @param land    wether it is the land or naval technology.
+     * @param game    the game.
+     * @return the diff involving the technology adjustment. Can be <code>null</code>.
+     */
+    private DiffEntity computeAutomaticCultureTechnology(CultureEnum culture, boolean land, GameEntity game) {
+        DiffEntity diff = null;
+        CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream())
+                , c -> c.getType() == CounterUtil.getTechnologyGroup(culture, land));
+        if (counter != null) {
+            int actualBox = GameUtil.getTechnology(counter.getOwner().getProvince());
+            int maxCountryTechBox = adminActionDao.getMaxTechBox(land, culture.getTechnologyCultures(), game.getId());
+
+            int nextBox = Math.max(maxCountryTechBox - 6, actualBox + 1);
+
+            nextBox = getAvailableTechBox(nextBox, land, game);
+
+            diff = counterDomain.moveSpecialCounter(counter.getType(), null, GameUtil.getTechnologyBox(nextBox), game);
+        }
+        return diff;
+    }
+
+    /**
+     * Add the number add to the Map costs given its key. Manages <code>null</code> values.
+     *
+     * @param costs Map holding various costs regrouped by keys.
+     * @param key   the key related to the cost to be added.
+     * @param add   the number to add.
+     */
+    private void addInMap(Map<String, Integer> costs, String key, Integer add) {
+        if (add != null) {
+            Integer oldCost = costs.get(key);
+
+            if (oldCost == null) {
+                oldCost = 0;
+            }
+
+            costs.put(key, oldCost + add);
         }
     }
 
