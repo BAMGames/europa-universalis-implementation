@@ -650,11 +650,12 @@ public final class CounterUtil {
     }
 
     /**
-     * @param type of the counter to test.
-     * @param land if we want to know if the counter can stack with a land technology counter (naval technology counter if <code>false</code>).
+     * @param type       of the counter to test.
+     * @param land       if we want to know if the counter can stack with a land technology counter (naval technology counter if <code>false</code>).
+     * @param forNeutral <code>true</code> if the counter we are testing is a neutral technology, <code>false</code> otherwise.
      * @return <code>true</code> if the counter face type can be stack with a technology counter of the given type, <code>false</code> otherwise.
      */
-    public static boolean canTechnologyStack(CounterFaceTypeEnum type, boolean land) {
+    public static boolean canTechnologyStack(CounterFaceTypeEnum type, boolean land, boolean forNeutral) {
         boolean stack = true;
 
         if (type != null) {
@@ -668,6 +669,14 @@ public final class CounterUtil {
                 case TECH_LACE_WAR:
                     stack = !land;
                     break;
+                /** Major and minor land technologies cannot stack with a neutral land technology counter. */
+                case TECH_LAND:
+                case TECH_LAND_ORTHODOX:
+                case TECH_LAND_LATIN:
+                case TECH_LAND_ISLAM:
+                case TECH_LAND_ASIA:
+                    stack = !forNeutral || !land;
+                    break;
                 /** Naval technologies cannot stack with naval technology counters. */
                 case TECH_NAE_GALEON:
                 case TECH_GALLEON_FLUYT:
@@ -676,6 +685,14 @@ public final class CounterUtil {
                 case TECH_THREE_DECKER:
                 case TECH_SEVENTY_FOUR:
                     stack = land;
+                    break;
+                /** Major and minor naval technologies cannot stack with a neutral land technology counter. */
+                case TECH_NAVAL:
+                case TECH_NAVAL_ORTHODOX:
+                case TECH_NAVAL_LATIN:
+                case TECH_NAVAL_ISLAM:
+                case TECH_NAVAL_ASIA:
+                    stack = !forNeutral || land;
                     break;
                 /** Special technologies can stack with all. */
                 case TECH_TERCIO:

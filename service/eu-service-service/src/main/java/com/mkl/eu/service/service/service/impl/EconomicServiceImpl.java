@@ -2328,7 +2328,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         targetBox = Math.min(targetBox, 70);
         String box = GameUtil.getTechnologyBox(targetBox);
         List<CounterEntity> neutralCounters = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), box))
-                .flatMap(s -> s.getCounters().stream()).filter(c -> !CounterUtil.canTechnologyStack(c.getType(), land))
+                .flatMap(s -> s.getCounters().stream()).filter(c -> !CounterUtil.canTechnologyStack(c.getType(), land, false))
                 .collect(Collectors.toList());
         // A technology counter cannot stack with a neutral technology counter of same type. Go one box further if this would be the case.
         if (!neutralCounters.isEmpty()) {
@@ -2701,15 +2701,21 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         // Then, each technology markers drops to the next marker of same type if the tech is already known
         // or drops one box if it is not already known but is reachable.
+        for (Tech tech : getTables().getTechs()) {
+            DiffEntity diff = computeAutomaticNeutralTechnology(tech, game);
+            if (diff != null) {
+                diffs.add(diff);
+            }
+        }
 
         return diffs;
     }
 
     /**
-     * Computes the automatic progression of CultureGroup technology markers.
+     * Computes the automatic progression of a CultureGroup technology marker.
      *
      * @param culture the culture to adjust.
-     * @param land    wether it is the land or naval technology.
+     * @param land    either it is the land or naval technology.
      * @param game    the game.
      * @return the diff involving the technology adjustment. Can be <code>null</code>.
      */
@@ -2727,6 +2733,60 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             diff = counterDomain.moveSpecialCounter(counter.getType(), null, GameUtil.getTechnologyBox(nextBox), game);
         }
+        return diff;
+    }
+
+    /**
+     * Computes the automatic progression of a neutral technology marker.
+     *
+     * @param tech the neutral technology to adjust.
+     * @param game the game.
+     * @return the diff involving the technology adjustment. Can be <code>null</code>.
+     */
+    private DiffEntity computeAutomaticNeutralTechnology(Tech tech, GameEntity game) {
+        DiffEntity diff = null;
+
+        // If the tech is not available, there is no adjustment
+        if (tech.getBeginTurn() <= game.getTurn()) {
+            CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream())
+                    , c -> c.getType() == CounterUtil.getTechnologyType(tech.getName()));
+            if (counter != null) {
+                int actualBox = GameUtil.getTechnology(counter.getOwner().getProvince());
+                boolean techAlreadyKnown = game.getStacks().stream()
+                        .filter(s -> GameUtil.isTechnologyBox(s.getProvince()) && GameUtil.getTechnology(s.getProvince()) > actualBox)
+                        .flatMap(s -> s.getCounters().stream())
+                        .filter(c -> !CounterUtil.canTechnologyStack(c.getType(), tech.isLand(), true))
+                        .count() > 0;
+                Optional<CounterEntity> previousCounter = game.getStacks().stream()
+                        .filter(s -> GameUtil.isTechnologyBox(s.getProvince()) && GameUtil.getTechnology(s.getProvince()) < actualBox)
+                        .flatMap(s -> s.getCounters().stream())
+                        .filter(c -> !CounterUtil.canTechnologyStack(c.getType(), tech.isLand(), true))
+                        .max((o1, o2) -> GameUtil.getTechnology(o1.getOwner().getProvince()) - GameUtil.getTechnology(o2.getOwner().getProvince()));
+                Integer targetBox;
+                if (previousCounter.isPresent()) {
+                    CounterEntity previous = previousCounter.get();
+                    targetBox = GameUtil.getTechnology(previous.getOwner().getProvince()) + 1;
+                    if (CounterUtil.isNeutralTechnology(previous.getType())) {
+                        targetBox++;
+                    }
+                    if (!techAlreadyKnown) {
+                        // If tech is not known, the neutral counter drops at most
+                        // of one box.
+                        targetBox = Math.max(targetBox, actualBox - 1);
+                    }
+                } else {
+                    // If there are no previous counter, then the neutral technology goes to the first box.
+                    // It is not necessary.
+                    targetBox = 1;
+                }
+
+                if (targetBox < actualBox) {
+                    // If the neutral counter is already blocked, then we do nothing.
+                    diff = counterDomain.moveSpecialCounter(counter.getType(), null, GameUtil.getTechnologyBox(targetBox), game);
+                }
+            }
+        }
+
         return diff;
     }
 

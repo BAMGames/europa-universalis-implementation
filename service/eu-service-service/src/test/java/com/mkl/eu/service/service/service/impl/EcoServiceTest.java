@@ -5338,6 +5338,13 @@ public class EcoServiceTest {
         Set<String> provinces = new HashSet<>();
         List<DiffEntity> diffs;
 
+        // To isolate unexpected calls
+        DiffEntity diffOther = new DiffEntity();
+        when(counterDomain.removeCounter(any(), any())).thenReturn(diffOther);
+        when(counterDomain.switchCounter(any(), any(), any(), any())).thenReturn(diffOther);
+        when(counterDomain.createCounter(any(), any(), any(), any(), any())).thenReturn(diffOther);
+        when(counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenReturn(diffOther);
+
         DiffEntity diffVeteran = new DiffEntity();
         when(counterDomain.changeVeteransCounter(101L, 0, game)).thenReturn(diffVeteran);
 
@@ -5969,6 +5976,12 @@ public class EcoServiceTest {
         // Then wins the two others rounds with 10 on column -1 => CRITICAL_HIT
                 .thenReturn(10, 10);
 
+        // To isolate unexpected calls
+        DiffEntity diffOther = new DiffEntity();
+        when(counterDomain.removeCounter(any(), any())).thenReturn(diffOther);
+        when(counterDomain.switchCounter(any(), any(), any(), any())).thenReturn(diffOther);
+        when(counterDomain.createCounter(any(), any(), any(), any(), any())).thenReturn(diffOther);
+
         DiffEntity diffSwitch56 = new DiffEntity();
         when(counterDomain.switchCounter(100L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 6, game)).thenReturn(diffSwitch56);
 
@@ -6452,6 +6465,11 @@ public class EcoServiceTest {
         congo.setName("Congo~S");
         when(provinceDao.getProvinceByName("Congo~S")).thenReturn(congo);
 
+        // To isolate unexpected calls
+        DiffEntity diffOther = new DiffEntity();
+        when(counterDomain.removeCounter(any(), any())).thenReturn(diffOther);
+        when(counterDomain.switchCounter(any(), any(), any(), any())).thenReturn(diffOther);
+
         DiffEntity remove101 = new DiffEntity();
         when(counterDomain.removeCounter(101L, game)).thenReturn(remove101);
 
@@ -6650,14 +6668,14 @@ public class EcoServiceTest {
 
 
         game.getStacks().add(new StackEntity());
-        game.getStacks().get(0).setId(100L);
-        game.getStacks().get(0).setProvince("B_TECH_1");
+        game.getStacks().get(0).setId(300L);
+        game.getStacks().get(0).setProvince("B_TECH_3");
         game.getStacks().get(0).getCounters().add(new CounterEntity());
-        game.getStacks().get(0).getCounters().get(0).setId(100L);
+        game.getStacks().get(0).getCounters().get(0).setId(300L);
         game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND_ASIA);
         game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
         game.getStacks().get(0).getCounters().add(new CounterEntity());
-        game.getStacks().get(0).getCounters().get(1).setId(101L);
+        game.getStacks().get(0).getCounters().get(1).setId(301L);
         game.getStacks().get(0).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL_ASIA);
         game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
         game.getStacks().add(new StackEntity());
@@ -6676,7 +6694,7 @@ public class EcoServiceTest {
         game.getStacks().get(2).setProvince("B_TECH_7");
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(0).setId(700L);
-        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_VESSEL);
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_GALLEON_FLUYT);
         game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(3).setId(800L);
@@ -6694,19 +6712,151 @@ public class EcoServiceTest {
         game.getStacks().get(4).setProvince("B_TECH_9");
         game.getStacks().get(4).getCounters().add(new CounterEntity());
         game.getStacks().get(4).getCounters().get(0).setId(900L);
-        game.getStacks().get(4).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_BAROQUE);
+        game.getStacks().get(4).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_RENAISSANCE);
         game.getStacks().get(4).getCounters().get(0).setOwner(game.getStacks().get(4));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(5).setId(1200L);
         game.getStacks().get(5).setProvince("B_TECH_12");
         game.getStacks().get(5).getCounters().add(new CounterEntity());
         game.getStacks().get(5).getCounters().get(0).setId(1200L);
-        game.getStacks().get(5).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LACE_WAR);
+        game.getStacks().get(5).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MUSKET);
         game.getStacks().get(5).getCounters().get(0).setOwner(game.getStacks().get(5));
         game.getStacks().get(5).getCounters().add(new CounterEntity());
         game.getStacks().get(5).getCounters().get(1).setId(1201L);
         game.getStacks().get(5).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_NAVAL_LATIN);
         game.getStacks().get(5).getCounters().get(1).setOwner(game.getStacks().get(5));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(6).setId(200L);
+        game.getStacks().get(6).setProvince("B_TECH_2");
+        game.getStacks().get(6).getCounters().add(new CounterEntity());
+        game.getStacks().get(6).getCounters().get(0).setId(200L);
+        game.getStacks().get(6).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAE_GALEON);
+        game.getStacks().get(6).getCounters().get(0).setOwner(game.getStacks().get(6));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(7).setId(1600L);
+        game.getStacks().get(7).setProvince("B_TECH_16");
+        game.getStacks().get(7).getCounters().add(new CounterEntity());
+        game.getStacks().get(7).getCounters().get(0).setId(200L);
+        game.getStacks().get(7).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_BAROQUE);
+        game.getStacks().get(7).getCounters().get(0).setOwner(game.getStacks().get(7));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(8).setId(1700L);
+        game.getStacks().get(8).setProvince("B_TECH_17");
+        game.getStacks().get(8).getCounters().add(new CounterEntity());
+        game.getStacks().get(8).getCounters().get(0).setId(200L);
+        game.getStacks().get(8).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_LAND);
+        game.getStacks().get(8).getCounters().get(0).setCountry("turquie");
+        game.getStacks().get(8).getCounters().get(0).setOwner(game.getStacks().get(8));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(9).setId(1300L);
+        game.getStacks().get(9).setProvince("B_TECH_13");
+        game.getStacks().get(9).getCounters().add(new CounterEntity());
+        game.getStacks().get(9).getCounters().get(0).setId(1300L);
+        game.getStacks().get(9).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAVAL);
+        game.getStacks().get(9).getCounters().get(0).setCountry("turquie");
+        game.getStacks().get(9).getCounters().get(0).setOwner(game.getStacks().get(9));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(10).setId(1500L);
+        game.getStacks().get(10).setProvince("B_TECH_15");
+        game.getStacks().get(10).getCounters().add(new CounterEntity());
+        game.getStacks().get(10).getCounters().get(0).setId(1500L);
+        game.getStacks().get(10).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_BATTERY);
+        game.getStacks().get(10).getCounters().get(0).setOwner(game.getStacks().get(10));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(11).setId(2000L);
+        game.getStacks().get(11).setProvince("B_TECH_20");
+        game.getStacks().get(11).getCounters().add(new CounterEntity());
+        game.getStacks().get(11).getCounters().get(0).setId(2000L);
+        game.getStacks().get(11).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_VESSEL);
+        game.getStacks().get(11).getCounters().get(0).setOwner(game.getStacks().get(11));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(12).setId(2500L);
+        game.getStacks().get(12).setProvince("B_TECH_25");
+        game.getStacks().get(12).getCounters().add(new CounterEntity());
+        game.getStacks().get(12).getCounters().get(0).setId(2500L);
+        game.getStacks().get(12).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_NAVAL);
+        game.getStacks().get(12).getCounters().get(0).setOwner(game.getStacks().get(12));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(13).setId(5000L);
+        game.getStacks().get(13).setProvince("B_TECH_50");
+        game.getStacks().get(13).getCounters().add(new CounterEntity());
+        game.getStacks().get(13).getCounters().get(0).setId(5000L);
+        game.getStacks().get(13).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
+        game.getStacks().get(13).getCounters().get(0).setOwner(game.getStacks().get(13));
+        game.getStacks().get(13).getCounters().add(new CounterEntity());
+        game.getStacks().get(13).getCounters().get(1).setId(5001L);
+        game.getStacks().get(13).getCounters().get(1).setType(CounterFaceTypeEnum.TECH_THREE_DECKER);
+        game.getStacks().get(13).getCounters().get(1).setOwner(game.getStacks().get(13));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(14).setId(1000L);
+        game.getStacks().get(14).setProvince("B_TECH_10");
+        game.getStacks().get(14).getCounters().add(new CounterEntity());
+        game.getStacks().get(14).getCounters().get(0).setId(1000L);
+        game.getStacks().get(14).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_TERCIO);
+        game.getStacks().get(14).getCounters().get(0).setOwner(game.getStacks().get(14));
+
+        Tables tables = new Tables();
+        List<Tech> techs = new ArrayList<>();
+        Tech tech = new Tech();
+        tech.setBeginTurn(1);
+        tech.setBeginBox(1);
+        tech.setLand(true);
+        tech.setName(Tech.MEDIEVAL);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(6);
+        tech.setBeginBox(11);
+        tech.setLand(true);
+        tech.setName(Tech.RENAISSANCE);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(11);
+        tech.setBeginBox(21);
+        tech.setLand(true);
+        tech.setName(Tech.MUSKET);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(21);
+        tech.setBeginBox(31);
+        tech.setLand(true);
+        tech.setName(Tech.BAROQUE);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(31);
+        tech.setBeginBox(31);
+        tech.setLand(true);
+        tech.setName(Tech.MANOEUVRE);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(6);
+        tech.setBeginBox(2);
+        tech.setLand(false);
+        tech.setName(Tech.NAE_GALEON);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(11);
+        tech.setBeginBox(2);
+        tech.setLand(false);
+        tech.setName(Tech.BATTERY);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(21);
+        tech.setBeginBox(2);
+        tech.setLand(false);
+        tech.setName(Tech.VESSEL);
+        techs.add(tech);
+        tech = new Tech();
+        tech.setBeginTurn(31);
+        tech.setBeginBox(2);
+        tech.setLand(false);
+        tech.setName(Tech.THREE_DECKER);
+        techs.add(tech);
+        tables.setTechs(techs);
+        EconomicServiceImpl.TABLES = tables;
+
+        // To isolate unexpected calls
+        DiffEntity diffOther = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenReturn(diffOther);
 
         DiffEntity diffOrthLand = new DiffEntity();
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ORTHODOX, null, "B_TECH_7", game)).thenReturn(diffOrthLand);
@@ -6721,20 +6871,44 @@ public class EcoServiceTest {
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ISLAM, null, "B_TECH_8", game)).thenReturn(diffIslNaval);
 
         DiffEntity diffAsiaLand = new DiffEntity();
-        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ASIA, null, "B_TECH_2", game)).thenReturn(diffAsiaLand);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_ASIA, null, "B_TECH_4", game)).thenReturn(diffAsiaLand);
 
         DiffEntity diffAsiaNaval = new DiffEntity();
-        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ASIA, null, "B_TECH_2", game)).thenReturn(diffAsiaNaval);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAVAL_ASIA, null, "B_TECH_4", game)).thenReturn(diffAsiaNaval);
+
+        DiffEntity diffMusk = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_MUSKET, null, "B_TECH_11", game)).thenReturn(diffMusk);
+
+        DiffEntity diffBar = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_BAROQUE, null, "B_TECH_14", game)).thenReturn(diffBar);
+
+        DiffEntity diffMan = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_MANOEUVRE, null, "B_TECH_49", game)).thenReturn(diffMan);
+
+        DiffEntity diffNaeGal = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_NAE_GALEON, null, "B_TECH_1", game)).thenReturn(diffNaeGal);
+
+        DiffEntity diffBat = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_BATTERY, null, "B_TECH_14", game)).thenReturn(diffBat);
+
+        DiffEntity diffVes = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_VESSEL, null, "B_TECH_17", game)).thenReturn(diffVes);
+
+        DiffEntity diff3d = new DiffEntity();
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_THREE_DECKER, null, "B_TECH_49", game)).thenReturn(diff3d);
 
         List<DiffEntity> diffs = economicService.computeAutomaticTechnologyAdvances(game);
 
-        Assert.assertEquals(6, diffs.size());
+        Assert.assertEquals(9, diffs.size());
         Assert.assertEquals(diffOrthLand, diffs.get(0));
         Assert.assertEquals(diffOrthNaval, diffs.get(1));
         Assert.assertEquals(diffIslLand, diffs.get(2));
         Assert.assertEquals(diffIslNaval, diffs.get(3));
         Assert.assertEquals(diffAsiaLand, diffs.get(4));
         Assert.assertEquals(diffAsiaNaval, diffs.get(5));
+        Assert.assertEquals(diffMusk, diffs.get(6));
+        Assert.assertEquals(diffNaeGal, diffs.get(7));
+        Assert.assertEquals(diffBat, diffs.get(8));
 
         when(adminActionDao.getMaxTechBox(true, CultureEnum.ISLAM.getTechnologyCultures(), game.getId())).thenReturn(18);
         when(adminActionDao.getMaxTechBox(false, CultureEnum.ISLAM.getTechnologyCultures(), game.getId())).thenReturn(13);
@@ -6753,10 +6927,34 @@ public class EcoServiceTest {
 
         diffs = economicService.computeAutomaticTechnologyAdvances(game);
 
-        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(4, diffs.size());
         Assert.assertEquals(diffLatNaval, diffs.get(0));
         Assert.assertEquals(diffIslLand2, diffs.get(1));
         Assert.assertEquals(diffIslNaval2, diffs.get(2));
+        Assert.assertEquals(diffNaeGal, diffs.get(3));
 
+        game.setTurn(25);
+
+        diffs = economicService.computeAutomaticTechnologyAdvances(game);
+
+        Assert.assertEquals(5, diffs.size());
+        Assert.assertEquals(diffMusk, diffs.get(0));
+        Assert.assertEquals(diffBar, diffs.get(1));
+        Assert.assertEquals(diffNaeGal, diffs.get(2));
+        Assert.assertEquals(diffBat, diffs.get(3));
+        Assert.assertEquals(diffVes, diffs.get(4));
+
+        game.setTurn(33);
+
+        diffs = economicService.computeAutomaticTechnologyAdvances(game);
+
+        Assert.assertEquals(7, diffs.size());
+        Assert.assertEquals(diffMusk, diffs.get(0));
+        Assert.assertEquals(diffBar, diffs.get(1));
+        Assert.assertEquals(diffMan, diffs.get(2));
+        Assert.assertEquals(diffNaeGal, diffs.get(3));
+        Assert.assertEquals(diffBat, diffs.get(4));
+        Assert.assertEquals(diffVes, diffs.get(5));
+        Assert.assertEquals(diff3d, diffs.get(6));
     }
 }
