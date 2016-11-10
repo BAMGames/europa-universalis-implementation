@@ -61,6 +61,20 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when an army counter can't be lowered.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the country</li>
+     * </ul>
+     * </p>
+     */
+    String COUNTER_MAINTAIN_LOW_FORBIDDEN = "exception.eu.admin_action.counter_lower_unit_forbidden";
+
+    /**
+     * <p>
      * Exception thrown when a counter can't be disbanded.
      * </p>
      * <p>
@@ -76,7 +90,7 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
-     * Exception thrown when a counter can't be lowered.
+     * Exception thrown when a fortress counter can't be lowered.
      * </p>
      * <p>
      * Parameters:

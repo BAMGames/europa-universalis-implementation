@@ -216,6 +216,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         }
 
         // TODO needs War to know the blocked trade
+        // TODO move elsewhere because we need to know the land income
+        // of all countries.
         final Integer valueFor = 0;
         tradeIncome = CommonUtil.findFirst(getTables().getForeignTrades(), tradeIncome1 -> tradeIncome1.getCountryValue() == country.getFti()
                         && (tradeIncome1.getMinValue() == null || tradeIncome1.getMinValue() <= valueFor)
@@ -291,7 +293,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         AdministrativeActionEntity admAct;
         switch (request.getRequest().getType()) {
             case LM:
-                // TODO check if country is at war
+                WarStatusEnum warStatus = oeUtil.getWarStatus(game, country);
+                failIfFalse(new AbstractService.CheckForThrow<Boolean>().setTest(warStatus.canWarMaintenance()).setCodeError(IConstantsServiceException.COUNTER_MAINTAIN_LOW_FORBIDDEN)
+                        .setMsgFormat("{1}: {0} The country {3} cannot maintain low units because it is not at war.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName()));
             case LF:
             case DIS:
                 admAct = computeDisbandLowMaintenance(request, game, country);
@@ -1111,7 +1115,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         // TODO war
 
-        // TODO war if ennemy stack on national territory, no loss of stab nor condition
+        // TODO war if enemy stack on national territory, no loss of stab nor condition
 
         int stab = oeUtil.getStability(game, country.getName());
 
@@ -1501,7 +1505,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfNull(new CheckForThrow<>().setTest(actualTech).setCodeError(IConstantsServiceException.MISSING_TABLE_ENTRY)
                 .setMsgFormat("{1}: {0} The entry {3} of the table {2} is missing. Please ask an admin for correction.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, "TECH", actualTechName));
 
-        // FIXME land and naval techs should be filtered
         List<Tech> higherTechs = getTables().getTechs().stream()
                 .filter(t -> t.getBeginTurn() > actualTech.getBeginTurn() && t.isLand() == land)
                 .collect(Collectors.toList());
@@ -1836,7 +1839,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         for (AdministrativeActionEntity action : actions) {
             switch (action.getType()) {
                 case LM:
-                    // TODO check if country is at war
                     diffs.add(executeLowMaintenance(action, game));
                     break;
                 case LF:

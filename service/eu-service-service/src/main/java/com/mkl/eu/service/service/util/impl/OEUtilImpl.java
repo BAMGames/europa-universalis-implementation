@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -261,5 +262,14 @@ public final class OEUtilImpl implements IOEUtil {
     public List<StackEntity> getStacksOnProvince(GameEntity game, String province) {
         return game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), province))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public WarStatusEnum getWarStatus(GameEntity game, PlayableCountryEntity country) {
+        // TODO wait war conception
+        return WarStatusEnum.CLASSIC_WAR;
     }
 }

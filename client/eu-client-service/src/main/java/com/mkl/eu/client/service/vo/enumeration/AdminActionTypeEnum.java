@@ -36,5 +36,4 @@ public enum AdminActionTypeEnum {
     LF,
     /** Purchase land unit. */
     PU
-    // TODO add fortress purchases/disband.
 }

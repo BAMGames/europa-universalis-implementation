@@ -589,6 +589,17 @@ public class EcoServiceTest {
 
         request.getRequest().setIdObject(4L);
         request.getRequest().setType(AdminActionTypeEnum.LM);
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.PEACE);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because idObject is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_MAINTAIN_LOW_FORBIDDEN, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.CLASSIC_WAR);
 
         try {
             economicService.addAdminAction(request);
@@ -714,6 +725,8 @@ public class EcoServiceTest {
             diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
             return diffAfter;
         });
+
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.CLASSIC_WAR);
 
         DiffResponse response = economicService.addAdminAction(request);
 
