@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.persistence.country.impl;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the PlayableCountry DAO.
@@ -49,5 +51,24 @@ public class PlayableCountryDaoImpl extends GenericDaoImpl<PlayableCountryEntity
         results.stream().forEach(input -> provinces.add((String) input.get("PROVINCE")));
 
         return provinces;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isFatherlandInDanger(String countryName, List<String> enemies, Long idGame) {
+        // No enemy, no danger.
+        if (CollectionUtils.isEmpty(enemies)) {
+            return false;
+        }
+
+        String enemyNames = enemies.stream().collect(Collectors.joining("','", "('", "')"));
+
+        String sql = queryProps.getProperty("game.fatherlandInDanger");
+
+        sql = sql.replace(":countryName", countryName);
+        sql = sql.replace(":enemies", enemyNames);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForList(sql).size() > 0;
     }
 }

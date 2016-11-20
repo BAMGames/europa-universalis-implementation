@@ -22,4 +22,7 @@
     <COUNTER ID="9" ID_STACK="8" TYPE="PILLAGE_PLUS" />
     <STACK ID="9" ID_GAME="1" R_PROVINCE="eNormandie" />
     <COUNTER ID="10" ID_STACK="9" TYPE="PILLAGE_PLUS" />
+    <STACK ID="10" ID_GAME="1" R_PROVINCE="eVendee"/>
+    <COUNTER ID="11" ID_STACK="10" TYPE="OWN" R_COUNTRY="espagne"/>
+    <COUNTER ID="12" ID_STACK="10" TYPE="CONTROL" R_COUNTRY="angleterre"/>
 </dataset>

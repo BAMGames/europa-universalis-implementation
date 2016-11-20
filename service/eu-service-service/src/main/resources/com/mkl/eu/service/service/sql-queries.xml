@@ -201,6 +201,28 @@
 			;
 		]]>
 	</entry>
+	<entry key="game.fatherlandInDanger">
+		<![CDATA[
+			SELECT
+  				DISTINCT p.NAME AS PROVINCE
+			FROM r_province_eu peu
+  				INNER JOIN r_province p ON peu.id = p.id
+  				INNER JOIN stack s on s.R_PROVINCE = p.NAME AND s.ID_GAME = :idGame
+  				INNER JOIN counter c on c.ID_STACK = s.ID
+			WHERE peu.R_COUNTRY = ':countryName'
+  				AND c.R_COUNTRY in :enemies
+      			AND  p.name NOT IN (
+           			SELECT
+              			s.R_PROVINCE
+            		FROM counter c
+              			INNER JOIN stack s ON c.ID_STACK = s.id
+            		WHERE c.R_COUNTRY <> ':countryName'
+                  		AND s.ID_GAME = :idGame
+                  		AND (c.TYPE = 'OWN')
+           			)
+           	;
+		]]>
+	</entry>
 	<entry key="colony.inlandAdvance.rotw">
 		<![CDATA[
 			SELECT
