@@ -102,4 +102,13 @@ public interface IOEUtil {
      * @return the war status of the country.
      */
     WarStatusEnum getWarStatus(GameEntity game, PlayableCountryEntity country);
+
+    /**
+     * @param game                 the game.
+     * @param country              the country.
+     * @param includeInterventions flag to include enemy countries in limited or foreign intervention.
+     * @param excludeCivilWars     flag to exclude enemy countries in civil or religious wars.
+     * @return the list of country that are at war with the input country.
+     */
+    List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions, boolean excludeCivilWars);
 }

@@ -314,7 +314,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 admAct = computeFtiDti(request, game, country);
                 break;
             case EXL:
-                admAct = computeExceptionalTaxes(request, game, country);
+                admAct = computeExceptionalTaxes(game, country);
                 break;
             case COL:
                 admAct = computeColonisation(request, game, country);
@@ -1100,30 +1100,36 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /**
      * Computes the creation of a PLANNED administrative action of type Exceptional taxes.
      *
-     * @param request request containing the info about the action to create.
      * @param game    in which the action will be created.
      * @param country owner of the action.
      * @return the administrative action to create.
      * @throws FunctionalException Exception.
      */
-    private AdministrativeActionEntity computeExceptionalTaxes(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
+    private AdministrativeActionEntity computeExceptionalTaxes(GameEntity game, PlayableCountryEntity country) throws FunctionalException {
         List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
-                .setMsgFormat("{1}: {0} The administrative action of type {1} is already panned for the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.MNU, country.getName()));
+                .setMsgFormat("{1}: {0} The administrative action of type {1} is already panned for the country {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, AdminActionTypeEnum.EXL, country.getName()));
 
-        // TODO war
-
-        // TODO war if enemy stack on national territory, no loss of stab nor condition
+        WarStatusEnum warStatus = oeUtil.getWarStatus(game, country);
+        failIfFalse(new CheckForThrow<Boolean>().setTest(warStatus.canTaxes()).setCodeError(IConstantsServiceException.EXC_TAXES_NOT_AT_WAR)
+                .setMsgFormat("{1}: {0} The country {2} is not at war and thus cannot levy exceptional taxes.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName()));
 
         int stab = oeUtil.getStability(game, country.getName());
 
-        failIfFalse(new CheckForThrow<Boolean>().setTest(stab > -3).setCodeError(IConstantsServiceException.INSUFFICIENT_STABILITY)
-                .setMsgFormat("{1}: {0} The stability of the country {2} is too low. Actual: {3}, minimum: {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName(), stab, -2));
+        boolean stabFree = false;
+        if (warStatus.hasTaxesReduction()) {
+            List<String> enemies = oeUtil.getEnemies(game, country, true, true);
 
-        // TODO war no loss of stab
-        stab--;
+            stabFree = playableCountryDao.isFatherlandInDanger(country.getName(), enemies, game.getId());
+        }
+
+        if (!stabFree) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(stab > -3).setCodeError(IConstantsServiceException.INSUFFICIENT_STABILITY)
+                    .setMsgFormat("{1}: {0} The stability of the country {2} is too low. Actual: {3}, minimum: {4}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, country.getName(), stab, -2));
+            stab--;
+        }
 
         int adm = oeUtil.getAdministrativeValue(country);
 
@@ -1134,8 +1140,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setStatus(AdminActionStatusEnum.PLANNED);
         admAct.setTurn(game.getTurn());
         admAct.setBonus(bonus);
-        // use column to know if stab has to be lowered or not
-        admAct.setColumn(-1);
+        if (!stabFree) {
+            // use column to know if stab has to be lowered or not
+            admAct.setColumn(-1);
+        }
 
         return admAct;
     }

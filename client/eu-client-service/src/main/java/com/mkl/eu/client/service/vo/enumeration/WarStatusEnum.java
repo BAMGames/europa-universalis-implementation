@@ -7,14 +7,18 @@ package com.mkl.eu.client.service.vo.enumeration;
  */
 public enum WarStatusEnum {
     /** In Peace. */
-    PEACE(false, false),
+    PEACE(false, false, false),
     /** In a classic war. */
-    CLASSIC_WAR(true, true);
+    CLASSIC_WAR(true, true, true),
+    /** In a civil war. */
+    CIVIL_WAR(true, true, false);
 
     /** To know if the country can use war maintenance. */
     private boolean warMaintenance;
     /** To know if the country can levy exceptional taxes. */
     private boolean taxes;
+    /** To know if the country can levy exceptional taxes without stab loss. */
+    private boolean taxesReduction;
     // TODO notion of army levies
     // TODO notion of bonus at exchequer test
     // TODO notion of blocked trade (maybe)
@@ -24,10 +28,12 @@ public enum WarStatusEnum {
      *
      * @param warMaintenance the warMaintenance to set.
      * @param taxes          the taxes to set.
+     * @param taxesReduction the taxesReduction to set.
      */
-    WarStatusEnum(boolean warMaintenance, boolean taxes) {
+    WarStatusEnum(boolean warMaintenance, boolean taxes, boolean taxesReduction) {
         this.warMaintenance = warMaintenance;
         this.taxes = taxes;
+        this.taxesReduction = taxesReduction;
     }
 
     /** @return the warMaintenance. */
@@ -38,5 +44,10 @@ public enum WarStatusEnum {
     /** @return the taxes. */
     public boolean canTaxes() {
         return taxes;
+    }
+
+    /** @return the taxesReduction. */
+    public boolean hasTaxesReduction() {
+        return taxesReduction;
     }
 }

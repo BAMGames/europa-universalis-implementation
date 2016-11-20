@@ -3262,6 +3262,38 @@ public class EcoServiceTest {
         }
 
         request.getRequest().setIdCountry(12L);
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.PEACE);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because country is not at war");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.EXC_TAXES_NOT_AT_WAR, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.CLASSIC_WAR);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because stab is -3");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INSUFFICIENT_STABILITY, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        List<String> enemies = new ArrayList<>();
+        enemies.add("enemy");
+        when(oeUtil.getEnemies(game, game.getCountries().get(0), true, true)).thenReturn(enemies);
+        when(playableCountryDao.isFatherlandInDanger("france", enemies, 12L)).thenReturn(true);
+
+        try {
+            economicService.addAdminAction(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should not break. " + e.getMessage());
+        }
+
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.CIVIL_WAR);
 
         try {
             economicService.addAdminAction(request);
@@ -3298,6 +3330,7 @@ public class EcoServiceTest {
                                              AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL))
                 .thenReturn(actionsFor12);
 
+        when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.CLASSIC_WAR);
         when(oeUtil.getStability(game, "france")).thenReturn(2);
         when(oeUtil.getAdministrativeValue(game.getCountries().get(0))).thenReturn(7);
 

@@ -18,6 +18,7 @@ import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -271,5 +272,14 @@ public final class OEUtilImpl implements IOEUtil {
     public WarStatusEnum getWarStatus(GameEntity game, PlayableCountryEntity country) {
         // TODO wait war conception
         return WarStatusEnum.CLASSIC_WAR;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions, boolean excludeCivilWars) {
+        // TODO wait war conception
+        return new ArrayList<>();
     }
 }

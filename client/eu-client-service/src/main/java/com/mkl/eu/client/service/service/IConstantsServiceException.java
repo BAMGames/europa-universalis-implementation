@@ -386,6 +386,20 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when a country wants to levy exceptional taxes while it is not at war.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: country doing the action/li>
+     * </ul>
+     * </p>
+     */
+    String EXC_TAXES_NOT_AT_WAR = "exception.eu.exc_taxes_not_at_war";
+
+    /**
+     * <p>
      * Exception thrown when the stability of a country is too low.
      * </p>
      * <p>
