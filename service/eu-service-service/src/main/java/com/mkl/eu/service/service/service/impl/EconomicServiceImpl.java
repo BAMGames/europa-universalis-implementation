@@ -1887,34 +1887,57 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(game.getTurn()));
         if (sheet != null) {
-            Map<CounterFaceTypeEnum, Long> forces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            (counter.getVeterans() != null && (counter.getVeterans() > 0) || CounterUtil.isNavalArmy(counter.getType())) && CounterUtil.isArmy(counter.getType())))
-                    .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
-            List<BasicForce> basicForces = getTables().getBasicForces().stream()
-                    .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
-                            basicForce.getPeriod().getBegin() <= game.getTurn() &&
-                            basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
-            // TODO manage wars
-            List<Unit> units = getTables().getUnits().stream()
-                    .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
-                            (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
-                            !unit.isSpecial() &&
-                            (StringUtils.equals(unit.getTech().getName(), landTech) || StringUtils.equals(unit.getTech().getName(), navalTech))).collect(Collectors.toList());
-            Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
+            // Maintenance computation:
+            // If at peace, conscript or veteran troops are paid the same.
+            // If at war, conscript land forces can be less expensive.
+            // Naval units are always paid the same price, conscript or veteran.
+            WarStatusEnum warStatus = oeUtil.getWarStatus(game, country);
+            if (warStatus.canWarMaintenance()) {
+                Map<CounterFaceTypeEnum, Long> forces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                        .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                                (counter.getVeterans() != null && (counter.getVeterans() > 0) || CounterUtil.isNavalArmy(counter.getType())) && CounterUtil.isArmy(counter.getType())))
+                        .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
+                List<BasicForce> basicForces = getTables().getBasicForces().stream()
+                        .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
+                                basicForce.getPeriod().getBegin() <= game.getTurn() &&
+                                basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
+                List<Unit> units = getTables().getUnits().stream()
+                        .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                                (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
+                                !unit.isSpecial() &&
+                                (StringUtils.equals(unit.getTech().getName(), landTech) || StringUtils.equals(unit.getTech().getName(), navalTech))).collect(Collectors.toList());
+                Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
 
-            Map<CounterFaceTypeEnum, Long> conscriptForces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            (counter.getVeterans() == null || counter.getVeterans() == 0) && CounterUtil.isLandArmy(counter.getType())))
-                    .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
-            List<Unit> conscriptUnits = getTables().getUnits().stream()
-                    .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
-                            unit.getAction() == UnitActionEnum.MAINT_WAR &&
-                            unit.isSpecial() &&
-                            StringUtils.equals(unit.getTech().getName(), landTech)).collect(Collectors.toList());
-            Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
+                Map<CounterFaceTypeEnum, Long> conscriptForces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                        .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                                (counter.getVeterans() == null || counter.getVeterans() == 0) && CounterUtil.isLandArmy(counter.getType())))
+                        .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
+                List<Unit> conscriptUnits = getTables().getUnits().stream()
+                        .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                                unit.getAction() == UnitActionEnum.MAINT_WAR &&
+                                unit.isSpecial() &&
+                                StringUtils.equals(unit.getTech().getName(), landTech)).collect(Collectors.toList());
+                Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
 
-            sheet.setUnitMaintExpense(CommonUtil.add(unitMaintenanceCost, unitMaintenanceConscriptCost));
+                sheet.setUnitMaintExpense(CommonUtil.add(unitMaintenanceCost, unitMaintenanceConscriptCost));
+            } else {
+                Map<CounterFaceTypeEnum, Long> forces = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                        .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                                CounterUtil.isArmy(counter.getType())))
+                        .collect(Collectors.groupingBy(CounterEntity::getType, Collectors.counting()));
+                List<BasicForce> basicForces = getTables().getBasicForces().stream()
+                        .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
+                                basicForce.getPeriod().getBegin() <= game.getTurn() &&
+                                basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
+                List<Unit> units = getTables().getUnits().stream()
+                        .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                                (unit.getAction() == UnitActionEnum.MAINT_PEACE || unit.getAction() == UnitActionEnum.MAINT) &&
+                                !unit.isSpecial() &&
+                                (StringUtils.equals(unit.getTech().getName(), landTech) || StringUtils.equals(unit.getTech().getName(), navalTech))).collect(Collectors.toList());
+                Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
+
+                sheet.setUnitMaintExpense(unitMaintenanceCost);
+            }
 
             Tech ownerLandTech = CommonUtil.findFirst(getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), landTech));
             Map<Pair<Integer, Boolean>, Integer> orderedFortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()

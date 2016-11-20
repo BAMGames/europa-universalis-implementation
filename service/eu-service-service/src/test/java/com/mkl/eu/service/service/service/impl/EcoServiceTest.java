@@ -5497,6 +5497,13 @@ public class EcoServiceTest {
         units.add(unit);
         unit = new Unit();
         unit.setCountry("france");
+        unit.setAction(UnitActionEnum.MAINT_PEACE);
+        unit.setType(ForceTypeEnum.ARMY_PLUS);
+        unit.setTech(renaissance);
+        unit.setPrice(60);
+        units.add(unit);
+        unit = new Unit();
+        unit.setCountry("france");
         unit.setAction(UnitActionEnum.MAINT);
         unit.setType(ForceTypeEnum.FLEET_MINUS);
         unit.setTech(carrack);
@@ -5531,6 +5538,8 @@ public class EcoServiceTest {
                 .thenReturn(6, 6, 6, 6, 6, 6)
                         // Then 2 1/2, each with a secondary failure then a critical hit for Techs
                 .thenReturn(5, 5, 5, 5, 6);
+
+        when(oeUtil.getWarStatus(game, france)).thenReturn(WarStatusEnum.CLASSIC_WAR);
 
         diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
 
@@ -5672,6 +5681,14 @@ public class EcoServiceTest {
         Assert.assertEquals(1, newTfis.size());
         Assert.assertEquals(1, newTfis.get("ZPfrance").size());
         Assert.assertEquals(2, newTfis.get("ZPfrance").get("france").intValue());
+
+        when(oeUtil.getWarStatus(game, france)).thenReturn(WarStatusEnum.PEACE);
+
+        diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
+
+        Assert.assertEquals(140, france.getEconomicalSheets().get(0).getUnitMaintExpense().intValue());
+        Assert.assertEquals(1, france.getEconomicalSheets().get(0).getFortMaintExpense().intValue());
+        Assert.assertEquals(1, france.getEconomicalSheets().get(0).getMissMaintExpense().intValue());
     }
 
     @Test

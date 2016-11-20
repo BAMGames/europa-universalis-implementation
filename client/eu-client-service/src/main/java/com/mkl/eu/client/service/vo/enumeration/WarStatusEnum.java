@@ -17,7 +17,7 @@ public enum WarStatusEnum {
     private boolean taxes;
     // TODO notion of army levies
     // TODO notion of bonus at exchequer test
-    // TODO notion of blocked trade
+    // TODO notion of blocked trade (maybe)
 
     /**
      * Constructor.
