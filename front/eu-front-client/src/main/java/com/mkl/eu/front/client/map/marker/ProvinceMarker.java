@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.client.service.vo.enumeration.TradeZoneTypeEnum;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -292,7 +293,13 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     /** @return the stacks. */
     @Override
     public List<StackMarker> getStacks() {
-        return stacks;
+        List<StackMarker> allStacks = new ArrayList<>();
+
+        allStacks.addAll(stacks);
+        allStacks.addAll(stacksFortress);
+        allStacks.addAll(stacksPort);
+
+        return allStacks;
     }
 
     /** {@inheritDoc} */
@@ -480,6 +487,14 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
     @Override
     public int getFortressLevel() {
         return getIntProperty(PROP_EU_FORTRESS);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isTradeZone() {
+        String type = getStringProperty(PROP_TZ_TYPE);
+        return StringUtils.equals(TradeZoneTypeEnum.ZM.name(), type) ||
+                StringUtils.equals(TradeZoneTypeEnum.ZP.name(), type);
     }
 
     /**

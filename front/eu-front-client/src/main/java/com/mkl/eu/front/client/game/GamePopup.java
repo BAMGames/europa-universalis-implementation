@@ -791,6 +791,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             if (attribute != null) {
                 admAct.setCounterFaceType(CounterFaceTypeEnum.valueOf(attribute.getValue()));
             }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COLUMN);
+            if (attribute != null) {
+                admAct.setColumn(Integer.parseInt(attribute.getValue()));
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.BONUS);
+            if (attribute != null) {
+                admAct.setBonus(Integer.parseInt(attribute.getValue()));
+            }
         } else {
             LOGGER.error("Missing or wrong country in adm act add event.");
         }

@@ -158,6 +158,12 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isTradeZone() {
+        return getFirstMapMarker().isTradeZone();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setProperties(HashMap<String, Object> props) {
         HashMap<String, Object> properties = null;
         if (props != null) {

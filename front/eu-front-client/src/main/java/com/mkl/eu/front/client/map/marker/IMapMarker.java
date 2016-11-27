@@ -157,4 +157,9 @@ public interface IMapMarker {
      * @return the level of the natural fortress in the province.
      */
     int getFortressLevel();
+
+    /**
+     * @return whether the province is a tradezone or no.
+     */
+    boolean isTradeZone();
 }

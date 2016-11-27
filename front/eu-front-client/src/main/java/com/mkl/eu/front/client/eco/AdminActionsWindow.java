@@ -25,6 +25,7 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
+import com.mkl.eu.front.client.map.marker.CounterMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -103,16 +104,20 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private ChoiceBox<Counter> maintenanceCountersChoice;
 
     /********************************************/
-    /**        Nodes about purchase          */
+    /**        Nodes about purchase             */
     /********************************************/
     /** The TitledPane containing all the other nodes. */
     private TitledPane purchasePane;
     /** The TableView containing the already planned actions. */
     private TableView<AdministrativeAction> purchaseTable;
-    /** The ChoiceBox containing the remaining counters. */
-    private ChoiceBox<IMapMarker> purchaseProvincesChoice;
-    /** The ChoiceBox containing the type of counters that can be added. */
-    private ChoiceBox<CounterFaceTypeEnum> purchaseTypeChoice;
+
+    /********************************************/
+    /**        Nodes about TFI                  */
+    /********************************************/
+    /** The TitledPane containing all the other nodes. */
+    private TitledPane tfiPane;
+    /** The TableView containing the already planned actions. */
+    private TableView<AdministrativeAction> tfiTable;
 
     /**
      * Constructor.
@@ -163,9 +168,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         Node unitMaintenancePane = createMaintenanceNode(country);
         Node unitPurchasePane = createPurchaseNode(country);
+        Node tfiPane = createTfiNode(country);
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane);
+        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane);
 
         tab.setContent(vBox);
 
@@ -280,7 +286,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 processDiffEvent(diff);
             } catch (Exception e) {
                 LOGGER.error("Error when creating room.", e);
-                // TODO exception handling
+
+                UIUtil.showException(e, globalConfiguration, message);
             }
         });
 
@@ -483,7 +490,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         HBox hBox = new HBox();
 
-        purchaseProvincesChoice = new ChoiceBox<>();
+        ChoiceBox<IMapMarker> purchaseProvincesChoice = new ChoiceBox<>();
         purchaseProvincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
             /** {@inheritDoc} */
             @Override
@@ -498,7 +505,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        purchaseTypeChoice = new ChoiceBox<>();
+        ChoiceBox<CounterFaceTypeEnum> purchaseTypeChoice = new ChoiceBox<>();
         purchaseTypeChoice.converterProperty().set(new StringConverter<CounterFaceTypeEnum>() {
             /** {@inheritDoc} */
             @Override
@@ -560,6 +567,16 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                     purchaseTypeChoice.setItems(null);
                 } else {
                     List<CounterFaceTypeEnum> faces = forces.stream().filter(force -> newValue.isPort() || force.getTech().isLand()).flatMap(force -> getFacesFromPurchaseForce(force.getType(), country.getName()).stream()).collect(Collectors.toList());
+                    CounterFaceTypeEnum fortress = CommonUtil.findFirst(newValue.getStacks().stream()
+                                    .flatMap(s -> s.getCounters().stream())
+                                    .map(CounterMarker::getType),
+                            CounterUtil::isFortress);
+                    int fortressLevel = newValue.getFortressLevel();
+                    if (fortress != null) {
+                        fortressLevel = CounterUtil.getFortressLevelFromType(fortress);
+                    }
+                    List<CounterFaceTypeEnum> nextFortresses = CounterUtil.getFortressesFromLevel(fortressLevel + 1);
+                    faces.addAll(nextFortresses);
                     purchaseTypeChoice.setItems(FXCollections.observableArrayList(faces));
                 }
             }
@@ -581,7 +598,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         admAct.getType() == AdminActionTypeEnum.PU)
                 .collect(Collectors.toList());
 
-        Map<Boolean, Integer> currentPurchase = actions.stream().collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType()))));
+        Map<Boolean, Integer> currentPurchase = actions.stream()
+                .filter(a -> !CounterUtil.isFortress(a.getCounterFaceType()))
+                .collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType()))));
         Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getPeriod().getBegin() <= game.getTurn() &&
@@ -670,6 +689,118 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * Create the node for the trade fleet implantation.
+     *
+     * @param country of the current player.
+     * @return the node for the unit purchase.
+     */
+    private Node createTfiNode(PlayableCountry country) {
+        tfiPane = new TitledPane();
+
+        tfiTable = new TableView<>();
+        configureAdminActionTable(tfiTable, this::removeAdminAction);
+
+        HBox hBox = new HBox();
+
+        ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
+        provincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(IMapMarker object) {
+                return message.getMessage(object.getId(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public IMapMarker fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
+        investChoice.converterProperty().set(new StringConverter<InvestmentEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(InvestmentEnum object) {
+                return message.getMessage("admin_action.investment." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public InvestmentEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+        btn.setOnAction(event -> {
+            IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
+            InvestmentEnum type = investChoice.getSelectionModel().getSelectedItem();
+
+            Request<AddAdminActionRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), type));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.addAdminAction(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when creating administrative action.", e);
+
+                UIUtil.showException(e, globalConfiguration, message);
+            }
+        });
+
+        hBox.getChildren().addAll(provincesChoice, investChoice, btn);
+
+        VBox vBox = new VBox();
+
+        vBox.getChildren().addAll(tfiTable, hBox);
+
+        tfiPane.setContent(vBox);
+
+        provincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+                .filter(IMapMarker::isTradeZone).collect(Collectors.toList())));
+
+        investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
+
+        updateTfiNode(country);
+
+        return tfiPane;
+    }
+
+    /**
+     * Update the trade fleet implantation node with the current game.
+     *
+     * @param country of the current player.
+     */
+    private void updateTfiNode(PlayableCountry country) {
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        admAct.getType() == AdminActionTypeEnum.TFI)
+                .collect(Collectors.toList());
+
+        Long currentTfis = actions.stream()
+                .collect(Collectors.counting());
+        Limit limitTfis = CommonUtil.findFirst(globalConfiguration.getTables().getLimits().stream(),
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn() &&
+                        limit.getType() == LimitTypeEnum.ACTION_TFI);
+        Integer maxTfis = 0;
+        if (limitTfis != null) {
+            maxTfis = limitTfis.getNumber();
+        }
+
+        tfiPane.setText(message.getMessage("admin_action.form.tfi", new Object[]{currentTfis, maxTfis}, globalConfiguration.getLocale()));
+        tfiTable.setItems(FXCollections.observableArrayList(actions));
+    }
+
+    /**
      * Method called for removing a PLANNED administrative action.
      *
      * @param param the administrative action to remove.
@@ -688,7 +819,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             processDiffEvent(diff);
         } catch (Exception e) {
             LOGGER.error("Error when creating room.", e);
-            // TODO exception handling
+
+            UIUtil.showException(e, globalConfiguration, message);
         }
     }
 
@@ -923,6 +1055,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                                 break;
                             case PU:
                                 updatePurchaseNode(country);
+                                break;
+                            case TFI:
+                                updateTfiNode(country);
                                 break;
                             default:
                                 break;
