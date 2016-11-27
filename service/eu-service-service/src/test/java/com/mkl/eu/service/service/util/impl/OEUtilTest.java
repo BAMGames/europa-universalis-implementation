@@ -20,7 +20,6 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -294,6 +293,7 @@ public class OEUtilTest {
         tables.getPeriods().get(1).setBegin(25);
         tables.getPeriods().get(1).setEnd(30);
 
+        Assert.assertEquals(0, oeUtil.getFti(game, tables, null));
         Assert.assertEquals(1, oeUtil.getFti(game, tables, "france"));
         Assert.assertEquals(3, oeUtil.getFti(game, tables, "angleterre"));
         Assert.assertEquals(2, oeUtil.getFti(game, tables, "sabaudia"));
@@ -307,6 +307,7 @@ public class OEUtilTest {
 
         game.setTurn(27);
 
+        Assert.assertEquals(0, oeUtil.getFti(game, tables, null));
         Assert.assertEquals(1, oeUtil.getFti(game, tables, "france"));
         Assert.assertEquals(3, oeUtil.getFti(game, tables, "angleterre"));
         Assert.assertEquals(3, oeUtil.getFti(game, tables, "sabaudia"));
@@ -320,6 +321,7 @@ public class OEUtilTest {
 
         game.setTurn(35);
 
+        Assert.assertEquals(0, oeUtil.getFti(game, tables, null));
         Assert.assertEquals(1, oeUtil.getFti(game, tables, "france"));
         Assert.assertEquals(3, oeUtil.getFti(game, tables, "angleterre"));
         Assert.assertEquals(2, oeUtil.getFti(game, tables, "sabaudia"));
@@ -353,6 +355,7 @@ public class OEUtilTest {
         tables.getPeriods().get(1).setBegin(25);
         tables.getPeriods().get(1).setEnd(30);
 
+        Assert.assertEquals(0, oeUtil.getDti(game, tables, null));
         Assert.assertEquals(3, oeUtil.getDti(game, tables, "france"));
         Assert.assertEquals(1, oeUtil.getDti(game, tables, "angleterre"));
         Assert.assertEquals(2, oeUtil.getDti(game, tables, "sabaudia"));
@@ -366,6 +369,7 @@ public class OEUtilTest {
 
         game.setTurn(27);
 
+        Assert.assertEquals(0, oeUtil.getDti(game, tables, null));
         Assert.assertEquals(3, oeUtil.getDti(game, tables, "france"));
         Assert.assertEquals(1, oeUtil.getDti(game, tables, "angleterre"));
         Assert.assertEquals(3, oeUtil.getDti(game, tables, "sabaudia"));
@@ -379,6 +383,7 @@ public class OEUtilTest {
 
         game.setTurn(35);
 
+        Assert.assertEquals(0, oeUtil.getDti(game, tables, null));
         Assert.assertEquals(3, oeUtil.getDti(game, tables, "france"));
         Assert.assertEquals(1, oeUtil.getDti(game, tables, "angleterre"));
         Assert.assertEquals(2, oeUtil.getDti(game, tables, "sabaudia"));

@@ -60,6 +60,10 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public int getFti(GameEntity game, Tables tables, String country) {
+        // No country, no FTI
+        if (StringUtils.isEmpty(country)) {
+            return 0;
+        }
         // Default value for fti is 2
         int fti = 2;
         // If the country is a major, then we take its own fti value
