@@ -2,6 +2,9 @@ package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Utility around counters.
  *
@@ -138,6 +141,41 @@ public final class CounterUtil {
         }
 
         return fortress;
+    }
+
+    /**
+     * @param level of the fortresses.
+     * @return the List of counter types of fortresses given a level.
+     */
+    public static List<CounterFaceTypeEnum> getFortressesFromLevel(int level) {
+        List<CounterFaceTypeEnum> fortresses = new ArrayList<>();
+
+        switch (level) {
+            case 0:
+                fortresses.add(CounterFaceTypeEnum.FORT);
+                break;
+            case 1:
+                fortresses.add(CounterFaceTypeEnum.FORTRESS_1);
+                break;
+            case 2:
+                fortresses.add(CounterFaceTypeEnum.FORTRESS_2);
+                fortresses.add(CounterFaceTypeEnum.ARSENAL_2);
+                break;
+            case 3:
+                fortresses.add(CounterFaceTypeEnum.FORTRESS_3);
+                fortresses.add(CounterFaceTypeEnum.ARSENAL_3);
+                break;
+            case 4:
+                fortresses.add(CounterFaceTypeEnum.FORTRESS_4);
+                fortresses.add(CounterFaceTypeEnum.ARSENAL_4);
+                break;
+            case 5:
+                fortresses.add(CounterFaceTypeEnum.FORTRESS_5);
+                break;
+
+        }
+
+        return fortresses;
     }
 
     /**
