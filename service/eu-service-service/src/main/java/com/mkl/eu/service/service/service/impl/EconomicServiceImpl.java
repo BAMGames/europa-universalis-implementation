@@ -578,11 +578,23 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException
      */
     private Integer computeFortressPurchase(GameEntity game, PlayableCountryEntity country, List<StackEntity> stacks, AbstractProvinceEntity prov, CounterFaceTypeEnum faceType) throws FunctionalException {
+        List<AdministrativeActionEntity> actions = country.getAdministrativeActions().stream()
+                .filter(a -> a.getTurn().equals(game.getTurn()) && a.getType() == AdminActionTypeEnum.PU && a.getStatus() == AdminActionStatusEnum.PLANNED
+                        && StringUtils.equals(prov.getName(), a.getProvince()) && CounterUtil.isFortress(a.getCounterFaceType()))
+                .collect(Collectors.toList());
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(actions == null || actions.isEmpty()).setCodeError(IConstantsServiceException.FORTRESS_ALREADY_PLANNED)
+                .setMsgFormat("{1}: {0} The fortress {2} is already PLANNED on the province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, prov.getName()));
+
+
         int actualLevel = 0;
         if (prov instanceof EuropeanProvinceEntity) {
             if (((EuropeanProvinceEntity) prov).getFortress() != null) {
                 actualLevel = ((EuropeanProvinceEntity) prov).getFortress();
             }
+
+            failIfTrue(new CheckForThrow<Boolean>().setTest(CounterUtil.isArsenal(faceType)).setCodeError(IConstantsServiceException.COUNTER_CANT_PURCHASE)
+                    .setMsgFormat("{1}: {0} The counter face type {2} cannot be purchased on province {3}.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_COUNTER_FACE_TYPE).setParams(METHOD_ADD_ADM_ACT, faceType, prov.getName()));
         }
         CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()),
                 counter -> StringUtils.equals(country.getName(), counter.getCountry()) && CounterUtil.isFortress(counter.getType()));

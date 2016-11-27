@@ -979,6 +979,12 @@ public class EcoServiceTest {
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setLandTech(Tech.MEDIEVAL);
+        game.getCountries().get(0).getAdministrativeActions().add(new AdministrativeActionEntity());
+        game.getCountries().get(0).getAdministrativeActions().get(0).setTurn(1);
+        game.getCountries().get(0).getAdministrativeActions().get(0).setStatus(AdminActionStatusEnum.PLANNED);
+        game.getCountries().get(0).getAdministrativeActions().get(0).setType(AdminActionTypeEnum.PU);
+        game.getCountries().get(0).getAdministrativeActions().get(0).setCounterFaceType(CounterFaceTypeEnum.FORTRESS_2);
+        game.getCountries().get(0).getAdministrativeActions().get(0).setProvince("poitou");
 
         when(gameDao.lock(12L)).thenReturn(game);
 
@@ -1217,6 +1223,27 @@ public class EcoServiceTest {
         techs.add(tech);
         tables.setTechs(techs);
         EconomicServiceImpl.TABLES = tables;
+
+        request.getRequest().setProvince("poitou");
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because fortress is already planned");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.FORTRESS_ALREADY_PLANNED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("corn");
+        request.getRequest().setCounterFaceType(CounterFaceTypeEnum.ARSENAL_3);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because arsenal cant be purchased in this province (not rotw)");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_CANT_PURCHASE, e.getCode());
+            Assert.assertEquals("addAdminAction.request.counterFaceType", e.getParams()[0]);
+        }
 
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FORTRESS_3);
 

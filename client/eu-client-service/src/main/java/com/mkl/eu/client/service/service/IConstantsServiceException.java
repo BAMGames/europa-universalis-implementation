@@ -143,7 +143,7 @@ public interface IConstantsServiceException {
      * <ul>
      * <li>0: Action being performed (or object being updated).</li>
      * <li>1: type of the counter</li>
-     * <li>1: province target of the action</li>
+     * <li>2: province target of the action</li>
      * </ul>
      * </p>
      */
@@ -163,6 +163,21 @@ public interface IConstantsServiceException {
      * </p>
      */
     String FORTRESS_CANT_PURCHASE = "exception.eu.admin_action.fortress_cant_purchase";
+
+    /**
+     * <p>
+     * Exception thrown when a fortress can't be purchased because it is already planned.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: type of the counter</li>
+     * <li>2: province target of the action</li>
+     * </ul>
+     * </p>
+     */
+    String FORTRESS_ALREADY_PLANNED = "exception.eu.admin_action.fortress_already_planned";
 
     /**
      * <p>
