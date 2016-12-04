@@ -89,6 +89,7 @@ public class EUApplication extends Application {
 
 
         globalConfiguration.setTables(tablesService.getTables());
+        globalConfiguration.setReferential(tablesService.getReferential());
 
         for (int i = 0; i < games.size(); i++) {
             GameLight game = games.get(i);

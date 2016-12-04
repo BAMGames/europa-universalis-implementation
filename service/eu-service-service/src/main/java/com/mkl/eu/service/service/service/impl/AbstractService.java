@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.service.INameConstants;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
@@ -39,8 +40,10 @@ import java.util.Map;
 public abstract class AbstractService implements INameConstants {
     /** Logger. */
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
-    /** Tables of the game cached. */
+    /** Tables cached. */
     public static Tables TABLES;
+    /** Referential cached. */
+    public static Referential REFERENTIAL;
     /** Error message when a parameter is missing. */
     public static final String MSG_MISSING_PARAMETER = "{1}: {0} missing.";
     /** Error message when an object is not found (in database mostly). */
@@ -79,10 +82,17 @@ public abstract class AbstractService implements INameConstants {
     protected ChatMapping chatMapping;
 
     /**
-     * @return the Tables of the game.
+     * @return the Tables.
      */
     protected Tables getTables() {
         return TABLES;
+    }
+
+    /**
+     * @return the Referential.
+     */
+    protected Referential getReferential() {
+        return REFERENTIAL;
     }
 
     /**

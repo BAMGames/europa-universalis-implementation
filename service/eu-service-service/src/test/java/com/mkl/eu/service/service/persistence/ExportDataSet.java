@@ -96,7 +96,7 @@ public class ExportDataSet {
      * @throws Exception exception.
      */
     private static void exportReferentiel(IDatabaseConnection connection) throws Exception {
-        export(new String[]{"R_COUNTRY"},
+        export(new String[]{"R_COUNTRY", "R_BASIC_FORCE", "R_LIMIT", "R_REINFORCEMENTS"},
                 "src/test/resources/com/mkl/eu/service/service/persistence/referentiel", connection);
     }
 

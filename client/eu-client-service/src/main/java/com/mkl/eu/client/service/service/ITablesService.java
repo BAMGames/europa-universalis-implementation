@@ -1,5 +1,6 @@
 package com.mkl.eu.client.service.service;
 
+import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
 
 import javax.jws.WebResult;
@@ -21,7 +22,15 @@ public interface ITablesService extends INameConstants {
     Tables getTables();
 
     /**
-     * Refresh the tables.
+     * Retrieve the referential described in the appendix.
+     *
+     * @return the referential.
+     */
+    @WebResult(name = RESPONSE)
+    Referential getReferential();
+
+    /**
+     * Refresh the tables and the referentials.
      */
     void refresh();
 }

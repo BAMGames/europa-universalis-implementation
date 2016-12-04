@@ -3,9 +3,13 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.ITablesService;
+import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.service.service.mapping.ref.ReferentialMapping;
 import com.mkl.eu.service.service.mapping.tables.TablesMapping;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.tables.*;
+import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -28,9 +32,15 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
     /** Tables DAO. */
     @Autowired
     private ITablesDao tablesDao;
+    /** Country referential DAO. */
+    @Autowired
+    private ICountryDao countryDao;
     /** Tables Mapping. */
     @Autowired
     private TablesMapping tablesMapping;
+    /** Referential Mapping. */
+    @Autowired
+    private ReferentialMapping referentialMapping;
 
     /** {@inheritDoc} */
     @Override
@@ -40,14 +50,25 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
 
     /** {@inheritDoc} */
     @Override
+    public Referential getReferential() {
+        return super.getReferential();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void refresh() {
-        cacheTables();
+        cacheData();
     }
 
     /** {@inheritDoc} */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        refresh();
+    }
+
+    protected void cacheData() {
         cacheTables();
+        cacheReferential();
     }
 
     /**
@@ -72,5 +93,15 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
         tablesMapping.fillLimitsTables(limits, objectsCreated, TABLES);
         List<ResultEntity> results = tablesDao.getResults();
         tablesMapping.fillResultsTables(results, TABLES);
+    }
+
+    /**
+     * Cache the referential.
+     */
+    protected void cacheReferential() {
+        REFERENTIAL = new Referential();
+
+        List<CountryEntity> countries = countryDao.readAll();
+        referentialMapping.fillCountriesReferential(countries, REFERENTIAL);
     }
 }

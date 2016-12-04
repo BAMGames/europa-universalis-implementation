@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.main;
 
+import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +15,10 @@ import java.util.Locale;
 public class GlobalConfiguration {
     /** Locale of the application. */
     private Locale locale = Locale.getDefault();
-    /** Tables of the game. */
+    /** Tables. */
     private Tables tables;
+    /** Referential. */
+    private Referential referential;
 
     /** @return the locale. */
     public Locale getLocale() {
@@ -35,5 +38,15 @@ public class GlobalConfiguration {
     /** @param tables the tables to set. */
     public void setTables(Tables tables) {
         this.tables = tables;
+    }
+
+    /** @return the referential. */
+    public Referential getReferential() {
+        return referential;
+    }
+
+    /** @param referential the referential to set. */
+    public void setReferential(Referential referential) {
+        this.referential = referential;
     }
 }

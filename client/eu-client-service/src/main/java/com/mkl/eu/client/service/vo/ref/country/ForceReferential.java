@@ -1,43 +1,23 @@
-package com.mkl.eu.service.service.persistence.oe.ref.country;
+package com.mkl.eu.client.service.vo.ref.country;
 
+import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
-import com.mkl.eu.service.service.persistence.oe.IEntity;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 /**
- * Entity for a force of a country (eg 2 A+ or 3 LD).
+ * Referential VO for a force of a country (eg 2 A+ or 3 LD).
  * Can be used for basic forces or reinforcements.
  *
  * @author MKL.
  */
-@MappedSuperclass
-public class ForceEntity implements IEntity, Serializable {
-    /** Id. */
-    private Long id;
+public class ForceReferential extends EuObject {
     /** Number of this type of counter. */
     private Integer number;
     /** Type of limit. */
     private ForceTypeEnum type;
     /** Country owning these forces. */
-    private CountryEntity country;
-
-    /** @return the id. */
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "ID")
-    public Long getId() {
-        return id;
-    }
-
-    /** @param id the id to set. */
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private String country;
 
     /** @return the number. */
-    @Column(name = "NUMBER")
     public Integer getNumber() {
         return number;
     }
@@ -48,8 +28,6 @@ public class ForceEntity implements IEntity, Serializable {
     }
 
     /** @return the type. */
-    @Column(name = "TYPE")
-    @Enumerated(EnumType.STRING)
     public ForceTypeEnum getType() {
         return type;
     }
@@ -60,14 +38,12 @@ public class ForceEntity implements IEntity, Serializable {
     }
 
     /** @return the country. */
-    @ManyToOne
-    @JoinColumn(name = "ID_R_COUNTRY")
-    public CountryEntity getCountry() {
+    public String getCountry() {
         return country;
     }
 
     /** @param country the country to set. */
-    public void setCountry(CountryEntity country) {
+    public void setCountry(String country) {
         this.country = country;
     }
 }
