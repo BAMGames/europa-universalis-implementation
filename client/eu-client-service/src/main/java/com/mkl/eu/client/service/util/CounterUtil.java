@@ -357,6 +357,82 @@ public final class CounterUtil {
 
     /**
      * @param type of the counter to test.
+     * @return <code>true</code> if the counter face type is the one of a manufacture, <code>false</code> otherwise.
+     */
+    public static boolean isManufacture(CounterTypeEnum type) {
+        boolean mnu = false;
+
+        if (type != null) {
+            switch (type) {
+                case MNU_ART:
+                case MNU_CEREALS:
+                case MNU_CLOTHES:
+                case MNU_FISH:
+                case MNU_INSTRUMENTS:
+                case MNU_METAL:
+                case MNU_METAL_SCHLESIEN:
+                case MNU_SALT:
+                case MNU_WINE:
+                case MNU_WOOD:
+                    mnu = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return mnu;
+    }
+
+    /**
+     * @param type of the counter to test.
+     * @return The CounterFaceTypeEnum of the manufacture minus correspondig to the counter type.
+     */
+    public static CounterFaceTypeEnum getManufactureFace(CounterTypeEnum type) {
+        CounterFaceTypeEnum mnu = null;
+
+        if (type != null) {
+            switch (type) {
+                case MNU_ART:
+                    mnu = CounterFaceTypeEnum.MNU_ART_MINUS;
+                    break;
+                case MNU_CEREALS:
+                    mnu = CounterFaceTypeEnum.MNU_CEREALS_MINUS;
+                    break;
+                case MNU_CLOTHES:
+                    mnu = CounterFaceTypeEnum.MNU_CLOTHES_MINUS;
+                    break;
+                case MNU_FISH:
+                    mnu = CounterFaceTypeEnum.MNU_FISH_MINUS;
+                    break;
+                case MNU_INSTRUMENTS:
+                    mnu = CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS;
+                    break;
+                case MNU_METAL:
+                    mnu = CounterFaceTypeEnum.MNU_METAL_MINUS;
+                    break;
+                case MNU_METAL_SCHLESIEN:
+                    mnu = CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS;
+                    break;
+                case MNU_SALT:
+                    mnu = CounterFaceTypeEnum.MNU_SALT_MINUS;
+                    break;
+                case MNU_WINE:
+                    mnu = CounterFaceTypeEnum.MNU_WINE_MINUS;
+                    break;
+                case MNU_WOOD:
+                    mnu = CounterFaceTypeEnum.MNU_WOOD_MINUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return mnu;
+    }
+
+    /**
+     * @param type of the counter to test.
      * @return the level of the manufacture (0 if the type is not a manufacture).
      */
     public static int getManufactureLevel(CounterFaceTypeEnum type) {
