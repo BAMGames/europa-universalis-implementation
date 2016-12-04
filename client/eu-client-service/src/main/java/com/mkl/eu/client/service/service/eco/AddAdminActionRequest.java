@@ -74,6 +74,23 @@ public class AddAdminActionRequest {
         this.investment = investment;
     }
 
+    /**
+     * Constructor for domestic operation.
+     *
+     * @param idCountry       the idCountry to set.
+     * @param type            the type to set.
+     * @param province        the province to set.
+     * @param counterFaceType the counterFaceType to set.
+     * @param investment      the investment to set.
+     */
+    public AddAdminActionRequest(Long idCountry, AdminActionTypeEnum type, String province, CounterFaceTypeEnum counterFaceType, InvestmentEnum investment) {
+        this.idCountry = idCountry;
+        this.type = type;
+        this.province = province;
+        this.counterFaceType = counterFaceType;
+        this.investment = investment;
+    }
+
 
     /** @return the idCountry. */
     public Long getIdCountry() {

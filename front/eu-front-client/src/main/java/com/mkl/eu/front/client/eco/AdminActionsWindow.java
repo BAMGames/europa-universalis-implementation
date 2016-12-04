@@ -16,6 +16,7 @@ import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.BasicForce;
 import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Tech;
@@ -119,6 +120,14 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /** The TableView containing the already planned actions. */
     private TableView<AdministrativeAction> tfiTable;
 
+    /********************************************/
+    /**        Nodes about Domestic Operation   */
+    /********************************************/
+    /** The TitledPane containing all the other nodes. */
+    private TitledPane domesticPane;
+    /** The TableView containing the already planned actions. */
+    private TableView<AdministrativeAction> domesticTable;
+
     /**
      * Constructor.
      *
@@ -169,9 +178,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Node unitMaintenancePane = createMaintenanceNode(country);
         Node unitPurchasePane = createPurchaseNode(country);
         Node tfiPane = createTfiNode(country);
+        Node domesticPane = createDomesticOperationNode(country);
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane);
+        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane);
 
         tab.setContent(vBox);
 
@@ -306,7 +316,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
     /**
      * @param actual the actual fortress type.
-     * @param level of the natural fortress of the province.
+     * @param level  of the natural fortress of the province.
      * @return the potential lower fortresses that can be maintained given the actual fortress type and the natural fortress level of the province.
      */
     private List<CounterFaceTypeEnum> getLowerFortresses(CounterFaceTypeEnum actual, int level) {
@@ -735,13 +745,13 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
         btn.setOnAction(event -> {
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
-            InvestmentEnum type = investChoice.getSelectionModel().getSelectedItem();
+            InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
             Request<AddAdminActionRequest> request = new Request<>();
             authentHolder.fillAuthentInfo(request);
             gameConfig.fillGameInfo(request);
             gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), type));
+            request.setRequest(new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), investment));
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = economicService.addAdminAction(request);
@@ -798,6 +808,181 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         tfiPane.setText(message.getMessage("admin_action.form.tfi", new Object[]{currentTfis, maxTfis}, globalConfiguration.getLocale()));
         tfiTable.setItems(FXCollections.observableArrayList(actions));
+    }
+
+    /**
+     * Create the node for the domestic operation (MNU, DTI, FTI, taxes).
+     *
+     * @param country of the current player.
+     * @return the node for the unit purchase.
+     */
+    private Node createDomesticOperationNode(PlayableCountry country) {
+        domesticPane = new TitledPane();
+
+        domesticTable = new TableView<>();
+        configureAdminActionTable(domesticTable, this::removeAdminAction);
+
+        HBox hBox = new HBox();
+
+        ChoiceBox<AdminActionTypeEnum> typesChoice = new ChoiceBox<>();
+        typesChoice.converterProperty().set(new StringConverter<AdminActionTypeEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(AdminActionTypeEnum object) {
+                return message.getMessage("admin_action.type." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public AdminActionTypeEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
+        provincesChoice.setVisible(false);
+        provincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(IMapMarker object) {
+                return message.getMessage(object.getId(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public IMapMarker fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<CounterFaceTypeEnum> faceChoice = new ChoiceBox<>();
+        faceChoice.setVisible(false);
+        faceChoice.converterProperty().set(new StringConverter<CounterFaceTypeEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(CounterFaceTypeEnum object) {
+                return object.name();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public CounterFaceTypeEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
+        investChoice.setVisible(false);
+        investChoice.converterProperty().set(new StringConverter<InvestmentEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(InvestmentEnum object) {
+                return message.getMessage("admin_action.investment." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public InvestmentEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        typesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != oldValue) {
+                if (newValue == AdminActionTypeEnum.MNU) {
+                    provincesChoice.setVisible(true);
+                    provincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+                            .filter(marker -> StringUtils.equals(country.getName(), marker.getOwner()) &&
+                                    StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
+                    faceChoice.setVisible(true);
+                    CountryReferential countryRef = CommonUtil.findFirst(globalConfiguration.getReferential().getCountries(),
+                            c -> StringUtils.equals(c.getName(), country.getName()));
+                    List<CounterFaceTypeEnum> mnus = countryRef.getLimits().stream()
+                            .filter(l -> CounterUtil.isManufacture(l.getType()))
+                            .map(l -> CounterUtil.getManufactureFace(l.getType()))
+                            .collect(Collectors.toList());
+                    faceChoice.setItems(FXCollections.observableArrayList(mnus));
+                    investChoice.setVisible(true);
+                    investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
+                } else if (newValue == AdminActionTypeEnum.DTI || newValue == AdminActionTypeEnum.FTI) {
+                    provincesChoice.setVisible(false);
+                    provincesChoice.setItems(FXCollections.observableArrayList());
+                    faceChoice.setVisible(false);
+                    faceChoice.setItems(FXCollections.observableArrayList());
+                    investChoice.setVisible(true);
+                    investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
+                } else {
+                    provincesChoice.setVisible(false);
+                    provincesChoice.setItems(FXCollections.observableArrayList());
+                    faceChoice.setVisible(false);
+                    faceChoice.setItems(FXCollections.observableArrayList());
+                    investChoice.setVisible(false);
+                    investChoice.setItems(FXCollections.observableArrayList());
+                }
+            }
+        });
+
+        Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+        btn.setOnAction(event -> {
+            AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
+            IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
+            String provinceName = null;
+            if (province != null) {
+                provinceName = province.getId();
+            }
+            CounterFaceTypeEnum face = faceChoice.getSelectionModel().getSelectedItem();
+            InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
+
+            Request<AddAdminActionRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new AddAdminActionRequest(country.getId(), type, provinceName, face, investment));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.addAdminAction(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when creating administrative action.", e);
+
+                UIUtil.showException(e, globalConfiguration, message);
+            }
+        });
+
+        hBox.getChildren().addAll(typesChoice, provincesChoice, faceChoice, investChoice, btn);
+
+        VBox vBox = new VBox();
+
+        vBox.getChildren().addAll(domesticTable, hBox);
+
+        domesticPane.setContent(vBox);
+
+        typesChoice.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.MNU, AdminActionTypeEnum.DTI, AdminActionTypeEnum.FTI, AdminActionTypeEnum.EXL));
+
+        updateDomesticOperationNode(country);
+
+        return domesticPane;
+    }
+
+    /**
+     * Update the trade fleet implantation node with the current game.
+     *
+     * @param country of the current player.
+     */
+    private void updateDomesticOperationNode(PlayableCountry country) {
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        (admAct.getType() == AdminActionTypeEnum.MNU || admAct.getType() == AdminActionTypeEnum.EXL
+                                || admAct.getType() == AdminActionTypeEnum.DTI || admAct.getType() == AdminActionTypeEnum.FTI))
+                .collect(Collectors.toList());
+
+        Long currentDoms = actions.stream()
+                .collect(Collectors.counting());
+
+        domesticPane.setText(message.getMessage("admin_action.form.domestic_operations", new Object[]{currentDoms, 1}, globalConfiguration.getLocale()));
+        domesticTable.setItems(FXCollections.observableArrayList(actions));
     }
 
     /**
@@ -980,7 +1165,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 info.append(" -> ").append(action.getCounterFaceType());
             }
         } else {
-            String provinceName = message.getMessage(action.getProvince(), null, globalConfiguration.getLocale());
+            String provinceName = message.getMessage(action.getProvince(), null, "", globalConfiguration.getLocale());
             info.append(provinceName).append(" - ").append(action.getCounterFaceType());
         }
 
@@ -1058,6 +1243,12 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                                 break;
                             case TFI:
                                 updateTfiNode(country);
+                                break;
+                            case MNU:
+                            case DTI:
+                            case FTI:
+                            case EXL:
+                                updateDomesticOperationNode(country);
                                 break;
                             default:
                                 break;
