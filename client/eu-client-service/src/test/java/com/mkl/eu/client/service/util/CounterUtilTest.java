@@ -257,6 +257,29 @@ public class CounterUtilTest {
         Assert.assertEquals(CounterFaceTypeEnum.MNU_WINE_MINUS, CounterUtil.getManufactureFace(CounterTypeEnum.MNU_WINE));
         Assert.assertEquals(CounterFaceTypeEnum.MNU_WOOD_MINUS, CounterUtil.getManufactureFace(CounterTypeEnum.MNU_WOOD));
         Assert.assertEquals(null, CounterUtil.getManufactureFace(CounterTypeEnum.ARMY));
+
+        Assert.assertEquals(null, CounterUtil.getManufactureCounter(null));
+        Assert.assertEquals(CounterTypeEnum.MNU_ART, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_ART_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_ART, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_ART_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_CEREALS, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_CEREALS_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_CEREALS, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_CEREALS_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_CLOTHES, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_CLOTHES_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_CLOTHES, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_CLOTHES_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_FISH, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_FISH_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_FISH, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_FISH_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_INSTRUMENTS, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_INSTRUMENTS_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_INSTRUMENTS, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_INSTRUMENTS_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_METAL, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_METAL_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_METAL, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_METAL_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_METAL_SCHLESIEN, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_METAL_SCHLESIEN, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_METAL_SCHLESIEN_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_SALT, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_SALT_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_SALT, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_SALT_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_WINE, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_WINE_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_WINE, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_WINE_PLUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_WOOD, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_WOOD_MINUS));
+        Assert.assertEquals(CounterTypeEnum.MNU_WOOD, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.MNU_WOOD_PLUS));
+        Assert.assertEquals(null, CounterUtil.getManufactureCounter(CounterFaceTypeEnum.ARMY_MINUS));
     }
 
     @Test

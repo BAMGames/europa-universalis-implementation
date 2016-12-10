@@ -386,7 +386,7 @@ public final class CounterUtil {
 
     /**
      * @param type of the counter to test.
-     * @return The CounterFaceTypeEnum of the manufacture minus correspondig to the counter type.
+     * @return The CounterFaceTypeEnum of the manufacture minus corresponding to the counter type.
      */
     public static CounterFaceTypeEnum getManufactureFace(CounterTypeEnum type) {
         CounterFaceTypeEnum mnu = null;
@@ -422,6 +422,63 @@ public final class CounterUtil {
                     break;
                 case MNU_WOOD:
                     mnu = CounterFaceTypeEnum.MNU_WOOD_MINUS;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return mnu;
+    }
+
+    /**
+     * @param type of the counter to test.
+     * @return The CounterTypeEnum of the manufacture corresponding to the counter face.
+     */
+    public static CounterTypeEnum getManufactureCounter(CounterFaceTypeEnum type) {
+        CounterTypeEnum mnu = null;
+
+        if (type != null) {
+            switch (type) {
+                case MNU_ART_MINUS:
+                case MNU_ART_PLUS:
+                    mnu = CounterTypeEnum.MNU_ART;
+                    break;
+                case MNU_CEREALS_MINUS:
+                case MNU_CEREALS_PLUS:
+                    mnu = CounterTypeEnum.MNU_CEREALS;
+                    break;
+                case MNU_CLOTHES_MINUS:
+                case MNU_CLOTHES_PLUS:
+                    mnu = CounterTypeEnum.MNU_CLOTHES;
+                    break;
+                case MNU_FISH_MINUS:
+                case MNU_FISH_PLUS:
+                    mnu = CounterTypeEnum.MNU_FISH;
+                    break;
+                case MNU_INSTRUMENTS_MINUS:
+                case MNU_INSTRUMENTS_PLUS:
+                    mnu = CounterTypeEnum.MNU_INSTRUMENTS;
+                    break;
+                case MNU_METAL_MINUS:
+                case MNU_METAL_PLUS:
+                    mnu = CounterTypeEnum.MNU_METAL;
+                    break;
+                case MNU_METAL_SCHLESIEN_MINUS:
+                case MNU_METAL_SCHLESIEN_PLUS:
+                    mnu = CounterTypeEnum.MNU_METAL_SCHLESIEN;
+                    break;
+                case MNU_SALT_MINUS:
+                case MNU_SALT_PLUS:
+                    mnu = CounterTypeEnum.MNU_SALT;
+                    break;
+                case MNU_WINE_MINUS:
+                case MNU_WINE_PLUS:
+                    mnu = CounterTypeEnum.MNU_WINE;
+                    break;
+                case MNU_WOOD_MINUS:
+                case MNU_WOOD_PLUS:
+                    mnu = CounterTypeEnum.MNU_WOOD;
                     break;
                 default:
                     break;
