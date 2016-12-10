@@ -914,9 +914,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                             limit.getPeriod().getBegin() <= game.getTurn() &&
                             limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.summingInt(Limit::getNumber));
 
-            failIfFalse(new CheckForThrow<Boolean>().setTest(actualMnus < maxMnus + 2).setCodeError(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED)
+            failIfFalse(new CheckForThrow<Boolean>().setTest(actualMnus < maxMnus + 2).setCodeError(IConstantsServiceException.COUNTER_LIMIT_EXCEED)
                     .setMsgFormat(MSG_COUNTER_LIMIT_EXCEED)
-                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, type, country.getName(), actualMnus, maxMnus));
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, "MNU", country.getName(), actualMnus, maxMnus + "+2"));
 
             // Cereals manufactures on plains
             provinceOk = (type != CounterFaceTypeEnum.MNU_CEREALS_MINUS && type != CounterFaceTypeEnum.MNU_CEREALS_PLUS)

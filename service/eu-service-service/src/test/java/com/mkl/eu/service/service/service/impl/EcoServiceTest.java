@@ -2611,7 +2611,7 @@ public class EcoServiceTest {
             economicService.addAdminAction(request);
             Assert.fail("Should break because mnu limit was reached");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.ADMIN_ACTION_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.COUNTER_LIMIT_EXCEED, e.getCode());
             Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
         }
 
