@@ -18,6 +18,8 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
+import com.mkl.eu.client.service.vo.ref.country.LimitReferential;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
@@ -975,6 +977,28 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                         .setMsgFormat("{1}: {0} The manufacture {2} can''t be created in the province {3}. Actual: {4}. Expected: {5}.")
                         .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, type, province, province, String.join(", ", provinces)));
             }
+
+            int max = 0;
+            CountryReferential countryRef = CommonUtil.findFirst(REFERENTIAL.getCountries(),
+                    c -> StringUtils.equals(c.getName(), country.getName()));
+            if (countryRef != null) {
+                LimitReferential limit = CommonUtil.findFirst(countryRef.getLimits(),
+                        l -> l.getType() == CounterUtil.getManufactureCounter(type));
+                if (limit != null && limit.getNumber() != null) {
+                    max = limit.getNumber();
+                }
+            }
+            CounterFaceTypeEnum faceMinus = CounterUtil.getManufactureLevel1(type);
+            CounterFaceTypeEnum facePlus = CounterUtil.getManufactureLevel2(type);
+            Long existingTypeMnus = game.getStacks().stream()
+                    .flatMap(s -> s.getCounters().stream())
+                    .filter(c -> StringUtils.equals(c.getCountry(), country.getName()) &&
+                            (c.getType() == faceMinus || c.getType() == facePlus))
+                    .count();
+
+            failIfFalse(new CheckForThrow<Boolean>().setTest(existingTypeMnus < max).setCodeError(IConstantsServiceException.COUNTER_LIMIT_EXCEED)
+                    .setMsgFormat(MSG_COUNTER_LIMIT_EXCEED)
+                    .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_ADD_ADM_ACT, CounterUtil.getManufactureCounter(type).name(), country.getName(), existingTypeMnus, max));
         }
 
         int column = getColumnForDomesticOperation(request, country);

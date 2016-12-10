@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.vo.enumeration.CountryTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.client.service.vo.enumeration.ReligionEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,18 +34,18 @@ public class CountryReferential extends EuObject {
     /** Fidelity of this country (high value means it will stay on diplomatic track. */
     private int fidelity;
     /** Basic forces of the country. List of forces already built when a country begins a war. */
-    private List<BasicForceReferential> basicForces;
+    private List<BasicForceReferential> basicForces = new ArrayList<>();
     /** Reinforcements of the country. List of forces that are created each turn of war. */
-    private List<ReinforcementsReferential> reinforcements;
+    private List<ReinforcementsReferential> reinforcements = new ArrayList<>();
     /** Limit forces. Exhaustive list of counters of the country (except leaders). */
-    private List<LimitReferential> limits;
+    private List<LimitReferential> limits = new ArrayList<>();
     /** TODO conception of preferences. */
     /** Army class of this country. */
     private ArmyClassEnum armyClass;
     /** Capitals of the country (may be empty). */
-    private List<String> capitals;
+    private List<String> capitals = new ArrayList<>();
     /** Provinces of the country (province.defaultOwner is often this country). */
-    private List<String> provinces;
+    private List<String> provinces = new ArrayList<>();
 
     /*********************************************************************************************************
      *                       Diplomatic track  (null for unreachable box)                                      *

@@ -12,6 +12,9 @@ import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.Referential;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
+import com.mkl.eu.client.service.vo.ref.country.LimitReferential;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
@@ -2771,7 +2774,27 @@ public class EcoServiceTest {
         }
 
         when(economicalSheetDao.getOwnedAndControlledProvinces("france", 12L))
-                .thenReturn(new HashMap<String, Integer>());
+                .thenReturn(new HashMap<>());
+
+        Referential ref = new Referential();
+        CountryReferential countryRef = new CountryReferential();
+        countryRef.setName("france");
+        LimitReferential limitRef = new LimitReferential();
+        limitRef.setType(CounterTypeEnum.MNU_ART);
+        limitRef.setNumber(1);
+        countryRef.getLimits().add(limitRef);
+        ref.getCountries().add(countryRef);
+        EconomicServiceImpl.REFERENTIAL = ref;
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because the mnu limit is exceeded");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.COUNTER_LIMIT_EXCEED, e.getCode());
+            Assert.assertEquals("addAdminAction.request.type", e.getParams()[0]);
+        }
+
+        limitRef.setNumber(2);
 
         try {
             economicService.addAdminAction(request);
