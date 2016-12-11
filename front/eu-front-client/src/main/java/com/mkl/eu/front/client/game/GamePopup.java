@@ -843,6 +843,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             map.destroy();
             frames.forEach(frame -> frame.dispatchEvent(new java.awt.event.WindowEvent(frame, java.awt.event.WindowEvent.WINDOW_CLOSING)));
             chatWindow.hide();
+            ecoWindow.hide();
+            adminActionsWindow.hide();
             client.setTerminate(true);
             closed = true;
         }
