@@ -162,4 +162,9 @@ public interface IMapMarker {
      * @return whether the province is a tradezone or no.
      */
     boolean isTradeZone();
+
+    /**
+     * @return whether the province is in the rotw or no.
+     */
+    boolean isRotw();
 }

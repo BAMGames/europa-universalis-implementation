@@ -128,6 +128,22 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /** The TableView containing the already planned actions. */
     private TableView<AdministrativeAction> domesticTable;
 
+    /********************************************/
+    /**        Nodes about Establishments   */
+    /********************************************/
+    /** The TitledPane containing all the other nodes. */
+    private TitledPane establishmentPane;
+    /** The TableView containing the already planned actions. */
+    private TableView<AdministrativeAction> establishmentTable;
+
+    /********************************************/
+    /**        Nodes about Technology   */
+    /********************************************/
+    /** The TitledPane containing all the other nodes. */
+    private TitledPane technologyPane;
+    /** The TableView containing the already planned actions. */
+    private TableView<AdministrativeAction> technologyTable;
+
     /**
      * Constructor.
      *
@@ -176,12 +192,15 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         tab.setClosable(false);
 
         Node unitMaintenancePane = createMaintenanceNode(country);
+
         Node unitPurchasePane = createPurchaseNode(country);
         Node tfiPane = createTfiNode(country);
         Node domesticPane = createDomesticOperationNode(country);
+        Node establishmentPane = createEstablishmentNode(country);
+        Node technologyPane = createTechnologyNode(country);
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane);
+        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane, establishmentPane, technologyPane);
 
         tab.setContent(vBox);
 
@@ -196,6 +215,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      */
     private Node createMaintenanceNode(PlayableCountry country) {
         maintenancePane = new TitledPane();
+        maintenancePane.setExpanded(false);
 
         maintenanceTable = new TableView<>();
         configureAdminActionTable(maintenanceTable, this::removeAdminAction);
@@ -494,6 +514,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      */
     private Node createPurchaseNode(PlayableCountry country) {
         purchasePane = new TitledPane();
+        purchasePane.setExpanded(false);
 
         purchaseTable = new TableView<>();
         configureAdminActionTable(purchaseTable, this::removeAdminAction);
@@ -702,10 +723,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * Create the node for the trade fleet implantation.
      *
      * @param country of the current player.
-     * @return the node for the unit purchase.
+     * @return the node for the trade fleet implantation.
      */
     private Node createTfiNode(PlayableCountry country) {
         tfiPane = new TitledPane();
+        tfiPane.setExpanded(false);
 
         tfiTable = new TableView<>();
         configureAdminActionTable(tfiTable, this::removeAdminAction);
@@ -814,10 +836,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * Create the node for the domestic operation (MNU, DTI, FTI, taxes).
      *
      * @param country of the current player.
-     * @return the node for the unit purchase.
+     * @return the node for the domestic operation.
      */
     private Node createDomesticOperationNode(PlayableCountry country) {
         domesticPane = new TitledPane();
+        domesticPane.setExpanded(false);
 
         domesticTable = new TableView<>();
         configureAdminActionTable(domesticTable, this::removeAdminAction);
@@ -967,7 +990,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Update the trade fleet implantation node with the current game.
+     * Update the domestic operation node with the current game.
      *
      * @param country of the current player.
      */
@@ -983,6 +1006,244 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         domesticPane.setText(message.getMessage("admin_action.form.domestic_operations", new Object[]{currentDoms, 1}, globalConfiguration.getLocale()));
         domesticTable.setItems(FXCollections.observableArrayList(actions));
+    }
+
+    /**
+     * Create the node for the establishments (COL and TP).
+     *
+     * @param country of the current player.
+     * @return the node for the establishment.
+     */
+    private Node createEstablishmentNode(PlayableCountry country) {
+        establishmentPane = new TitledPane();
+        establishmentPane.setExpanded(false);
+
+        establishmentTable = new TableView<>();
+        configureAdminActionTable(establishmentTable, this::removeAdminAction);
+
+        HBox hBox = new HBox();
+
+        ChoiceBox<AdminActionTypeEnum> typesChoice = new ChoiceBox<>();
+        typesChoice.converterProperty().set(new StringConverter<AdminActionTypeEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(AdminActionTypeEnum object) {
+                return message.getMessage("admin_action.type." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public AdminActionTypeEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
+        provincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(IMapMarker object) {
+                return message.getMessage(object.getId(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public IMapMarker fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
+        investChoice.converterProperty().set(new StringConverter<InvestmentEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(InvestmentEnum object) {
+                return message.getMessage("admin_action.investment." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public InvestmentEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+        btn.setOnAction(event -> {
+            AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
+            IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
+            String provinceName = null;
+            if (province != null) {
+                provinceName = province.getId();
+            }
+            InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
+
+            Request<AddAdminActionRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new AddAdminActionRequest(country.getId(), type, provinceName, investment));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.addAdminAction(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when creating administrative action.", e);
+
+                UIUtil.showException(e, globalConfiguration, message);
+            }
+        });
+
+        hBox.getChildren().addAll(typesChoice, provincesChoice, investChoice, btn);
+
+        VBox vBox = new VBox();
+
+        vBox.getChildren().addAll(establishmentTable, hBox);
+
+        establishmentPane.setContent(vBox);
+
+        typesChoice.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.COL, AdminActionTypeEnum.TP));
+        provincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+                .filter(IMapMarker::isRotw)
+                .collect(Collectors.toList())));
+        investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
+
+        updateEstablishmentNode(country);
+
+        return establishmentPane;
+    }
+
+    /**
+     * Update the establishment node with the current game.
+     *
+     * @param country of the current player.
+     */
+    private void updateEstablishmentNode(PlayableCountry country) {
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        (admAct.getType() == AdminActionTypeEnum.COL || admAct.getType() == AdminActionTypeEnum.TP))
+                .collect(Collectors.toList());
+
+        Map<AdminActionTypeEnum, Long> currentActions = actions.stream()
+                .collect(Collectors.groupingBy(AdministrativeAction::getType, Collectors.counting()));
+        Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
+                limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
+                        limit.getPeriod().getBegin() <= game.getTurn() &&
+                        limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
+
+
+        establishmentPane.setText(message.getMessage("admin_action.form.establishment",
+                new Object[]{currentActions.get(AdminActionTypeEnum.COL), maxPurchase.get(LimitTypeEnum.ACTION_COL),
+                        currentActions.get(AdminActionTypeEnum.TP), maxPurchase.get(LimitTypeEnum.ACTION_TP)},
+                globalConfiguration.getLocale()));
+        establishmentTable.setItems(FXCollections.observableArrayList(actions));
+    }
+
+    /**
+     * Create the node for the technology (land and naval).
+     *
+     * @param country of the current player.
+     * @return the node for the technology.
+     */
+    private Node createTechnologyNode(PlayableCountry country) {
+        technologyPane = new TitledPane();
+        technologyPane.setExpanded(false);
+
+        technologyTable = new TableView<>();
+        configureAdminActionTable(technologyTable, this::removeAdminAction);
+
+        HBox hBox = new HBox();
+
+        ChoiceBox<AdminActionTypeEnum> typesChoice = new ChoiceBox<>();
+        typesChoice.converterProperty().set(new StringConverter<AdminActionTypeEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(AdminActionTypeEnum object) {
+                return message.getMessage("admin_action.type." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public AdminActionTypeEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
+        investChoice.converterProperty().set(new StringConverter<InvestmentEnum>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(InvestmentEnum object) {
+                return message.getMessage("admin_action.investment." + object.name(), null, globalConfiguration.getLocale());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public InvestmentEnum fromString(String string) {
+                return null;
+            }
+        });
+
+        Button btn = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+        btn.setOnAction(event -> {
+            AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
+            InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
+
+            Request<AddAdminActionRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new AddAdminActionRequest(country.getId(), type, investment));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.addAdminAction(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when creating administrative action.", e);
+
+                UIUtil.showException(e, globalConfiguration, message);
+            }
+        });
+
+        hBox.getChildren().addAll(typesChoice, investChoice, btn);
+
+        VBox vBox = new VBox();
+
+        vBox.getChildren().addAll(technologyTable, hBox);
+
+        technologyPane.setContent(vBox);
+
+        typesChoice.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.ELT, AdminActionTypeEnum.ENT));
+        investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
+
+        updateTechnologyNode(country);
+
+        return technologyPane;
+    }
+
+    /**
+     * Update the technology node with the current game.
+     *
+     * @param country of the current player.
+     */
+    private void updateTechnologyNode(PlayableCountry country) {
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        (admAct.getType() == AdminActionTypeEnum.ELT || admAct.getType() == AdminActionTypeEnum.ENT))
+                .collect(Collectors.toList());
+
+        Map<AdminActionTypeEnum, Long> currentActions = actions.stream()
+                .collect(Collectors.groupingBy(AdministrativeAction::getType, Collectors.counting()));
+
+        technologyPane.setText(message.getMessage("admin_action.form.technology",
+                new Object[]{currentActions.get(AdminActionTypeEnum.ELT), 1,
+                        currentActions.get(AdminActionTypeEnum.ENT), 1},
+                globalConfiguration.getLocale()));
+        technologyTable.setItems(FXCollections.observableArrayList(actions));
     }
 
     /**
@@ -1059,7 +1320,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         choiceCountry.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
-                List<Integer> turns = newValue.getAdministrativeActions().stream().map(AdministrativeAction::getTurn).distinct().collect(Collectors.toList());
+                List<Integer> turns = newValue.getAdministrativeActions().stream()
+                        .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE)
+                        .map(AdministrativeAction::getTurn)
+                        .distinct()
+                        .collect(Collectors.toList());
                 choiceTurn.setItems(FXCollections.observableArrayList(turns));
             }
         });
@@ -1069,7 +1334,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             if (newValue == null) {
                 table.setItems(null);
             } else if (!newValue.equals(oldValue)) {
-                List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream().filter(administrativeAction -> administrativeAction.getTurn().equals(newValue)).collect(Collectors.toList());
+                List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
+                        .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE && action.getTurn().equals(newValue))
+                        .collect(Collectors.toList());
                 table.setItems(FXCollections.observableArrayList(actions));
             }
         });
@@ -1173,16 +1440,6 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Returns the String value of an integer.
-     *
-     * @param i to format in String.
-     * @return the String value of an integer.
-     */
-    private static String toString(Integer i) {
-        return i == null ? "" : Integer.toString(i);
-    }
-
-    /**
      * Show this popup.
      */
     public void show() {
@@ -1249,6 +1506,14 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                             case FTI:
                             case EXL:
                                 updateDomesticOperationNode(country);
+                                break;
+                            case COL:
+                            case TP:
+                                updateEstablishmentNode(country);
+                                break;
+                            case ELT:
+                            case ENT:
+                                updateTechnologyNode(country);
                                 break;
                             default:
                                 break;

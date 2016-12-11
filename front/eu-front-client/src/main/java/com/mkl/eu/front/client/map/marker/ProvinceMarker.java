@@ -497,6 +497,11 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 StringUtils.equals(TradeZoneTypeEnum.ZP.name(), type);
     }
 
+    @Override
+    public boolean isRotw() {
+        return getBooleanProperty(PROP_ROTW);
+    }
+
     /**
      * @return the location of the fortress.
      */

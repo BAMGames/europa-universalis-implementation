@@ -60,7 +60,7 @@ public class AddAdminActionRequest {
     }
 
     /**
-     * Constructor for tfi.
+     * Constructor for external operation.
      *
      * @param idCountry  the idCountry to set.
      * @param type       the type to set.
@@ -88,6 +88,19 @@ public class AddAdminActionRequest {
         this.type = type;
         this.province = province;
         this.counterFaceType = counterFaceType;
+        this.investment = investment;
+    }
+
+    /**
+     * Constructor for technology.
+     *
+     * @param idCountry  the idCountry to set.
+     * @param type       the type to set.
+     * @param investment the investment to set.
+     */
+    public AddAdminActionRequest(Long idCountry, AdminActionTypeEnum type, InvestmentEnum investment) {
+        this.idCountry = idCountry;
+        this.type = type;
         this.investment = investment;
     }
 

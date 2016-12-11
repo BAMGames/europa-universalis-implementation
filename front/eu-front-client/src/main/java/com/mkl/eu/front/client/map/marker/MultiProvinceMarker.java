@@ -164,6 +164,12 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isRotw() {
+        return getFirstMapMarker().isRotw();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setProperties(HashMap<String, Object> props) {
         HashMap<String, Object> properties = null;
         if (props != null) {
