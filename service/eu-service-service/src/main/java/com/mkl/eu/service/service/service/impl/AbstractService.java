@@ -62,6 +62,8 @@ public abstract class AbstractService implements INameConstants {
     public static final String MSG_COUNTER_LIMIT_EXCEED = "{1}: {0} The counter type {2} can''t be created by {3} because country limits were exceeded ({4}/{5}).";
     /** Error message when a counter is missing. */
     public static final String MSG_MISSING_COUNTER = "{1}: {0} The counter {2} for country {3} is missing. Please ask an admin for correction.";
+    /** Error message when the status is invalid. */
+    public static final String MSG_INVALID_STATUS = "{1}: {0} The status {2} is invalid: it should be {3}.";
     /** Socket Handler. */
     @Autowired
     private SocketHandler socketHandler;

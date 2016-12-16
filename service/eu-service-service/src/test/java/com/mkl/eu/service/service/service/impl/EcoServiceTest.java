@@ -474,6 +474,26 @@ public class EcoServiceTest {
 
         try {
             economicService.addAdminAction(request);
+            Assert.fail("Should break because game.status is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
+            Assert.assertEquals("addAdminAction.request", e.getParams()[0]);
+        }
+
+        game.setStatus(GameStatusEnum.MILITARY);
+
+        try {
+            economicService.addAdminAction(request);
+            Assert.fail("Should break because game.status is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
+            Assert.assertEquals("addAdminAction.request", e.getParams()[0]);
+        }
+
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+
+        try {
+            economicService.addAdminAction(request);
             Assert.fail("Should break because addAdminAction.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -524,6 +544,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -689,6 +710,7 @@ public class EcoServiceTest {
         game.setId(12L);
         game.setVersion(5L);
         game.setTurn(2);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(14L);
         game.getCountries().get(0).setName("france");
@@ -783,6 +805,7 @@ public class EcoServiceTest {
         game.setId(12L);
         game.setVersion(5L);
         game.setTurn(2);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(14L);
         game.getCountries().get(0).setName("france");
@@ -889,6 +912,7 @@ public class EcoServiceTest {
         game.setId(12L);
         game.setVersion(5L);
         game.setTurn(2);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(14L);
         game.getCountries().get(0).setName("france");
@@ -977,6 +1001,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -1332,6 +1357,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -1486,6 +1512,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -1865,6 +1892,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -2170,6 +2198,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -2383,6 +2412,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -2852,6 +2882,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(turn);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.setStPeterProvince("Neva");
         game.getCountries().add(new PlayableCountryEntity());
@@ -3015,6 +3046,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -3133,6 +3165,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -3274,6 +3307,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -3368,6 +3402,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -3455,6 +3490,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -3800,6 +3836,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -4000,6 +4037,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -4195,6 +4233,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -4465,6 +4504,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(1);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -4646,6 +4686,7 @@ public class EcoServiceTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setTurn(22);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);

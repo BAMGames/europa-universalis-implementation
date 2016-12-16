@@ -40,6 +40,21 @@ public interface IConstantsServiceException {
      */
     String PROVINCE_NOT_OWN_CONTROL = "exception.eu.service.province_not_own_control";
 
+    /**
+     * <p>
+     * Exception thrown when an action is performed and the game status is invalid given the action.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: actual status of the game</li>
+     * <li>2: expected status of the game</li>
+     * </ul>
+     * </p>
+     */
+    String INVALID_STATUS = "exception.eu.service.invalid_status";
+
     /**********************************************************************/
     /**           ECONOMIC SERVICE EXCEPTION                              */
     /**********************************************************************/
