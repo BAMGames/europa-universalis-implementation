@@ -1,7 +1,7 @@
 package com.mkl.eu.front.client.map.handler.keyboard;
 
 import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
@@ -27,7 +27,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
     /** Listeners for diffs event. */
     private List<IDiffListener> diffListeners = new ArrayList<>();
     /** Board service. */
-    private IBoardService boardService;
+    private IGameService gameService;
     /** Component holding the authentication information. */
     private AuthentHolder authentHolder;
     /** Game configuration. */
@@ -39,9 +39,9 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
      * @param p    The PApplet.
      * @param maps One or more maps.
      */
-    public MapKeyboardHandler(PApplet p, IBoardService boardService, AuthentHolder authentHolder, GameConfiguration gameConfig, UnfoldingMap... maps) {
+    public MapKeyboardHandler(PApplet p, IGameService gameService, AuthentHolder authentHolder, GameConfiguration gameConfig, UnfoldingMap... maps) {
         super(p, maps);
-        this.boardService = boardService;
+        this.gameService = gameService;
         this.authentHolder = authentHolder;
         this.gameConfig = gameConfig;
     }
@@ -73,7 +73,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
                 authentHolder.fillAuthentInfo(request);
                 gameConfig.fillGameInfo(request);
                 gameConfig.fillChatInfo(request);
-                DiffResponse response = boardService.updateGame(request);
+                DiffResponse response = gameService.updateGame(request);
                 DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {

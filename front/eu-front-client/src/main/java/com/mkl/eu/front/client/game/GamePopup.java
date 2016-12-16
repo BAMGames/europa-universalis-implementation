@@ -4,9 +4,9 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
-import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.IEconomicService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
@@ -84,9 +84,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
-    /** Board service. */
+    /** Game service. */
     @Autowired
-    private IBoardService boardService;
+    private IGameService gameService;
     /** Chat service. */
     @Autowired
     private IChatService chatService;
@@ -143,7 +143,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         authentHolder.fillAuthentInfo(request);
         request.setRequest(new LoadGameRequest(gameConfig.getIdGame(), gameConfig.getIdCountry()));
 
-        game = boardService.loadGame(request);
+        game = gameService.loadGame(request);
         gameConfig.setVersionGame(game.getVersion());
         Optional<Message> opt = game.getChat().getGlobalMessages().stream().max((o1, o2) -> (int) (o1.getId() - o2.getId()));
         if (opt.isPresent()) {

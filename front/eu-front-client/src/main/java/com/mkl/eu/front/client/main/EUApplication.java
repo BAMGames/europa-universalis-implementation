@@ -2,7 +2,7 @@ package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.SimpleRequest;
-import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.ITablesService;
 import com.mkl.eu.client.service.service.board.FindGamesRequest;
 import com.mkl.eu.client.service.vo.GameLight;
@@ -38,25 +38,17 @@ import java.util.List;
 public class EUApplication extends Application {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(EUApplication.class);
-    /** Board service. */
-    private IBoardService boardService;
-    /** Tables service. */
-    private ITablesService tablesService;
-    /** Internationalisation. */
-    private MessageSource message;
-    /** Configuration of the application. */
-    private GlobalConfiguration globalConfiguration;
-    /** List of game popups openend in order to spread a window close. */
+    /** List of game popups opened in order to spread a window close. */
     private List<GamePopup> gamePopups = new ArrayList<>();
 
     /** {@inheritDoc} */
     @Override
     public void start(Stage primaryStage) throws FunctionalException {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/mkl/eu/front/client/eu-front-client-applicationContext.xml");
-        boardService = context.getBean(IBoardService.class);
-        tablesService = context.getBean(ITablesService.class);
-        message = context.getBean(MessageSource.class);
-        globalConfiguration = context.getBean(GlobalConfiguration.class);
+        IGameService gameService = context.getBean(IGameService.class);
+        ITablesService tablesService = context.getBean(ITablesService.class);
+        MessageSource message = context.getBean(MessageSource.class);
+        GlobalConfiguration globalConfiguration = context.getBean(GlobalConfiguration.class);
 
 //        primaryStage.getIcons().add(new Image("file:resources/images/address_book_32.png"));
         TabPane tabPane = new TabPane();
@@ -85,7 +77,7 @@ public class EUApplication extends Application {
         SimpleRequest<FindGamesRequest> findGames = new SimpleRequest<>();
         findGames.setRequest(new FindGamesRequest());
         findGames.getRequest().setUsername("Sato");
-        List<GameLight> games = boardService.findGames(findGames);
+        List<GameLight> games = gameService.findGames(findGames);
 
 
         globalConfiguration.setTables(tablesService.getTables());

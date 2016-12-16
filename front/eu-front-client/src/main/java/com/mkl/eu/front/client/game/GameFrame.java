@@ -3,7 +3,7 @@ package com.mkl.eu.front.client.game;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
-import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -46,9 +46,9 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
     private static final Logger LOGGER = LoggerFactory.getLogger(GameFrame.class);
     /** Spring application context. */
     private ApplicationContext context;
-    /** Board service. */
+    /** Game service. */
     @Autowired
-    private IBoardService boardService;
+    private IGameService gameService;
     /** PApplet for the intercative map. */
     private InteractiveMap map;
     /** Component holding the authentication information. */
@@ -71,7 +71,7 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
         authentHolder.fillAuthentInfo(request);
         request.setRequest(new LoadGameRequest(1L, 1L));
 
-        game = boardService.loadGame(request);
+        game = gameService.loadGame(request);
 
         gameConfig = new GameConfiguration();
         gameConfig.setIdGame(game.getId());

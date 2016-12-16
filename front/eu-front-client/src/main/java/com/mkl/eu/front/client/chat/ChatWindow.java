@@ -2,8 +2,8 @@ package com.mkl.eu.front.client.chat;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IChatService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.chat.*;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.chat.Message;
@@ -70,9 +70,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     /** Chat service. */
     @Autowired
     private IChatService chatService;
-    /** Board service. */
+    /** Game service. */
     @Autowired
-    private IBoardService boardService;
+    private IGameService gameService;
     /** Internationalisation. */
     @Autowired
     private MessageSource message;
@@ -255,7 +255,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 gameConfig.fillChatInfo(request);
                 Long idGame = gameConfig.getIdGame();
                 try {
-                    DiffResponse response = boardService.updateGame(request);
+                    DiffResponse response = gameService.updateGame(request);
                     DiffEvent diff = new DiffEvent(response, idGame);
                     processDiffEvent(diff);
 

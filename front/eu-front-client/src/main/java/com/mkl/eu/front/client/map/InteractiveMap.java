@@ -1,6 +1,6 @@
 package com.mkl.eu.front.client.map;
 
-import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
@@ -59,7 +59,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     private MarkerUtils markerUtils;
     /** Game service. */
     @Autowired
-    private IBoardService gameService;
+    private IGameService gameService;
     /** Component holding the authentication information. */
     @Autowired
     private AuthentHolder authentHolder;
@@ -94,9 +94,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
     }
 
     /**
-     * Factory method.
-     *
-     * @return instance.
+     * Constructor.
+     * @param game the game to display.
+     * @param gameConfig game configuration.
      */
     public InteractiveMap(Game game, GameConfiguration gameConfig) {
         this.game = game;
