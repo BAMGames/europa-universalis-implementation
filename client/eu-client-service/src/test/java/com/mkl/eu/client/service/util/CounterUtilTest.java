@@ -702,4 +702,33 @@ public class CounterUtilTest {
         Assert.assertEquals(1, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_TRANSPORT, false));
         Assert.assertEquals(0, CounterUtil.getUpgradeCost(CounterFaceTypeEnum.NAVAL_GALLEY, false));
     }
+
+    @Test
+    public void testMobile() {
+        Assert.assertEquals(false, CounterUtil.isMobile(null));
+        Assert.assertEquals(false, CounterUtil.isMobile(CounterFaceTypeEnum.FORTRESS_3));
+
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_GALLEY));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+    }
 }
