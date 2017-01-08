@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -22,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,6 +49,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
+    /** OeUtil. */
+    @Autowired
+    private IOEUtil oeUtil;
 
     /** {@inheritDoc} */
     @Override
@@ -75,6 +80,15 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_MOVE_STACK, idStack));
 
         StackEntity stack = stackOpt.get();
+
+        boolean isMobile = oeUtil.isMobile(stack);
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(isMobile)
+                .setCodeError(IConstantsServiceException.STACK_NOT_MOBILE)
+                .setMsgFormat("{1}: {0} {2} Stack is not mobile.")
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_MOVE_STACK, idStack));
 
         AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
 

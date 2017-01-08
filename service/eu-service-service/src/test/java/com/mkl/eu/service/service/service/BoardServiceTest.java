@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
@@ -30,6 +31,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEn
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
+import com.mkl.eu.service.service.util.IOEUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +44,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -82,6 +85,9 @@ public class BoardServiceTest {
 
     @Mock
     private DiffMapping diffMapping;
+
+    @Mock
+    private IOEUtil oeUtil;
 
     @Mock
     private SocketHandler socketHandler;
@@ -210,6 +216,8 @@ public class BoardServiceTest {
 
         when(gameDao.lock(12L)).thenReturn(game);
 
+        when(oeUtil.isMobile(any())).thenReturn(false);
+
         try {
             boardService.moveStack(request);
             Assert.fail("Should break because stack does not exist");
@@ -232,6 +240,16 @@ public class BoardServiceTest {
         }
 
         stack.setId(13L);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is not mobile");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_NOT_MOBILE, e.getCode());
+            Assert.assertEquals("moveStack.request.idStack", e.getParams()[0]);
+        }
+
+        when(oeUtil.isMobile(any())).thenReturn(true);
 
         try {
             boardService.moveStack(request);
@@ -288,6 +306,7 @@ public class BoardServiceTest {
 
         when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
+        when(oeUtil.isMobile(stack)).thenReturn(true);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());

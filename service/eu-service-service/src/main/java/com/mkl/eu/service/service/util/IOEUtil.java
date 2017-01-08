@@ -111,4 +111,10 @@ public interface IOEUtil {
      * @return the list of country that are at war with the input country.
      */
     List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions, boolean excludeCivilWars);
+
+    /**
+     * @param stack the stack to check mobility.
+     * @return <code>true</code> if the stack is mobile (can be moved), <code>false</code> otherwise.
+     */
+    boolean isMobile(StackEntity stack);
 }

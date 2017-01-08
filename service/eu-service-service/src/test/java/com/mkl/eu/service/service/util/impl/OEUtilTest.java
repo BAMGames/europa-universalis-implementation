@@ -436,4 +436,54 @@ public class OEUtilTest {
         Assert.assertEquals(provence1, stacks.get(0));
         Assert.assertEquals(provence2, stacks.get(1));
     }
+
+    @Test
+    public void testMobile() {
+        Assert.assertEquals(false, oeUtil.isMobile(null));
+        StackEntity stack = new StackEntity();
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
+
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
+
+        Assert.assertEquals(true, oeUtil.isMobile(stack));
+
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FORTRESS_2));
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
+
+        stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FORTRESS_2));
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
+
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
+
+        stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+
+        Assert.assertEquals(true, oeUtil.isMobile(stack));
+
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FORTRESS_2));
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
+
+        stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FORTRESS_2));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
+    }
+
+    private CounterEntity createCounter(CounterFaceTypeEnum face) {
+        CounterEntity counter = new CounterEntity();
+        counter.setType(face);
+        return counter;
+    }
 }

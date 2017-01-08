@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.util.impl;
 
 import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
@@ -285,5 +286,13 @@ public final class OEUtilImpl implements IOEUtil {
     public List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions, boolean excludeCivilWars) {
         // TODO wait war conception
         return new ArrayList<>();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isMobile(StackEntity stack) {
+        return !(stack == null || stack.getCounters().isEmpty()) && stack.getCounters().stream().filter(c -> !CounterUtil.isMobile(c.getType())).count() == 0;
     }
 }

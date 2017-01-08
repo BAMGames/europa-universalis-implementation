@@ -486,4 +486,22 @@ public interface IConstantsServiceException {
      * </p>
      */
     String INLAND_ADVANCE = "exception.eu.inland_advance";
+
+    /**********************************************************************/
+    /**           ECONOMIC SERVICE EXCEPTION                              */
+    /**********************************************************************/
+
+    /**
+     * <p>
+     * Exception thrown when trying to move a non mobile stack.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_NOT_MOBILE = "exception.eu.board.stack_not_mobile";
 }
