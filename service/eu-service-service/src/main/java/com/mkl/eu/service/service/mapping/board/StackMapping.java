@@ -61,6 +61,8 @@ public class StackMapping extends AbstractMapping {
 
         target.setId(source.getId());
         target.setProvince(source.getProvince());
+        target.setMovePhase(source.getMovePhase());
+        target.setBesieged(source.isBesieged());
         target.setCounters(counterMapping.oesToVos(source.getCounters(), target, objectsCreated));
 
         return target;

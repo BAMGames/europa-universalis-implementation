@@ -12,6 +12,8 @@ public enum DiffAttributeTypeEnum {
     PROVINCE_FROM,
     /** Where the diff went to (move of a stack): name of the province. */
     PROVINCE_TO,
+    /** Phase of the moving stack. */
+    MOVE_PHASE,
     /** Where the diff came from (move of a counter): id of the stack. */
     STACK_FROM,
     /** Where the diff went to (move of a counter): id of the stack. */

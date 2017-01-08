@@ -1,6 +1,7 @@
 package com.mkl.eu.client.service.vo.board;
 
 import com.mkl.eu.client.service.vo.EuObject;
+import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 
 import javax.xml.bind.Unmarshaller;
 import java.util.ArrayList;
@@ -14,6 +15,10 @@ import java.util.List;
 public class Stack extends EuObject {
     /** Province where the stack is located. */
     private String province;
+    /** Phase of the move the stack is (has moved, is moving,..). */
+    private MovePhaseEnum movePhase;
+    /** Flag saying that the stack is being besieged. */
+    private Boolean besieged;
     /** Counters of the stack. */
     private List<Counter> counters = new ArrayList<>();
 
@@ -25,6 +30,26 @@ public class Stack extends EuObject {
     /** @param province the province to set. */
     public void setProvince(String province) {
         this.province = province;
+    }
+
+    /** @return the movePhase. */
+    public MovePhaseEnum getMovePhase() {
+        return movePhase;
+    }
+
+    /** @param movePhase the movePhase to set. */
+    public void setMovePhase(MovePhaseEnum movePhase) {
+        this.movePhase = movePhase;
+    }
+
+    /** @return the besieged. */
+    public Boolean isBesieged() {
+        return besieged;
+    }
+
+    /** @param besieged the besieged to set. */
+    public void setBesieged(Boolean besieged) {
+        this.besieged = besieged;
     }
 
     /** @return the counters. */

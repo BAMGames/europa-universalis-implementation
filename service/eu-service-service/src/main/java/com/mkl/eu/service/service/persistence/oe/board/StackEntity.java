@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.board;
 
+import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.country.DiscoveryEntity;
@@ -21,6 +22,10 @@ public class StackEntity implements IEntity, Serializable {
     private Long id;
     /** Name of the province where the stack is located. */
     private String province;
+    /** Phase of the move the stack is (has moved, is moving,..). */
+    private MovePhaseEnum movePhase;
+    /** Flag saying that the stack is being besieged. */
+    private Boolean besieged;
     /** Counters of the stack. */
     private List<CounterEntity> counters = new ArrayList<>();
     /**
@@ -53,6 +58,29 @@ public class StackEntity implements IEntity, Serializable {
     /** @param province the province to set. */
     public void setProvince(String province) {
         this.province = province;
+    }
+
+    /** @return the movePhase. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "MOVE_PHASE")
+    public MovePhaseEnum getMovePhase() {
+        return movePhase;
+    }
+
+    /** @param movePhase the movePhase to set. */
+    public void setMovePhase(MovePhaseEnum movePhase) {
+        this.movePhase = movePhase;
+    }
+
+    /** @return the besieged. */
+    @Column(name = "BESIEGED")
+    public Boolean isBesieged() {
+        return besieged;
+    }
+
+    /** @param besieged the besieged to set. */
+    public void setBesieged(Boolean besieged) {
+        this.besieged = besieged;
     }
 
     /**

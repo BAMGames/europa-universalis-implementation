@@ -479,6 +479,17 @@ public class OEUtilTest {
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
 
         Assert.assertEquals(false, oeUtil.isMobile(stack));
+
+        stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+
+        Assert.assertEquals(true, oeUtil.isMobile(stack));
+
+        stack.setBesieged(true);
+
+        Assert.assertEquals(false, oeUtil.isMobile(stack));
     }
 
     private CounterEntity createCounter(CounterFaceTypeEnum face) {

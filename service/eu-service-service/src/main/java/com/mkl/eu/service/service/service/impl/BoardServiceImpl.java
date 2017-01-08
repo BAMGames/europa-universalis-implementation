@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the Board Service.
@@ -90,6 +92,28 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_STACK, idStack));
 
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(stack.getMovePhase() == MovePhaseEnum.MOVED)
+                .setCodeError(IConstantsServiceException.STACK_ALREADY_MOVED)
+                .setMsgFormat("{1}: {0} {2} Stack has already moved.")
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_MOVE_STACK, idStack));
+
+        boolean firstMove = false;
+        if (stack.getMovePhase() == MovePhaseEnum.NOT_MOVED || stack.getMovePhase() == null) {
+            List<StackEntity> stacks = stackDao.getMovingStacks(game.getId());
+            List<Long> idsStacks = stacks.stream().map(StackEntity::getId).collect(Collectors.toList());
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(idsStacks.isEmpty())
+                    .setCodeError(IConstantsServiceException.OTHER_STACK_MOVING)
+                    .setMsgFormat("{1}: {0} {2} can''t move because stacks {3} are currently moving.")
+                    .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                    .setParams(METHOD_MOVE_STACK, idStack, idsStacks));
+
+            firstMove = true;
+        }
+
         AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
 
         failIfNull(new CheckForThrow<>().setTest(province).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
@@ -120,6 +144,15 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffAttributes.setValue(provinceTo);
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        if (firstMove) {
+            diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
+            diffAttributes.setValue(MovePhaseEnum.IS_MOVING.name());
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+
+            stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+        }
 
         createDiff(diff);
 

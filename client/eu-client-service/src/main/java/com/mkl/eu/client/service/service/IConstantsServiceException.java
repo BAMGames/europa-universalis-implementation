@@ -504,4 +504,33 @@ public interface IConstantsServiceException {
      * </p>
      */
     String STACK_NOT_MOBILE = "exception.eu.board.stack_not_mobile";
+
+    /**
+     * <p>
+     * Exception thrown when trying to move a stack that already moved.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_ALREADY_MOVED = "exception.eu.board.stack_already_moved";
+
+    /**
+     * <p>
+     * Exception thrown when trying to move a stack while another one is moving.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack trying to move.</li>
+     * <li>2: ids of the stack currently moving.</li>
+     * </ul>
+     * </p>
+     */
+    String OTHER_STACK_MOVING = "exception.eu.board.other_stack_moving";
 }

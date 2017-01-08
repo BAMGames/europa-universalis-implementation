@@ -13,6 +13,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
@@ -218,6 +219,13 @@ public class BoardServiceTest {
 
         when(oeUtil.isMobile(any())).thenReturn(false);
 
+        List<StackEntity> stacks = new ArrayList<>();
+        stacks.add(new StackEntity());
+        stacks.get(0).setId(22L);
+        stacks.add(new StackEntity());
+        stacks.get(1).setId(23L);
+        when(stackDao.getMovingStacks(12L)).thenReturn(stacks);
+
         try {
             boardService.moveStack(request);
             Assert.fail("Should break because stack does not exist");
@@ -227,6 +235,7 @@ public class BoardServiceTest {
         }
 
         StackEntity stack = new StackEntity();
+        stack.setMovePhase(MovePhaseEnum.MOVED);
         stack.setProvince("pecs");
         stack.setId(14L);
         game.getStacks().add(stack);
@@ -253,6 +262,26 @@ public class BoardServiceTest {
 
         try {
             boardService.moveStack(request);
+            Assert.fail("Should break because stack has already moved");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_ALREADY_MOVED, e.getCode());
+            Assert.assertEquals("moveStack.request.idStack", e.getParams()[0]);
+        }
+
+        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because another stack is moving");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.OTHER_STACK_MOVING, e.getCode());
+            Assert.assertEquals("moveStack.request.idStack", e.getParams()[0]);
+        }
+
+        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+
+        try {
+            boardService.moveStack(request);
             Assert.fail("Should break because province does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -273,6 +302,15 @@ public class BoardServiceTest {
 
     @Test
     public void testMoveStackSuccess() throws Exception {
+        testMoveStackSuccess(true);
+    }
+
+    @Test
+    public void testMoveAgainStackSuccess() throws Exception {
+        testMoveStackSuccess(false);
+    }
+
+    private void testMoveStackSuccess(boolean firstMove) throws Exception {
         Request<MoveStackRequest> request = new Request<>();
         request.setRequest(new MoveStackRequest());
         request.setAuthent(new AuthentInfo());
@@ -295,6 +333,9 @@ public class BoardServiceTest {
         game.setVersion(5L);
         StackEntity stack = new StackEntity();
         stack.setProvince("pecs");
+        if (!firstMove) {
+            stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+        }
         stack.setId(13L);
         BorderEntity border = new BorderEntity();
         border.setProvinceFrom(pecs);
@@ -343,11 +384,19 @@ public class BoardServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.STACK, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(2, diffEntity.getAttributes().size());
+        if (firstMove) {
+            Assert.assertEquals(3, diffEntity.getAttributes().size());
+        } else {
+            Assert.assertEquals(2, diffEntity.getAttributes().size());
+        }
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(pecs.getName(), diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals(idf.getName(), diffEntity.getAttributes().get(1).getValue());
+        if (firstMove) {
+            Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(2).getType());
+            Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), diffEntity.getAttributes().get(2).getValue());
+        }
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

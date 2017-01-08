@@ -320,6 +320,7 @@ public class GameMappingTest {
         Stack object = new Stack();
         object.setId(1L);
         object.setProvince(PECS);
+        object.setMovePhase(MovePhaseEnum.IS_MOVING);
         List<Counter> subObjects = new ArrayList<>();
         Counter subObject = new Counter();
         subObject.setId(1L);
@@ -340,6 +341,8 @@ public class GameMappingTest {
         object = new Stack();
         object.setId(2L);
         object.setProvince(TYR);
+        object.setMovePhase(MovePhaseEnum.MOVED);
+        object.setBesieged(true);
         subObjects = new ArrayList<>();
         subObject = new Counter();
         subObject.setId(3L);
@@ -352,6 +355,8 @@ public class GameMappingTest {
         object = new Stack();
         object.setId(3L);
         object.setProvince(IDF);
+        object.setMovePhase(MovePhaseEnum.NOT_MOVED);
+        object.setBesieged(false);
         objects.add(object);
 
         return objects;
@@ -590,6 +595,7 @@ public class GameMappingTest {
         StackEntity object = new StackEntity();
         object.setId(1L);
         object.setProvince(PECS);
+        object.setMovePhase(MovePhaseEnum.IS_MOVING);
         List<CounterEntity> subObjects = new ArrayList<>();
         CounterEntity subObject = new CounterEntity();
         subObject.setId(1L);
@@ -610,6 +616,8 @@ public class GameMappingTest {
         object = new StackEntity();
         object.setId(2L);
         object.setProvince(TYR);
+        object.setMovePhase(MovePhaseEnum.MOVED);
+        object.setBesieged(true);
         subObjects = new ArrayList<>();
         subObject = new CounterEntity();
         subObject.setId(3L);
@@ -622,6 +630,8 @@ public class GameMappingTest {
         object = new StackEntity();
         object.setId(3L);
         object.setProvince(IDF);
+        object.setMovePhase(MovePhaseEnum.NOT_MOVED);
+        object.setBesieged(false);
         objects.add(object);
 
         return objects;
