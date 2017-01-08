@@ -33,4 +33,15 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer {
             diffListener.update(event);
         }
     }
+
+    /**
+     * Process a ExceptionEvent.
+     *
+     * @param event to process.
+     */
+    protected void processExceptionEvent(ExceptionEvent event) {
+        for (IDiffListener diffListener : diffListeners) {
+            diffListener.handleException(event);
+        }
+    }
 }

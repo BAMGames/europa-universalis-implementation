@@ -29,9 +29,11 @@ import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -252,6 +254,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         dialog.show();
 
         dialog.setOnCloseRequest(this);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void handleException(ExceptionEvent event) {
+        UIUtil.showException(event.getException(), globalConfiguration, message);
     }
 
     /** {@inheritDoc} */

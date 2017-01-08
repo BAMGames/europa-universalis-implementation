@@ -16,6 +16,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -157,7 +158,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                         processDiffEvent(diff);
                                     } catch (Exception e) {
                                         LOGGER.error("Error when creating room.", e);
-                                        // TODO exception handling
+
+                                        processExceptionEvent(new ExceptionEvent(e));
                                     }
                                 }
                             }
@@ -192,7 +194,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                         processDiffEvent(diff);
                                     } catch (Exception e) {
                                         LOGGER.error("Error when creating room.", e);
-                                        // TODO exception handling
+
+                                        processExceptionEvent(new ExceptionEvent(e));
                                     }
                                 }
                             }
@@ -240,7 +243,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                         tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()));
                                     } catch (Exception e) {
                                         LOGGER.error("Error when toggling room.", e);
-                                        // TODO exception handling
+
+                                        processExceptionEvent(new ExceptionEvent(e));
                                     }
                                 }
                             }
@@ -261,7 +265,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
                 } catch (Exception e) {
                     LOGGER.error("Error when toggling room.", e);
-                    // TODO exception handling
+
+                    processExceptionEvent(new ExceptionEvent(e));
                 }
             }
         });
@@ -305,9 +310,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                     room.setVisible(false);
                 } catch (Exception e) {
                     LOGGER.error("Error when toggling room.", e);
-                    // TODO exception handling
                     // if it fails, we keep the tab open
                     event1.consume();
+
+                    processExceptionEvent(new ExceptionEvent(e));
                 }
             });
         } else {
@@ -369,7 +375,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                             processDiffEvent(diff);
                         } catch (Exception e) {
                             LOGGER.error("Error when speaking in room.", e);
-                            // TODO exception handling
+
+                            processExceptionEvent(new ExceptionEvent(e));
                         }
                     }
                 });
@@ -395,7 +402,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                             processDiffEvent(diff);
                         } catch (Exception e) {
                             LOGGER.error("Error when speaking in room.", e);
-                            // TODO exception handling
+
+                            processExceptionEvent(new ExceptionEvent(e));
                         }
                     }
                 });
@@ -433,7 +441,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 processDiffEvent(diff);
             } catch (Exception e) {
                 LOGGER.error("Error when speaking in room.", e);
-                // TODO exception handling
+
+                processExceptionEvent(new ExceptionEvent(e));
             }
             input.requestFocus();
         });

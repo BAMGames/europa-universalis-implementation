@@ -9,6 +9,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -322,7 +323,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     processDiffEvent(diff);
                 } catch (Exception e) {
                     LOGGER.error("Error when moving stack.", e);
-                    // TODO exception handling
+
+                    processExceptionEvent(new ExceptionEvent(e));
                 }
                 resetContextualMenu();
             }));
@@ -350,7 +352,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             processDiffEvent(event);
         } catch (Exception e) {
             LOGGER.error("Error when creating counter.", e);
-            // TODO exception handling
+
+            processExceptionEvent(new ExceptionEvent(e));
         }
     }
 
@@ -481,7 +484,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                             processDiffEvent(diff);
                         } catch (Exception e) {
                             LOGGER.error("Error when moving stack.", e);
-                            // TODO exception handling
+
+                            processExceptionEvent(new ExceptionEvent(e));
                         }
                     }
 
@@ -546,6 +550,17 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private void processDiffEvent(DiffEvent event) {
         for (IDiffListener diffListener : diffListeners) {
             diffListener.update(event);
+        }
+    }
+
+    /**
+     * Process a ExceptionEvent.
+     *
+     * @param event to process.
+     */
+    private void processExceptionEvent(ExceptionEvent event) {
+        for (IDiffListener diffListener : diffListeners) {
+            diffListener.handleException(event);
         }
     }
 }

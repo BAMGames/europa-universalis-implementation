@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
@@ -301,7 +302,8 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
                 processDiffEvent(diff);
             } catch (Exception e) {
                 LOGGER.error("Error when moving stack.", e);
-                // TODO exception handling
+
+                processExceptionEvent(new ExceptionEvent(e));
             }
 
             resetContextualMenu();
@@ -339,7 +341,8 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
                     processDiffEvent(diff);
                 } catch (Exception e) {
                     LOGGER.error("Error when moving stack.", e);
-                    // TODO exception handling
+
+                    processExceptionEvent(new ExceptionEvent(e));
                 }
                 resetContextualMenu();
             }));
@@ -406,7 +409,8 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
                             processDiffEvent(diff);
                         } catch (Exception e) {
                             LOGGER.error("Error when moving stack.", e);
-                            // TODO exception handling
+
+                            processExceptionEvent(new ExceptionEvent(e));
                         }
                     }
 

@@ -12,4 +12,11 @@ public interface IDiffListener {
      * @param event with the diffs and the new version of the game.
      */
     void update(DiffEvent event);
+
+    /**
+     * Handle an exception.
+     *
+     * @param event the exception event.
+     */
+    void handleException(ExceptionEvent event);
 }

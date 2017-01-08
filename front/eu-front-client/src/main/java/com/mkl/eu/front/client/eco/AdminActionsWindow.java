@@ -23,9 +23,9 @@ import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
-import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.CounterMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -315,9 +315,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
-                LOGGER.error("Error when creating room.", e);
+                LOGGER.error("Error when creating administrative action.", e);
 
-                UIUtil.showException(e, globalConfiguration, message);
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
 
@@ -570,7 +570,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             } catch (Exception e) {
                 LOGGER.error("Error when creating administrative action.", e);
 
-                UIUtil.showException(e, globalConfiguration, message);
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
 
@@ -783,7 +783,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             } catch (Exception e) {
                 LOGGER.error("Error when creating administrative action.", e);
 
-                UIUtil.showException(e, globalConfiguration, message);
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
 
@@ -970,7 +970,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             } catch (Exception e) {
                 LOGGER.error("Error when creating administrative action.", e);
 
-                UIUtil.showException(e, globalConfiguration, message);
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
 
@@ -1092,7 +1092,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             } catch (Exception e) {
                 LOGGER.error("Error when creating administrative action.", e);
 
-                UIUtil.showException(e, globalConfiguration, message);
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
 
@@ -1205,7 +1205,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             } catch (Exception e) {
                 LOGGER.error("Error when creating administrative action.", e);
 
-                UIUtil.showException(e, globalConfiguration, message);
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
 
@@ -1264,9 +1264,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             DiffEvent diff = new DiffEvent(response, idGame);
             processDiffEvent(diff);
         } catch (Exception e) {
-            LOGGER.error("Error when creating room.", e);
+            LOGGER.error("Error when creating administrative action.", e);
 
-            UIUtil.showException(e, globalConfiguration, message);
+            processExceptionEvent(new ExceptionEvent(e));
         }
     }
 

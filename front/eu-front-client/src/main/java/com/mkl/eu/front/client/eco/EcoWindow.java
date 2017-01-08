@@ -10,6 +10,7 @@ import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -192,8 +193,9 @@ public class EcoWindow extends AbstractDiffListenerContainer {
                 DiffEvent diff = new DiffEvent(response, idGame);
                 processDiffEvent(diff);
             } catch (Exception e) {
-                LOGGER.error("Error when speaking in room.", e);
-                // TODO exception handling
+                LOGGER.error("Error when updating economical sheets.", e);
+
+                processExceptionEvent(new ExceptionEvent(e));
             }
         });
         Button update = new Button(message.getMessage("eco.update", null, globalConfiguration.getLocale()));
