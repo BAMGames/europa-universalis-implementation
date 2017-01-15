@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -28,6 +29,17 @@ public interface IBoardService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse moveStack(@WebParam(name = PARAMETER_MOVE_STACK) Request<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException;
+
+    /**
+     * End the movement of a stack on the board.
+     *
+     * @param endMoveStack info of the stack to end move.
+     * @return the diffs involved by this service.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse endMoveStack(@WebParam(name = PARAMETER_END_MOVE_STACK) Request<EndMoveStackRequest> endMoveStack) throws FunctionalException, TechnicalException;
 
     /**
      * Move a counter from a stack to another..

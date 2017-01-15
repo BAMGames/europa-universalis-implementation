@@ -164,6 +164,11 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#STATUS to know at which new status should be the game.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#STACK in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#MOVE_PHASE to know the new move phase of the stack.</li>
+     * </ul>
+     * </li>
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#TYPE to know the new type of the counter.</li>

@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -29,6 +30,12 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
     @Override
     public DiffResponse moveStack(Request<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException {
         return boardService.moveStack(moveStack);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse endMoveStack(Request<EndMoveStackRequest> endMoveStack) throws FunctionalException, TechnicalException {
+        return boardService.endMoveStack(endMoveStack);
     }
 
     /** {@inheritDoc} */

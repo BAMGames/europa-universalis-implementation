@@ -24,6 +24,8 @@ public interface INameConstants {
     String PARAMETER_UPDATE_GAME = "updateGame";
     /** Name of the parameter moveStack. */
     String PARAMETER_MOVE_STACK = "moveStack";
+    /** Name of the parameter endMoveStack. */
+    String PARAMETER_END_MOVE_STACK = "endMoveStack";
     /** Name of the parameter moveCounter. */
     String PARAMETER_MOVE_COUNTER = "moveCounter";
     /** Name of the parameter createRoom. */
@@ -90,6 +92,8 @@ public interface INameConstants {
     String RESPONSE_GAMES = "games";
     /** Name of the method moveStack. */
     String METHOD_MOVE_STACK = "moveStack";
+    /** Name of the method endMoveStack. */
+    String METHOD_END_MOVE_STACK = "endMoveStack";
     /** Name of the method moveStack. */
     String METHOD_REMOVE_COUNTER = "removeCounter";
     /** Name of the method moveCounter. */

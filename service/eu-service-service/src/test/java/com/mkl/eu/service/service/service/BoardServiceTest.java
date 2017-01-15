@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.Diff;
@@ -397,6 +398,184 @@ public class BoardServiceTest {
             Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(2).getType());
             Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), diffEntity.getAttributes().get(2).getValue());
         }
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    @Test
+    public void testEndMoveStackFailSimple() {
+        try {
+            boardService.endMoveStack(null);
+            Assert.fail("Should break because endMoveStack is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack", e.getParams()[0]);
+        }
+
+        Request<EndMoveStackRequest> request = new Request<>();
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because endMoveStack.game is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.game", e.getParams()[0]);
+        }
+
+        request.setGame(new GameInfo());
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because idGame is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.game.idGame", e.getParams()[0]);
+        }
+
+        request.getGame().setIdGame(12L);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because versionGame is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.game.versionGame", e.getParams()[0]);
+        }
+
+        request.getGame().setVersionGame(1L);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because game does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.game.idGame", e.getParams()[0]);
+        }
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setId(6L);
+        game.getStacks().get(0).setMovePhase(MovePhaseEnum.NOT_MOVED);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setId(7L);
+        game.getStacks().get(1).setMovePhase(MovePhaseEnum.MOVED);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setId(8L);
+        game.getStacks().get(2).setMovePhase(MovePhaseEnum.IS_MOVING);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because versions does not match");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.game.versionGame", e.getParams()[0]);
+        }
+
+        game.setVersion(5L);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because endMoveStack.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new EndMoveStackRequest());
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because idStack is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("endMoveStack.request.idStack", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdStack(6L);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because stack is not moving");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_NOT_MOVING, e.getCode());
+            Assert.assertEquals("endMoveStack.request.idStack", e.getParams()[0]);
+        }
+
+
+        request.getRequest().setIdStack(7L);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because stack is not moving");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_NOT_MOVING, e.getCode());
+            Assert.assertEquals("endMoveStack.request.idStack", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testEndMoveStackSuccess() throws Exception {
+        Request<EndMoveStackRequest> request = new Request<>();
+        request.setRequest(new EndMoveStackRequest());
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.getRequest().setIdStack(13L);
+
+        GameEntity game = new GameEntity();
+        game.setId(12L);
+        game.setVersion(5L);
+        StackEntity stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+        stack.setId(13L);
+        game.getStacks().add(stack);
+
+        when(gameDao.lock(12L)).thenReturn(game);
+
+        when(oeUtil.isMobile(stack)).thenReturn(true);
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+
+        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
+            diffEntity = (DiffEntity) invocation.getArguments()[0];
+            return diffEntity;
+        });
+
+        List<Diff> diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+
+        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+
+        DiffResponse response = boardService.endMoveStack(request);
+
+        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, diffMapping);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).create(anyObject());
+        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), diffEntity.getAttributes().get(0).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());

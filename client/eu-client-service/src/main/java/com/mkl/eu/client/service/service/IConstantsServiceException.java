@@ -533,4 +533,18 @@ public interface IConstantsServiceException {
      * </p>
      */
     String OTHER_STACK_MOVING = "exception.eu.board.other_stack_moving";
+
+    /**
+     * <p>
+     * Exception thrown when trying to end the move a non moving stack.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_NOT_MOVING = "exception.eu.board.stack_non_moving";
 }

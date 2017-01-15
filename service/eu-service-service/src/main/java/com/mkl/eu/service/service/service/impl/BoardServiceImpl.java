@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -160,6 +161,67 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffs.add(diff);
 
         stack.setProvince(provinceTo);
+        gameDao.update(game, false);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse endMoveStack(Request<EndMoveStackRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_END_MOVE_STACK).setParams(METHOD_END_MOVE_STACK));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
+        GameEntity game = gameDiffs.getGame();
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_END_MOVE_STACK));
+        // TODO authorization
+
+        Long idStack = request.getRequest().getIdStack();
+
+        failIfNull(new CheckForThrow<>().setTest(idStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_END_MOVE_STACK));
+
+        Optional<StackEntity> stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(stackOpt.isPresent()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_END_MOVE_STACK, idStack));
+
+        StackEntity stack = stackOpt.get();
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(stack.getMovePhase() == MovePhaseEnum.IS_MOVING)
+                .setCodeError(IConstantsServiceException.STACK_NOT_MOVING)
+                .setMsgFormat("{1}: {0} {2} Stack is not moving.")
+                .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_END_MOVE_STACK, idStack));
+
+        stack.setMovePhase(MovePhaseEnum.MOVED);
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.STACK);
+        diff.setIdObject(idStack);
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
+        diffAttributes.setValue(MovePhaseEnum.MOVED.name());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        createDiff(diff);
+
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        diffs.add(diff);
+
         gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();
