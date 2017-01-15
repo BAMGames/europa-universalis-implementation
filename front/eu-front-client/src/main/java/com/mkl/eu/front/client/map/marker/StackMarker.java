@@ -1,5 +1,7 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.service.vo.board.Stack;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +11,8 @@ import java.util.List;
  * @author MKL
  */
 public class StackMarker {
-    /** Id of the stack. */
-    private Long id;
+    /** Stack object in the game. */
+    private Stack stack;
     /** Province marker where the stack is. */
     private IMapMarker province;
     /** Counters marker of the stack. */
@@ -19,17 +21,22 @@ public class StackMarker {
     /**
      * Constructor.
      *
-     * @param id       of the stack.
+     * @param stack    the stack in the game.
      * @param province where the stack is.
      */
-    public StackMarker(Long id, IMapMarker province) {
-        this.id = id;
+    public StackMarker(Stack stack, IMapMarker province) {
+        this.stack = stack;
         this.province = province;
     }
 
     /** @return the id. */
     public Long getId() {
-        return id;
+        return stack.getId();
+    }
+
+    /** @return the stack. */
+    public Stack getStack() {
+        return stack;
     }
 
     /** @return the province. */

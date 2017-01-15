@@ -1,7 +1,9 @@
 package com.mkl.eu.front.client.map;
 
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
@@ -295,14 +297,19 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
 
         String nameCountry = attribute.getValue();
 
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK);
-        if (attribute == null) {
+        final DiffAttributes attributeIdStack = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK);
+        if (attributeIdStack == null) {
             LOGGER.error("Missing stack id in counter add event.");
             return;
         }
         // FIXME stack may already exist
 
-        StackMarker stackMarker = new StackMarker(Long.parseLong(attribute.getValue()), province);
+        Stack stackVO = CommonUtil.findFirst(game.getStacks().stream(), stack -> stack.getId().equals(Long.parseLong(attributeIdStack.getValue())));
+        if (stackVO == null) {
+            LOGGER.error("Missing stack in the game.");
+            return;
+        }
+        StackMarker stackMarker = new StackMarker(stackVO, province);
         stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, markerUtils.getImageFromCounter(nameCountry, type.name())));
         province.addStack(stackMarker);
     }
@@ -360,7 +367,12 @@ public class InteractiveMap extends PApplet implements MapEventListener, IDiffLi
             Long idStack = Long.parseLong(attribute.getValue());
             stackTo = findFirst(provinceTo.getStacks(), stack1 -> idStack.equals(stack1.getId()));
             if (stackTo == null) {
-                stackTo = new StackMarker(idStack, provinceTo);
+                Stack stackVO = CommonUtil.findFirst(game.getStacks().stream(), stackItem -> stackItem.getId().equals(idStack));
+                if (stackVO == null) {
+                    LOGGER.error("Missing stack in the game.");
+                    return;
+                }
+                stackTo = new StackMarker(stackVO, provinceTo);
                 provinceTo.addStack(stackTo);
             }
         } else {
