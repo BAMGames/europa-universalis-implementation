@@ -4,20 +4,20 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
-import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
-import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
-import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
-import com.mkl.eu.front.client.map.marker.*;
+import com.mkl.eu.front.client.map.marker.CounterMarker;
+import com.mkl.eu.front.client.map.marker.IMapMarker;
+import com.mkl.eu.front.client.map.marker.MyMarkerManager;
+import com.mkl.eu.front.client.map.marker.StackMarker;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
@@ -41,7 +41,7 @@ import processing.core.PGraphics;
  */
 @Component
 @Scope(value = "prototype")
-public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
+public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
     /** Board Service. */
@@ -275,79 +275,12 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof CounterMarker) {
-            menu = createMenuCounter((CounterMarker) contextualized);
+            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, message, globalConfiguration,
+                    gameConfig, authentHolder, gameAdminService, this);
         } else if (contextualized instanceof StackMarker) {
-            menu = createMenuStack((StackMarker) contextualized);
+            menu = MenuHelper.createMenuStack((StackMarker) contextualized, message, globalConfiguration,
+                    gameConfig, authentHolder, boardService, this);
         }
-
-        return menu;
-    }
-
-    /**
-     * Create a Contextual Menu for a Counter.
-     *
-     * @param counter where the contextual menu is.
-     * @return a Contextual Menu for a Counter.
-     */
-    private ContextualMenu createMenuCounter(final CounterMarker counter) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale())));
-        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.disband", null, globalConfiguration.getLocale()), event -> {
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = gameAdminService.removeCounter(idGame, gameConfig.getVersionGame(),
-                        counter.getId());
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when moving stack.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-
-            resetContextualMenu();
-        }));
-
-        return menu;
-    }
-
-    /**
-     * Create a Contextual Menu for a Stack.
-     *
-     * @param stack where the contextual menu is.
-     * @return a Contextual Menu for a Stack.
-     */
-    private ContextualMenu createMenuStack(final StackMarker stack) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale())));
-        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.move", null, globalConfiguration.getLocale()));
-        for (final BorderMarker border : stack.getProvince().getNeighbours()) {
-            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
-            if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
-            }
-            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                Long idGame = gameConfig.getIdGame();
-                try {
-                    Request<MoveStackRequest> request = new Request<>();
-                    authentHolder.fillAuthentInfo(request);
-                    gameConfig.fillGameInfo(request);
-                    gameConfig.fillChatInfo(request);
-                    request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
-                    DiffResponse response = boardService.moveStack(request);
-                    DiffEvent diff = new DiffEvent(response, idGame);
-                    processDiffEvent(diff);
-                } catch (Exception e) {
-                    LOGGER.error("Error when moving stack.", e);
-
-                    processExceptionEvent(new ExceptionEvent(e));
-                }
-                resetContextualMenu();
-            }));
-        }
-        menu.addMenuItem(move);
 
         return menu;
     }
@@ -421,5 +354,19 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
                     break;
             }
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void processDiffEvent(DiffEvent event) {
+        resetContextualMenu();
+        super.processDiffEvent(event);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void processExceptionEvent(ExceptionEvent event) {
+        resetContextualMenu();
+        super.processExceptionEvent(event);
     }
 }

@@ -52,7 +52,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class InteractiveMap extends PApplet implements MapEventListener, IDiffListenerContainer, ApplicationContextAware {
+public class InteractiveMap extends PApplet implements MapEventListener, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
     /** Spring application context. */

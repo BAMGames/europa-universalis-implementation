@@ -13,4 +13,18 @@ public interface IDiffListenerContainer {
      * @param diffListener to add.
      */
     void addDiffListener(IDiffListener diffListener);
+
+    /**
+     * Process a DiffEvent.
+     *
+     * @param event to process.
+     */
+    void processDiffEvent(DiffEvent event);
+
+    /**
+     * Process a ExceptionEvent.
+     *
+     * @param event to process.
+     */
+    void processExceptionEvent(ExceptionEvent event);
 }

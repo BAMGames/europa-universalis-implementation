@@ -12,34 +12,25 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer {
     /** Listeners for diffs event. */
     private List<IDiffListener> diffListeners = new ArrayList<>();
 
-    /**
-     * Add a diff listener.
-     *
-     * @param diffListener to add.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void addDiffListener(IDiffListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
     }
 
-    /**
-     * Process a DiffEvent.
-     *
-     * @param event to process.
-     */
-    protected void processDiffEvent(DiffEvent event) {
+    /** {@inheritDoc} */
+    @Override
+    public void processDiffEvent(DiffEvent event) {
         for (IDiffListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }
 
-    /**
-     * Process a ExceptionEvent.
-     *
-     * @param event to process.
-     */
-    protected void processExceptionEvent(ExceptionEvent event) {
+    /** {@inheritDoc} */
+    @Override
+    public void processExceptionEvent(ExceptionEvent event) {
         for (IDiffListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }

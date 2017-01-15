@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -83,25 +84,25 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
         }
     }
 
-    /**
-     * Add a diff listener.
-     *
-     * @param diffListener to add.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void addDiffListener(IDiffListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
     }
 
-    /**
-     * Process a DiffEvent.
-     *
-     * @param event to process.
-     */
-    private void processDiffEvent(DiffEvent event) {
+    /** {@inheritDoc} */
+    @Override
+    public void processDiffEvent(DiffEvent event) {
         for (IDiffListener diffListener : diffListeners) {
             diffListener.update(event);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void processExceptionEvent(ExceptionEvent event) {
+
     }
 }

@@ -4,9 +4,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
@@ -14,8 +12,8 @@ import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.map.component.MenuHelper;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
-import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
 import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
@@ -213,114 +211,14 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof IMapMarker) {
-            menu = createMenuProvince((IMapMarker) contextualized);
+            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, message, globalConfiguration,
+                    gameConfig, authentHolder, gameAdminService, this);
         } else if (contextualized instanceof StackMarker) {
-            menu = createMenuStack((StackMarker) contextualized);
+            menu = MenuHelper.createMenuStack((StackMarker) contextualized, message, globalConfiguration,
+                    gameConfig, authentHolder, boardService, this);
         }
 
         return menu;
-    }
-
-    /**
-     * Create a Contextual Menu for a Province.
-     *
-     * @param province where the contextual menu is.
-     * @return a Contextual Menu for a Province.
-     */
-    private ContextualMenu createMenuProvince(final IMapMarker province) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.province", null, globalConfiguration.getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
-        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.neighbors", null, globalConfiguration.getLocale()));
-        for (final BorderMarker border : province.getNeighbours()) {
-            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
-            if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
-            }
-            neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
-        }
-        menu.addMenuItem(neighbours);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterFaceTypeEnum.ARMY_PLUS, province)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterFaceTypeEnum.ARMY_MINUS, province)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterFaceTypeEnum.LAND_DETACHMENT, province)));
-        ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
-        ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
-        subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
-        subMenu2.addMenuItem(ContextualMenuItem.createMenuLabel("text"));
-        subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("reaction", null));
-        subMenu1.addMenuItem(subMenu2);
-        subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Amen", null));
-        subMenu1.addMenuItem(ContextualMenuItem.createMenuLabel("Upide"));
-        ContextualMenu subMenu3 = ContextualMenuItem.createMenuSubMenu("Un autre");
-        subMenu3.addMenuItem(ContextualMenuItem.createMenuLabel("OK"));
-        subMenu3.addMenuItem(ContextualMenuItem.createMenuItem("Ou pas", null));
-        subMenu1.addMenuItem(subMenu3);
-        subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Icule", null));
-        menu.addMenuItem(subMenu1);
-
-        return menu;
-    }
-
-    /**
-     * Create a Contextual Menu for a Stack.
-     *
-     * @param stack where the contextual menu is.
-     * @return a Contextual Menu for a Stack.
-     */
-    private ContextualMenu createMenuStack(final StackMarker stack) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale())));
-        menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.move", null, globalConfiguration.getLocale()));
-        for (final BorderMarker border : stack.getProvince().getNeighbours()) {
-            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
-            if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
-            }
-            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                Long idGame = gameConfig.getIdGame();
-                try {
-                    Request<MoveStackRequest> request = new Request<>();
-                    authentHolder.fillAuthentInfo(request);
-                    gameConfig.fillGameInfo(request);
-                    gameConfig.fillChatInfo(request);
-                    request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
-                    DiffResponse response = boardService.moveStack(request);
-                    DiffEvent diff = new DiffEvent(response, idGame);
-                    processDiffEvent(diff);
-                } catch (Exception e) {
-                    LOGGER.error("Error when moving stack.", e);
-
-                    processExceptionEvent(new ExceptionEvent(e));
-                }
-                resetContextualMenu();
-            }));
-        }
-        menu.addMenuItem(move);
-
-        return menu;
-    }
-
-    /**
-     * Creates a French stack of one counter on the province.
-     *
-     * @param type     of the counter to create.
-     * @param province where the stack should be created.
-     */
-    private void createStack(CounterFaceTypeEnum type, IMapMarker province) {
-        CounterForCreation counter = new CounterForCreation();
-        counter.setCountry("france");
-        counter.setType(type);
-        Long idGame = gameConfig.getIdGame();
-        try {
-            DiffResponse response = gameAdminService.createCounter(idGame, gameConfig.getVersionGame(), counter, province.getId());
-            DiffEvent event = new DiffEvent(response, idGame);
-            processDiffEvent(event);
-        } catch (Exception e) {
-            LOGGER.error("Error when creating counter.", e);
-
-            processExceptionEvent(new ExceptionEvent(e));
-        }
     }
 
     /** @return the selectedMarker. */
@@ -497,34 +395,27 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         return isNeighbour;
     }
 
-    /**
-     * Add a diff listener.
-     *
-     * @param diffListener to add.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void addDiffListener(IDiffListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
     }
 
-    /**
-     * Process a DiffEvent.
-     *
-     * @param event to process.
-     */
-    private void processDiffEvent(DiffEvent event) {
+    /** {@inheritDoc} */
+    @Override
+    public void processDiffEvent(DiffEvent event) {
+        resetContextualMenu();
         for (IDiffListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }
 
-    /**
-     * Process a ExceptionEvent.
-     *
-     * @param event to process.
-     */
-    private void processExceptionEvent(ExceptionEvent event) {
+    /** {@inheritDoc} */
+    @Override
+    public void processExceptionEvent(ExceptionEvent event) {
+        resetContextualMenu();
         for (IDiffListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
