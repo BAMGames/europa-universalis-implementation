@@ -123,10 +123,11 @@ public interface IMapMarker {
     /**
      * Draws this marker.
      *
-     * @param map           The map to draw on.
+     * @param map            The map to draw on.
+     * @param stacksSelected stacks selected.
      * @param stacksToIgnore stacks not to draw.
      */
-    void draw(UnfoldingMap map, List<StackMarker> stacksToIgnore);
+    void draw(UnfoldingMap map, List<StackMarker> stacksSelected, List<StackMarker> stacksToIgnore);
 
     /** @return In case of Provinces in various pieces, returns the MultiProvinceMarker parent of all. */
     IMapMarker getParent();

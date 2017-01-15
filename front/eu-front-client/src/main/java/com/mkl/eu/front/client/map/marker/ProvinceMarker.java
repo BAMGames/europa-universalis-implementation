@@ -1,6 +1,7 @@
 package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.enumeration.TradeZoneTypeEnum;
 import com.mkl.eu.front.client.map.MapConfiguration;
@@ -89,20 +90,16 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
-    public void draw(UnfoldingMap map, List<StackMarker> stacksToIgnore) {
+    public void draw(UnfoldingMap map, List<StackMarker> stacksSelected, List<StackMarker> stacksToIgnore) {
         Location bottomRightBorder = map.getBottomRightBorder();
 
         Location topLeftBorder = map.getTopLeftBorder();
 
-        // map.getBottomRightBorder and map.getTopLeftBorder have inversed locations (x and y).
+        // map.getBottomRightBorder and map.getTopLeftBorder have inverse locations (x and y).
         if (bottomRightBorder.getLon() > topLeft.getLon() && topLeftBorder.getLon() < bottomRight.getLon()
                 && bottomRightBorder.getLat() < topLeft.getLat() && topLeftBorder.getLat() > bottomRight.getLat()) {
             if ((MapConfiguration.isWithColor() || selected)) {
                 super.draw(map);
-            }
-
-            if (id.equals("eAndalucia")) {
-                int a = 1;
             }
 
             PGraphics pg = map.mapDisplay.getOuterPG();
@@ -117,19 +114,19 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                     && (getId().startsWith("ZM") || getId().startsWith("ZP"))) {
                 drawStacksInCircle(stacks, xy, relativeSize, pg, stacksToIgnore, getId().startsWith("ZP"));
             } else {
-                drawStacks(stacks, xy, relativeSize, pg, stacksToIgnore);
+                drawStacks(stacks, xy, relativeSize, pg, stacksSelected, stacksToIgnore);
             }
 
             Location location = getFortressLocation();
             if (location != null) {
                 xy = map.mapDisplay.getObjectFromLocation(location);
-                drawStacks(stacksFortress, xy, relativeSize, pg, stacksToIgnore);
+                drawStacks(stacksFortress, xy, relativeSize, pg, stacksSelected, stacksToIgnore);
             }
 
             location = getPortLocation();
             if (location != null) {
                 xy = map.mapDisplay.getObjectFromLocation(location);
-                drawStacks(stacksPort, xy, relativeSize, pg, stacksToIgnore);
+                drawStacks(stacksPort, xy, relativeSize, pg, stacksSelected, stacksToIgnore);
             }
 
             pg.popStyle();
@@ -143,9 +140,10 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
      * @param xy             starting location.
      * @param relativeSize   size of the counters.
      * @param pg             graphics.
+     * @param stacksSelected stacks selected.
      * @param stacksToIgnore stacks not to draw.
      */
-    protected void drawStacks(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksToIgnore) {
+    protected void drawStacks(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksSelected, List<StackMarker> stacksToIgnore) {
         for (int i = 0; i < stacks.size(); i++) {
             // The stack being dragged or hovered is drawn by the MarkerManager.
             if (stacksToIgnore.contains(stacks.get(i))) {
@@ -153,12 +151,76 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             }
             for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
                 CounterMarker counter = stacks.get(i).getCounters().get(j);
-
                 float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
-                pg.image(counter.getImage(), x0 + relativeSize * j / 10 + relativeSize * i
-                        , xy[1] + relativeSize * (j - 5) / 10, relativeSize, relativeSize);
+
+                float factor = 10;
+                if (stacksSelected.contains(stacks.get(i))) {
+                    factor = 1;
+                }
+
+                pg.image(counter.getImage(), x0 + relativeSize * j / factor + relativeSize * i
+                        , xy[1] + relativeSize * (j / factor - 0.5f), relativeSize, relativeSize);
+
+                pg.pushStyle();
+                boolean borderColored = false;
+                if (stacks.get(i).getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
+                    pg.stroke(0, 255, 0);
+                    borderColored = true;
+
+                } else if (stacksSelected.contains(stacks.get(i))) {
+                    pg.stroke(255, 255, 0);
+                    borderColored = true;
+                }
+
+                if (borderColored) {
+                    if (j == stacks.get(i).getCounters().size() - 1) {
+                        drawRectBorder(pg, x0 + relativeSize * j / factor + relativeSize * i
+                                , xy[1] + relativeSize * (j / factor - 0.5f), relativeSize, relativeSize, 2.5f);
+                    } else {
+                        drawAlmostRectBorder(pg, x0 + relativeSize * j / factor + relativeSize * i
+                                , xy[1] + relativeSize * (j / factor - 0.5f), relativeSize, relativeSize, relativeSize / factor, 2.5f);
+                    }
+                }
+
+                pg.popStyle();
             }
         }
+    }
+
+    /**
+     * Draw the beginning borders of a rectangle.
+     *
+     * @param pg    the graphics.
+     * @param x     X coordinate of the rectangle.
+     * @param y     Y coordinate of the rectangle.
+     * @param w     width of the rectangle.
+     * @param h     height of the rectangle.
+     * @param depth of the line.
+     */
+    private void drawAlmostRectBorder(PGraphics pg, float x, float y, float w, float h, float b, float depth) {
+        pg.strokeWeight(2 * depth);
+        pg.line(x - depth, y - depth, x + w + depth, y - depth);
+        pg.line(x + w + depth, y - depth, x + w + depth, y + b - depth);
+        pg.line(x + b - depth, y + h + depth, x - depth, y + h + depth);
+        pg.line(x - depth, y + h + depth, x - depth, y - depth);
+    }
+
+    /**
+     * Draw the borders of a rectangle.
+     *
+     * @param pg    the graphics.
+     * @param x     X coordinate of the rectangle.
+     * @param y     Y coordinate of the rectangle.
+     * @param w     width of the rectangle.
+     * @param h     height of the rectangle.
+     * @param depth of the line.
+     */
+    private void drawRectBorder(PGraphics pg, float x, float y, float w, float h, float depth) {
+        pg.strokeWeight(2 * depth);
+        pg.line(x - depth, y - depth, x + w + depth, y - depth);
+        pg.line(x + w + depth, y - depth, x + w + depth, y + h + depth);
+        pg.line(x + w + depth, y + h + depth, x - depth, y + h + depth);
+        pg.line(x - depth, y + h + depth, x - depth, y - depth);
     }
 
     /**

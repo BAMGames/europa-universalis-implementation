@@ -101,16 +101,17 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
 
         PGraphics pg = map.mapDisplay.getOuterPG();
         List<StackMarker> stacksToIgnore = new ArrayList<>();
+        List<StackMarker> stacksSelected = new ArrayList<>();
         if (dragged != null) {
             stacksToIgnore.add(dragged);
         }
         if (hovered != null && hovered.getCounters().size() > 1) {
-            stacksToIgnore.add(hovered);
+            stacksSelected.add(hovered);
         }
 
         for (Marker marker : markers) {
             if (marker instanceof IMapMarker) {
-                ((IMapMarker) marker).draw(map, stacksToIgnore);
+                ((IMapMarker) marker).draw(map, stacksSelected, stacksToIgnore);
             } else {
                 marker.draw(map);
             }
@@ -134,45 +135,11 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
             pg.popStyle();
         }
 
-        if (hovered != null && hoverLocation != null && hovered.getCounters().size() > 1 && hovered != dragged) {
-            pg.pushStyle();
-            pg.imageMode(PConstants.CORNER);
-            float[] xy = map.mapDisplay.getObjectFromLocation(hoverLocation);
-            for (int j = 0; j < hovered.getCounters().size(); j++) {
-                CounterMarker counter = hovered.getCounters().get(j);
-
-                pg.image(counter.getImage(), xy[0] + relativeSize * j * 2
-                        , xy[1] + relativeSize / 2, relativeSize, relativeSize);
-                pg.stroke(255, 255, 0);
-                drawRectBorder(pg, xy[0] + relativeSize * j * 2
-                        , xy[1] + relativeSize / 2, relativeSize, relativeSize, 2.5f);
-            }
-            pg.popStyle();
-        }
-
         if (contextualized != null && menuLocation != null && menu != null) {
             float[] xy = map.mapDisplay.getObjectFromLocation(menuLocation);
             menu.setLocation(new Location(xy[0], xy[1]));
             menu.draw(pg);
         }
-    }
-
-    /**
-     * Draw the borders of a rectangle.
-     *
-     * @param pg    the graphics.
-     * @param x     X coordinate of the rectangle.
-     * @param y     Y coordinate of the rectangle.
-     * @param w     width of the rectangle.
-     * @param h     height of the rectangle.
-     * @param depth of the line.
-     */
-    private void drawRectBorder(PGraphics pg, float x, float y, float w, float h, float depth) {
-        pg.strokeWeight(2 * depth);
-        pg.line(x - depth, y - depth, x + w + depth, y - depth);
-        pg.line(x + w + depth, y - depth, x + w + depth, y + h + depth);
-        pg.line(x + w + depth, y + h + depth, x - depth, y + h + depth);
-        pg.line(x - depth, y + h + depth, x - depth, y - depth);
     }
 
     /** {@inheritDoc} */
@@ -339,7 +306,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      *
      * @param type     of the counter to create.
      * @param province where the stack should be created.
-     * @return the stack created.
      */
     private void createStack(CounterFaceTypeEnum type, IMapMarker province) {
         CounterForCreation counter = new CounterForCreation();
