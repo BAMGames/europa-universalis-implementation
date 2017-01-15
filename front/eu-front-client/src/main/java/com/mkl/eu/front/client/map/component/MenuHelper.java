@@ -3,6 +3,7 @@ package com.mkl.eu.front.client.map.component;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
+import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -57,7 +58,7 @@ public final class MenuHelper {
         ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.province", null, globalConfiguration.getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.neighbors", null, globalConfiguration.getLocale()));
+        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.province.neighbors", null, globalConfiguration.getLocale()));
         for (final BorderMarker border : province.getNeighbours()) {
             StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
@@ -131,7 +132,7 @@ public final class MenuHelper {
         ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.move", null, globalConfiguration.getLocale()));
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.stack.move", null, globalConfiguration.getLocale()));
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
             StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
             if (border.getType() != null) {
@@ -156,6 +157,24 @@ public final class MenuHelper {
             }));
         }
         menu.addMenuItem(move);
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.stack.end_move", null, globalConfiguration.getLocale()),
+                event -> {
+                    Long idGame = gameConfig.getIdGame();
+                    try {
+                        Request<EndMoveStackRequest> request = new Request<>();
+                        authentHolder.fillAuthentInfo(request);
+                        gameConfig.fillGameInfo(request);
+                        gameConfig.fillChatInfo(request);
+                        request.setRequest(new EndMoveStackRequest(stack.getId()));
+                        DiffResponse response = boardService.endMoveStack(request);
+                        DiffEvent diff = new DiffEvent(response, idGame);
+                        container.processDiffEvent(diff);
+                    } catch (Exception e) {
+                        LOGGER.error("Error when ending movement of stack.", e);
+
+                        container.processExceptionEvent(new ExceptionEvent(e));
+                    }
+                }));
 
         return menu;
     }
@@ -178,7 +197,7 @@ public final class MenuHelper {
         ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.disband", null, globalConfiguration.getLocale()), event -> {
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.counter.disband", null, globalConfiguration.getLocale()), event -> {
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = gameAdminService.removeCounter(idGame, gameConfig.getVersionGame(),

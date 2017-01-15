@@ -546,5 +546,5 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String STACK_NOT_MOVING = "exception.eu.board.stack_non_moving";
+    String STACK_NOT_MOVING = "exception.eu.board.stack_not_moving";
 }
