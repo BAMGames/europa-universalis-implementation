@@ -21,10 +21,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
-import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
-import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
@@ -514,6 +511,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case MOVE:
                 moveStack(game, diff);
                 break;
+            case MODIFY:
+                modifyStack(game, diff);
+                break;
             case REMOVE:
                 break;
             default:
@@ -525,7 +525,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      * Process the move stack diff event.
      *
      * @param game to update.
-     * @param diff involving a add counter.
+     * @param diff involving a move stack.
      */
     private void moveStack(Game game, Diff diff) {
         Stack stack;
@@ -533,7 +533,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
         if (stack == null) {
             LOGGER.error("Missing stack in stack move event.");
-            stack = new Stack();
+            return;
         }
 
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_FROM);
@@ -550,6 +550,32 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             stack.setProvince(attribute.getValue());
         } else {
             LOGGER.error("Missing province to in stack move event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
+        if (attribute != null) {
+            stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
+        }
+    }
+
+    /**
+     * Process the modify stack diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify stack.
+     */
+    private void modifyStack(Game game, Diff diff) {
+        Stack stack;
+        Long idStack = diff.getIdObject();
+        stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+        if (stack == null) {
+            LOGGER.error("Missing stack in stack move event.");
+            return;
+        }
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
+        if (attribute != null) {
+            stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
         }
     }
 
