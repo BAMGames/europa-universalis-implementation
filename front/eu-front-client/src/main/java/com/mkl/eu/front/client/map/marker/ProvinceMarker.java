@@ -170,6 +170,12 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 } else if (stacksSelected.contains(stacks.get(i))) {
                     pg.stroke(255, 255, 0);
                     borderColored = true;
+                } else if (MapConfiguration.isStacksMovePhase() && stacks.get(i).getStack().getMovePhase() == MovePhaseEnum.MOVED) {
+                    pg.stroke(255, 0, 0);
+                    borderColored = true;
+                } else if (MapConfiguration.isStacksMovePhase() && stacks.get(i).getStack().getMovePhase() == MovePhaseEnum.NOT_MOVED) {
+                    pg.stroke(0, 0, 255);
+                    borderColored = true;
                 }
 
                 if (borderColored) {

@@ -59,6 +59,17 @@ public class ContextualMenu extends ContextualMenuItem {
     }
 
     /**
+     * Add the items to the menu.
+     *
+     * @param items to be added.
+     */
+    public void addAllMenuItems(List<ContextualMenuItem> items) {
+        if (items != null) {
+            items.forEach(this::addMenuItem);
+        }
+    }
+
+    /**
      * Initialize the settings of the menu.
      *
      * @param pg graphics.

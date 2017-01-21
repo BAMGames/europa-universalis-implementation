@@ -12,6 +12,7 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
+import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
@@ -20,6 +21,9 @@ import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.StackMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class for menus.
@@ -50,6 +54,7 @@ public final class MenuHelper {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
+        menu.addAllMenuItems(createGlobalMenu(container));
         ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.province.neighbors", null, container.getGlobalConfiguration().getLocale()));
         for (final BorderMarker border : province.getNeighbours()) {
             StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
@@ -119,6 +124,7 @@ public final class MenuHelper {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.stack", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.stack", null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
+        menu.addAllMenuItems(createGlobalMenu(container));
         ContextualMenu move = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.stack.move", null, container.getGlobalConfiguration().getLocale()));
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
             StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
@@ -179,6 +185,7 @@ public final class MenuHelper {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
+        menu.addAllMenuItems(createGlobalMenu(container));
         menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.counter.disband", null, container.getGlobalConfiguration().getLocale()), event -> {
             Long idGame = container.getGameConfig().getIdGame();
             try {
@@ -194,5 +201,22 @@ public final class MenuHelper {
         }));
 
         return menu;
+    }
+
+    private static List<ContextualMenuItem> createGlobalMenu(IMenuContainer container) {
+        List<ContextualMenuItem> menus = new ArrayList<>();
+        ContextualMenu menu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.map", null, container.getGlobalConfiguration().getLocale()));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.map.color", null, container.getGlobalConfiguration().getLocale()),
+                event -> {
+                    MapConfiguration.switchColor();
+                }));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.map.moving_stack", null, container.getGlobalConfiguration().getLocale()),
+                event -> {
+                    MapConfiguration.switchStacksMovePhase();
+                }));
+
+        menus.add(menu);
+        menus.add(ContextualMenuItem.createMenuSeparator());
+        return menus;
     }
 }
