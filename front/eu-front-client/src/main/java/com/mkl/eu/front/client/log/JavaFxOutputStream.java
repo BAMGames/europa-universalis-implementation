@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.log;
 
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 
 import java.io.IOException;
@@ -26,6 +27,9 @@ public class JavaFxOutputStream extends OutputStream {
     /** {@inheritDoc} */
     @Override
     public void write(int b) throws IOException {
-        text.appendText(String.valueOf((char) b));
+        // Need to invoke inside a Platform.runLater
+        // to not do a NPE when the log is created
+        // by a non-javaFX component.
+        Platform.runLater(() -> text.appendText(String.valueOf((char) b)));
     }
 }

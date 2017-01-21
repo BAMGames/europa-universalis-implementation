@@ -34,6 +34,8 @@ public final class UIUtil {
      * @param message             message source containing the internationalization.
      */
     public static void showException(Exception ex, GlobalConfiguration globalConfiguration, MessageSource message) {
+        // With Platform.runLater, this dialog can be displayed
+        // even in non-javaFX component (the map)
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(message.getMessage("exception.dialog.title", null, globalConfiguration.getLocale()));
