@@ -12,6 +12,7 @@ import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.map.component.IMenuContainer;
 import com.mkl.eu.front.client.map.component.MenuHelper;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.handler.event.DragEvent;
@@ -44,7 +45,7 @@ import java.util.List;
  */
 @Component
 @Scope(value = "prototype")
-public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer {
+public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer, IMenuContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Board Service. */
@@ -211,11 +212,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof IMapMarker) {
-            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, message, globalConfiguration,
-                    gameConfig, authentHolder, gameAdminService, this);
+            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, gameAdminService, this);
         } else if (contextualized instanceof StackMarker) {
-            menu = MenuHelper.createMenuStack((StackMarker) contextualized, message, globalConfiguration,
-                    gameConfig, authentHolder, boardService, this);
+            menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
         }
 
         return menu;
@@ -419,5 +418,29 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         for (IDiffListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public MessageSource getMessage() {
+        return message;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GlobalConfiguration getGlobalConfiguration() {
+        return globalConfiguration;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GameConfiguration getGameConfig() {
+        return gameConfig;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AuthentHolder getAuthentHolder() {
+        return authentHolder;
     }
 }

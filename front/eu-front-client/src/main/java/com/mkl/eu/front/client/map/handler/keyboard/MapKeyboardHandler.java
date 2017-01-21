@@ -62,12 +62,15 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
         super.keyPressed(key, keyCode);
 
         if (keyCode == 67) {
+            // 'c' key
             MapConfiguration.switchColor();
         } else if (keyCode == 65) {
+            // 'a' key
             for (UnfoldingMap map : maps) {
                 map.setTweening(!map.isTweening());
             }
         } else if (keyCode == 85) {
+            // 'u' key
             Long idGame = gameConfig.getIdGame();
             try {
                 Request<Void> request = new Request<>();

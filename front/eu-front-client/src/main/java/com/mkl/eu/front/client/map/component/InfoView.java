@@ -41,7 +41,7 @@ import processing.core.PGraphics;
  */
 @Component
 @Scope(value = "prototype")
-public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener {
+public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IMenuContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
     /** Board Service. */
@@ -275,11 +275,9 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof CounterMarker) {
-            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, message, globalConfiguration,
-                    gameConfig, authentHolder, gameAdminService, this);
+            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, gameAdminService, this);
         } else if (contextualized instanceof StackMarker) {
-            menu = MenuHelper.createMenuStack((StackMarker) contextualized, message, globalConfiguration,
-                    gameConfig, authentHolder, boardService, this);
+            menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
         }
 
         return menu;
@@ -368,5 +366,29 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     public void processExceptionEvent(ExceptionEvent event) {
         resetContextualMenu();
         super.processExceptionEvent(event);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public MessageSource getMessage() {
+        return message;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GlobalConfiguration getGlobalConfiguration() {
+        return globalConfiguration;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GameConfiguration getGameConfig() {
+        return gameConfig;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AuthentHolder getAuthentHolder() {
+        return authentHolder;
     }
 }

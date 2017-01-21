@@ -12,17 +12,14 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
-import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenuItem;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
 import com.mkl.eu.front.client.map.marker.CounterMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.StackMarker;
-import com.mkl.eu.front.client.vo.AuthentHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
 
 /**
  * Utility class for menus.
@@ -44,32 +41,27 @@ public final class MenuHelper {
      * Create a Contextual Menu for a Province.
      *
      * @param province            where the contextual menu is.
-     * @param message             for internationalisation.
-     * @param globalConfiguration Configuration of the application.
-     * @param gameConfig          Game configuration.
-     * @param authentHolder       Component holding the authentication information.
      * @param gameAdminService    service for game administration.
      * @param container           container to call back when services are called.
      * @return a Contextual Menu for a Province.
      */
-    public static ContextualMenu createMenuProvince(final IMapMarker province, MessageSource message, GlobalConfiguration globalConfiguration,
-                                                    GameConfiguration gameConfig, AuthentHolder authentHolder, IGameAdminService gameAdminService,
-                                                    IDiffListenerContainer container) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.province", null, globalConfiguration.getLocale()));
+    public static ContextualMenu createMenuProvince(final IMapMarker province, IGameAdminService gameAdminService,
+                                                    IMenuContainer container) {
+        ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.province.neighbors", null, globalConfiguration.getLocale()));
+        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.province.neighbors", null, container.getGlobalConfiguration().getLocale()));
         for (final BorderMarker border : province.getNeighbours()) {
-            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
+            StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
+                label.append(" (").append(container.getMessage().getMessage("border." + border.getType().getCode(), null, container.getGlobalConfiguration().getLocale())).append(")");
             }
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterFaceTypeEnum.ARMY_PLUS, province, gameConfig, gameAdminService, container)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterFaceTypeEnum.ARMY_MINUS, province, gameConfig, gameAdminService, container)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterFaceTypeEnum.LAND_DETACHMENT, province, gameConfig, gameAdminService, container)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterFaceTypeEnum.ARMY_PLUS, province, container.getGameConfig(), gameAdminService, container)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterFaceTypeEnum.ARMY_MINUS, province, container.getGameConfig(), gameAdminService, container)));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterFaceTypeEnum.LAND_DETACHMENT, province, container.getGameConfig(), gameAdminService, container)));
         ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
         ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
         subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
@@ -118,33 +110,28 @@ public final class MenuHelper {
      * Create a Contextual Menu for a Stack.
      *
      * @param stack               where the contextual menu is.
-     * @param message             for internationalisation.
-     * @param globalConfiguration Configuration of the application.
-     * @param gameConfig          Game configuration.
-     * @param authentHolder       Component holding the authentication information.
      * @param boardService        service for board actions.
      * @param container           container to call back when services are called.
      * @return a Contextual Menu for a Stack.
      */
-    public static ContextualMenu createMenuStack(final StackMarker stack, MessageSource message, GlobalConfiguration globalConfiguration,
-                                                 GameConfiguration gameConfig, AuthentHolder authentHolder, IBoardService boardService,
-                                                 IDiffListenerContainer container) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.stack", null, globalConfiguration.getLocale())));
+    public static ContextualMenu createMenuStack(final StackMarker stack, IBoardService boardService,
+                                                 IMenuContainer container) {
+        ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.stack", null, container.getGlobalConfiguration().getLocale()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.stack", null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(message.getMessage("map.menu.stack.move", null, globalConfiguration.getLocale()));
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.stack.move", null, container.getGlobalConfiguration().getLocale()));
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
-            StringBuilder label = new StringBuilder(message.getMessage(border.getProvince().getId(), null, globalConfiguration.getLocale()));
+            StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
             if (border.getType() != null) {
-                label.append(" (").append(message.getMessage("border." + border.getType().getCode(), null, globalConfiguration.getLocale())).append(")");
+                label.append(" (").append(container.getMessage().getMessage("border." + border.getType().getCode(), null, container.getGlobalConfiguration().getLocale())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                Long idGame = gameConfig.getIdGame();
+                Long idGame = container.getGameConfig().getIdGame();
                 try {
                     Request<MoveStackRequest> request = new Request<>();
-                    authentHolder.fillAuthentInfo(request);
-                    gameConfig.fillGameInfo(request);
-                    gameConfig.fillChatInfo(request);
+                    container.getAuthentHolder().fillAuthentInfo(request);
+                    container.getGameConfig().fillGameInfo(request);
+                    container.getGameConfig().fillChatInfo(request);
                     request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
                     DiffResponse response = boardService.moveStack(request);
                     DiffEvent diff = new DiffEvent(response, idGame);
@@ -157,14 +144,14 @@ public final class MenuHelper {
             }));
         }
         menu.addMenuItem(move);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.stack.end_move", null, globalConfiguration.getLocale()),
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.stack.end_move", null, container.getGlobalConfiguration().getLocale()),
                 event -> {
-                    Long idGame = gameConfig.getIdGame();
+                    Long idGame = container.getGameConfig().getIdGame();
                     try {
                         Request<EndMoveStackRequest> request = new Request<>();
-                        authentHolder.fillAuthentInfo(request);
-                        gameConfig.fillGameInfo(request);
-                        gameConfig.fillChatInfo(request);
+                        container.getAuthentHolder().fillAuthentInfo(request);
+                        container.getGameConfig().fillGameInfo(request);
+                        container.getGameConfig().fillChatInfo(request);
                         request.setRequest(new EndMoveStackRequest(stack.getId()));
                         DiffResponse response = boardService.endMoveStack(request);
                         DiffEvent diff = new DiffEvent(response, idGame);
@@ -183,24 +170,19 @@ public final class MenuHelper {
      * Create a Contextual Menu for a Counter.
      *
      * @param counter             where the contextual menu is.
-     * @param message             for internationalisation.
-     * @param globalConfiguration Configuration of the application.
-     * @param gameConfig          Game configuration.
-     * @param authentHolder       Component holding the authentication information.
      * @param gameAdminService    service for game administration.
      * @param container           container to call back when services are called.
      * @return a Contextual Menu for a Counter.
      */
-    public static ContextualMenu createMenuCounter(final CounterMarker counter, MessageSource message, GlobalConfiguration globalConfiguration,
-                                                   GameConfiguration gameConfig, AuthentHolder authentHolder, IGameAdminService gameAdminService,
-                                                   IDiffListenerContainer container) {
-        ContextualMenu menu = new ContextualMenu(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(message.getMessage("map.menu.counter", null, globalConfiguration.getLocale())));
+    public static ContextualMenu createMenuCounter(final CounterMarker counter, IGameAdminService gameAdminService,
+                                                   IMenuContainer container) {
+        ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(message.getMessage("map.menu.counter.disband", null, globalConfiguration.getLocale()), event -> {
-            Long idGame = gameConfig.getIdGame();
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.counter.disband", null, container.getGlobalConfiguration().getLocale()), event -> {
+            Long idGame = container.getGameConfig().getIdGame();
             try {
-                DiffResponse response = gameAdminService.removeCounter(idGame, gameConfig.getVersionGame(),
+                DiffResponse response = gameAdminService.removeCounter(idGame, container.getGameConfig().getVersionGame(),
                         counter.getId());
                 DiffEvent diff = new DiffEvent(response, idGame);
                 container.processDiffEvent(diff);

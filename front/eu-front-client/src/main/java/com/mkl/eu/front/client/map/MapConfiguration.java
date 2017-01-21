@@ -1,7 +1,7 @@
 package com.mkl.eu.front.client.map;
 
 /**
- * Configuration of the map.
+ * Configuration of the maps.
  *
  * @author MKL
  */
