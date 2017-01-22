@@ -71,6 +71,9 @@ public class EUApplication extends Application {
         primaryStage.setOnCloseRequest(event -> {
             gamePopups.forEach(gamePopup -> gamePopup.handle(event));
             Platform.exit();
+            // Should not be necessary but processing 3 PSurfaceJOGL
+            // doesn't close properly.
+            System.exit(0);
         });
         primaryStage.show();
 

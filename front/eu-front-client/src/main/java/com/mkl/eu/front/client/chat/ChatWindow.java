@@ -497,6 +497,13 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * Requests that this {@code Window} get the input focus.
+     */
+    public void requestFocus() {
+        this.stage.requestFocus();
+    }
+
+    /**
      * Update the messages in the chat.
      *
      * @param messages new messages.

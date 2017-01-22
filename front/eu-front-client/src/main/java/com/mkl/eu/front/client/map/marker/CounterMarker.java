@@ -48,6 +48,11 @@ public class CounterMarker {
         return type;
     }
 
+    /** @param image the image to set. */
+    public void setImage(PImage image) {
+        this.image = image;
+    }
+
     /** @return the image. */
     public PImage getImage() {
         return image;

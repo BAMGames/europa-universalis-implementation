@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import processing.core.PApplet;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
@@ -83,7 +84,7 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
-        add(map, BorderLayout.CENTER);
+        PApplet.runSketch(new String[]{"InteractiveMap"}, map);
         setPreferredSize(new Dimension(1000, 650));
         setBounds(0, 0, 1000, 600);
     }

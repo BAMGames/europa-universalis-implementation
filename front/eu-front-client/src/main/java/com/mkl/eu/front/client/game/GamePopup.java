@@ -32,8 +32,11 @@ import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.InteractiveMap;
+import com.mkl.eu.front.client.map.marker.IMapMarker;
+import com.mkl.eu.front.client.map.marker.MarkerUtils;
 import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
+import de.fhpotsdam.unfolding.marker.Marker;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -54,12 +57,13 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import processing.core.PApplet;
 
 import javax.annotation.PostConstruct;
-import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -94,6 +98,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private IEconomicService economicService;
     /** PApplet for the intercative map. */
     private InteractiveMap map;
+    /** Flag saying that we already initialized the map. */
+    private boolean mapInit;
     /** Window containing all the chat. */
     private ChatWindow chatWindow;
     /** Window containing the economics. */
@@ -109,8 +115,6 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private Game game;
     /** Game config to store between constructor and Spring init PostConstruct and to spread to other UIs. */
     private GameConfiguration gameConfig;
-    /** List of JFrame opened by this popup in order to spread a close. */
-    private java.util.List<JFrame> frames = new ArrayList<>();
 
     public GamePopup(Long idGame, Long idCountry) {
         gameConfig = new GameConfiguration();
@@ -126,9 +130,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     @PostConstruct
     public void init() throws FunctionalException {
         initGame();
-        initMap();
+        Map<String, Marker> markers = MarkerUtils.createMarkers(game);
+        initMap(markers);
         initChat();
-        initEcos();
+        initEco(markers);
         initUI();
     }
 
@@ -165,9 +170,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
 
     /**
      * Initialize the interactive map.
+     * @param markers displayed on the map.
      */
-    private void initMap() {
-        map = context.getBean(InteractiveMap.class, game, gameConfig);
+    private void initMap(Map<String, Marker> markers) {
+        map = context.getBean(InteractiveMap.class, game, gameConfig, markers);
         map.addDiffListener(this);
     }
 
@@ -181,11 +187,13 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
 
     /**
      * Initialize the eco window.
+     * @param markers displayed on the map.
      */
-    private void initEcos() {
+    private void initEco(Map<String, Marker> markers) {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), gameConfig);
         ecoWindow.addDiffListener(this);
-        adminActionsWindow = context.getBean(AdminActionsWindow.class, game, map.getMarkers(), gameConfig);
+        List<IMapMarker> mapMarkers = markers.values().stream().filter(marker -> marker instanceof IMapMarker).map(marker -> (IMapMarker) marker).collect(Collectors.toList());
+        adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
     }
 
@@ -208,17 +216,16 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
 
         Button mapBtn = new Button(message.getMessage("game.popup.map", null, globalConfiguration.getLocale()));
         mapBtn.setOnAction(event -> {
-            JFrame frame = new JFrame();
-
-            frame.setLayout(new BorderLayout());
-            frame.add(map, BorderLayout.CENTER);
-            frame.setPreferredSize(new Dimension(1000, 650));
-            frame.setBounds(0, 0, 1000, 600);
-            frame.pack();
-            frame.setVisible(true);
-            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-            frames.add(frame);
+            if (!mapInit) {
+                PApplet.runSketch(new String[]{"InteractiveMap"}, map);
+                mapInit = true;
+            } else {
+                if (map.isVisible()) {
+                    map.requestFocus();
+                } else {
+                    map.setVisible(true);
+                }
+            }
         });
         grid.add(mapBtn, 0, 1, 1, 1);
 
@@ -226,6 +233,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         chatBtn.setOnAction(event -> {
             if (!chatWindow.isShowing()) {
                 chatWindow.show();
+            } else {
+                chatWindow.requestFocus();
             }
         });
         grid.add(chatBtn, 0, 2, 1, 1);
@@ -234,6 +243,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         ecoBtn.setOnAction(event -> {
             if (!ecoWindow.isShowing()) {
                 ecoWindow.show();
+            } else {
+                ecoWindow.requestFocus();
             }
         });
         grid.add(ecoBtn, 0, 3, 1, 1);
@@ -242,6 +253,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         admActBtn.setOnAction(event -> {
             if (!adminActionsWindow.isShowing()) {
                 adminActionsWindow.show();
+            } else {
+                adminActionsWindow.requestFocus();
             }
         });
         grid.add(admActBtn, 0, 4, 1, 1);
@@ -751,8 +764,6 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             } catch (FunctionalException e) {
                 LOGGER.error("Can't load economic sheets.", e);
             }
-
-            return;
         } else {
             LOGGER.error("Missing turn in invalidate sheet event.");
         }
@@ -875,7 +886,6 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     public void handle(WindowEvent event) {
         if (!closed) {
             map.destroy();
-            frames.forEach(frame -> frame.dispatchEvent(new java.awt.event.WindowEvent(frame, java.awt.event.WindowEvent.WINDOW_CLOSING)));
             chatWindow.hide();
             ecoWindow.hide();
             adminActionsWindow.hide();

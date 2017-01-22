@@ -46,17 +46,15 @@
         <dependency>
             <groupId>de.fhpotsdam.unfolding</groupId>
             <artifactId>unfolding</artifactId>
-            <version>0.9.7</version>
+            <version>0.9.9</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/unfolding.0.9.7beta.jar</systemPath>
+            <systemPath>${project.basedir}/lib/unfolding.0.9.9beta.jar</systemPath>
         </dependency>
 
         <dependency>
-            <groupId>org.processing.core</groupId>
+            <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/core.jar</systemPath>
+            <version>3.2.3</version>
         </dependency>
 
         <dependency>

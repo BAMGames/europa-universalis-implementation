@@ -24,6 +24,13 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /**
      * Constructor.
+     */
+    public MultiProvinceMarker() {
+
+    }
+
+    /**
+     * Constructor.
      *
      * @param markers sons of the multi provinc emarker.
      */
@@ -34,6 +41,19 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
                 if (marker instanceof IMapMarker) {
                     ((IMapMarker) marker).setParent(this);
                 }
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void addMarkers(Marker... markers) {
+        if (markers != null) {
+            for (Marker marker : markers) {
+                if (marker instanceof IMapMarker) {
+                    ((IMapMarker) marker).setParent(this);
+                }
+                super.addMarkers(marker);
             }
         }
     }
@@ -170,6 +190,18 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
 
     /** {@inheritDoc} */
     @Override
+    public void setId(String id) {
+        super.setId(id);
+
+        if (markers != null) {
+            for (Marker marker : markers) {
+                marker.setId(getId());
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setProperties(HashMap<String, Object> props) {
         HashMap<String, Object> properties = null;
         if (props != null) {
@@ -190,5 +222,11 @@ public class MultiProvinceMarker extends MultiMarker implements IMapMarker {
             }
         }
         super.setProperties(properties);
+
+        if (markers != null) {
+            for (Marker marker : markers) {
+                marker.setProperties(getProperties());
+            }
+        }
     }
 }

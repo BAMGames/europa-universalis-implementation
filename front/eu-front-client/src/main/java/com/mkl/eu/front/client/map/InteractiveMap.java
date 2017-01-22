@@ -1,5 +1,9 @@
 package com.mkl.eu.front.client.map;
 
+import com.jogamp.newt.Window;
+import com.jogamp.newt.event.WindowAdapter;
+import com.jogamp.newt.event.WindowEvent;
+import com.jogamp.newt.event.WindowListener;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.Game;
@@ -36,12 +40,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
+import processing.opengl.PSurfaceJOGLFixed;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -57,8 +60,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
     /** Spring application context. */
     private ApplicationContext context;
-    /** Utility for markers. */
-    private MarkerUtils markerUtils;
     /** Game service. */
     @Autowired
     private IGameService gameService;
@@ -97,32 +98,72 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
 
     /**
      * Constructor.
-     * @param game the game to display.
-     * @param gameConfig game configuration.
+     *
+     * @param game           the game to display.
+     * @param gameConfig     game configuration.
+     * @param countryMarkers country markers.
      */
-    public InteractiveMap(Game game, GameConfiguration gameConfig) {
+    public InteractiveMap(Game game, GameConfiguration gameConfig, Map<String, Marker> countryMarkers) {
         this.game = game;
         this.gameConfig = gameConfig;
-
-        init();
+        this.countryMarkers = countryMarkers;
     }
 
-    /**
-     * Initialiaze the markers.
-     */
-    @PostConstruct
-    public void initMarkers() {
-        markerUtils = context.getBean(MarkerUtils.class, this);
+    /** {@inheritDoc} */
+    @Override
+    public void settings() {
+        super.settings();
 
-        countryMarkers = markerUtils.createMarkers(game);
+        size(1000, 600, P2D);
+//        size(1000, 600, "processing.javafx.PGraphicsFX2DFixed");
+//        size(1000, 600, "processing.opengl.PGraphicsOpenGLFixed");
     }
 
     /** Set up the map and the markers. */
     public void setup() {
-        size(1000, 600, OPENGL);
+        countryMarkers.values().stream().filter(marker -> marker instanceof IMapMarker).forEach(marker -> {
+            for (StackMarker stack : ((IMapMarker) marker).getStacks()) {
+                for (CounterMarker counter : stack.getCounters()) {
+                    counter.setImage(MarkerUtils.getImageFromCounter(counter.getCountry(), counter.getType().name(), this));
+                }
+            }
+        });
 
-        if (frame != null) {
-            frame.setResizable(true);
+        if (surface != null) {
+            surface.setResizable(true);
+
+            // We remove the listener that closes the sketch when
+            // the window is closed and replaces it by a setVisible(false)
+            if (surface.getNative() instanceof Window) {
+                Window window = (Window) surface.getNative();
+
+                WindowListener[] listeners = window.getWindowListeners();
+
+                for (WindowListener listener : listeners) {
+                    if (listener instanceof WindowAdapter) {
+                        continue;
+                    }
+
+                    window.removeWindowListener(listener);
+                }
+
+                window.addWindowListener(new WindowAdapter() {
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public void windowDestroyNotify(WindowEvent e) {
+                        setVisible(false);
+                    }
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public void windowDestroyed(WindowEvent e) {
+                        if (surface instanceof PSurfaceJOGLFixed) {
+                            ((PSurfaceJOGLFixed) surface).destroy();
+                        }
+                    }
+                });
+            }
         }
 
         MyMarkerManager markerManager = context.getBean(MyMarkerManager.class, gameConfig);
@@ -163,11 +204,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
         eventDispatcher.register(markerManager, HoverEvent.TYPE_HOVER, markerManager.getId());
         eventDispatcher.register(info, DragEvent.TYPE_DRAG, info.getId());
 
-//        eventDispatcher.register(this, PanMapEvent.TYPE_PAN, getId(), mapDetail.getId());
-//        eventDispatcher.register(this, ZoomMapEvent.TYPE_ZOOM, getId(), mapDetail.getId());
-//        eventDispatcher.register(this, DragEvent.TYPE_DRAG, getId(), markerManager.getId(), info.getId());
-//        eventDispatcher.register(this, HoverEvent.TYPE_HOVER, getId(), mapDetail.getId(), markerManager.getId(), info.getId());
-
         components.add(markerManager);
         components.add(info);
         components.add(keyboardHandler);
@@ -200,6 +236,12 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
 
     /** {@inheritDoc} */
     @Override
+    public void exitActual() {
+        // super.exitActual() terminates JVM, we don't want that.
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getId() {
         return "map";
     }
@@ -208,6 +250,61 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     @Override
     public void onManipulation(MapEvent event) {
         redraw();
+    }
+
+    /**
+     * Destroy the window.
+     */
+    public void destroy() {
+        if (surface != null) {
+            Object nat = surface.getNative();
+            if (nat instanceof Window) {
+                ((Window) nat).destroy();
+            }
+        }
+
+        exit();
+    }
+
+    /**
+     * Request the focus.
+     */
+    public void requestFocus() {
+        if (surface != null) {
+            Object nat = surface.getNative();
+            if (nat instanceof Window) {
+                ((Window) nat).requestFocus();
+            }
+        }
+    }
+
+    /**
+     * @return the visibility of the window.
+     */
+    public boolean isVisible() {
+        boolean visible = false;
+        if (surface != null) {
+            Object nat = surface.getNative();
+            if (nat instanceof Window) {
+                visible = ((Window) nat).isVisible();
+            }
+        }
+
+        return visible;
+    }
+
+    /**
+     * Sets the visibility of the window.
+     *
+     * @param visible the visible to set.
+     */
+    public void setVisible(boolean visible) {
+        if (surface != null) {
+            Object nat = surface.getNative();
+            if (nat instanceof Window) {
+                ((Window) nat).setVisible(visible);
+            }
+        }
     }
 
     /**
@@ -310,7 +407,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             return;
         }
         StackMarker stackMarker = new StackMarker(stackVO, province);
-        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, markerUtils.getImageFromCounter(nameCountry, type.name())));
+        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, MarkerUtils.getImageFromCounter(nameCountry, type.name(), this)));
         province.addStack(stackMarker);
     }
 
@@ -521,12 +618,5 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.context = applicationContext;
-    }
-
-    /**
-     * @return only the markers of type IMapMarker.
-     */
-    public List<IMapMarker> getMarkers() {
-        return countryMarkers.values().stream().filter(marker -> marker instanceof IMapMarker).map(marker -> (IMapMarker) marker).collect(Collectors.toList());
     }
 }

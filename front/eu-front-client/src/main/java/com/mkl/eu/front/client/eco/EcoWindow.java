@@ -299,6 +299,13 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * Requests that this {@code Window} get the input focus.
+     */
+    public void requestFocus() {
+        this.stage.requestFocus();
+    }
+
+    /**
      * Update the window given the diff.
      *
      * @param diff that will update the window.
