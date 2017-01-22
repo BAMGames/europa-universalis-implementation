@@ -244,6 +244,9 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
         if (item == null) {
             item = getDrop(x, y);
         }
+        if (item == null && isHit(x, y)) {
+            item = markerManager.getSelectedMarker();
+        }
 
         return item;
     }
@@ -278,6 +281,11 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
             menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, gameAdminService, this);
         } else if (contextualized instanceof StackMarker) {
             menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
+        } else {
+            Marker marker = markerManager.getSelectedMarker();
+            if (marker instanceof IMapMarker) {
+                menu = MenuHelper.createMenuProvince((IMapMarker) marker, gameAdminService, this);
+            }
         }
 
         return menu;

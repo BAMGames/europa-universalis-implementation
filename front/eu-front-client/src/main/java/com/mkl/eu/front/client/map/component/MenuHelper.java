@@ -52,7 +52,7 @@ public final class MenuHelper {
     public static ContextualMenu createMenuProvince(final IMapMarker province, IGameAdminService gameAdminService,
                                                     IMenuContainer container) {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(province.getId()));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage(province.getId(), null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
         ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.province.neighbors", null, container.getGlobalConfiguration().getLocale()));
