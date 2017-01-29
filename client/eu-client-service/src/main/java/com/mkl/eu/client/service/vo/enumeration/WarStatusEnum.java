@@ -8,10 +8,16 @@ package com.mkl.eu.client.service.vo.enumeration;
 public enum WarStatusEnum {
     /** In Peace. */
     PEACE(false, false, false),
-    /** In a classic war. */
-    CLASSIC_WAR(true, true, true),
+    /** In a foreign intervention. */
+    FOREIGN_INTERVENTION(false, false, false),
+    /** In a limited intervention. */
+    LIMITED_INTERVENTION(false, false, false),
+    /** In a religious war. */
+    RELIGIOUS_WAR(true, true, false),
     /** In a civil war. */
-    CIVIL_WAR(true, true, false);
+    CIVIL_WAR(true, true, false),
+    /** In a classic war. */
+    CLASSIC_WAR(true, true, true);
 
     /** To know if the country can use war maintenance. */
     private boolean warMaintenance;

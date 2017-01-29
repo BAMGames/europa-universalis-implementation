@@ -12,6 +12,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.util.IOEUtil;
@@ -275,8 +276,57 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public WarStatusEnum getWarStatus(GameEntity game, PlayableCountryEntity country) {
-        // TODO wait war conception
-        return WarStatusEnum.CLASSIC_WAR;
+        if (game == null || country == null) {
+            return null;
+        }
+
+        WarStatusEnum status = WarStatusEnum.PEACE;
+
+        List<CountryInWarEntity> implications = game.getWars().stream()
+                .flatMap(war -> war.getCountries().stream())
+                .filter(countryInWar -> StringUtils.equals(country.getName(), countryInWar.getCountry().getName()))
+                .collect(Collectors.toList());
+
+        for (CountryInWarEntity implication : implications) {
+            WarStatusEnum tmpStatus = null;
+            if (implication.getImplication() != null) {
+                switch (implication.getImplication()) {
+                    case FOREIGN:
+                        tmpStatus = WarStatusEnum.FOREIGN_INTERVENTION;
+                        break;
+                    case LIMITED:
+                        tmpStatus = WarStatusEnum.LIMITED_INTERVENTION;
+                        break;
+                    case FULL:
+                        tmpStatus = WarStatusEnum.CLASSIC_WAR;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (tmpStatus == WarStatusEnum.CLASSIC_WAR) {
+                if (implication.getWar().getType() != null) {
+                    switch (implication.getWar().getType()) {
+                        case CIVIL_WAR:
+                            tmpStatus = WarStatusEnum.CIVIL_WAR;
+                            break;
+                        case RELIGIOUS_WAR:
+                            tmpStatus = WarStatusEnum.RELIGIOUS_WAR;
+                            break;
+                        case CLASSIC_WAR:
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            if (tmpStatus != null && tmpStatus.compareTo(status) > 0) {
+                status = tmpStatus;
+            }
+        }
+
+        return status;
     }
 
     /**

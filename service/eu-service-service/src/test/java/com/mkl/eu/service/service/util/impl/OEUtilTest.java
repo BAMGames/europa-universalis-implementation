@@ -3,9 +3,7 @@ package com.mkl.eu.service.service.util.impl;
 import com.excilys.ebi.spring.dbunit.config.DBOperation;
 import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
-import com.mkl.eu.client.service.vo.enumeration.BorderEnum;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -13,6 +11,9 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
@@ -496,5 +497,118 @@ public class OEUtilTest {
         CounterEntity counter = new CounterEntity();
         counter.setType(face);
         return counter;
+    }
+
+    @Test
+    public void testWarStatus() {
+        GameEntity game = new GameEntity();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+
+        Assert.assertEquals(null, oeUtil.getWarStatus(null, null));
+        Assert.assertEquals(null, oeUtil.getWarStatus(game, null));
+        Assert.assertEquals(null, oeUtil.getWarStatus(null, country));
+        Assert.assertEquals(WarStatusEnum.PEACE, oeUtil.getWarStatus(game, country));
+
+        game.getWars().add(new WarEntity());
+        game.getWars().get(0).setType(WarTypeEnum.CLASSIC_WAR);
+        game.getWars().get(0).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(0).getCountries().get(0).setWar(game.getWars().get(0));
+        game.getWars().get(0).getCountries().get(0).setCountry(new CountryEntity());
+        game.getWars().get(0).getCountries().get(0).getCountry().setName("espagne");
+        game.getWars().get(0).getCountries().get(0).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(0).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(0).getCountries().get(1).setWar(game.getWars().get(0));
+        game.getWars().get(0).getCountries().get(1).setCountry(new CountryEntity());
+        game.getWars().get(0).getCountries().get(1).getCountry().setName("france");
+        game.getWars().get(0).getCountries().get(1).setImplication(WarImplicationEnum.LIMITED);
+        game.getWars().get(0).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(0).getCountries().get(2).setWar(game.getWars().get(0));
+        game.getWars().get(0).getCountries().get(2).setCountry(new CountryEntity());
+        game.getWars().get(0).getCountries().get(2).getCountry().setName("pologne");
+        game.getWars().get(0).getCountries().get(2).setImplication(WarImplicationEnum.FOREIGN);
+        game.getWars().get(0).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(0).getCountries().get(3).setWar(game.getWars().get(0));
+        game.getWars().get(0).getCountries().get(3).setCountry(new CountryEntity());
+        game.getWars().get(0).getCountries().get(3).getCountry().setName("turquie");
+        game.getWars().get(0).getCountries().get(3).setImplication(WarImplicationEnum.LIMITED);
+
+        game.getWars().add(new WarEntity());
+        game.getWars().get(1).setType(WarTypeEnum.CIVIL_WAR);
+        game.getWars().get(1).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(1).getCountries().get(0).setWar(game.getWars().get(1));
+        game.getWars().get(1).getCountries().get(0).setCountry(new CountryEntity());
+        game.getWars().get(1).getCountries().get(0).getCountry().setName("espagne");
+        game.getWars().get(1).getCountries().get(0).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(1).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(1).getCountries().get(1).setWar(game.getWars().get(1));
+        game.getWars().get(1).getCountries().get(1).setCountry(new CountryEntity());
+        game.getWars().get(1).getCountries().get(1).getCountry().setName("france");
+        game.getWars().get(1).getCountries().get(1).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(1).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(1).getCountries().get(2).setWar(game.getWars().get(1));
+        game.getWars().get(1).getCountries().get(2).setCountry(new CountryEntity());
+        game.getWars().get(1).getCountries().get(2).getCountry().setName("angleterre");
+        game.getWars().get(1).getCountries().get(2).setImplication(WarImplicationEnum.FOREIGN);
+        game.getWars().get(1).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(1).getCountries().get(3).setWar(game.getWars().get(1));
+        game.getWars().get(1).getCountries().get(3).setCountry(new CountryEntity());
+        game.getWars().get(1).getCountries().get(3).getCountry().setName("pologne");
+        game.getWars().get(1).getCountries().get(3).setImplication(WarImplicationEnum.LIMITED);
+        game.getWars().get(1).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(1).getCountries().get(4).setWar(game.getWars().get(1));
+        game.getWars().get(1).getCountries().get(4).setCountry(new CountryEntity());
+        game.getWars().get(1).getCountries().get(4).getCountry().setName("turquie");
+        game.getWars().get(1).getCountries().get(4).setImplication(WarImplicationEnum.FOREIGN);
+
+        game.getWars().add(new WarEntity());
+        game.getWars().get(2).setType(WarTypeEnum.RELIGIOUS_WAR);
+        game.getWars().get(2).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(2).getCountries().get(0).setWar(game.getWars().get(2));
+        game.getWars().get(2).getCountries().get(0).setCountry(new CountryEntity());
+        game.getWars().get(2).getCountries().get(0).getCountry().setName("espagne");
+        game.getWars().get(2).getCountries().get(0).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(2).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(2).getCountries().get(1).setWar(game.getWars().get(2));
+        game.getWars().get(2).getCountries().get(1).setCountry(new CountryEntity());
+        game.getWars().get(2).getCountries().get(1).getCountry().setName("france");
+        game.getWars().get(2).getCountries().get(1).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(2).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(2).getCountries().get(2).setWar(game.getWars().get(2));
+        game.getWars().get(2).getCountries().get(2).setCountry(new CountryEntity());
+        game.getWars().get(2).getCountries().get(2).getCountry().setName("angleterre");
+        game.getWars().get(2).getCountries().get(2).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(2).getCountries().add(new CountryInWarEntity());
+        game.getWars().get(2).getCountries().get(3).setWar(game.getWars().get(2));
+        game.getWars().get(2).getCountries().get(3).setCountry(new CountryEntity());
+        game.getWars().get(2).getCountries().get(3).getCountry().setName("suede");
+        game.getWars().get(2).getCountries().get(3).setImplication(WarImplicationEnum.FOREIGN);
+
+        country.setName("espagne");
+
+        Assert.assertEquals(WarStatusEnum.CLASSIC_WAR, oeUtil.getWarStatus(game, country));
+
+        country.setName("france");
+
+        Assert.assertEquals(WarStatusEnum.CIVIL_WAR, oeUtil.getWarStatus(game, country));
+
+        country.setName("angleterre");
+
+        Assert.assertEquals(WarStatusEnum.RELIGIOUS_WAR, oeUtil.getWarStatus(game, country));
+
+        country.setName("pologne");
+
+        Assert.assertEquals(WarStatusEnum.LIMITED_INTERVENTION, oeUtil.getWarStatus(game, country));
+
+        country.setName("turquie");
+
+        Assert.assertEquals(WarStatusEnum.LIMITED_INTERVENTION, oeUtil.getWarStatus(game, country));
+
+        country.setName("suede");
+
+        Assert.assertEquals(WarStatusEnum.FOREIGN_INTERVENTION, oeUtil.getWarStatus(game, country));
+
+        country.setName("russie");
+
+        Assert.assertEquals(WarStatusEnum.PEACE, oeUtil.getWarStatus(game, country));
     }
 }
