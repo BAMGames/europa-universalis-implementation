@@ -116,6 +116,7 @@
                     <instrumentation>
                         <excludes>
                             <exclude>com/mkl/eu/front/**/*.class</exclude>
+                            <exclude>processing/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
                 </configuration>
