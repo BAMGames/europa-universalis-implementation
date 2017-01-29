@@ -261,9 +261,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             if (nat instanceof Window) {
                 ((Window) nat).destroy();
             }
-        }
 
-        exit();
+            exit();
+        }
     }
 
     /**
