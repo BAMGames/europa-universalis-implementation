@@ -5,6 +5,8 @@ import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
@@ -38,6 +40,10 @@ public class GameEntity implements IEntity, Serializable {
     private List<OtherForcesEntity> otherForces = new ArrayList<>();
     /** Automatic competitions (administrative actions). */
     private List<CompetitionEntity> competitions = new ArrayList<>();
+    /** Wars on going. */
+    private List<WarEntity> wars = new ArrayList<>();
+    /** Orders of countries in phases. */
+    private List<CountryOrderEntity> orders = new ArrayList<>();
     /** Turn of the game. */
     private Integer turn;
     /** Status of the game. */
@@ -149,6 +155,29 @@ public class GameEntity implements IEntity, Serializable {
     /** @param competitions the competitions to set. */
     public void setCompetitions(List<CompetitionEntity> competitions) {
         this.competitions = competitions;
+    }
+
+    /** @return the wars. */
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "ID_GAME")
+    public List<WarEntity> getWars() {
+        return wars;
+    }
+
+    /** @return the orders. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<CountryOrderEntity> getOrders() {
+        return orders;
+    }
+
+    /** @param orders the orders to set. */
+    public void setOrders(List<CountryOrderEntity> orders) {
+        this.orders = orders;
+    }
+
+    /** @param wars the wars to set. */
+    public void setWars(List<WarEntity> wars) {
+        this.wars = wars;
     }
 
     /** @return the turn. */
