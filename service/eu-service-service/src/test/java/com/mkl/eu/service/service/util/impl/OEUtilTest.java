@@ -30,6 +30,7 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -516,6 +517,7 @@ public class OEUtilTest {
         game.getWars().get(0).getCountries().get(0).setCountry(new CountryEntity());
         game.getWars().get(0).getCountries().get(0).getCountry().setName("espagne");
         game.getWars().get(0).getCountries().get(0).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(0).getCountries().get(0).setOffensive(true);
         game.getWars().get(0).getCountries().add(new CountryInWarEntity());
         game.getWars().get(0).getCountries().get(1).setWar(game.getWars().get(0));
         game.getWars().get(0).getCountries().get(1).setCountry(new CountryEntity());
@@ -539,6 +541,7 @@ public class OEUtilTest {
         game.getWars().get(1).getCountries().get(0).setCountry(new CountryEntity());
         game.getWars().get(1).getCountries().get(0).getCountry().setName("espagne");
         game.getWars().get(1).getCountries().get(0).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(1).getCountries().get(0).setOffensive(true);
         game.getWars().get(1).getCountries().add(new CountryInWarEntity());
         game.getWars().get(1).getCountries().get(1).setWar(game.getWars().get(1));
         game.getWars().get(1).getCountries().get(1).setCountry(new CountryEntity());
@@ -549,6 +552,7 @@ public class OEUtilTest {
         game.getWars().get(1).getCountries().get(2).setCountry(new CountryEntity());
         game.getWars().get(1).getCountries().get(2).getCountry().setName("angleterre");
         game.getWars().get(1).getCountries().get(2).setImplication(WarImplicationEnum.FOREIGN);
+        game.getWars().get(1).getCountries().get(2).setOffensive(true);
         game.getWars().get(1).getCountries().add(new CountryInWarEntity());
         game.getWars().get(1).getCountries().get(3).setWar(game.getWars().get(1));
         game.getWars().get(1).getCountries().get(3).setCountry(new CountryEntity());
@@ -567,6 +571,7 @@ public class OEUtilTest {
         game.getWars().get(2).getCountries().get(0).setCountry(new CountryEntity());
         game.getWars().get(2).getCountries().get(0).getCountry().setName("espagne");
         game.getWars().get(2).getCountries().get(0).setImplication(WarImplicationEnum.FULL);
+        game.getWars().get(2).getCountries().get(0).setOffensive(true);
         game.getWars().get(2).getCountries().add(new CountryInWarEntity());
         game.getWars().get(2).getCountries().get(1).setWar(game.getWars().get(2));
         game.getWars().get(2).getCountries().get(1).setCountry(new CountryEntity());
@@ -582,6 +587,7 @@ public class OEUtilTest {
         game.getWars().get(2).getCountries().get(3).setCountry(new CountryEntity());
         game.getWars().get(2).getCountries().get(3).getCountry().setName("suede");
         game.getWars().get(2).getCountries().get(3).setImplication(WarImplicationEnum.FOREIGN);
+        game.getWars().get(2).getCountries().get(3).setOffensive(true);
 
         country.setName("espagne");
 
@@ -610,5 +616,78 @@ public class OEUtilTest {
         country.setName("russie");
 
         Assert.assertEquals(WarStatusEnum.PEACE, oeUtil.getWarStatus(game, country));
+
+        Assert.assertEquals(0, oeUtil.getEnemies(null, null, true).size());
+        Assert.assertEquals(0, oeUtil.getEnemies(game, null, true).size());
+        Assert.assertEquals(0, oeUtil.getEnemies(null, country, true).size());
+
+        List<String> enemies;
+        country.setName("espagne");
+        enemies = oeUtil.getEnemies(game, country, true);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(4, enemies.size());
+        Assert.assertEquals("angleterre", enemies.get(0));
+        Assert.assertEquals("france", enemies.get(1));
+        Assert.assertEquals("pologne", enemies.get(2));
+        Assert.assertEquals("turquie", enemies.get(3));
+
+        enemies = oeUtil.getEnemies(game, country, false);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(2, enemies.size());
+        Assert.assertEquals("angleterre", enemies.get(0));
+        Assert.assertEquals("france", enemies.get(1));
+
+        country.setName("france");
+        enemies = oeUtil.getEnemies(game, country, true);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(3, enemies.size());
+        Assert.assertEquals("angleterre", enemies.get(0));
+        Assert.assertEquals("espagne", enemies.get(1));
+        Assert.assertEquals("suede", enemies.get(2));
+
+        enemies = oeUtil.getEnemies(game, country, false);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(1, enemies.size());
+        Assert.assertEquals("espagne", enemies.get(0));
+
+        country.setName("angleterre");
+        enemies = oeUtil.getEnemies(game, country, true);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(2, enemies.size());
+        Assert.assertEquals("espagne", enemies.get(0));
+        Assert.assertEquals("suede", enemies.get(1));
+
+        enemies = oeUtil.getEnemies(game, country, false);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(1, enemies.size());
+        Assert.assertEquals("espagne", enemies.get(0));
+
+        country.setName("pologne");
+        enemies = oeUtil.getEnemies(game, country, true);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(0, enemies.size());
+
+        enemies = oeUtil.getEnemies(game, country, false);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(0, enemies.size());
+
+        country.setName("russie");
+        enemies = oeUtil.getEnemies(game, country, true);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(0, enemies.size());
+
+        enemies = oeUtil.getEnemies(game, country, false);
+        Collections.sort(enemies);
+
+        Assert.assertEquals(0, enemies.size());
     }
 }

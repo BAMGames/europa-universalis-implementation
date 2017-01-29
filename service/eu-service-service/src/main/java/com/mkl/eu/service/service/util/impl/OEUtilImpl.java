@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
+import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
@@ -333,9 +334,27 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions, boolean excludeCivilWars) {
-        // TODO wait war conception
-        return new ArrayList<>();
+    public List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions) {
+        List<String> enemies = new ArrayList<>();
+
+        if (game == null || country == null) {
+            return enemies;
+        }
+
+        List<CountryInWarEntity> implications = game.getWars().stream()
+                .flatMap(war -> war.getCountries().stream())
+                .filter(countryInWar -> StringUtils.equals(country.getName(), countryInWar.getCountry().getName()) &&
+                        countryInWar.getImplication() == WarImplicationEnum.FULL)
+                .collect(Collectors.toList());
+
+        for (CountryInWarEntity implication : implications) {
+            implication.getWar().getCountries().stream()
+                    .filter(countryInWar -> countryInWar.isOffensive() != implication.isOffensive() && !enemies.contains(countryInWar.getCountry().getName())
+                            && (includeInterventions || countryInWar.getImplication() == WarImplicationEnum.FULL))
+                    .forEach(countryInWar -> enemies.add(countryInWar.getCountry().getName()));
+        }
+
+        return enemies;
     }
 
     /**
