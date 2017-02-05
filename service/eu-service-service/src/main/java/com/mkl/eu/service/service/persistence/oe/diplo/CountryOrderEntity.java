@@ -24,6 +24,8 @@ public class CountryOrderEntity {
     private GameStatusEnum gameStatus;
     /** Position of the country in the turn order. */
     private int position;
+    /** Activity of this order segment (ie the one whose it is the turn). */
+    private Boolean active;
 
     /** @return the game. */
     @Id
@@ -73,6 +75,17 @@ public class CountryOrderEntity {
     /** @param position the position to set. */
     public void setPosition(int position) {
         this.position = position;
+    }
+
+    /** @return the active. */
+    @Column(name = "ACTIVE")
+    public Boolean isActive() {
+        return active;
+    }
+
+    /** @param active the active to set. */
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     /**

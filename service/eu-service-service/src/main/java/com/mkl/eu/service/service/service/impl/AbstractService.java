@@ -2,12 +2,15 @@ package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.INameConstants;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
@@ -19,6 +22,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -202,6 +206,41 @@ public abstract class AbstractService implements INameConstants {
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
 
         return new GameDiffsInfo(game, diffs);
+    }
+
+    /**
+     * Check if game has the right status.
+     *
+     * @param game    game to check.
+     * @param status  status the game should have.
+     * @param country asking for an action (some status are country ordered).
+     * @throws FunctionalException functional exception.
+     */
+    protected void checkGameStatus(GameEntity game, GameStatusEnum status, String country) throws FunctionalException {
+        switch (status) {
+            case ADMINISTRATIVE_ACTIONS_CHOICE:
+                failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                        .setTest(game.getStatus() == GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE)
+                        .setCodeError(IConstantsServiceException.INVALID_STATUS)
+                        .setMsgFormat(MSG_INVALID_STATUS)
+                        .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST)
+                        .setParams(METHOD_ADD_ADM_ACT, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+                break;
+            case MILITARY:
+                CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
+                        order -> order.isActive() != null && order.isActive() &&
+                                order.getGameStatus() == GameStatusEnum.MILITARY &&
+                                StringUtils.equals(order.getCountry().getName(), country));
+                failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                        .setTest(game.getStatus() == GameStatusEnum.MILITARY && activeOrder != null)
+                        .setCodeError(IConstantsServiceException.INVALID_STATUS)
+                        .setMsgFormat(MSG_INVALID_STATUS)
+                        .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST)
+                        .setParams(METHOD_ADD_ADM_ACT, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+                break;
+            default:
+                break;
+        }
     }
 
     /**

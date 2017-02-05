@@ -278,12 +278,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_ADD_ADM_ACT, PARAMETER_ADD_ADM_ACT);
         GameEntity game = gameDiffs.getGame();
 
-        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                .setTest(game.getStatus() == GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE)
-                .setCodeError(IConstantsServiceException.INVALID_STATUS)
-                .setMsgFormat(MSG_INVALID_STATUS)
-                .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST)
-                .setParams(METHOD_ADD_ADM_ACT, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+        checkGameStatus(game, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, null);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST).setParams(METHOD_ADD_ADM_ACT));
