@@ -14,7 +14,6 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
-import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
@@ -24,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.service.impl.ChatServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,12 +46,9 @@ import static org.mockito.Mockito.*;
  * @author MKL.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ChatServiceTest {
+public class ChatServiceTest extends AbstractGameServiceTest {
     @InjectMocks
     private ChatServiceImpl chatService;
-
-    @Mock
-    private IGameDao gameDao;
 
     @Mock
     private IDiffDao diffDao;
@@ -79,68 +76,9 @@ public class ChatServiceTest {
 
     @Test
     public void testCreateRoomFail() {
-        try {
-            chatService.createRoom(null);
-            Assert.fail("Should break because createRoom is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom", e.getParams()[0]);
-        }
-
-        Request<CreateRoomRequest> request = new Request<>();
-
-        try {
-            chatService.createRoom(request);
-            Assert.fail("Should break because createRoom.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            chatService.createRoom(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            chatService.createRoom(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            chatService.createRoom(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            chatService.createRoom(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
+        Pair<Request<CreateRoomRequest>, GameEntity> pair = testCheckGame(chatService::createRoom, "createRoom");
+        Request<CreateRoomRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
 
         try {
             chatService.createRoom(request);
@@ -205,15 +143,11 @@ public class ChatServiceTest {
         request.getRequest().setIdCountry(4L);
         request.getRequest().setName("Title");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(4L);
         game.getCountries().add(sender);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -269,68 +203,8 @@ public class ChatServiceTest {
 
     @Test
     public void testSpeakInRoomFail() {
-        try {
-            chatService.speakInRoom(null);
-            Assert.fail("Should break because speakInRoom is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom", e.getParams()[0]);
-        }
-
-        Request<SpeakInRoomRequest> request = new Request<>();
-
-        try {
-            chatService.speakInRoom(request);
-            Assert.fail("Should break because speakInRoom.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            chatService.speakInRoom(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            chatService.speakInRoom(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            chatService.speakInRoom(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            chatService.speakInRoom(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
+        Pair<Request<SpeakInRoomRequest>, GameEntity> pair = testCheckGame(chatService::speakInRoom, "speakInRoom");
+        Request<SpeakInRoomRequest> request = pair.getLeft();
 
         try {
             chatService.speakInRoom(request);
@@ -379,9 +253,7 @@ public class ChatServiceTest {
         request.getChat().setMaxIdGlobalMessage(22L);
         request.getChat().setIdCountry(4L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(4L);
@@ -403,8 +275,6 @@ public class ChatServiceTest {
 
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -465,9 +335,7 @@ public class ChatServiceTest {
         request.getChat().setMaxIdGlobalMessage(22L);
         request.getChat().setIdCountry(4L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(4L);
         game.getCountries().get(0).setName("france");
@@ -506,8 +374,6 @@ public class ChatServiceTest {
 
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -568,68 +434,9 @@ public class ChatServiceTest {
 
     @Test
     public void testToggleRoomFail() {
-        try {
-            chatService.toggleRoom(null);
-            Assert.fail("Should break because toggleRoom is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom", e.getParams()[0]);
-        }
-
-        Request<ToggleRoomRequest> request = new Request<>();
-
-        try {
-            chatService.toggleRoom(request);
-            Assert.fail("Should break because toggleRoom.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            chatService.toggleRoom(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            chatService.toggleRoom(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            chatService.toggleRoom(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            chatService.toggleRoom(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
+        Pair<Request<ToggleRoomRequest>, GameEntity> pair = testCheckGame(chatService::toggleRoom, "toggleRoom");
+        Request<ToggleRoomRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
 
         try {
             chatService.toggleRoom(request);
@@ -708,9 +515,7 @@ public class ChatServiceTest {
         request.getChat().setMaxIdGlobalMessage(22L);
         request.getChat().setIdCountry(4L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(4L);
@@ -744,8 +549,6 @@ public class ChatServiceTest {
 
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -789,68 +592,9 @@ public class ChatServiceTest {
 
     @Test
     public void testInviteKickRoomFail() {
-        try {
-            chatService.inviteKickRoom(null);
-            Assert.fail("Should break because inviteKickRoom is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom", e.getParams()[0]);
-        }
-
-        Request<InviteKickRoomRequest> request = new Request<>();
-
-        try {
-            chatService.inviteKickRoom(request);
-            Assert.fail("Should break because inviteKickRoom.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            chatService.inviteKickRoom(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            chatService.inviteKickRoom(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            chatService.inviteKickRoom(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            chatService.inviteKickRoom(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
+        Pair<Request<InviteKickRoomRequest>, GameEntity> pair = testCheckGame(chatService::inviteKickRoom, "inviteKickRoom");
+        Request<InviteKickRoomRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
 
         try {
             chatService.inviteKickRoom(request);
@@ -983,9 +727,7 @@ public class ChatServiceTest {
         request.getChat().setMaxIdGlobalMessage(22L);
         request.getChat().setIdCountry(5L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(5L);
@@ -1024,8 +766,6 @@ public class ChatServiceTest {
 
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -1093,9 +833,7 @@ public class ChatServiceTest {
         request.getChat().setMaxIdGlobalMessage(22L);
         request.getChat().setIdCountry(5L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         PlayableCountryEntity sender = new PlayableCountryEntity();
         sender.setId(5L);
@@ -1134,8 +872,6 @@ public class ChatServiceTest {
 
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -1228,13 +964,9 @@ public class ChatServiceTest {
 
     @Test
     public void testReadRoom() throws FunctionalException {
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(5L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         try {
             chatService.readRoom(null);

@@ -18,7 +18,6 @@ import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
-import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
@@ -34,6 +33,7 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,12 +57,9 @@ import static org.mockito.Mockito.when;
  * @author MKL.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BoardServiceTest {
+public class BoardServiceTest extends AbstractGameServiceTest {
     @InjectMocks
     private BoardServiceImpl boardService;
-
-    @Mock
-    private IGameDao gameDao;
 
     @Mock
     private IProvinceDao provinceDao;
@@ -99,68 +96,8 @@ public class BoardServiceTest {
 
     @Test
     public void testMoveStackFailSimple() {
-        try {
-            boardService.moveStack(null);
-            Assert.fail("Should break because moveStack is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveStack", e.getParams()[0]);
-        }
-
-        Request<MoveStackRequest> request = new Request<>();
-
-        try {
-            boardService.moveStack(request);
-            Assert.fail("Should break because moveStack.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveStack.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            boardService.moveStack(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveStack.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            boardService.moveStack(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveStack.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            boardService.moveStack(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("moveStack.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            boardService.moveStack(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("moveStack.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
+        Pair<Request<MoveStackRequest>, GameEntity> pair = testCheckGame(boardService::moveStack, "moveStack");
+        Request<MoveStackRequest> request = pair.getLeft();
 
         try {
             boardService.moveStack(request);
@@ -212,11 +149,7 @@ public class BoardServiceTest {
         pecs.setId(256L);
         pecs.setName("pecs");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
+        GameEntity game = createGameUsingMocks();
 
         when(oeUtil.isMobile(any())).thenReturn(false);
 
@@ -329,9 +262,7 @@ public class BoardServiceTest {
         pecs.setId(256L);
         pecs.setName("pecs");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         StackEntity stack = new StackEntity();
         stack.setProvince("pecs");
         if (!firstMove) {
@@ -343,8 +274,6 @@ public class BoardServiceTest {
         border.setProvinceTo(idf);
         pecs.getBorders().add(border);
         game.getStacks().add(stack);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
@@ -405,56 +334,9 @@ public class BoardServiceTest {
 
     @Test
     public void testEndMoveStackFailSimple() {
-        try {
-            boardService.endMoveStack(null);
-            Assert.fail("Should break because endMoveStack is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("endMoveStack", e.getParams()[0]);
-        }
-
-        Request<EndMoveStackRequest> request = new Request<>();
-
-        try {
-            boardService.endMoveStack(request);
-            Assert.fail("Should break because endMoveStack.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("endMoveStack.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            boardService.endMoveStack(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("endMoveStack.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            boardService.endMoveStack(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("endMoveStack.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            boardService.endMoveStack(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("endMoveStack.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        Pair<Request<EndMoveStackRequest>, GameEntity> pair = testCheckGame(boardService::endMoveStack, "endMoveStack");
+        Request<EndMoveStackRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setId(6L);
         game.getStacks().get(0).setMovePhase(MovePhaseEnum.NOT_MOVED);
@@ -464,18 +346,6 @@ public class BoardServiceTest {
         game.getStacks().add(new StackEntity());
         game.getStacks().get(2).setId(8L);
         game.getStacks().get(2).setMovePhase(MovePhaseEnum.IS_MOVING);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            boardService.endMoveStack(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("endMoveStack.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
 
         try {
             boardService.endMoveStack(request);
@@ -527,16 +397,12 @@ public class BoardServiceTest {
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(13L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         StackEntity stack = new StackEntity();
         stack.setProvince("pecs");
         stack.setMovePhase(MovePhaseEnum.IS_MOVING);
         stack.setId(13L);
         game.getStacks().add(stack);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         when(oeUtil.isMobile(stack)).thenReturn(true);
 
@@ -583,15 +449,8 @@ public class BoardServiceTest {
 
     @Test
     public void testMoveCounterFailSimple() {
-        try {
-            boardService.moveCounter(null);
-            Assert.fail("Should break because moveCounter is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter", e.getParams()[0]);
-        }
-
-        Request<MoveCounterRequest> request = new Request<>();
+        Pair<Request<MoveCounterRequest>, GameEntity> pair = testCheckGame(boardService::moveCounter, "moveCounter");
+        Request<MoveCounterRequest> request = pair.getLeft();
 
         try {
             boardService.moveCounter(request);
@@ -602,59 +461,6 @@ public class BoardServiceTest {
         }
 
         request.setAuthent(new AuthentInfo());
-
-        try {
-            boardService.moveCounter(request);
-            Assert.fail("Should break because moveCounter.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            boardService.moveCounter(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            boardService.moveCounter(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            boardService.moveCounter(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            boardService.moveCounter(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
 
         try {
             boardService.moveCounter(request);
@@ -694,9 +500,7 @@ public class BoardServiceTest {
         pecs.setId(256L);
         pecs.setName("pecs");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         StackEntity stack = new StackEntity();
         stack.setProvince("IdF");
@@ -715,8 +519,6 @@ public class BoardServiceTest {
         country.setName("france");
         country.setUsername("toto");
         game.getCountries().add(country);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         try {
             boardService.moveCounter(request);
@@ -783,9 +585,7 @@ public class BoardServiceTest {
         request.getRequest().setIdCounter(13L);
         request.getRequest().setIdStack(8L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         StackEntity stack = new StackEntity();
         stack.setProvince("IdF");
@@ -809,8 +609,6 @@ public class BoardServiceTest {
 
         List<String> patrons = new ArrayList<>();
         patrons.add("france");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -877,9 +675,7 @@ public class BoardServiceTest {
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdCounter(13L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
 
         StackEntity stack = new StackEntity();
         stack.setProvince("IdF");
@@ -889,8 +685,6 @@ public class BoardServiceTest {
         counter.setOwner(stack);
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());

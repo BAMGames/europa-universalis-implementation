@@ -21,7 +21,6 @@ import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
-import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
@@ -41,12 +40,14 @@ import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.service.ListEquals;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.impl.OEUtilImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,15 +68,12 @@ import static org.mockito.Mockito.when;
  * @author MKL.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EcoServiceTest {
+public class EcoServiceTest extends AbstractGameServiceTest {
     @InjectMocks
     private EconomicServiceImpl economicService;
 
     @Mock
     private ICounterDomain counterDomain;
-
-    @Mock
-    private IGameDao gameDao;
 
     @Mock
     private IAdminActionDao adminActionDao;
@@ -130,10 +128,8 @@ public class EcoServiceTest {
 
     @Test
     public void testComputeSheets() {
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(2);
-        when(gameDao.lock(12L)).thenReturn(game);
 
         Diff diffAfter = new Diff();
 
@@ -395,102 +391,16 @@ public class EcoServiceTest {
 
     @Test
     public void testAddAdmActFailSimple() {
-        try {
-            economicService.addAdminAction(null);
-            Assert.fail("Should break because addAdminAction is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction", e.getParams()[0]);
-        }
+        Pair<Request<AddAdminActionRequest>, GameEntity> pair = testCheckGame(economicService::addAdminAction, "addAdminAction");
+        Request<AddAdminActionRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
 
-        Request<AddAdminActionRequest> request = new Request<>();
+        testCheckStatus(game, request, economicService::addAdminAction, "addAdminAction", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because addAdminAction.authent is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction.authent", e.getParams()[0]);
-        }
-
-        request.setAuthent(new AuthentInfo());
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because addAdminAction.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
         game.setTurn(1);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("addAdminAction.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because game.status is invalid");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
-            Assert.assertEquals("addAdminAction.request", e.getParams()[0]);
-        }
-
-        game.setStatus(GameStatusEnum.MILITARY);
-
-        try {
-            economicService.addAdminAction(request);
-            Assert.fail("Should break because game.status is invalid");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
-            Assert.assertEquals("addAdminAction.request", e.getParams()[0]);
-        }
-
-        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         try {
             economicService.addAdminAction(request);
@@ -541,11 +451,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
@@ -568,8 +476,6 @@ public class EcoServiceTest {
         game.getStacks().get(1).getCounters().get(2).setType(CounterFaceTypeEnum.FORTRESS_4);
         game.getStacks().get(1).getCounters().get(2).setOwner(game.getStacks().get(1));
         game.getStacks().get(1).setProvince("idf");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         request.getRequest().setType(AdminActionTypeEnum.DIS);
 
@@ -706,9 +612,7 @@ public class EcoServiceTest {
         request.getRequest().setType(AdminActionTypeEnum.LM);
         request.getRequest().setIdObject(4L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(2);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
@@ -727,8 +631,6 @@ public class EcoServiceTest {
         game.getStacks().get(1).getCounters().get(1).setId(4L);
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -801,9 +703,7 @@ public class EcoServiceTest {
         request.getRequest().setIdObject(5L);
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FORTRESS_3);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(2);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
@@ -828,8 +728,6 @@ public class EcoServiceTest {
         game.getStacks().get(1).getCounters().get(2).setType(CounterFaceTypeEnum.FORTRESS_4);
         game.getStacks().get(1).getCounters().get(2).setOwner(game.getStacks().get(1));
         game.getStacks().get(1).setProvince("idf");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         EuropeanProvinceEntity corn = new EuropeanProvinceEntity();
         corn.setName("idf");
@@ -908,9 +806,7 @@ public class EcoServiceTest {
         request.getRequest().setType(AdminActionTypeEnum.DIS);
         request.getRequest().setIdObject(4L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(2);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
@@ -929,8 +825,6 @@ public class EcoServiceTest {
         game.getStacks().get(1).getCounters().get(1).setId(4L);
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -998,11 +892,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
@@ -1013,8 +905,6 @@ public class EcoServiceTest {
         game.getCountries().get(0).getAdministrativeActions().get(0).setType(AdminActionTypeEnum.PU);
         game.getCountries().get(0).getAdministrativeActions().get(0).setCounterFaceType(CounterFaceTypeEnum.FORTRESS_2);
         game.getCountries().get(0).getAdministrativeActions().get(0).setProvince("poitou");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         request.getRequest().setType(AdminActionTypeEnum.PU);
 
@@ -1354,17 +1244,13 @@ public class EcoServiceTest {
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
         request.getRequest().setProvince("corn");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setLandTech("MEDIEVAL");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         request.getRequest().setType(AdminActionTypeEnum.PU);
 
@@ -1509,17 +1395,13 @@ public class EcoServiceTest {
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FORTRESS_3);
         request.getRequest().setProvince("corn");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setLandTech("RENAISSANCE");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         request.getRequest().setType(AdminActionTypeEnum.PU);
 
@@ -1674,15 +1556,11 @@ public class EcoServiceTest {
 
     @Test
     public void testRemoveAdmActFailSimple() {
-        try {
-            economicService.removeAdminAction(null);
-            Assert.fail("Should break because removeAdminAction is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("removeAdminAction", e.getParams()[0]);
-        }
+        Pair<Request<RemoveAdminActionRequest>, GameEntity> pair = testCheckGame(economicService::removeAdminAction, "removeAdminAction");
+        Request<RemoveAdminActionRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
 
-        Request<RemoveAdminActionRequest> request = new Request<>();
+        testCheckStatus(game, request, economicService::removeAdminAction, "removeAdminAction", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         try {
             economicService.removeAdminAction(request);
@@ -1694,59 +1572,6 @@ public class EcoServiceTest {
 
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
-
-        try {
-            economicService.removeAdminAction(request);
-            Assert.fail("Should break because removeAdminAction.game is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("removeAdminAction.game", e.getParams()[0]);
-        }
-
-        request.setGame(new GameInfo());
-
-        try {
-            economicService.removeAdminAction(request);
-            Assert.fail("Should break because idGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("removeAdminAction.game.idGame", e.getParams()[0]);
-        }
-
-        request.getGame().setIdGame(12L);
-
-        try {
-            economicService.removeAdminAction(request);
-            Assert.fail("Should break because versionGame is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("removeAdminAction.game.versionGame", e.getParams()[0]);
-        }
-
-        request.getGame().setVersionGame(1L);
-
-        try {
-            economicService.removeAdminAction(request);
-            Assert.fail("Should break because game does not exist");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("removeAdminAction.game.idGame", e.getParams()[0]);
-        }
-
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            economicService.removeAdminAction(request);
-            Assert.fail("Should break because versions does not match");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("removeAdminAction.game.versionGame", e.getParams()[0]);
-        }
-
-        game.setVersion(5L);
 
         try {
             economicService.removeAdminAction(request);
@@ -1822,11 +1647,8 @@ public class EcoServiceTest {
 
         request.getRequest().setIdAdmAct(13L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
-        game.setVersion(5L);
-
-        when(gameDao.lock(12L)).thenReturn(game);
+        GameEntity game = createGameUsingMocks();
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         AdministrativeActionEntity action13 = new AdministrativeActionEntity();
         action13.setId(13L);
@@ -1889,11 +1711,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
@@ -1923,8 +1743,6 @@ public class EcoServiceTest {
         game.getTradeFleets().get(0).setCountry("france");
         game.getTradeFleets().get(0).setProvince("zp_france");
         game.getTradeFleets().get(0).setLevel(6);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity action = new AdministrativeActionEntity();
@@ -2195,11 +2013,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
@@ -2274,8 +2090,6 @@ public class EcoServiceTest {
         game.getTradeFleets().get(10).setCountry("hanse");
         game.getTradeFleets().get(10).setProvince("ZPBaltique");
         game.getTradeFleets().get(10).setLevel(1);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity otherAction = new AdministrativeActionEntity();
@@ -2409,11 +2223,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
@@ -2445,8 +2257,6 @@ public class EcoServiceTest {
         game.getTradeFleets().get(0).setCountry("france");
         game.getTradeFleets().get(0).setProvince("zp_france");
         game.getTradeFleets().get(0).setLevel(6);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         Map<String, Integer> ownedProvinces = new HashMap<>();
         ownedProvinces.put("provence", 5);
@@ -2879,11 +2689,9 @@ public class EcoServiceTest {
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.MNU_METAL_MINUS);
         request.getRequest().setProvince("idf");
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(turn);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.setStPeterProvince("Neva");
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
@@ -2935,8 +2743,6 @@ public class EcoServiceTest {
         game.getTradeFleets().get(0).setCountry("france");
         game.getTradeFleets().get(0).setProvince("zp_france");
         game.getTradeFleets().get(0).setLevel(6);
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         when(adminActionDao.findAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
                                              AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL))
@@ -3043,11 +2849,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -3057,8 +2861,6 @@ public class EcoServiceTest {
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(1).setId(11L);
         game.getCountries().get(1).setName("angleterre");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity action = new AdministrativeActionEntity();
@@ -3162,11 +2964,9 @@ public class EcoServiceTest {
         request.getRequest().setInvestment(InvestmentEnum.M);
         request.getRequest().setType(AdminActionTypeEnum.FTI);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -3184,8 +2984,6 @@ public class EcoServiceTest {
         game.getStacks().get(0).getCounters().get(0).setCountry("france");
         game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.STABILITY);
         game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
@@ -3304,11 +3102,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -3318,8 +3114,6 @@ public class EcoServiceTest {
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(1).setId(11L);
         game.getCountries().get(1).setName("angleterre");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity action = new AdministrativeActionEntity();
@@ -3399,16 +3193,12 @@ public class EcoServiceTest {
         request.getRequest().setIdCountry(12L);
         request.getRequest().setType(AdminActionTypeEnum.EXL);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("france");
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
@@ -3487,11 +3277,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -3552,8 +3340,6 @@ public class EcoServiceTest {
         periods.add(period);
         tables.setPeriods(periods);
         EconomicServiceImpl.TABLES = tables;
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity action = new AdministrativeActionEntity();
@@ -3833,11 +3619,9 @@ public class EcoServiceTest {
         request.getRequest().setProvince("quebec");
         request.getRequest().setType(AdminActionTypeEnum.COL);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -3916,8 +3700,6 @@ public class EcoServiceTest {
         periods.add(period);
         tables.setPeriods(periods);
         EconomicServiceImpl.TABLES = tables;
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         actionsFor12.add(new AdministrativeActionEntity());
@@ -4034,11 +3816,9 @@ public class EcoServiceTest {
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -4092,8 +3872,6 @@ public class EcoServiceTest {
         limits.add(limitCol);
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity action = new AdministrativeActionEntity();
@@ -4230,11 +4008,9 @@ public class EcoServiceTest {
         request.getRequest().setProvince("quebec");
         request.getRequest().setType(AdminActionTypeEnum.TP);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -4322,8 +4098,6 @@ public class EcoServiceTest {
         limits.add(limit);
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         actionsFor12.add(new AdministrativeActionEntity());
@@ -4424,8 +4198,7 @@ public class EcoServiceTest {
 
     @Test
     public void testTechColumnBonus() {
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(22);
         PlayableCountryEntity turquie = new PlayableCountryEntity();
         turquie.setName("turquie");
@@ -4501,11 +4274,9 @@ public class EcoServiceTest {
         request.getRequest().setIdCountry(11L);
         request.getRequest().setType(AdminActionTypeEnum.ELT);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(1);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setDti(3);
@@ -4536,8 +4307,6 @@ public class EcoServiceTest {
         techs.add(tech);
         tables.setTechs(techs);
         EconomicServiceImpl.TABLES = tables;
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
         AdministrativeActionEntity action = new AdministrativeActionEntity();
@@ -4683,11 +4452,9 @@ public class EcoServiceTest {
         request.getRequest().setType(AdminActionTypeEnum.ELT);
         request.getRequest().setInvestment(InvestmentEnum.M);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(22);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(12L);
         game.getCountries().get(0).setName("turquie");
@@ -4745,8 +4512,6 @@ public class EcoServiceTest {
         techs.add(tech);
         tables.setTechs(techs);
         EconomicServiceImpl.TABLES = tables;
-
-        when(gameDao.lock(12L)).thenReturn(game);
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
         when(adminActionDao.findAdminActions(12L, 1, null, AdminActionTypeEnum.ELT, AdminActionTypeEnum.ENT)).thenReturn(actionsFor12);
@@ -4819,27 +4584,17 @@ public class EcoServiceTest {
 
     @Test
     public void testValidateAdmActFail() {
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        Pair<Request<ValidateAdminActionsRequest>, GameEntity> pair = testCheckGame(economicService::validateAdminActions, "validateAdminActions");
+        Request<ValidateAdminActionsRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+
+        testCheckStatus(game, request, economicService::validateAdminActions, "validateAdminActions", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+
         game.setTurn(22);
-        game.setVersion(5L);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(13L);
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setUsername("MKL");
-        game.getCountries().get(0).setReady(false);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
-        try {
-            economicService.validateAdminActions(null);
-            Assert.fail("Should break because request is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("validateAdminActions", e.getParams()[0]);
-        }
-
-        Request<ValidateAdminActionsRequest> request = new Request<>();
 
         try {
             economicService.validateAdminActions(request);
@@ -4851,9 +4606,6 @@ public class EcoServiceTest {
 
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("toto");
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
 
         try {
             economicService.validateAdminActions(request);
@@ -4905,18 +4657,14 @@ public class EcoServiceTest {
         request.setRequest(new ValidateAdminActionsRequest());
         request.getRequest().setIdCountry(13L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(22);
-        game.setVersion(5L);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(13L);
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(false);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
 
         List<DiffEntity> diffBefore = new ArrayList<>();
 
@@ -4960,18 +4708,14 @@ public class EcoServiceTest {
         request.setRequest(new ValidateAdminActionsRequest());
         request.getRequest().setIdCountry(13L);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(22);
-        game.setVersion(5L);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(13L);
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(true);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
 
         List<DiffEntity> diffBefore = new ArrayList<>();
 
@@ -5024,10 +4768,9 @@ public class EcoServiceTest {
         request.getRequest().setIdCountry(13L);
         request.getRequest().setValidate(true);
 
-        GameEntity game = new GameEntity();
-        game.setId(12L);
+        GameEntity game = createGameUsingMocks();
         game.setTurn(22);
-        game.setVersion(5L);
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(13L);
         game.getCountries().get(0).setName("france");
@@ -5037,9 +4780,6 @@ public class EcoServiceTest {
         game.getCountries().get(1).setId(14L);
         game.getCountries().get(1).setName("angleterre");
         game.getCountries().get(1).setReady(false);
-
-        when(gameDao.lock(12L)).thenReturn(game);
-
 
         List<DiffEntity> diffBefore = new ArrayList<>();
 

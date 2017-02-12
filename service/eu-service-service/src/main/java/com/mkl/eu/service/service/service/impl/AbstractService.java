@@ -216,15 +216,15 @@ public abstract class AbstractService implements INameConstants {
      * @param country asking for an action (some status are country ordered).
      * @throws FunctionalException functional exception.
      */
-    protected void checkGameStatus(GameEntity game, GameStatusEnum status, String country) throws FunctionalException {
+    protected void checkGameStatus(GameEntity game, GameStatusEnum status, String country, String method, String param) throws FunctionalException {
         switch (status) {
             case ADMINISTRATIVE_ACTIONS_CHOICE:
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                         .setTest(game.getStatus() == GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE)
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)
                         .setMsgFormat(MSG_INVALID_STATUS)
-                        .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST)
-                        .setParams(METHOD_ADD_ADM_ACT, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+                        .setName(param, PARAMETER_REQUEST)
+                        .setParams(method, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
                 break;
             case MILITARY:
                 CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
@@ -235,8 +235,8 @@ public abstract class AbstractService implements INameConstants {
                         .setTest(game.getStatus() == GameStatusEnum.MILITARY && activeOrder != null)
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)
                         .setMsgFormat(MSG_INVALID_STATUS)
-                        .setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST)
-                        .setParams(METHOD_ADD_ADM_ACT, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+                        .setName(param, PARAMETER_REQUEST)
+                        .setParams(method, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
                 break;
             default:
                 break;
