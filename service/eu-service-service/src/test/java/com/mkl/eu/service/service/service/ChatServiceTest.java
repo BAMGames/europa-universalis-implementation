@@ -7,16 +7,13 @@ import com.mkl.eu.client.service.service.chat.*;
 import com.mkl.eu.client.service.vo.chat.Message;
 import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.chat.Room;
-import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
-import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.*;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
@@ -51,16 +48,10 @@ public class ChatServiceTest extends AbstractGameServiceTest {
     private ChatServiceImpl chatService;
 
     @Mock
-    private IDiffDao diffDao;
-
-    @Mock
     private IChatDao chatDao;
 
     @Mock
     private IPlayableCountryDao playableCountryDao;
-
-    @Mock
-    private DiffMapping diffMapping;
 
     @Mock
     private ChatMapping chatMapping;
@@ -149,13 +140,6 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         sender.setId(4L);
         game.getCountries().add(sender);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-
         when(diffDao.create(anyObject())).thenAnswer(invocation -> {
             diffEntity = (DiffEntity) invocation.getArguments()[0];
             return diffEntity;
@@ -167,11 +151,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             return diffEntity;
         });
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         DiffResponse response = chatService.createRoom(request);
 
@@ -198,7 +178,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("4", diffEntity.getAttributes().get(1).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -276,20 +256,9 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-
         when(chatDao.getRoomGlobal(12L)).thenReturn(room);
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         when(chatDao.getMessagesSince(12L, 4L, 21L)).thenReturn(messages);
         when(chatDao.getMessagesGlobalSince(12L, 21L)).thenReturn(messagesGlobal);
@@ -314,7 +283,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         inOrder.verify(chatMapping).oesToVosMessageSince(anyObject(), anyObject());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
     }
 
@@ -375,12 +344,6 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
         doAnswer(invocation -> {
@@ -388,11 +351,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             return null;
         }).when(chatDao).createMessage((List<ChatEntity>) anyObject());
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         when(chatDao.getMessagesSince(12L, 4L, 21L)).thenReturn(messages);
         when(chatDao.getMessagesGlobalSince(12L, 21L)).thenReturn(messagesGlobal);
@@ -418,7 +377,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         inOrder.verify(chatMapping).oesToVosMessageSince(anyObject(), anyObject());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
 
         Assert.assertEquals(2, chatEntities.size());
@@ -550,23 +509,12 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         when(chatDao.getMessagesSince(12L, 4L, 21L)).thenReturn(messages);
         when(chatDao.getMessagesGlobalSince(12L, 21L)).thenReturn(messagesGlobal);
-
 
         when(chatMapping.oesToVosChatSince(anyObject(), anyObject())).thenReturn(messagesVos);
         when(chatMapping.oesToVosMessageSince(anyObject(), anyObject())).thenReturn(messagesGlobalVos);
@@ -585,7 +533,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         inOrder.verify(chatMapping).oesToVosMessageSince(anyObject(), anyObject());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
         Assert.assertTrue(presentToChange.isVisible());
     }
@@ -767,19 +715,9 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         when(chatDao.getMessagesSince(12L, 4L, 21L)).thenReturn(messages);
         when(chatDao.getMessagesGlobalSince(12L, 21L)).thenReturn(messagesGlobal);
@@ -811,7 +749,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         inOrder.verify(chatMapping).oesToVosMessageSince(anyObject(), anyObject());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
         Assert.assertEquals(presentAfter, presentToChange.isPresent());
     }
@@ -873,19 +811,9 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         List<MessageDiff> messagesGlobalVos = new ArrayList<>();
         messagesGlobalVos.add(new MessageDiff());
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(chatDao.getRoom(12L, 9L)).thenReturn(room);
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         when(chatDao.getMessagesSince(12L, 4L, 21L)).thenReturn(messages);
         when(chatDao.getMessagesGlobalSince(12L, 21L)).thenReturn(messagesGlobal);
@@ -912,7 +840,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         inOrder.verify(chatMapping).oesToVosMessageSince(anyObject(), anyObject());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
         Assert.assertEquals(3, response.getMessages().size());
     }
 

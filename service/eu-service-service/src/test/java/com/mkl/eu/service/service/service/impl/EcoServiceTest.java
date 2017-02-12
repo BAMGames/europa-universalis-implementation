@@ -4,7 +4,6 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.AuthentInfo;
-import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.eco.*;
@@ -19,12 +18,10 @@ import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
-import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -97,9 +94,6 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     private IChatDao chatDao;
 
     @Mock
-    private IDiffDao diffDao;
-
-    @Mock
     private GameMapping gameMapping;
 
     @Mock
@@ -109,9 +103,6 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     private ChatMapping chatMapping;
 
     @Mock
-    private DiffMapping diffMapping;
-
-    @Mock
     private SocketHandler socketHandler;
 
     @Mock
@@ -119,9 +110,6 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;
-
-    /** Variable used to store something coming from a mock. */
-    private List<DiffEntity> diffEntities;
 
     /** Variable used to store something coming from a mock. */
     private EconomicalSheetEntity sheetEntity;
@@ -445,9 +433,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActDisLmFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
 
@@ -605,9 +591,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setRequest(new AddAdminActionRequest());
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.getRequest().setIdCountry(14L);
         request.getRequest().setType(AdminActionTypeEnum.LM);
         request.getRequest().setIdObject(4L);
@@ -632,30 +616,19 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         when(oeUtil.getWarStatus(game, game.getCountries().get(0))).thenReturn(WarStatusEnum.CLASSIC_WAR);
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
 
@@ -687,7 +660,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                 diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -695,9 +668,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setRequest(new AddAdminActionRequest());
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.getRequest().setIdCountry(14L);
         request.getRequest().setType(AdminActionTypeEnum.LF);
         request.getRequest().setIdObject(5L);
@@ -734,28 +705,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         corn.setFortress(2);
         when(provinceDao.getProvinceByName("idf")).thenReturn(corn);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, diffDao, diffMapping);
 
@@ -791,7 +751,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                             diffEntity.getAttributes().get(4).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -799,9 +759,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setRequest(new AddAdminActionRequest());
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.getRequest().setIdCountry(14L);
         request.getRequest().setType(AdminActionTypeEnum.DIS);
         request.getRequest().setIdObject(4L);
@@ -826,28 +784,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
 
@@ -879,16 +826,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                             diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActPuFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
 
@@ -1236,9 +1181,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActPuSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.ARMY_MINUS);
@@ -1323,28 +1266,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, provinceDao, oeUtil, adminActionDao, diffDao, diffMapping);
 
@@ -1380,16 +1312,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                             diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActPuFortressSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setCounterFaceType(CounterFaceTypeEnum.FORTRESS_3);
@@ -1495,28 +1425,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tables.setTechs(techs);
         EconomicServiceImpl.TABLES = tables;
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, provinceDao, oeUtil, adminActionDao, diffDao, diffMapping);
 
@@ -1551,7 +1470,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                             diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -1639,9 +1558,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<RemoveAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
 
         request.setRequest(new RemoveAdminActionRequest());
 
@@ -1660,22 +1577,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         when(adminActionDao.load(13L)).thenReturn(action13);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.removeAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
 
@@ -1698,16 +1604,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(action13.getType().name(), diffEntity.getAttributes().get(1).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActTfiFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
@@ -2007,9 +1911,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                                             String bonus) throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
 
@@ -2149,31 +2051,20 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getDti(game, EconomicServiceImpl.TABLES, "france")).thenReturn(3);
         when(oeUtil.getDti(game, EconomicServiceImpl.TABLES, "angleterre")).thenReturn(3);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         request.getRequest().setInvestment(investment);
         request.getRequest().setProvince(province);
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, oeUtil, diffDao, diffMapping);
 
@@ -2210,16 +2101,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(bonus, diffEntity.getAttributes().get(6).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActMnuFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
@@ -2679,9 +2568,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                                          String column, String bonus) throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(idCountry);
         request.getRequest().setInvestment(investment);
@@ -2773,28 +2660,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
@@ -2836,16 +2712,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(bonus, diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActDtiFtiFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
@@ -2956,9 +2830,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActDtiFtiSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setInvestment(InvestmentEnum.M);
@@ -3032,28 +2904,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tables.setLimits(limits);
         EconomicServiceImpl.TABLES = tables;
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
@@ -3089,16 +2950,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("2", diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActExcTaxesFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
@@ -3186,9 +3045,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActExcTaxesSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setType(AdminActionTypeEnum.EXL);
@@ -3209,28 +3066,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getStability(game, "france")).thenReturn(2);
         when(oeUtil.getAdministrativeValue(game.getCountries().get(0))).thenReturn(7);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
@@ -3264,16 +3110,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("10", diffEntity.getAttributes().get(4).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActColFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
@@ -3610,9 +3454,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActColSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setInvestment(InvestmentEnum.M);
@@ -3737,29 +3579,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         countries.add("france");
         when(adminActionDao.getCountriesInlandAdvance("quebec", 12L)).thenReturn(countries);
 
-
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                                   oeUtil);
@@ -3803,16 +3633,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("2", diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
     public void testAddAdmActTpFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
 
@@ -3999,9 +3827,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActTpSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setInvestment(InvestmentEnum.M);
@@ -4128,29 +3954,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         when(adminActionDao.countOtherTpsInRegion("france", "Canada", 12L)).thenReturn(3);
 
-
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                                   oeUtil);
@@ -4193,7 +4007,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("-2", diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -4267,9 +4081,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActTechFail() {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(11L);
         request.getRequest().setType(AdminActionTypeEnum.ELT);
@@ -4444,9 +4256,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testAddAdmActTechSuccess() throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new AddAdminActionRequest());
         request.getRequest().setIdCountry(12L);
         request.getRequest().setType(AdminActionTypeEnum.ELT);
@@ -4522,29 +4332,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         country.setCulture(CultureEnum.ISLAM);
         when(countryDao.getCountryByName("turquie")).thenReturn(country);
 
-
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntity = ((List<DiffEntity>) invocation.getArguments()[0]).get(2);
-            return diffAfter;
-        });
+        simulateDiff();
 
         DiffResponse response = economicService.addAdminAction(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, countryDao, diffDao, diffMapping, oeUtil);
 
@@ -4579,7 +4377,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("1", diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -4651,9 +4449,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<ValidateAdminActionsRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new ValidateAdminActionsRequest());
         request.getRequest().setIdCountry(13L);
 
@@ -4666,26 +4462,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(false);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntities = ((List<DiffEntity>) invocation.getArguments()[0]);
-            return diffAfter;
-        });
+        simulateDiff();
 
         economicService.validateAdminActions(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                 oeUtil);
@@ -4702,9 +4489,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<ValidateAdminActionsRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new ValidateAdminActionsRequest());
         request.getRequest().setIdCountry(13L);
 
@@ -4717,26 +4502,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(true);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntities = ((List<DiffEntity>) invocation.getArguments()[0]);
-            return diffAfter;
-        });
+        simulateDiff();
 
         economicService.validateAdminActions(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                 oeUtil);
@@ -4761,9 +4537,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Request<ValidateAdminActionsRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
+        request.setGame(createGameInfo());
         request.setRequest(new ValidateAdminActionsRequest());
         request.getRequest().setIdCountry(13L);
         request.getRequest().setValidate(true);
@@ -4781,26 +4555,17 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(1).setName("angleterre");
         game.getCountries().get(1).setReady(false);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
             action.setId(13L);
             return action;
         });
 
-        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            diffEntities = ((List<DiffEntity>) invocation.getArguments()[0]);
-            return diffAfter;
-        });
+        simulateDiff();
 
         economicService.validateAdminActions(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
 
         InOrder inOrder = inOrder(gameDao, adminActionDao, provinceDao, playableCountryDao, diffDao, diffMapping,
                 oeUtil);

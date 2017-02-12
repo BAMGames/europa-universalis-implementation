@@ -6,14 +6,22 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.mockito.Mock;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 /**
@@ -23,9 +31,35 @@ import static org.mockito.Mockito.when;
  */
 public abstract class AbstractGameServiceTest {
     protected static final Long GAME_ID = 12L;
+    protected static final Long VERSION_SINCE = 1L;
 
     @Mock
     protected IGameDao gameDao;
+
+    @Mock
+    protected IDiffDao diffDao;
+
+    @Mock
+    protected DiffMapping diffMapping;
+
+    /** Variable used to store something coming from a mock. */
+    private List<DiffEntity> diffEntities;
+
+    private static List<Diff> diffAfter;
+
+    static {
+        diffAfter = new ArrayList<>();
+        diffAfter.add(new Diff());
+        diffAfter.add(new Diff());
+    }
+
+    protected GameInfo createGameInfo() {
+        GameInfo gameInfo = new GameInfo();
+        gameInfo.setIdGame(GAME_ID);
+        gameInfo.setVersionGame(VERSION_SINCE);
+
+        return gameInfo;
+    }
 
     protected GameEntity createGameUsingMocks() {
         GameEntity game = new GameEntity();
@@ -34,6 +68,32 @@ public abstract class AbstractGameServiceTest {
         when(gameDao.lock(GAME_ID)).thenReturn(game);
 
         return game;
+    }
+
+    protected void simulateDiff() {
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(GAME_ID, VERSION_SINCE)).thenReturn(diffBefore);
+
+        when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
+            List<DiffEntity> diffs = ((List<DiffEntity>) invocation.getArguments()[0]);
+            diffEntities = diffs.subList(2, diffs.size());
+            return diffAfter;
+        });
+    }
+
+    protected List<DiffEntity> retrieveDiffsCreated() {
+        return diffEntities;
+    }
+
+    protected DiffEntity retrieveDiffCreated() {
+        return diffEntities.get(0);
+    }
+
+    protected List<Diff> getDiffAfter() {
+        return diffAfter;
     }
 
     protected <V> Pair<Request<V>, GameEntity> testCheckGame(IServiceWithCheckGame<V> service, String method) {

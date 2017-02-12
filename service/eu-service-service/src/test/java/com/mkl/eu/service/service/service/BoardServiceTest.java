@@ -9,7 +9,6 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
@@ -17,11 +16,9 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
-import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -74,25 +71,16 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     private IChatDao chatDao;
 
     @Mock
-    private IDiffDao diffDao;
-
-    @Mock
     private GameMapping gameMapping;
 
     @Mock
     private ChatMapping chatMapping;
 
     @Mock
-    private DiffMapping diffMapping;
-
-    @Mock
     private IOEUtil oeUtil;
 
     @Mock
     private SocketHandler socketHandler;
-
-    /** Variable used to store something coming from a mock. */
-    private DiffEntity diffEntity;
 
     @Test
     public void testMoveStackFailSimple() {
@@ -279,24 +267,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
         when(oeUtil.isMobile(stack)).thenReturn(true);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         DiffResponse response = boardService.moveStack(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, socketHandler, diffMapping);
 
@@ -329,7 +304,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -406,24 +381,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.isMobile(stack)).thenReturn(true);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         DiffResponse response = boardService.endMoveStack(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, diffMapping);
 
@@ -444,7 +406,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(MovePhaseEnum.MOVED.name(), diffEntity.getAttributes().get(0).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -620,18 +582,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
 
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         DiffResponse response = boardService.moveCounter(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, counterDao, stackDao, diffMapping);
 
@@ -661,7 +616,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("IdF", diffEntity.getAttributes().get(3).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 
     @Test
@@ -686,12 +641,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
 
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
-
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
 
         ArgumentCaptor<StackEntity> arg = ArgumentCaptor.forClass(StackEntity.class);
@@ -701,18 +650,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             return entity;
         });
 
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
-
-        List<Diff> diffAfter = new ArrayList<>();
-        diffAfter.add(new Diff());
-        diffAfter.add(new Diff());
-
-        when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        simulateDiff();
 
         DiffResponse response = boardService.moveCounter(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
 
@@ -743,6 +685,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("9", diffEntity.getAttributes().get(4).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(diffAfter, response.getDiffs());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 }
