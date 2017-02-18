@@ -207,7 +207,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         try {
             img = new Image(new FileInputStream(new File("data/img/eye-icon.png")), 16, 16, true, false);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.error("Image located at data/img/eye-icon.png not found.", e);
         }
         ImageView eyeIcon = new ImageView(img);
         tabVisible.setGraphic(eyeIcon);

@@ -6,8 +6,6 @@ package com.mkl.eu.client.service.service.eco;
  * @author MKL.
  */
 public class ValidateAdminActionsRequest {
-    /** Id of the country whose administrative actions should be validated/invalidated. */
-    private Long idCountry;
     /** Flag saying that the country is validating or invalidating its administrative actions. */
     private boolean validate;
 
@@ -20,11 +18,9 @@ public class ValidateAdminActionsRequest {
     /**
      * Constructor.
      *
-     * @param idCountry the idCountry to set.
      * @param validate  the validate to set.
      */
-    public ValidateAdminActionsRequest(Long idCountry, boolean validate) {
-        this.idCountry = idCountry;
+    public ValidateAdminActionsRequest(boolean validate) {
         this.validate = validate;
     }
 

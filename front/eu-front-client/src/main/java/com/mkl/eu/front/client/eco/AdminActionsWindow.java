@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.ValidateAdminActionsRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
@@ -198,9 +199,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Node domesticPane = createDomesticOperationNode(country);
         Node establishmentPane = createEstablishmentNode(country);
         Node technologyPane = createTechnologyNode(country);
+        Node actions = createActionsNode();
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane, establishmentPane, technologyPane);
+        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane, establishmentPane, technologyPane, actions);
 
         tab.setContent(vBox);
 
@@ -1268,6 +1270,59 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
             processExceptionEvent(new ExceptionEvent(e));
         }
+    }
+
+    /**
+     * @return a Node containing all transverse actions for administrative actions.
+     */
+    private Node createActionsNode() {
+        HBox actions = new HBox();
+
+        Button validation = new Button(message.getMessage("validate", null, globalConfiguration.getLocale()));
+        validation.setOnAction(event -> {
+
+            Request<ValidateAdminActionsRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new ValidateAdminActionsRequest(true));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.validateAdminActions(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when validating administrative actions.", e);
+
+                processExceptionEvent(new ExceptionEvent(e));
+            }
+        });
+        actions.getChildren().add(validation);
+
+        Button invalidation = new Button(message.getMessage("invalidate", null, globalConfiguration.getLocale()));
+        invalidation.setOnAction(event -> {
+
+            Request<ValidateAdminActionsRequest> request = new Request<>();
+            authentHolder.fillAuthentInfo(request);
+            gameConfig.fillGameInfo(request);
+            gameConfig.fillChatInfo(request);
+            request.setRequest(new ValidateAdminActionsRequest(false));
+            Long idGame = gameConfig.getIdGame();
+            try {
+                DiffResponse response = economicService.validateAdminActions(request);
+
+                DiffEvent diff = new DiffEvent(response, idGame);
+                processDiffEvent(diff);
+            } catch (Exception e) {
+                LOGGER.error("Error when invalidating administrative actions.", e);
+
+                processExceptionEvent(new ExceptionEvent(e));
+            }
+        });
+        actions.getChildren().add(invalidation);
+
+        return actions;
     }
 
     /**

@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -42,7 +43,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -60,6 +65,9 @@ import org.springframework.stereotype.Component;
 import processing.core.PApplet;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -115,6 +123,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private Game game;
     /** Game config to store between constructor and Spring init PostConstruct and to spread to other UIs. */
     private GameConfiguration gameConfig;
+    /** Component to be refreshed when status changed. */
+    private VBox activeCountries = new VBox();
 
     public GamePopup(Long idGame, Long idCountry) {
         gameConfig = new GameConfiguration();
@@ -211,8 +221,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        Text text = new Text(Long.toString(game.getId()));
-        grid.add(text, 0, 0, 1, 1);
+        String statusText = message.getMessage("game.status." + game.getStatus(), null, globalConfiguration.getLocale());
+        Text info = new Text(message.getMessage("game.popup.info_phase", new Object[]{statusText}, globalConfiguration.getLocale()));
+        grid.add(info, 0, 0, 1, 1);
+        updateActivePlayers();
+
+        grid.add(activeCountries, 1, 0, 1, 5);
 
         Button mapBtn = new Button(message.getMessage("game.popup.map", null, globalConfiguration.getLocale()));
         mapBtn.setOnAction(event -> {
@@ -259,11 +273,44 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         });
         grid.add(admActBtn, 0, 4, 1, 1);
 
-        Scene dialogScene = new Scene(grid, 300, 200);
+        Scene dialogScene = new Scene(grid, 300, 300);
         dialog.setScene(dialogScene);
         dialog.show();
 
         dialog.setOnCloseRequest(this);
+    }
+
+    /**
+     * Update the list of active countries.
+     */
+    private void updateActivePlayers() {
+        activeCountries.getChildren().clear();
+        List<PlayableCountry> activePlayers = GameUtil.getActivePlayers(game).stream()
+                .collect(Collectors.toList());
+        game.getCountries().stream()
+                .forEach(country -> {
+                    HBox hBox = new HBox();
+                    Text text = new Text(country.getName());
+                    hBox.getChildren().add(text);
+                    if (activePlayers.contains(country)) {
+                        try {
+                            Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
+                            ImageView imgView = new ImageView(img);
+                            hBox.getChildren().add(imgView);
+                        } catch (FileNotFoundException e) {
+                            LOGGER.error("Image located at data/img/cross.png not found.", e);
+                        }
+                    } else {
+                        try {
+                            Image img = new Image(new FileInputStream(new File("data/img/check.png")), 16, 16, true, false);
+                            ImageView imgView = new ImageView(img);
+                            hBox.getChildren().add(imgView);
+                        } catch (FileNotFoundException e) {
+                            LOGGER.error("Image located at data/img/check.png not found.", e);
+                        }
+                    }
+                    activeCountries.getChildren().add(hBox);
+                });
     }
 
     /** {@inheritDoc} */
@@ -898,6 +945,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             default:
                 break;
         }
+        updateActivePlayers();
     }
 
     /**
