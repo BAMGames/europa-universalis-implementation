@@ -60,7 +60,7 @@ public class WarTest {
         Assert.assertEquals(2, game.getOrders().size());
         Assert.assertEquals("suede", game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(CountryTypeEnum.MINORMAJOR, game.getOrders().get(0).getCountry().getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY, game.getOrders().get(0).getGameStatus());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(5, game.getOrders().get(0).getPosition());
         Assert.assertEquals("espagne", game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(CountryTypeEnum.MAJOR, game.getOrders().get(1).getCountry().getType());

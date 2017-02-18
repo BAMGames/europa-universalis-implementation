@@ -4607,7 +4607,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(3).getTypeObject());
         Assert.assertEquals(1, diffEntities.get(3).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(3).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY.name(), diffEntities.get(3).getAttributes().get(0).getValue());
+        // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffEntities.get(3).getAttributes().get(0).getValue());
     }
 
     @Test

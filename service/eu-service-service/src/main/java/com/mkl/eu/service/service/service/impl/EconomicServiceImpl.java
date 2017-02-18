@@ -1818,7 +1818,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diff.setTypeObject(DiffTypeObjectEnum.STATUS);
                 diffs.add(diff);
 
-                game.setStatus(GameStatusEnum.MILITARY);
+                game.setStatus(GameStatusEnum.MILITARY_HIERARCHY);
 
                 diff = new DiffEntity();
                 diff.setIdGame(game.getId());
@@ -1827,7 +1827,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diff.setTypeObject(DiffTypeObjectEnum.STATUS);
                 diffAttributes = new DiffAttributesEntity();
                 diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-                diffAttributes.setValue(GameStatusEnum.MILITARY.name());
+                // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
                 diffs.add(diff);

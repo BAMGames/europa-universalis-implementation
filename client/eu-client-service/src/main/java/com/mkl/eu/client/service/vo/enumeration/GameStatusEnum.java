@@ -14,7 +14,24 @@ public enum GameStatusEnum {
     DIPLOMACY,
     /** Choice of administrative actions segment. */
     ADMINISTRATIVE_ACTIONS_CHOICE,
-    /** Military segment. */
-    MILITARY
+
+
+    /*********************************************************************************************************
+     *                                          Military phases                                              *
+     *********************************************************************************************************/
+    /** Hierarchy adjustment segment. */
+    MILITARY_HIERARCHY,
+    /** Choice of campaign. */
+    MILITARY_CAMPAIGN,
+    /** Attrition caused by supply. */
+    MILITARY_SUPPLY,
+    /** Movement and discovery. */
+    MILITARY_MOVE,
+    /** Battles. */
+    MILITARY_BATTLES,
+    /** Sieges. */
+    MILITARY_SIEGES,
+    /** Fights against revolts, pirates and natives. */
+    MILITARY_NEUTRALS
 
 }

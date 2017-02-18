@@ -214,33 +214,54 @@ public abstract class AbstractService implements INameConstants {
      * @param game    game to check.
      * @param status  status the game should have.
      * @param country asking for an action (some status are country ordered).
+     * @param method  calling this. For logging purpose.
+     * @param param   name of the param holding the gameInfo. For logging purpose.
      * @throws FunctionalException functional exception.
      */
     protected void checkGameStatus(GameEntity game, GameStatusEnum status, String country, String method, String param) throws FunctionalException {
         switch (status) {
             case ADMINISTRATIVE_ACTIONS_CHOICE:
-                failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                        .setTest(game.getStatus() == GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE)
-                        .setCodeError(IConstantsServiceException.INVALID_STATUS)
-                        .setMsgFormat(MSG_INVALID_STATUS)
-                        .setName(param, PARAMETER_REQUEST)
-                        .setParams(method, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+            case MILITARY_HIERARCHY:
+                checkSimpleStatus(game, status, method, param);
                 break;
-            case MILITARY:
+            case MILITARY_CAMPAIGN:
+            case MILITARY_SUPPLY:
+            case MILITARY_MOVE:
+            case MILITARY_BATTLES:
+            case MILITARY_SIEGES:
+            case MILITARY_NEUTRALS:
                 CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
                         order -> order.isActive() != null && order.isActive() &&
-                                order.getGameStatus() == GameStatusEnum.MILITARY &&
+                                order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                                 StringUtils.equals(order.getCountry().getName(), country));
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                        .setTest(game.getStatus() == GameStatusEnum.MILITARY && activeOrder != null)
+                        .setTest(game.getStatus() == status && activeOrder != null)
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)
                         .setMsgFormat(MSG_INVALID_STATUS)
                         .setName(param, PARAMETER_REQUEST)
-                        .setParams(method, game.getStatus(), GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE));
+                        .setParams(method, game.getStatus(), status));
                 break;
             default:
                 break;
         }
+    }
+
+    /**
+     * Check if game has the right simple status (no player order).
+     *
+     * @param game   game to check.
+     * @param status status the game should have.
+     * @param method calling this. For logging purpose.
+     * @param param  name of the param holding the gameInfo. For logging purpose.
+     * @throws FunctionalException
+     */
+    private void checkSimpleStatus(GameEntity game, GameStatusEnum status, String method, String param) throws FunctionalException {
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(game.getStatus() == status)
+                .setCodeError(IConstantsServiceException.INVALID_STATUS)
+                .setMsgFormat(MSG_INVALID_STATUS)
+                .setName(param, PARAMETER_REQUEST)
+                .setParams(method, game.getStatus(), status));
     }
 
     /**

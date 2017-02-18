@@ -174,8 +174,8 @@ public abstract class AbstractGameServiceTest {
             Assert.assertEquals(method + ".request", e.getParams()[0]);
         }
 
-        GameStatusEnum wrongStatus = GameStatusEnum.MILITARY;
-        if (status == GameStatusEnum.MILITARY) {
+        GameStatusEnum wrongStatus = GameStatusEnum.MILITARY_HIERARCHY;
+        if (status == GameStatusEnum.MILITARY_HIERARCHY) {
             wrongStatus = GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE;
         }
         game.setStatus(wrongStatus);
