@@ -1,9 +1,16 @@
 package com.mkl.eu.client.service.util;
 
+import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Utility around the game.
@@ -165,5 +172,38 @@ public final class GameUtil {
      */
     public static boolean isRotwProvince(String province) {
         return StringUtils.isNotEmpty(province) && province.startsWith("r");
+    }
+
+    /**
+     * @param game the game.
+     * @return the List of PlayableCountry whose it is the turn.
+     */
+    public static List<PlayableCountry> getActivePlayers(Game game) {
+        List<PlayableCountry> countries;
+
+        switch (game.getStatus()) {
+            case ADMINISTRATIVE_ACTIONS_CHOICE:
+            case MILITARY_HIERARCHY:
+                countries = game.getCountries().stream()
+                        .filter(country -> !country.isReady())
+                        .collect(Collectors.toList());
+                break;
+            case MILITARY_CAMPAIGN:
+            case MILITARY_SUPPLY:
+            case MILITARY_MOVE:
+            case MILITARY_BATTLES:
+            case MILITARY_SIEGES:
+            case MILITARY_NEUTRALS:
+                countries = game.getOrders().stream()
+                        .filter(order -> order.isActive() != null && order.isActive() &&
+                                order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                        .map(CountryOrder::getCountry)
+                        .collect(Collectors.toList());
+                break;
+            default:
+                countries = new ArrayList<>();
+        }
+
+        return countries;
     }
 }
