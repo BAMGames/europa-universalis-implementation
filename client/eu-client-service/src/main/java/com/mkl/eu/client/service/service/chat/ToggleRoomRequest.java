@@ -52,14 +52,4 @@ public class ToggleRoomRequest {
     public void setVisible(Boolean visible) {
         this.visible = visible;
     }
-
-    /** @return the idCountry. */
-    public Long getIdCountry() {
-        return idCountry;
-    }
-
-    /** @param idCountry the idCountry to set. */
-    public void setIdCountry(Long idCountry) {
-        this.idCountry = idCountry;
-    }
 }

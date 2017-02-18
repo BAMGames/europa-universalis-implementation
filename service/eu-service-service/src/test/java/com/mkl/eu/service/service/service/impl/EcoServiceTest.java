@@ -4420,20 +4420,20 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because request.request.idCountry is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("validateAdminActions.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("validateAdminActions.idCountry", e.getParams()[0]);
         }
 
-        request.getRequest().setIdCountry(666L);
+        request.setIdCountry(666L);
 
         try {
             economicService.validateAdminActions(request);
             Assert.fail("Should break because request.request.idCountry is invalid");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("validateAdminActions.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("validateAdminActions.idCountry", e.getParams()[0]);
         }
 
-        request.getRequest().setIdCountry(13L);
+        request.setIdCountry(13L);
 
         try {
             economicService.validateAdminActions(request);
@@ -4451,7 +4451,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateAdminActionsRequest());
-        request.getRequest().setIdCountry(13L);
+        request.setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks();
         game.setTurn(22);
@@ -4491,7 +4491,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateAdminActionsRequest());
-        request.getRequest().setIdCountry(13L);
+        request.setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks();
         game.setTurn(22);
@@ -4539,7 +4539,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateAdminActionsRequest());
-        request.getRequest().setIdCountry(13L);
+        request.setIdCountry(13L);
         request.getRequest().setValidate(true);
 
         GameEntity game = createGameUsingMocks();

@@ -86,10 +86,10 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because idCountry is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("createRoom.idCountry", e.getParams()[0]);
         }
 
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
 
         try {
             chatService.createRoom(request);
@@ -106,7 +106,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because country does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("createRoom.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("createRoom.idCountry", e.getParams()[0]);
         }
 
         game.getCountries().add(new PlayableCountryEntity());
@@ -131,7 +131,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
         request.getRequest().setName("Title");
 
         GameEntity game = createGameUsingMocks();
@@ -201,10 +201,10 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because idCountry is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("speakInRoom.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("speakInRoom.idCountry", e.getParams()[0]);
         }
 
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
 
         try {
             chatService.speakInRoom(request);
@@ -226,12 +226,12 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
         request.getRequest().setMessage("Message");
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.getChat().setIdCountry(4L);
+        request.setIdCountry(4L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -296,13 +296,13 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
         request.getRequest().setIdRoom(9L);
         request.getRequest().setMessage("Message");
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.getChat().setIdCountry(4L);
+        request.setIdCountry(4L);
 
         GameEntity game = createGameUsingMocks();
         game.getCountries().add(new PlayableCountryEntity());
@@ -412,10 +412,10 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because idCountry is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("toggleRoom.idCountry", e.getParams()[0]);
         }
 
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
 
         try {
             chatService.toggleRoom(request);
@@ -442,7 +442,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because idCountry does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("toggleRoom.request.idCountry", e.getParams()[0]);
+            Assert.assertEquals("toggleRoom.idCountry", e.getParams()[0]);
         }
 
         game.getCountries().add(new PlayableCountryEntity());
@@ -466,13 +466,13 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.getRequest().setIdCountry(4L);
+        request.setIdCountry(4L);
         request.getRequest().setIdRoom(9L);
         request.getRequest().setVisible(true);
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.getChat().setIdCountry(4L);
+        request.setIdCountry(4L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -569,10 +569,10 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because chat.idCountry is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.chat.idCountry", e.getParams()[0]);
+            Assert.assertEquals("inviteKickRoom.idCountry", e.getParams()[0]);
         }
 
-        request.getChat().setIdCountry(5L);
+        request.setIdCountry(5L);
 
         try {
             chatService.inviteKickRoom(request);
@@ -609,7 +609,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because chat.idCountry does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("inviteKickRoom.chat.idCountry", e.getParams()[0]);
+            Assert.assertEquals("inviteKickRoom.idCountry", e.getParams()[0]);
         }
 
 
@@ -673,7 +673,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.getChat().setIdCountry(5L);
+        request.setIdCountry(5L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -769,7 +769,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.getChat().setIdCountry(5L);
+        request.setIdCountry(5L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -944,20 +944,20 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because request.chat.idCountry is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("readRoom.chat.idCountry", e.getParams()[0]);
+            Assert.assertEquals("readRoom.idCountry", e.getParams()[0]);
         }
 
-        request.getChat().setIdCountry(3L);
+        request.setIdCountry(3L);
 
         try {
             chatService.readRoom(request);
             Assert.fail("Should break because request.chat.idCountry is invalid");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("readRoom.chat.idCountry", e.getParams()[0]);
+            Assert.assertEquals("readRoom.idCountry", e.getParams()[0]);
         }
 
-        request.getChat().setIdCountry(5L);
+        request.setIdCountry(5L);
         request.getRequest().setMaxId(19L);
 
         try {

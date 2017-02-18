@@ -10,8 +10,6 @@ public class ChatInfo {
     private Long maxIdGlobalMessage;
     /** Maximum of the ids for the non global messages. */
     private Long maxIdMessage;
-    /** Id of the country concerned by this messages or <code>null</code> for only global messages. */
-    private Long idCountry;
 
     /**
      * Constructor.
@@ -25,12 +23,10 @@ public class ChatInfo {
      *
      * @param maxIdGlobalMessage the maxIdGlobalMessage to set.
      * @param maxIdMessage       the maxIdMessage to set.
-     * @param idCountry          the idCountry to set.
      */
-    public ChatInfo(Long maxIdGlobalMessage, Long maxIdMessage, Long idCountry) {
+    public ChatInfo(Long maxIdGlobalMessage, Long maxIdMessage) {
         this.maxIdGlobalMessage = maxIdGlobalMessage;
         this.maxIdMessage = maxIdMessage;
-        this.idCountry = idCountry;
     }
 
     /** @return the maxIdGlobalMessage. */
@@ -51,15 +47,5 @@ public class ChatInfo {
     /** @param maxIdMessage the maxIdMessage to set. */
     public void setMaxIdMessage(Long maxIdMessage) {
         this.maxIdMessage = maxIdMessage;
-    }
-
-    /** @return the idCountry. */
-    public Long getIdCountry() {
-        return idCountry;
-    }
-
-    /** @param idCountry the idCountry to set. */
-    public void setIdCountry(Long idCountry) {
-        this.idCountry = idCountry;
     }
 }

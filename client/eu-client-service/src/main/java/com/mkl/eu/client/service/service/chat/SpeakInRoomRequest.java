@@ -52,14 +52,4 @@ public class SpeakInRoomRequest {
     public void setMessage(String message) {
         this.message = message;
     }
-
-    /** @return the idCountry. */
-    public Long getIdCountry() {
-        return idCountry;
-    }
-
-    /** @param idCountry the idCountry to set. */
-    public void setIdCountry(Long idCountry) {
-        this.idCountry = idCountry;
-    }
 }

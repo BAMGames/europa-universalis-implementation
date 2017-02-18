@@ -293,7 +293,7 @@ public abstract class AbstractService implements INameConstants {
         List<MessageDiff> messages = new ArrayList<>();
 
         if (request != null && request.getGame() != null && request.getChat() != null) {
-            List<ChatEntity> chatEntities = chatDao.getMessagesSince(request.getGame().getIdGame(), request.getChat().getIdCountry(), request.getChat().getMaxIdMessage());
+            List<ChatEntity> chatEntities = chatDao.getMessagesSince(request.getGame().getIdGame(), request.getIdCountry(), request.getChat().getMaxIdMessage());
             List<MessageGlobalEntity> messageEntities = chatDao.getMessagesGlobalSince(request.getGame().getIdGame(), request.getChat().getMaxIdGlobalMessage());
 
 

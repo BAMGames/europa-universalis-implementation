@@ -1734,13 +1734,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST).setParams(METHOD_VALIDATE_ADM_ACT));
 
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_ADM_ACT));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_ADM_ACT));
 
-        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getRequest().getIdCountry()));
+        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_ADM_ACT, request.getRequest().getIdCountry()));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_ADM_ACT, request.getIdCountry()));
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)

@@ -28,16 +28,6 @@ public class ValidateAdminActionsRequest {
         this.validate = validate;
     }
 
-    /** @return the idCountry. */
-    public Long getIdCountry() {
-        return idCountry;
-    }
-
-    /** @param idCountry the idCountry to set. */
-    public void setIdCountry(Long idCountry) {
-        this.idCountry = idCountry;
-    }
-
     /** @return the validate. */
     public boolean isValidate() {
         return validate;
