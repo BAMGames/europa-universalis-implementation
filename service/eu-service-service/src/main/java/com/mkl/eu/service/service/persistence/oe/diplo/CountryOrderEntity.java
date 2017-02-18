@@ -19,6 +19,7 @@ public class CountryOrderEntity {
     /** Game concerned by the turn order. */
     private GameEntity game;
     /** Country concerned by the turn order. */
+    // FIXME add a 'fake' playable country in case of minor alone in war
     private CountryEntity country;
     /** Phase of the game concerned by the turn order. */
     private GameStatusEnum gameStatus;
