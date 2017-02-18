@@ -10,8 +10,6 @@ public class SpeakInRoomRequest {
     private Long idRoom;
     /** Message to send. */
     private String message;
-    /** Id of the country sending the message. */
-    private Long idCountry;
 
     /**
      * Constructor for jaxb.
@@ -25,12 +23,10 @@ public class SpeakInRoomRequest {
      *
      * @param idRoom    the idRoom to set.
      * @param message   the message to set.
-     * @param idCountry the idCountry to set.
      */
-    public SpeakInRoomRequest(Long idRoom, String message, Long idCountry) {
+    public SpeakInRoomRequest(Long idRoom, String message) {
         this.idRoom = idRoom;
         this.message = message;
-        this.idCountry = idCountry;
     }
 
     /** @return the idRoom. */

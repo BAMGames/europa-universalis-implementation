@@ -186,7 +186,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                     authentHolder.fillAuthentInfo(request);
                                     gameConfig.fillGameInfo(request);
                                     gameConfig.fillChatInfo(request);
-                                    request.setRequest(new CreateRoomRequest(result.get(), gameConfig.getIdCountry()));
+                                    request.setRequest(new CreateRoomRequest(result.get()));
                                     Long idGame = gameConfig.getIdGame();
                                     try {
                                         DiffResponse response = chatService.createRoom(request);
@@ -232,7 +232,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                     authentHolder.fillAuthentInfo(request);
                                     gameConfig.fillGameInfo(request);
                                     gameConfig.fillChatInfo(request);
-                                    request.setRequest(new ToggleRoomRequest(room.getId(), true, gameConfig.getIdCountry()));
+                                    request.setRequest(new ToggleRoomRequest(room.getId(), true));
                                     Long idGame = gameConfig.getIdGame();
                                     try {
                                         DiffResponse response = chatService.toggleRoom(request);
@@ -300,7 +300,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 authentHolder.fillAuthentInfo(request);
                 gameConfig.fillGameInfo(request);
                 gameConfig.fillChatInfo(request);
-                request.setRequest(new ToggleRoomRequest(room.getId(), false, gameConfig.getIdCountry()));
+                request.setRequest(new ToggleRoomRequest(room.getId(), false));
                 Long idGame = gameConfig.getIdGame();
                 try {
                     DiffResponse response = chatService.toggleRoom(request);
@@ -432,7 +432,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             authentHolder.fillAuthentInfo(request);
             gameConfig.fillGameInfo(request);
             gameConfig.fillChatInfo(request);
-            request.setRequest(new SpeakInRoomRequest(idRoom, msg, gameConfig.getIdCountry()));
+            request.setRequest(new SpeakInRoomRequest(idRoom, msg));
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = chatService.speakInRoom(request);

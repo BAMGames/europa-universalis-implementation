@@ -10,8 +10,6 @@ public class ToggleRoomRequest {
     private Long idRoom;
     /** Flag saying that the user wants to set it visible or not. */
     private Boolean visible;
-    /** Id of the country sending the message. */
-    private Long idCountry;
 
     /**
      * Constructor for jaxb.
@@ -25,12 +23,10 @@ public class ToggleRoomRequest {
      *
      * @param idRoom    the idRoom to set.
      * @param visible   the visible to set.
-     * @param idCountry the idCountry to set.
      */
-    public ToggleRoomRequest(Long idRoom, Boolean visible, Long idCountry) {
+    public ToggleRoomRequest(Long idRoom, Boolean visible) {
         this.idRoom = idRoom;
         this.visible = visible;
-        this.idCountry = idCountry;
     }
 
     /** @return the idRoom. */
