@@ -2,7 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.diplo;
 
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,7 +20,7 @@ public class CountryOrderEntity {
     private GameEntity game;
     /** Country concerned by the turn order. */
     // FIXME add a 'fake' playable country in case of minor alone in war
-    private CountryEntity country;
+    private PlayableCountryEntity country;
     /** Phase of the game concerned by the turn order. For military phases, it is MILITARY_MOVE. */
     private GameStatusEnum gameStatus;
     /** Position of the country in the turn order. */
@@ -44,13 +44,13 @@ public class CountryOrderEntity {
     /** @return the country. */
     @Id
     @ManyToOne
-    @JoinColumn(name = "R_COUNTRY", referencedColumnName = "NAME")
-    public CountryEntity getCountry() {
+    @JoinColumn(name = "ID_COUNTRY")
+    public PlayableCountryEntity getCountry() {
         return country;
     }
 
     /** @param country the country to set. */
-    public void setCountry(CountryEntity country) {
+    public void setCountry(PlayableCountryEntity country) {
         this.country = country;
     }
 
@@ -96,7 +96,7 @@ public class CountryOrderEntity {
         /** Composite id game. */
         private GameEntity game;
         /** Composite id country. */
-        private CountryEntity country;
+        private PlayableCountryEntity country;
         /** Composite id status. */
         private GameStatusEnum gameStatus;
 
@@ -111,12 +111,12 @@ public class CountryOrderEntity {
         }
 
         /** @return the country. */
-        public CountryEntity getCountry() {
+        public PlayableCountryEntity getCountry() {
             return country;
         }
 
         /** @param country the country to set. */
-        public void setCountry(CountryEntity country) {
+        public void setCountry(PlayableCountryEntity country) {
             this.country = country;
         }
 

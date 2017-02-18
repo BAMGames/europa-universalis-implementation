@@ -1,7 +1,7 @@
 package com.mkl.eu.service.service.persistence.oe;
 
 /**
- * Interface of all entites.
+ * Interface of all entities.
  *
  * @author MKL.
  */

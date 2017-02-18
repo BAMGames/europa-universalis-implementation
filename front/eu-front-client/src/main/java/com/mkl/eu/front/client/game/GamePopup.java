@@ -296,6 +296,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                     case ADM_ACT:
                         updateAdmAct(game, diff);
                         break;
+                    case STATUS:
+                        updateStatus(game, diff);
+                        break;
                     default:
                         break;
                 }
@@ -872,6 +875,108 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             }
         } else {
             LOGGER.error("Missing or wrong country in adm act remove event.");
+        }
+    }
+
+    /**
+     * Process a status diff event.
+     *
+     * @param game to update.
+     * @param diff involving a status.
+     */
+    private void updateStatus(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case MODIFY:
+                modifyStatus(game, diff);
+                break;
+            case VALIDATE:
+                validateStatus(game, diff);
+                break;
+            case INVALIDATE:
+                invalidateStatus(game, diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the modify status action diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify status.
+     */
+    private void modifyStatus(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (attribute != null) {
+            game.setStatus(GameStatusEnum.valueOf(attribute.getValue()));
+        }
+    }
+
+    /**
+     * Process the validate status action diff event.
+     *
+     * @param game to update.
+     * @param diff involving a validatation status.
+     */
+    private void validateStatus(Game game, Diff diff) {
+        PlayableCountry country = null;
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+            country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        }
+
+        switch (game.getStatus()) {
+            case ADMINISTRATIVE_ACTIONS_CHOICE:
+                if (country != null) {
+                    country.setReady(true);
+                } else {
+                    game.getCountries().stream().forEach(c -> c.setReady(true));
+                }
+                break;
+            case MILITARY_MOVE:
+                if (country != null) {
+                    Long idCountry = country.getId();
+                    game.getOrders().stream()
+                            .filter(order -> order.getCountry().getId().equals(idCountry) &&
+                                    order.isActive())
+                            .forEach(order -> order.setActive(false));
+                } else {
+                    game.getOrders().stream()
+                            .forEach(order -> order.setActive(false));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the invalidate status action diff event.
+     *
+     * @param game to update.
+     * @param diff involving an invalidattion status.
+     */
+    private void invalidateStatus(Game game, Diff diff) {
+        PlayableCountry country = null;
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            Long idCountry = Long.parseLong(attribute.getValue());
+            country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        }
+
+        switch (game.getStatus()) {
+            case ADMINISTRATIVE_ACTIONS_CHOICE:
+                if (country != null) {
+                    country.setReady(false);
+                } else {
+                    game.getCountries().stream().forEach(c -> c.setReady(false));
+                }
+                break;
+            case MILITARY_MOVE:
+            default:
+                break;
         }
     }
 

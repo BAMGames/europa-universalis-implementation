@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.service.service.mapping.board.StackMapping;
 import com.mkl.eu.service.service.mapping.country.PlayableCountryMapping;
 import com.mkl.eu.service.service.mapping.country.RelationMapping;
+import com.mkl.eu.service.service.mapping.diplo.CountryOrderMapping;
 import com.mkl.eu.service.service.mapping.event.PoliticalEventMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class GameMapping {
     /** Mapping for stacks. */
     @Autowired
     private StackMapping stackMapping;
+    /** Mapping for country orders. */
+    @Autowired
+    private CountryOrderMapping countryOrderMapping;
 
     /**
      * OE to VO.
@@ -61,6 +65,8 @@ public class GameMapping {
         target.setRelations(relationMapping.oesToVos(source.getRelations(), objectsCreated));
 
         target.setStacks(stackMapping.oesToVos(source.getStacks(), objectsCreated));
+
+        target.setOrders(countryOrderMapping.oesToVos(source.getOrders(), objectsCreated));
 
         return target;
     }

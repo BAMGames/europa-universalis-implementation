@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Monarch;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -19,6 +20,7 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
@@ -147,6 +149,8 @@ public class GameMappingTest {
         object.setRelations(createRelationsVos(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksVos());
+
+        object.setOrders(createCountryOrdersVos());
 
         return object;
     }
@@ -388,6 +392,26 @@ public class GameMappingTest {
         return objects;
     }
 
+    private List<CountryOrder> createCountryOrdersVos() {
+        List<CountryOrder> objects = new ArrayList<>();
+
+        CountryOrder object = new CountryOrder();
+        object.setCountry(FRA_VO);
+        object.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        object.setPosition(0);
+        object.setActive(true);
+        objects.add(object);
+
+        object = new CountryOrder();
+        object.setCountry(PRU_VO);
+        object.setGameStatus(GameStatusEnum.DIPLOMACY);
+        object.setPosition(0);
+        object.setActive(false);
+        objects.add(object);
+
+        return objects;
+    }
+
     private GameLight createGameVoLight() {
         GameLight game = new GameLight();
 
@@ -420,6 +444,8 @@ public class GameMappingTest {
         object.setRelations(createRelationsEntities(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksEntities());
+
+        object.setOrders(createCountryOrdersEntities());
 
         return object;
     }
@@ -658,6 +684,26 @@ public class GameMappingTest {
         object.setDiplomacy(3);
         object.setMilitary(3);
         object.setMilitaryAverage(0);
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<CountryOrderEntity> createCountryOrdersEntities() {
+        List<CountryOrderEntity> objects = new ArrayList<>();
+
+        CountryOrderEntity object = new CountryOrderEntity();
+        object.setCountry(FRA_OE);
+        object.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        object.setPosition(0);
+        object.setActive(true);
+        objects.add(object);
+
+        object = new CountryOrderEntity();
+        object.setCountry(PRU_OE);
+        object.setGameStatus(GameStatusEnum.DIPLOMACY);
+        object.setPosition(0);
+        object.setActive(false);
         objects.add(object);
 
         return objects;
