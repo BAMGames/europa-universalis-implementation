@@ -50,12 +50,33 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
+    public int getDiplomaticValue(PlayableCountryEntity country) {
+        int dip = 3;
+        if (country != null && country.getMonarch() != null && country.getMonarch().getDiplomacy() != null) {
+            dip = country.getMonarch().getDiplomacy();
+        }
+        return dip;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getMilitaryValue(PlayableCountryEntity country) {
         int mil = 3;
         if (country != null && country.getMonarch() != null && country.getMonarch().getMilitary() != null) {
             mil = country.getMonarch().getMilitary();
         }
         return mil;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getInitiative(PlayableCountryEntity country) {
+        return getAdministrativeValue(country) + getDiplomaticValue(country)
+                + getMilitaryValue(country);
     }
 
     /**

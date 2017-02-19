@@ -68,6 +68,19 @@ public class OEUtilTest {
     }
 
     @Test
+    public void testDiploValue() {
+        Assert.assertEquals(3, oeUtil.getDiplomaticValue(null));
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        Assert.assertEquals(3, oeUtil.getDiplomaticValue(country));
+        country.setMonarch(new MonarchEntity());
+        Assert.assertEquals(3, oeUtil.getDiplomaticValue(country));
+        country.getMonarch().setDiplomacy(5);
+        Assert.assertEquals(5, oeUtil.getDiplomaticValue(country));
+        country.getMonarch().setDiplomacy(9);
+        Assert.assertEquals(9, oeUtil.getDiplomaticValue(country));
+    }
+
+    @Test
     public void testMilValue() {
         Assert.assertEquals(3, oeUtil.getMilitaryValue(null));
         PlayableCountryEntity country = new PlayableCountryEntity();
@@ -78,6 +91,21 @@ public class OEUtilTest {
         Assert.assertEquals(5, oeUtil.getMilitaryValue(country));
         country.getMonarch().setMilitary(9);
         Assert.assertEquals(9, oeUtil.getMilitaryValue(country));
+    }
+
+    @Test
+    public void testInitiative() {
+        Assert.assertEquals(9, oeUtil.getInitiative(null));
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        Assert.assertEquals(9, oeUtil.getInitiative(country));
+        country.setMonarch(new MonarchEntity());
+        Assert.assertEquals(9, oeUtil.getInitiative(country));
+        country.getMonarch().setAdministrative(5);
+        Assert.assertEquals(11, oeUtil.getInitiative(country));
+        country.getMonarch().setDiplomacy(9);
+        Assert.assertEquals(17, oeUtil.getInitiative(country));
+        country.getMonarch().setMilitary(4);
+        Assert.assertEquals(18, oeUtil.getInitiative(country));
     }
 
     @Test

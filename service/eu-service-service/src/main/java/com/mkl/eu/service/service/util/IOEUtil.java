@@ -25,10 +25,22 @@ public interface IOEUtil {
     int getAdministrativeValue(PlayableCountryEntity country);
 
     /**
+     * @param country whom we want the diplomatic value.
+     * @return the diplomatic value of a country.
+     */
+    int getDiplomaticValue(PlayableCountryEntity country);
+
+    /**
      * @param country whom we want the military value.
      * @return the military value of a country.
      */
     int getMilitaryValue(PlayableCountryEntity country);
+
+    /**
+     * @param country whom we want the initiative.
+     * @return the initiative of the country.
+     */
+    int getInitiative(PlayableCountryEntity country);
 
     /**
      * @param country which we want the fti.
