@@ -288,6 +288,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         List<PlayableCountry> activePlayers = GameUtil.getActivePlayers(game).stream()
                 .collect(Collectors.toList());
         game.getCountries().stream()
+                .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
                 .forEach(country -> {
                     HBox hBox = new HBox();
                     Text text = new Text(country.getName());
@@ -980,7 +981,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 if (country != null) {
                     country.setReady(true);
                 } else {
-                    game.getCountries().stream().forEach(c -> c.setReady(true));
+                    game.getCountries().stream()
+                            .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
+                            .forEach(c -> c.setReady(true));
                 }
                 break;
             case MILITARY_MOVE:
@@ -1019,7 +1022,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 if (country != null) {
                     country.setReady(false);
                 } else {
-                    game.getCountries().stream().forEach(c -> c.setReady(false));
+                    game.getCountries().stream()
+                            .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
+                            .forEach(c -> c.setReady(false));
                 }
                 break;
             case MILITARY_MOVE:

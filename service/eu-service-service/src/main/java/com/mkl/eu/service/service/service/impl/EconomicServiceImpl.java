@@ -127,9 +127,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         Map<String, List<CounterFaceTypeEnum>> tradeCenters = economicalSheetDao.getTradeCenters(game.getId());
 
-        for (PlayableCountryEntity country : game.getCountries()) {
-            computeEconomicalSheet(country, game.getId(), game.getTurn(), tradeCenters);
-        }
+        game.getCountries().stream()
+                .filter(country -> StringUtils.isNotEmpty(country.getUsername()))
+                .forEach(country -> computeEconomicalSheet(country, game.getId(), game.getTurn(), tradeCenters));
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());

@@ -131,10 +131,12 @@ public class GameUtilTest {
 
         PlayableCountry france = new PlayableCountry();
         france.setName("france");
+        france.setUsername("france");
         france.setReady(true);
         game.getCountries().add(france);
         PlayableCountry angleterre = new PlayableCountry();
         angleterre.setName("angleterre");
+        angleterre.setUsername("angleterre");
         game.getCountries().add(angleterre);
 
         countries = GameUtil.getActivePlayers(game);
@@ -144,12 +146,18 @@ public class GameUtilTest {
 
         PlayableCountry turquie = new PlayableCountry();
         turquie.setName("turquie");
+        turquie.setUsername("turquie");
         turquie.setReady(true);
         game.getCountries().add(turquie);
         PlayableCountry pologne = new PlayableCountry();
         pologne.setName("pologne");
+        pologne.setUsername("pologne");
         pologne.setReady(false);
         game.getCountries().add(pologne);
+        PlayableCountry suede = new PlayableCountry();
+        suede.setName("suede");
+        suede.setReady(false);
+        game.getCountries().add(suede);
 
         countries = GameUtil.getActivePlayers(game);
         Collections.sort(countries, Comparator.comparing(PlayableCountry::getName));

@@ -185,7 +185,8 @@ public final class GameUtil {
             case ADMINISTRATIVE_ACTIONS_CHOICE:
             case MILITARY_HIERARCHY:
                 countries = game.getCountries().stream()
-                        .filter(country -> !country.isReady())
+                        .filter(country -> StringUtils.isNotEmpty(country.getUsername()) &&
+                                !country.isReady())
                         .collect(Collectors.toList());
                 break;
             case MILITARY_CAMPAIGN:
