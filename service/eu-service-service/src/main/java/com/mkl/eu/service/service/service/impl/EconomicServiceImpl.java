@@ -22,6 +22,7 @@ import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.ref.country.LimitReferential;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
@@ -75,6 +76,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Counter Domain. */
     @Autowired
     private ICounterDomain counterDomain;
+    /** Status workflow Domain. */
+    @Autowired
+    private IStatusWorkflowDomain statusWorkflowDomain;
     /** EconomicalSheet DAO. */
     @Autowired
     private IEconomicalSheetDao economicalSheetDao;
@@ -1818,20 +1822,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diff.setTypeObject(DiffTypeObjectEnum.STATUS);
                 diffs.add(diff);
 
-                game.setStatus(GameStatusEnum.MILITARY_HIERARCHY);
-
-                diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.MODIFY);
-                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-                // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-                diffs.add(diff);
+                diffs.addAll(statusWorkflowDomain.computeEndAdministrativeActions(game));
             } else {
                 DiffEntity diff = new DiffEntity();
                 diff.setIdGame(game.getId());

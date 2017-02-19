@@ -26,7 +26,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 /**
- * Test of BoardService.
+ * Test of CounterDomainImpl.
  *
  * @author MKL.
  */

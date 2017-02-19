@@ -16,6 +16,7 @@ import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.ref.country.LimitReferential;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
@@ -71,6 +72,9 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private ICounterDomain counterDomain;
+
+    @Mock
+    private IStatusWorkflowDomain statusWorkflowDomain;
 
     @Mock
     private IAdminActionDao adminActionDao;
@@ -4561,6 +4565,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             return action;
         });
 
+        List<DiffEntity> statusDiffs = new ArrayList<>();
+        DiffEntity statusDiff = new DiffEntity();
+        statusDiffs.add(statusDiff);
+        when(statusWorkflowDomain.computeEndAdministrativeActions(game)).thenReturn(statusDiffs);
+
         simulateDiff();
 
         economicService.validateAdminActions(request);
@@ -4600,15 +4609,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(2).getTypeObject());
         Assert.assertEquals(0, diffEntities.get(2).getAttributes().size());
 
-        Assert.assertEquals(12L, diffEntities.get(3).getIdGame().longValue());
-        Assert.assertEquals(null, diffEntities.get(3).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(3).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntities.get(3).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(3).getTypeObject());
-        Assert.assertEquals(1, diffEntities.get(3).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(3).getAttributes().get(0).getType());
-        // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffEntities.get(3).getAttributes().get(0).getValue());
+        Assert.assertEquals(statusDiff, diffEntities.get(3));
     }
 
     @Test
