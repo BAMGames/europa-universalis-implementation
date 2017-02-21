@@ -13,13 +13,22 @@ import java.util.List;
 public interface IStatusWorkflowDomain {
     /**
      * Compute the end of the administrative actions phase.
-     * It can either switch to logistic of minor powers or
-     * directly to military phase if no minors are at war.
-     * <p>
-     * If it switch to military phase, it will create military turn order.
+     * It will then switch to minor logistics phase except
+     * if no minor is involved in a war, in which case it will
+     * call computeEndMinorLogistics.
      *
      * @param game the game.
-     * @return the diffs related to the creation of the counter.
+     * @return the diffs related to the change of phase.
      */
     List<DiffEntity> computeEndAdministrativeActions(GameEntity game);
+
+    /**
+     * Compute the end of the minor logistics phase.
+     * It will then switch to military phase, and creates
+     * the turn order accordingly.
+     *
+     * @param game the game.
+     * @return the diffs related to the change of phase.
+     */
+    List<DiffEntity> computeEndMinorLogistics(GameEntity game);
 }
