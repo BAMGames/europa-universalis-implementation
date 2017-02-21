@@ -121,15 +121,27 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             }
         }
 
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.INVALIDATE);
+        diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+        diffs.add(diff);
+
         // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
-        DiffEntity diff = new DiffEntity();
+        diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());
         diff.setType(DiffTypeEnum.MODIFY);
         diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
         // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
         diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());

@@ -125,6 +125,11 @@ public enum DiffTypeEnum {
      * Can be <code>null</code> in which case it means that all countries are invalidated.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#TURN_ORDER in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#STATUS to know which status the turn order is invalidated.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     INVALIDATE,
