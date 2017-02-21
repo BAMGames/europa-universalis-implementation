@@ -4,8 +4,10 @@ import com.excilys.ebi.spring.dbunit.config.DBOperation;
 import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.common.vo.AuthentInfo;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
+import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -98,5 +100,52 @@ public class GameDaoImplTest {
         games = gameDao.findGames(request);
 
         Assert.assertEquals(0, games.size());
+    }
+
+    @Test
+    public void testFindTurnOrder() {
+        List<CountryOrderEntity> orders;
+
+        orders = gameDao.findTurnOrder(1L, GameStatusEnum.MILITARY_HIERARCHY);
+
+        Assert.assertEquals(0, orders.size());
+
+        orders = gameDao.findTurnOrder(1L, GameStatusEnum.DIPLOMACY);
+
+        Assert.assertEquals(1, orders.size());
+        Assert.assertEquals("france", orders.get(0).getCountry().getName());
+        Assert.assertEquals(0, orders.get(0).getPosition());
+
+        orders = gameDao.findTurnOrder(1L, GameStatusEnum.MILITARY_MOVE);
+
+        Assert.assertEquals(2, orders.size());
+        Assert.assertEquals("france", orders.get(0).getCountry().getName());
+        Assert.assertEquals(0, orders.get(0).getPosition());
+        Assert.assertEquals("angleterre", orders.get(1).getCountry().getName());
+        Assert.assertEquals(1, orders.get(1).getPosition());
+
+        orders = gameDao.findTurnOrder(2L, GameStatusEnum.DIPLOMACY);
+
+        Assert.assertEquals(2, orders.size());
+        Assert.assertEquals("angleterre", orders.get(0).getCountry().getName());
+        Assert.assertEquals(1, orders.get(0).getPosition());
+        Assert.assertEquals("france", orders.get(1).getCountry().getName());
+        Assert.assertEquals(0, orders.get(1).getPosition());
+
+        orders = gameDao.findTurnOrder(2L, GameStatusEnum.MILITARY_MOVE);
+
+        Assert.assertEquals(2, orders.size());
+        Assert.assertEquals("france", orders.get(0).getCountry().getName());
+        Assert.assertEquals(0, orders.get(0).getPosition());
+        Assert.assertEquals("angleterre", orders.get(1).getCountry().getName());
+        Assert.assertEquals(1, orders.get(1).getPosition());
+
+        orders = gameDao.findTurnOrder(3L, GameStatusEnum.DIPLOMACY);
+
+        Assert.assertEquals(0, orders.size());
+
+        orders = gameDao.findTurnOrder(3L, GameStatusEnum.MILITARY_MOVE);
+
+        Assert.assertEquals(0, orders.size());
     }
 }

@@ -1,9 +1,11 @@
 package com.mkl.eu.service.service.persistence.impl;
 
 import com.mkl.eu.client.common.vo.AuthentInfo;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
+import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.LockMode;
@@ -60,5 +62,21 @@ public class GameDaoImpl extends GenericDaoImpl<GameEntity, Long> implements IGa
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 
         return listAndCast(criteria);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<CountryOrderEntity> findTurnOrder(Long idGame, GameStatusEnum gameStatus) {
+        Criteria criteria = getSession().createCriteria(CountryOrderEntity.class);
+
+        criteria.add(Restrictions.eq("game.id", idGame));
+        if (gameStatus != null) {
+            criteria.add(Restrictions.eq("gameStatus", gameStatus));
+        }
+
+        criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+
+        //noinspection unchecked
+        return criteria.list();
     }
 }

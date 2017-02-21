@@ -5,11 +5,13 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
-import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
@@ -45,5 +47,11 @@ public class GameWsServiceImpl extends SpringBeanAutowiringSupport implements IG
     @Override
     public DiffResponse updateGame(Request<Void> updateGame) throws FunctionalException, TechnicalException {
         return gameService.updateGame(updateGame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<CountryOrder> loadTurnOrder(SimpleRequest<LoadTurnOrderRequest> loadTurnOrder) throws FunctionalException, TechnicalException {
+        return gameService.loadTurnOrder(loadTurnOrder);
     }
 }

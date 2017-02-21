@@ -22,6 +22,8 @@ public interface INameConstants {
     String PARAMETER_LOAD_GAME = "loadGame";
     /** Name of the parameter updateGame. */
     String PARAMETER_UPDATE_GAME = "updateGame";
+    /** Name of the parameter loadTurnOrder. */
+    String PARAMETER_LOAD_TURN_ORDER = "loadTurnOrder";
     /** Name of the parameter moveStack. */
     String PARAMETER_MOVE_STACK = "moveStack";
     /** Name of the parameter endMoveStack. */
@@ -106,6 +108,8 @@ public interface INameConstants {
     String METHOD_LOAD_GAME = "loadGame";
     /** Name of the method findGames. */
     String METHOD_FIND_GAMES = "findGames";
+    /** Name of the method loadTurnOrder. */
+    String METHOD_LOAD_TURN_ORDER = "loadTurnOrder";
     /** Name of the method speakInRoom. */
     String METHOD_SPEAK_IN_ROOM = "speakInRoom";
     /** Name of the method createRoom. */

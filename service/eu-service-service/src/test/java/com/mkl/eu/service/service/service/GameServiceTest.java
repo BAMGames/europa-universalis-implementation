@@ -5,16 +5,20 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
-import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
+import com.mkl.eu.service.service.mapping.diplo.CountryOrderMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -26,6 +30,7 @@ import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.GameServiceImpl;
 import com.mkl.eu.service.service.socket.SocketHandler;
@@ -38,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.Matchers.anyLong;
@@ -75,6 +81,9 @@ public class GameServiceTest {
 
     @Mock
     private GameMapping gameMapping;
+
+    @Mock
+    private CountryOrderMapping countryOrderMapping;
 
     @Mock
     private ChatMapping chatMapping;
@@ -404,5 +413,44 @@ public class GameServiceTest {
         response = gameService.updateGame(request);
 
         Assert.assertEquals(5L, response.getVersionGame().longValue());
+    }
+
+    @Test
+    public void testLoadTurnOrder() {
+        try {
+            gameService.loadTurnOrder(null);
+            Assert.fail("Should break because loadTurnOrder is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadTurnOrder", e.getParams()[0]);
+        }
+
+        Request<LoadTurnOrderRequest> request = new Request<>();
+
+        try {
+            gameService.loadTurnOrder(request);
+            Assert.fail("Should break because loadTurnOrder.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadTurnOrder.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new LoadTurnOrderRequest(1L, GameStatusEnum.MILITARY_MOVE));
+
+        List<CountryOrderEntity> orderEntities = new ArrayList<>();
+        orderEntities.add(new CountryOrderEntity());
+        when(gameDao.findTurnOrder(1L, GameStatusEnum.MILITARY_MOVE)).thenReturn(orderEntities);
+        List<CountryOrder> ordersVos = new ArrayList<>();
+        ordersVos.add(new CountryOrder());
+        ordersVos.add(new CountryOrder());
+        when(countryOrderMapping.oesToVos(orderEntities, new HashMap<>())).thenReturn(ordersVos);
+
+        try {
+            List<CountryOrder> orders = gameService.loadTurnOrder(request);
+
+            Assert.assertEquals(orders, ordersVos);
+        } catch (FunctionalException e) {
+            Assert.fail("Should not break " + e.getMessage());
+        }
     }
 }

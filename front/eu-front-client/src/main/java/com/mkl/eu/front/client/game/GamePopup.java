@@ -7,10 +7,11 @@ import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.board.LoadGameRequest;
 import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -21,6 +22,7 @@ import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.front.client.chat.ChatWindow;
@@ -68,6 +70,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -180,6 +183,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
 
     /**
      * Initialize the interactive map.
+     *
      * @param markers displayed on the map.
      */
     private void initMap(Map<String, Marker> markers) {
@@ -197,6 +201,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
 
     /**
      * Initialize the eco window.
+     *
      * @param markers displayed on the map.
      */
     private void initEco(Map<String, Marker> markers) {
@@ -285,33 +290,82 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     private void updateActivePlayers() {
         activeCountries.getChildren().clear();
-        List<PlayableCountry> activePlayers = GameUtil.getActivePlayers(game).stream()
-                .collect(Collectors.toList());
-        game.getCountries().stream()
-                .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
-                .forEach(country -> {
-                    HBox hBox = new HBox();
-                    Text text = new Text(country.getName());
-                    hBox.getChildren().add(text);
-                    if (activePlayers.contains(country)) {
-                        try {
-                            Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
-                            ImageView imgView = new ImageView(img);
-                            hBox.getChildren().add(imgView);
-                        } catch (FileNotFoundException e) {
-                            LOGGER.error("Image located at data/img/cross.png not found.", e);
-                        }
-                    } else {
-                        try {
-                            Image img = new Image(new FileInputStream(new File("data/img/check.png")), 16, 16, true, false);
-                            ImageView imgView = new ImageView(img);
-                            hBox.getChildren().add(imgView);
-                        } catch (FileNotFoundException e) {
-                            LOGGER.error("Image located at data/img/check.png not found.", e);
-                        }
-                    }
-                    activeCountries.getChildren().add(hBox);
-                });
+        switch (game.getStatus()) {
+            case ECONOMICAL_EVENT:
+            case POLITICAL_EVENT:
+            case DIPLOMACY:
+            case ADMINISTRATIVE_ACTIONS_CHOICE:
+            case MILITARY_HIERARCHY:
+                List<PlayableCountry> activePlayers = GameUtil.getActivePlayers(game).stream()
+                        .collect(Collectors.toList());
+                game.getCountries().stream()
+                        .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
+                        .forEach(country -> {
+                            HBox hBox = new HBox();
+                            Text text = new Text(country.getName());
+                            hBox.getChildren().add(text);
+                            if (activePlayers.contains(country)) {
+                                try {
+                                    Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
+                                    ImageView imgView = new ImageView(img);
+                                    hBox.getChildren().add(imgView);
+                                } catch (FileNotFoundException e) {
+                                    LOGGER.error("Image located at data/img/cross.png not found.", e);
+                                }
+                            } else {
+                                try {
+                                    Image img = new Image(new FileInputStream(new File("data/img/check.png")), 16, 16, true, false);
+                                    ImageView imgView = new ImageView(img);
+                                    hBox.getChildren().add(imgView);
+                                } catch (FileNotFoundException e) {
+                                    LOGGER.error("Image located at data/img/check.png not found.", e);
+                                }
+                            }
+                            activeCountries.getChildren().add(hBox);
+                        });
+                break;
+            case MILITARY_CAMPAIGN:
+            case MILITARY_SUPPLY:
+            case MILITARY_MOVE:
+            case MILITARY_BATTLES:
+            case MILITARY_SIEGES:
+            case MILITARY_NEUTRALS:
+                int activePosition = game.getOrders().stream()
+                        .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                                order.isActive() != null && order.isActive())
+                        .map(CountryOrder::getPosition)
+                        .findFirst()
+                        .orElse(-1);
+                game.getOrders().stream()
+                        .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                        .sorted(Comparator.comparing(CountryOrder::getPosition))
+                        .forEach(order -> {
+                            HBox hBox = new HBox();
+                            Text text = new Text(order.getCountry().getName());
+                            hBox.getChildren().add(text);
+                            if (order.isActive() != null && order.isActive()) {
+                                try {
+                                    Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
+                                    ImageView imgView = new ImageView(img);
+                                    hBox.getChildren().add(imgView);
+                                } catch (FileNotFoundException e) {
+                                    LOGGER.error("Image located at data/img/cross.png not found.", e);
+                                }
+                            } else if (order.getPosition() < activePosition) {
+                                try {
+                                    Image img = new Image(new FileInputStream(new File("data/img/check.png")), 16, 16, true, false);
+                                    ImageView imgView = new ImageView(img);
+                                    hBox.getChildren().add(imgView);
+                                } catch (FileNotFoundException e) {
+                                    LOGGER.error("Image located at data/img/check.png not found.", e);
+                                }
+                            }
+                            activeCountries.getChildren().add(hBox);
+                        });
+                break;
+            default:
+                break;
+        }
     }
 
     /** {@inheritDoc} */
@@ -346,6 +400,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                         break;
                     case STATUS:
                         updateStatus(game, diff);
+                        break;
+                    case TURN_ORDER:
+                        updateTurnOrder(game, diff);
                         break;
                     default:
                         break;
@@ -1030,6 +1087,52 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case MILITARY_MOVE:
             default:
                 break;
+        }
+    }
+
+    /**
+     * Process a turn order diff event.
+     *
+     * @param game to update.
+     * @param diff involving a turn order.
+     */
+    private void updateTurnOrder(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case INVALIDATE:
+                invalidateTurnOrder(game, diff);
+                break;
+            default:
+                break;
+        }
+        updateActivePlayers();
+    }
+
+    /**
+     * Process the invalidate turn order diff event.
+     *
+     * @param game to update.
+     * @param diff involving an invalidate turn order.
+     */
+    private void invalidateTurnOrder(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (attribute != null && !StringUtils.isEmpty(attribute.getValue())) {
+            GameStatusEnum gameStatus = GameStatusEnum.valueOf(attribute.getValue());
+
+            SimpleRequest<LoadTurnOrderRequest> request = new SimpleRequest<>();
+            authentHolder.fillAuthentInfo(request);
+            request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame(), gameStatus));
+            try {
+                List<CountryOrder> orders = gameService.loadTurnOrder(request);
+
+                game.getOrders().removeAll(game.getOrders().stream()
+                        .filter(order -> order.getGameStatus() == gameStatus)
+                        .collect(Collectors.toList()));
+                game.getOrders().addAll(orders);
+            } catch (FunctionalException e) {
+                LOGGER.error("Can't load turn order.", e);
+            }
+        } else {
+            LOGGER.error("Missing status in invalidate turn order event.");
         }
     }
 

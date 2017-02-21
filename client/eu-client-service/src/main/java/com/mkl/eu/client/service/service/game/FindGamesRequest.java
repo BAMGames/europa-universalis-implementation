@@ -1,4 +1,4 @@
-package com.mkl.eu.client.service.service.board;
+package com.mkl.eu.client.service.service.game;
 
 /**
  * Sub request for loadGame service.

@@ -8,20 +8,24 @@ import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
-import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.service.service.mapping.GameMapping;
+import com.mkl.eu.service.service.mapping.diplo.CountryOrderMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.RoomEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +48,9 @@ public class GameServiceImpl extends AbstractService implements IGameService {
     /** Game mapping. */
     @Autowired
     private GameMapping gameMapping;
+    /** Turn order mapping. */
+    @Autowired
+    private CountryOrderMapping countryOrderMapping;
 
     /** {@inheritDoc} */
     @Override
@@ -146,5 +154,20 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         response.setMessages(getMessagesSince(request));
 
         return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<CountryOrder> loadTurnOrder(SimpleRequest<LoadTurnOrderRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_TURN_ORDER).setParams(METHOD_LOAD_TURN_ORDER));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_TURN_ORDER, PARAMETER_REQUEST).setParams(METHOD_LOAD_TURN_ORDER));
+
+        List<CountryOrderEntity> sheetEntities = gameDao.findTurnOrder(
+                request.getRequest().getIdGame(),
+                request.getRequest().getGameStatus());
+
+        return countryOrderMapping.oesToVos(sheetEntities, new HashMap<>());
     }
 }

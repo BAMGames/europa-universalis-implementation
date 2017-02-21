@@ -4,7 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.ITablesService;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.front.client.game.GamePopup;
 import com.mkl.eu.front.client.log.JavaFxAppender;

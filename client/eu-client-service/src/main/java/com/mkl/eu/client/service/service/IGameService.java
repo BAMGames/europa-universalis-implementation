@@ -4,11 +4,13 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
-import com.mkl.eu.client.service.service.board.FindGamesRequest;
-import com.mkl.eu.client.service.service.board.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.FindGamesRequest;
+import com.mkl.eu.client.service.service.game.LoadGameRequest;
+import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -57,4 +59,15 @@ public interface IGameService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse updateGame(@WebParam(name = PARAMETER_UPDATE_GAME) Request<Void> updateGame) throws FunctionalException, TechnicalException;
+
+    /**
+     * Get the turn order of the phase specified in the request.
+     *
+     * @param loadTurnOrder info containing the phase.
+     * @return the turn order.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    List<CountryOrder> loadTurnOrder(@WebParam(name = PARAMETER_UPDATE_GAME) SimpleRequest<LoadTurnOrderRequest> loadTurnOrder) throws FunctionalException, TechnicalException;
 }
