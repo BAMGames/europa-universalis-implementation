@@ -112,6 +112,33 @@ public class GameUtilTest {
     }
 
     @Test
+    public void testRounds() {
+        Assert.assertFalse(GameUtil.isRoundBox(null));
+        Assert.assertFalse(GameUtil.isRoundBox("eIdf"));
+        Assert.assertTrue(GameUtil.isRoundBox("B_MR_W0"));
+        Assert.assertTrue(GameUtil.isRoundBox("B_MR_S1"));
+        Assert.assertTrue(GameUtil.isRoundBox("B_MR_W5"));
+        Assert.assertTrue(GameUtil.isRoundBox("B_MR_S5"));
+        Assert.assertTrue(GameUtil.isRoundBox("B_MR_End"));
+
+        Assert.assertFalse(GameUtil.isWinterRoundBox(null));
+        Assert.assertFalse(GameUtil.isWinterRoundBox("eIdf"));
+        Assert.assertTrue(GameUtil.isWinterRoundBox("B_MR_W0"));
+        Assert.assertFalse(GameUtil.isWinterRoundBox("B_MR_S1"));
+        Assert.assertTrue(GameUtil.isWinterRoundBox("B_MR_W5"));
+        Assert.assertFalse(GameUtil.isWinterRoundBox("B_MR_S5"));
+        Assert.assertFalse(GameUtil.isWinterRoundBox("B_MR_End"));
+
+        Assert.assertEquals(-1, GameUtil.getRoundBox(null));
+        Assert.assertEquals(-1, GameUtil.getRoundBox("eIdf"));
+        Assert.assertEquals(0, GameUtil.getRoundBox("B_MR_W0"));
+        Assert.assertEquals(1, GameUtil.getRoundBox("B_MR_S1"));
+        Assert.assertEquals(5, GameUtil.getRoundBox("B_MR_W5"));
+        Assert.assertEquals(5, GameUtil.getRoundBox("B_MR_S5"));
+        Assert.assertEquals(-1, GameUtil.getRoundBox("B_MR_End"));
+    }
+
+    @Test
     public void testRotwProvince() {
         Assert.assertEquals(false, GameUtil.isRotwProvince(null));
         Assert.assertEquals(false, GameUtil.isRotwProvince(""));

@@ -167,6 +167,43 @@ public final class GameUtil {
     }
 
     /**
+     * Filter to use to filter the provinces which can hold round counter.
+     *
+     * @param provinceBox name of the province/box.
+     * @return <code>true</code> if the province can hold a round counter, <code>false</code> otherwise.
+     */
+    public static boolean isRoundBox(String provinceBox) {
+        return !StringUtils.isEmpty(provinceBox) && provinceBox.startsWith("B_MR_");
+    }
+
+    /**
+     * Method to use to know whether it is summer or winter.
+     *
+     * @param provinceBox name of the province/box where the round marker is.
+     * @return <code>true</code> if the round is a winter round, <code>false</code> otherwise.
+     */
+    public static boolean isWinterRoundBox(String provinceBox) {
+        return !StringUtils.isEmpty(provinceBox) && provinceBox.startsWith("B_MR_W");
+    }
+
+    /**
+     * @param provinceBox name of the province/box where the round marker is.
+     * @return the number of the military round.
+     */
+    public static int getRoundBox(String provinceBox) {
+        int round = -1;
+
+        if (isRoundBox(provinceBox)) {
+            Matcher m = Pattern.compile("B_MR_[W|S](\\d)").matcher(provinceBox);
+            if (m.matches()) {
+                round = Integer.parseInt(m.group(1));
+            }
+        }
+
+        return round;
+    }
+
+    /**
      * @param province to test.
      * @return <code>true</code> if the province is in the rotw, <code>false</code> otherwise. Does not work for sea provinces.
      */
