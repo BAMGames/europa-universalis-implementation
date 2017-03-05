@@ -689,14 +689,16 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         Stack stack;
         Long idStack = diff.getIdObject();
         stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
-        if (stack == null) {
-            LOGGER.error("Missing stack in stack move event.");
-            return;
-        }
-
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
-        if (attribute != null) {
-            stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
+        if (stack != null) {
+            if (attribute != null) {
+                stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
+            }
+        } else if (attribute != null && StringUtils.equals(attribute.getValue(), MovePhaseEnum.NOT_MOVED.name())) {
+            // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.
+            game.getStacks().stream()
+                    .filter(stack1 -> stack1.getMovePhase() == MovePhaseEnum.MOVED)
+                    .forEach(stack1 -> stack1.setMovePhase(MovePhaseEnum.NOT_MOVED));
         }
     }
 

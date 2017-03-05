@@ -1,7 +1,11 @@
 package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
@@ -18,8 +22,10 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -34,7 +40,13 @@ public class StatusWorkflowDomainTest {
     private StatusWorkflowDomainImpl statusWorkflowDomain;
 
     @Mock
+    private ICounterDomain counterDomain;
+
+    @Mock
     private IOEUtil oeUtil;
+
+    @Mock
+    private IDiffDao diffDao;
 
     @Test
     public void testFusionAlliances() {
@@ -144,7 +156,7 @@ public class StatusWorkflowDomainTest {
         diffsMil.add(new DiffEntity());
         diffsMil.add(new DiffEntity());
 
-        when(statusWorkflowDomain.computeEndMinorLogistics(game)).thenReturn(diffsMil);
+        doReturn(diffsMil).when(statusWorkflowDomain).computeEndMinorLogistics(game);
 
         List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
 
@@ -170,28 +182,37 @@ public class StatusWorkflowDomainTest {
         game.getOrders().add(new CountryOrderEntity());
         game.getOrders().get(5).setGameStatus(GameStatusEnum.MILITARY_MOVE);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
+        checkDiffsForMilitary(game);
 
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
+        Assert.assertEquals(3, game.getOrders().size());
+    }
+
+    private void checkDiffsForMilitary(GameEntity game) {
+        List<DiffEntity> nextRounds = new ArrayList<>();
+        nextRounds.add(new DiffEntity());
+        doReturn(nextRounds).when(statusWorkflowDomain).nextRound(game, true);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.computeEndMinorLogistics(game);
+
+        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(nextRounds.get(0), diffs.get(0));
         Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
         Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(1).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(1).getTypeObject());
         Assert.assertEquals(null, diffs.get(1).getIdObject());
         Assert.assertEquals(1, diffs.get(1).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
-
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
-        Assert.assertEquals(3, game.getOrders().size());
+        Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(2).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(2).getTypeObject());
+        Assert.assertEquals(null, diffs.get(2).getIdObject());
+        Assert.assertEquals(1, diffs.get(2).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(2).getAttributes().get(0).getValue());
     }
 
     /**
@@ -238,25 +259,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(russie)).thenReturn(15);
         when(oeUtil.getInitiative(pologne)).thenReturn(14);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(4, game.getOrders().size());
@@ -358,25 +361,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(russie)).thenReturn(15);
         when(oeUtil.getInitiative(pologne)).thenReturn(14);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(5, game.getOrders().size());
@@ -508,25 +493,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(pologne)).thenReturn(14);
         when(oeUtil.getInitiative(venise)).thenReturn(10);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(6, game.getOrders().size());
@@ -651,6 +618,7 @@ public class StatusWorkflowDomainTest {
         game.getWars().get(1).getCountries().get(1).setCountry(new CountryEntity());
         game.getWars().get(1).getCountries().get(1).getCountry().setName(venise.getName());
 
+
         when(oeUtil.getInitiative(france)).thenReturn(21);
         when(oeUtil.getInitiative(espagne)).thenReturn(12);
         when(oeUtil.getInitiative(turquie)).thenReturn(9);
@@ -658,25 +626,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(pologne)).thenReturn(14);
         when(oeUtil.getInitiative(venise)).thenReturn(10);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(6, game.getOrders().size());
@@ -819,25 +769,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(venise)).thenReturn(10);
         when(oeUtil.getInitiative(hollande)).thenReturn(25);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(7, game.getOrders().size());
@@ -984,25 +916,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(venise)).thenReturn(10);
         when(oeUtil.getInitiative(hollande)).thenReturn(25);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(7, game.getOrders().size());
@@ -1153,25 +1067,7 @@ public class StatusWorkflowDomainTest {
         when(oeUtil.getInitiative(venise)).thenReturn(12);
         when(oeUtil.getInitiative(hollande)).thenReturn(25);
 
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(2, diffs.size());
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
+        checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(7, game.getOrders().size());
@@ -1203,5 +1099,115 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(game, game.getOrders().get(6).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(6).getCountry().getName());
         Assert.assertEquals(4, game.getOrders().get(6).getPosition());
+    }
+
+    @Test
+    public void testNextRound() {
+        GameEntity game = new GameEntity();
+        StackEntity roundStack = new StackEntity();
+        roundStack.setProvince("B_MR_END");
+        CounterEntity roundCounter = new CounterEntity();
+        roundCounter.setType(CounterFaceTypeEnum.GOOD_WEATHER);
+        roundCounter.setOwner(roundStack);
+        roundStack.getCounters().add(roundCounter);
+        game.getStacks().add(roundStack);
+
+        DiffEntity winter0 = new DiffEntity();
+        winter0.setId(1L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W0", game)).thenReturn(winter0);
+        DiffEntity summer1 = new DiffEntity();
+        summer1.setId(2L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_S1", game)).thenReturn(summer1);
+        DiffEntity summer2 = new DiffEntity();
+        summer2.setId(3L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_S2", game)).thenReturn(summer2);
+        DiffEntity winter2 = new DiffEntity();
+        winter2.setId(4L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W2", game)).thenReturn(winter2);
+        DiffEntity summer3 = new DiffEntity();
+        summer3.setId(5L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_S3", game)).thenReturn(summer3);
+        DiffEntity winter3 = new DiffEntity();
+        winter3.setId(6L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W3", game)).thenReturn(winter3);
+        DiffEntity winter4 = new DiffEntity();
+        winter4.setId(7L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W4", game)).thenReturn(winter4);
+        DiffEntity summer5 = new DiffEntity();
+        summer5.setId(8L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_S5", game)).thenReturn(summer5);
+        DiffEntity winter5 = new DiffEntity();
+        winter5.setId(9L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W5", game)).thenReturn(winter5);
+        DiffEntity end = new DiffEntity();
+        end.setId(-1L);
+        doReturn(Collections.singletonList(end)).when(statusWorkflowDomain).endRound(game);
+
+        checkNextRound(game, "B_MR_END", 1, true, winter0);
+
+        checkNextRound(game, "B_MR_END", 3, true, summer1);
+
+        checkNextRound(game, "B_MR_END", 5, true, summer2);
+
+        checkNextRound(game, "B_MR_END", 6, true, winter2);
+
+        checkNextRound(game, "B_MR_W0", 1, false, summer1);
+
+        checkNextRound(game, "B_MR_S1", 7, false, summer2);
+
+        checkNextRound(game, "B_MR_S2", 4, false, winter2);
+
+        checkNextRound(game, "B_MR_W2", 8, false, winter3);
+
+        checkNextRound(game, "B_MR_W3", 10, false, summer5);
+
+        checkNextRound(game, "B_MR_W4", 2, false, summer5);
+
+        checkNextRound(game, "B_MR_W4", 8, false, winter5);
+
+        checkNextRound(game, "B_MR_W4", 9, false, end);
+
+        checkNextRound(game, "B_MR_S5", 5, false, winter5);
+
+        checkNextRound(game, "B_MR_S5", 6, false, end);
+
+        checkNextRound(game, "B_MR_W5", 1, false, end);
+
+        checkNextRound(game, "B_MR_W5", 8, false, end);
+
+        checkNextRound(game, "B_MR_W5", 10, false, end);
+    }
+
+    private void checkNextRound(GameEntity game, String roundBefore, int die, boolean init, DiffEntity roundMove) {
+        game.getStacks().get(0).setProvince(roundBefore);
+        when(oeUtil.rollDie(game, (PlayableCountryEntity) null)).thenReturn(die);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.nextRound(game, init);
+
+        Assert.assertEquals(2, diffs.size());
+
+        Assert.assertEquals(roundMove, diffs.get(0));
+
+        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffs.get(1).getTypeObject());
+        Assert.assertEquals(null, diffs.get(1).getIdObject());
+        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffs.get(1).getAttributes().get(0).getType());
+        Assert.assertEquals(MovePhaseEnum.NOT_MOVED.name(), diffs.get(1).getAttributes().get(0).getValue());
+    }
+
+    public void testEndRound() {
+        GameEntity game = new GameEntity();
+
+        DiffEntity end = new DiffEntity();
+        end.setId(1L);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_END", game)).thenReturn(end);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
+
+        Assert.assertEquals(1, diffs.size());
+        Assert.assertEquals(end, diffs.get(0));
     }
 }

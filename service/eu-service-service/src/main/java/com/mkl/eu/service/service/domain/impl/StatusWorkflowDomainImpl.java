@@ -1,7 +1,10 @@
 package com.mkl.eu.service.service.domain.impl;
 
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
+import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
@@ -24,9 +27,15 @@ import java.util.stream.Collectors;
  */
 @Component
 public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
+    /** Counter domain. */
+    @Autowired
+    private ICounterDomain counterDomain;
     /** OeUtil. */
     @Autowired
     private IOEUtil oeUtil;
+    /** Diff DAO. */
+    @Autowired
+    private IDiffDao diffDao;
 
     /** {@inheritDoc} */
     @Override
@@ -121,6 +130,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             }
         }
 
+        diffs.addAll(nextRound(game, true));
+
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());
@@ -132,6 +143,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
         diffs.add(diff);
+
+        diffDao.create(diff);
 
         // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
@@ -148,6 +161,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
         diffs.add(diff);
+
+        diffDao.create(diff);
 
         return diffs;
     }
@@ -180,6 +195,115 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             alliances.removeAll(allianceToDelete);
             fusion(alliances);
         }
+    }
+
+    /**
+     * Roll a die to go to next round (or first if init is <code>true</code>) and
+     * creates the diffs ot it.
+     * Does not handle good/bad weather at the moment.
+     *
+     * @param game to move to next round.
+     * @param init to know if it is the first round of the turn or not.
+     * @return the diffs representing the next round.
+     */
+    protected List<DiffEntity> nextRound(GameEntity game, boolean init) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        int die = oeUtil.rollDie(game, (PlayableCountryEntity) null);
+
+        if (init) {
+            String round;
+            switch (die) {
+                case 1:
+                    round = "B_MR_W0";
+                    break;
+                case 2:
+                case 3:
+                    round = "B_MR_S1";
+                    break;
+                case 4:
+                case 5:
+                    round = "B_MR_S2";
+                    break;
+                case 6:
+                    round = "B_MR_W2";
+                    break;
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                default:
+                    round = "B_MR_S3";
+                    break;
+            }
+            diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, round, game));
+        } else {
+            String round = game.getStacks().stream()
+                    .filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> counter.getType() == CounterFaceTypeEnum.GOOD_WEATHER || counter.getType() == CounterFaceTypeEnum.BAD_WEATHER)
+                    .map(counter -> counter.getOwner().getProvince())
+                    .findFirst()
+                    .orElse(null);
+
+            int roundNumber = GameUtil.getRoundBox(round);
+            String nextRound;
+            if (GameUtil.isWinterRoundBox(round)) {
+                if (die <= 7) {
+                    nextRound = "B_MR_S" + (roundNumber + 1);
+                } else if (die == 8) {
+                    nextRound = "B_MR_W" + (roundNumber + 1);
+                } else {
+                    nextRound = "B_MR_S" + (roundNumber + 2);
+                }
+            } else {
+                if (die <= 5) {
+                    nextRound = "B_MR_W" + roundNumber;
+                } else {
+                    nextRound = "B_MR_S" + (roundNumber + 1);
+                }
+            }
+            switch (nextRound) {
+                case "B_MR_S6":
+                case "B_MR_W6":
+                case "B_MR_S7":
+                    diffs.addAll(endRound(game));
+                    break;
+                default:
+                    diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
+                    break;
+            }
+        }
+        // Stacks move phase reset
+        game.getStacks().stream()
+                .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
+                .forEach(stack -> stack.setMovePhase(MovePhaseEnum.NOT_MOVED));
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.STACK);
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
+        diffAttributes.setValue(MovePhaseEnum.NOT_MOVED.name());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        diffDao.create(diff);
+
+        diffs.add(diff);
+
+        return diffs;
+    }
+
+    protected List<DiffEntity> endRound(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game));
+        // FIXME Redeployment phase
+
+        return diffs;
     }
 
     /**
