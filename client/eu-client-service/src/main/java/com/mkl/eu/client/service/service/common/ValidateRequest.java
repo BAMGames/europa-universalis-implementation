@@ -1,18 +1,18 @@
-package com.mkl.eu.client.service.service.eco;
+package com.mkl.eu.client.service.service.common;
 
 /**
  * Sub request for validateAdminActions service.
  *
  * @author MKL.
  */
-public class ValidateAdminActionsRequest {
+public class ValidateRequest {
     /** Flag saying that the country is validating or invalidating its administrative actions. */
     private boolean validate;
 
     /**
      * Constructor for jaxb.
      */
-    public ValidateAdminActionsRequest() {
+    public ValidateRequest() {
     }
 
     /**
@@ -20,7 +20,7 @@ public class ValidateAdminActionsRequest {
      *
      * @param validate  the validate to set.
      */
-    public ValidateAdminActionsRequest(boolean validate) {
+    public ValidateRequest(boolean validate) {
         this.validate = validate;
     }
 

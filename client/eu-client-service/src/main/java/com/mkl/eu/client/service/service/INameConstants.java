@@ -30,6 +30,8 @@ public interface INameConstants {
     String PARAMETER_END_MOVE_STACK = "endMoveStack";
     /** Name of the parameter moveCounter. */
     String PARAMETER_MOVE_COUNTER = "moveCounter";
+    /** Name of the parameter validateMilitaryRound. */
+    String PARAMETER_VALIDATE_MIL_ROUND = "validateMilitaryRound";
     /** Name of the parameter createRoom. */
     String PARAMETER_CREATE_ROOM = "createRoom";
     /** Name of the parameter createRoom. */
@@ -48,7 +50,7 @@ public interface INameConstants {
     String PARAMETER_ADD_ADM_ACT = "addAdminAction";
     /** Name of the parameter removeAdminAction. */
     String PARAMETER_REMOVE_ADM_ACT = "removeAdminAction";
-    /** Name of the parameter removeAdminAction. */
+    /** Name of the parameter validateAdminActions. */
     String PARAMETER_VALIDATE_ADM_ACT = "validateAdminActions";
     /** Name of the parameter idGame. */
     String PARAMETER_ID_GAME = "idGame";
@@ -102,6 +104,8 @@ public interface INameConstants {
     String METHOD_MOVE_COUNTER = "moveStack";
     /** Name of the method createCounter. */
     String METHOD_CREATE_COUNTER = "createCounter";
+    /** Name of the method validateMilitaryRound. */
+    String METHOD_VALIDATE_MIL_ROUND = "validateMilitaryRound";
     /** Name of the method updateGame. */
     String METHOD_UPDATE_GAME = "updateGame";
     /** Name of the method loadGame. */
@@ -128,6 +132,6 @@ public interface INameConstants {
     String METHOD_ADD_ADM_ACT = "addAdminAction";
     /** Name of the method removeAdminAction. */
     String METHOD_REMOVE_ADM_ACT = "removeAdminAction";
-    /** Name of the method removeAdminAction. */
+    /** Name of the method validateAdminActions. */
     String METHOD_VALIDATE_ADM_ACT = "validateAdminActions";
 }

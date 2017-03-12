@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -51,4 +52,17 @@ public interface IBoardService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException;
+
+    /**
+     * Validate/Invalidate the military round for a country.
+     * If all active countries have their military round validated, go to next round.
+     *
+     * @param request info about whose country wants to validate/invalidate its administrative actions
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse validateMilitaryRound(@WebParam(name = PARAMETER_VALIDATE_MIL_ROUND) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+
 }

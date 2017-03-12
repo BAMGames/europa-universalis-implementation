@@ -3,9 +3,9 @@ package com.mkl.eu.front.client.eco;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IEconomicService;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.ValidateAdminActionsRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
@@ -1281,11 +1281,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Button validation = new Button(message.getMessage("validate", null, globalConfiguration.getLocale()));
         validation.setOnAction(event -> {
 
-            Request<ValidateAdminActionsRequest> request = new Request<>();
+            Request<ValidateRequest> request = new Request<>();
             authentHolder.fillAuthentInfo(request);
             gameConfig.fillGameInfo(request);
             gameConfig.fillChatInfo(request);
-            request.setRequest(new ValidateAdminActionsRequest(true));
+            request.setRequest(new ValidateRequest(true));
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = economicService.validateAdminActions(request);
@@ -1303,11 +1303,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Button invalidation = new Button(message.getMessage("invalidate", null, globalConfiguration.getLocale()));
         invalidation.setOnAction(event -> {
 
-            Request<ValidateAdminActionsRequest> request = new Request<>();
+            Request<ValidateRequest> request = new Request<>();
             authentHolder.fillAuthentInfo(request);
             gameConfig.fillGameInfo(request);
             gameConfig.fillChatInfo(request);
-            request.setRequest(new ValidateAdminActionsRequest(false));
+            request.setRequest(new ValidateRequest(false));
             Long idGame = gameConfig.getIdGame();
             try {
                 DiffResponse response = economicService.validateAdminActions(request);

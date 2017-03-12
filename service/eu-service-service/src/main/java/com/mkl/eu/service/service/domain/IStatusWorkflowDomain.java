@@ -31,4 +31,13 @@ public interface IStatusWorkflowDomain {
      * @return the diffs related to the change of phase.
      */
     List<DiffEntity> computeEndMinorLogistics(GameEntity game);
+
+    /**
+     * Compute the end of a round.
+     * Go to next round, or next phase if it was the last round.
+     *
+     * @param game the game.
+     * @return the diffs related to the change of round.
+     */
+    List<DiffEntity> nextRound(GameEntity game);
 }

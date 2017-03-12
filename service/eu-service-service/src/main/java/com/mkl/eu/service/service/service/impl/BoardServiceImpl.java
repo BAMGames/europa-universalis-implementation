@@ -3,14 +3,17 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -19,6 +22,7 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
@@ -28,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +45,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class BoardServiceImpl extends AbstractService implements IBoardService {
+    /** Status workflow domain. */
+    @Autowired
+    private IStatusWorkflowDomain statusWorkflowDomain;
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
@@ -360,6 +368,145 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         }
 
         gameDao.update(game, false);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse validateMilitaryRound(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_MIL_ROUND).setParams(METHOD_VALIDATE_MIL_ROUND));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_AUTHENT).setParams(METHOD_VALIDATE_MIL_ROUND));
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_REQUEST).setParams(METHOD_VALIDATE_MIL_ROUND));
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_MIL_ROUND));
+
+        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getIdCountry()));
+
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_ID_COUNTRY).setParams(METHOD_VALIDATE_MIL_ROUND, request.getIdCountry()));
+
+        failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_VALIDATE_MIL_ROUND, request.getAuthent().getUsername(), country.getUsername()));
+
+        CountryOrderEntity order = game.getOrders().stream()
+                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.getCountry().getId().equals(country.getId()))
+                .findFirst()
+                .orElse(null);
+
+
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+
+        if (order != null && order.isReady() != request.getRequest().isValidate()) {
+            order.setReady(request.getRequest().isValidate());
+
+            long countriesNotReady = game.getOrders().stream()
+                    .filter(o -> o.isActive() != null && o.isActive() &&
+                            o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                            !o.isReady())
+                    .count();
+
+            if (countriesNotReady == 0) {
+                // Is it the last country of the round ?
+                Integer next = game.getOrders().stream()
+                        .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                                o.getPosition() > order.getPosition())
+                        .map(CountryOrderEntity::getPosition)
+                        .min(Comparator.<Integer>naturalOrder())
+                        .orElse(null);
+
+                if (next != null) {
+                    // No it isn't, proceed to next countries.
+                    game.getOrders().stream()
+                            .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                            .forEach(o -> o.setReady(false));
+
+                    DiffEntity diff = new DiffEntity();
+                    diff.setIdGame(game.getId());
+                    diff.setVersionGame(game.getVersion());
+                    diff.setType(DiffTypeEnum.INVALIDATE);
+                    diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+                    diff.setIdObject(null);
+                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                    diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+                    diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
+                    diffAttributes.setDiff(diff);
+                    diff.getAttributes().add(diffAttributes);
+
+                    diffDao.create(diff);
+                    diffs.add(diff);
+
+                    game.getOrders().stream()
+                            .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                            .forEach(o -> o.setActive(false));
+                    game.getOrders().stream()
+                            .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                                    o.getPosition() == next)
+                            .forEach(o -> o.setActive(true));
+
+                    diff = new DiffEntity();
+                    diff.setIdGame(game.getId());
+                    diff.setVersionGame(game.getVersion());
+                    diff.setType(DiffTypeEnum.MODIFY);
+                    diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+                    diff.setIdObject(null);
+                    diffAttributes = new DiffAttributesEntity();
+                    diffAttributes.setType(DiffAttributeTypeEnum.ACTIVE);
+                    diffAttributes.setValue(next.toString());
+                    diffAttributes.setDiff(diff);
+                    diff.getAttributes().add(diffAttributes);
+
+                    diffDao.create(diff);
+                    diffs.add(diff);
+                } else {
+                    // Yes it is, proceed to next round.
+                    diffs.addAll(statusWorkflowDomain.nextRound(game));
+                }
+            } else {
+                DiffEntity diff = new DiffEntity();
+                diff.setIdGame(game.getId());
+                diff.setVersionGame(game.getVersion());
+                if (request.getRequest().isValidate()) {
+                    diff.setType(DiffTypeEnum.VALIDATE);
+                } else {
+                    diff.setType(DiffTypeEnum.INVALIDATE);
+                }
+                diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+                diff.setIdObject(null);
+                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+                diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
+                diffAttributes.setValue(country.getId().toString());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+
+                diffDao.create(diff);
+                diffs.add(diff);
+            }
+        }
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));

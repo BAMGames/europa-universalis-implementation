@@ -6,7 +6,11 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.eco.*;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -4386,8 +4390,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testValidateAdmActFail() {
-        Pair<Request<ValidateAdminActionsRequest>, GameEntity> pair = testCheckGame(economicService::validateAdminActions, "validateAdminActions");
-        Request<ValidateAdminActionsRequest> request = pair.getLeft();
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(economicService::validateAdminActions, "validateAdminActions");
+        Request<ValidateRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
 
         testCheckStatus(game, request, economicService::validateAdminActions, "validateAdminActions", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
@@ -4417,7 +4421,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("validateAdminActions.request", e.getParams()[0]);
         }
 
-        request.setRequest(new ValidateAdminActionsRequest());
+        request.setRequest(new ValidateRequest());
 
         try {
             economicService.validateAdminActions(request);
@@ -4450,11 +4454,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testValidateAdmActSuccessSimple() throws FunctionalException {
-        Request<ValidateAdminActionsRequest> request = new Request<>();
+        Request<ValidateRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
-        request.setRequest(new ValidateAdminActionsRequest());
+        request.setRequest(new ValidateRequest());
         request.setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks();
@@ -4490,11 +4494,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testValidateAdmActSuccessMedium() throws FunctionalException {
-        Request<ValidateAdminActionsRequest> request = new Request<>();
+        Request<ValidateRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
-        request.setRequest(new ValidateAdminActionsRequest());
+        request.setRequest(new ValidateRequest());
         request.setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks();
@@ -4538,11 +4542,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testValidateAdmActSuccessComplex() throws FunctionalException {
-        Request<ValidateAdminActionsRequest> request = new Request<>();
+        Request<ValidateRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
-        request.setRequest(new ValidateAdminActionsRequest());
+        request.setRequest(new ValidateRequest());
         request.setIdCountry(13L);
         request.getRequest().setValidate(true);
 

@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,5 +43,11 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
     @Override
     public DiffResponse moveCounter(Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException {
         return boardService.moveCounter(moveCounter);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse validateMilitaryRound(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.validateMilitaryRound(request);
     }
 }

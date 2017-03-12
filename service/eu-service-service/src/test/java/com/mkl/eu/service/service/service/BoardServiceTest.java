@@ -9,8 +9,10 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -21,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
@@ -54,6 +57,9 @@ import static org.mockito.Mockito.when;
 public class BoardServiceTest extends AbstractGameServiceTest {
     @InjectMocks
     private BoardServiceImpl boardService;
+
+    @Mock
+    private IStatusWorkflowDomain statusWorkflowDomain;
 
     @Mock
     private IProvinceDao provinceDao;
@@ -695,5 +701,325 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+    }
+
+    @Test
+    public void testValidateMilRoundFail() {
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(boardService::validateMilitaryRound, "validateMilitaryRound");
+        Request<ValidateRequest> request = pair.getLeft();
+        request.setIdCountry(26L);
+        GameEntity game = pair.getRight();
+
+        testCheckStatus(game, request, boardService::validateMilitaryRound, "validateMilitaryRound", GameStatusEnum.MILITARY_MOVE);
+
+        game.setTurn(22);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+
+        try {
+            boardService.validateMilitaryRound(request);
+            Assert.fail("Should break because request.authent is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateMilitaryRound.authent", e.getParams()[0]);
+        }
+
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("toto");
+
+        try {
+            boardService.validateMilitaryRound(request);
+            Assert.fail("Should break because request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateMilitaryRound.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ValidateRequest());
+
+        try {
+            boardService.validateMilitaryRound(request);
+            Assert.fail("Should break because request.request.idCountry is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("validateMilitaryRound.idCountry", e.getParams()[0]);
+        }
+
+        game.getCountries().get(0).setId(26L);
+
+        try {
+            boardService.validateMilitaryRound(request);
+            Assert.fail("Should break because request.authent can't do this action");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("validateMilitaryRound.authent.username", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testValidateMilRoundSuccessSimple() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        simulateDiff();
+
+        boardService.validateMilitaryRound(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(0, diffEntities.size());
+    }
+
+    @Test
+    public void testValidateMilRoundSuccessSimple2() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
+        game.getOrders().get(0).setReady(true);
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        simulateDiff();
+
+        boardService.validateMilitaryRound(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(1, diffEntities.size());
+        Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(0).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
+        Assert.assertEquals(2, diffEntities.get(0).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(0).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffEntities.get(0).getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntities.get(0).getAttributes().get(1).getType());
+        Assert.assertEquals("13", diffEntities.get(0).getAttributes().get(1).getValue());
+    }
+
+    @Test
+    public void testValidateMilRoundSuccessSimple3() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.getRequest().setValidate(true);
+        request.setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.getCountry().setId(14L);
+        game.getOrders().add(order);
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        simulateDiff();
+
+        boardService.validateMilitaryRound(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(1, diffEntities.size());
+        Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(0).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.VALIDATE, diffEntities.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
+        Assert.assertEquals(2, diffEntities.get(0).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(0).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffEntities.get(0).getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntities.get(0).getAttributes().get(1).getType());
+        Assert.assertEquals("13", diffEntities.get(0).getAttributes().get(1).getValue());
+    }
+
+    @Test
+    public void testValidateMilRoundSuccessComplex1() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.getRequest().setValidate(true);
+        request.setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
+        game.getOrders().clear();
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(3);
+        order.getCountry().setId(13L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(2);
+        order.getCountry().setId(9L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(4);
+        order.getCountry().setId(21L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(4);
+        order.getCountry().setId(22L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.DIPLOMACY);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(4);
+        order.getCountry().setId(21L);
+        game.getOrders().add(order);
+
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        simulateDiff();
+
+        boardService.validateMilitaryRound(request);
+
+        Assert.assertFalse(game.getOrders().get(0).isReady());
+        Assert.assertFalse(game.getOrders().get(0).isActive());
+        Assert.assertFalse(game.getOrders().get(1).isActive());
+        Assert.assertTrue(game.getOrders().get(2).isActive());
+        Assert.assertTrue(game.getOrders().get(3).isActive());
+        Assert.assertFalse(game.getOrders().get(4).isActive());
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(2, diffEntities.size());
+        Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(0).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
+        Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(0).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffEntities.get(0).getAttributes().get(0).getValue());
+        Assert.assertEquals(12L, diffEntities.get(1).getIdGame().longValue());
+        Assert.assertEquals(null, diffEntities.get(1).getIdObject());
+        Assert.assertEquals(5L, diffEntities.get(1).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntities.get(1).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(1).getTypeObject());
+        Assert.assertEquals(1, diffEntities.get(1).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffEntities.get(1).getAttributes().get(0).getType());
+        Assert.assertEquals("4", diffEntities.get(1).getAttributes().get(0).getValue());
+    }
+
+    @Test
+    public void testValidateMilRoundSuccessComplex2() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.getRequest().setValidate(true);
+        request.setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
+        game.getOrders().clear();
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(5);
+        order.getCountry().setId(13L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(2);
+        order.getCountry().setId(9L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(4);
+        order.getCountry().setId(21L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(4);
+        order.getCountry().setId(22L);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setGameStatus(GameStatusEnum.DIPLOMACY);
+        order.setCountry(new PlayableCountryEntity());
+        order.setPosition(4);
+        order.getCountry().setId(21L);
+        game.getOrders().add(order);
+
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        simulateDiff();
+
+        List<DiffEntity> diffsNextRound = new ArrayList<>();
+        diffsNextRound.add(new DiffEntity());
+        diffsNextRound.get(0).setId(666L);
+        diffsNextRound.add(new DiffEntity());
+        diffsNextRound.get(1).setId(667L);
+        when(statusWorkflowDomain.nextRound(game)).thenReturn(diffsNextRound);
+
+        boardService.validateMilitaryRound(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(diffsNextRound.size(), diffEntities.size());
+        Assert.assertEquals(diffsNextRound, diffEntities);
     }
 }

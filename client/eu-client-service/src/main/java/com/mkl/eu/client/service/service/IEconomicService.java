@@ -4,7 +4,11 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
-import com.mkl.eu.client.service.service.eco.*;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -74,6 +78,6 @@ public interface IEconomicService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse validateAdminActions(@WebParam(name = PARAMETER_VALIDATE_ADM_ACT) Request<ValidateAdminActionsRequest> request) throws FunctionalException, TechnicalException;
+    DiffResponse validateAdminActions(@WebParam(name = PARAMETER_VALIDATE_ADM_ACT) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
 
 }

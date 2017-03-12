@@ -128,6 +128,8 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#TURN_ORDER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STATUS to know which status the turn order is invalidated.</li>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which country turn order is invalidated.
+     * Can be <code>null</code> in which case it means that all countries are invalidated.</li>
      * </ul>
      * </li>
      * </ul>
@@ -152,6 +154,13 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which playable country administrative actions are validated.
      * Can be <code>null</code> in which case it means that administrative actions of all countries are validated.</li>
      * <li>DiffAttributeTypeEnum#TURN to know the turn of the administrative actions that are validated.</li>
+     * </ul>
+     * </li>
+     * <li>DiffTypeObjectEnum#TURN_ORDER in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#STATUS to know which status the turn order is validated.</li>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which country turn order is validated.
+     * Can be <code>null</code> in which case it means that all countries are validated.</li>
      * </ul>
      * </li>
      * </ul>
@@ -187,6 +196,11 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#DTI to know the new DTI of the country.</li>
      * <li>DiffAttributeTypeEnum#FTI to know the new FTI of the country.</li>
      * <li>DiffAttributeTypeEnum#FTI_ROTW to know the new FTI_ROTW of the country.</li>
+     * </ul>
+     * </li>
+     * <li>DiffTypeObjectEnum#TURN_ORDER in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ACTIVE to know which position are active (all others are then inactive).</li>
      * </ul>
      * </li>
      * </ul>

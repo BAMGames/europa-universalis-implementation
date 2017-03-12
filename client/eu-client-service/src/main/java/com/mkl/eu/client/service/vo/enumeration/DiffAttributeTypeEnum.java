@@ -61,5 +61,7 @@ public enum DiffAttributeTypeEnum {
     /** Name of the land technology of the country. */
     TECH_LAND,
     /** Name of the naval technology of the country. */
-    TECH_NAVAL
+    TECH_NAVAL,
+    /** To use active field (for turn order, it will be the position of the new active turn orders). */
+    ACTIVE
 }

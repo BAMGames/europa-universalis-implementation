@@ -1111,6 +1111,21 @@ public class StatusWorkflowDomainTest {
         roundCounter.setOwner(roundStack);
         roundStack.getCounters().add(roundCounter);
         game.getStacks().add(roundStack);
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setReady(true);
+        order.setPosition(6);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setReady(false);
+        order.setPosition(5);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setActive(false);
+        order.setReady(true);
+        order.setPosition(0);
+        game.getOrders().add(order);
 
         DiffEntity winter0 = new DiffEntity();
         winter0.setId(1L);
@@ -1184,7 +1199,26 @@ public class StatusWorkflowDomainTest {
 
         List<DiffEntity> diffs = statusWorkflowDomain.nextRound(game, init);
 
-        Assert.assertEquals(2, diffs.size());
+        long alreadyReady = game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.isReady())
+                .count();
+
+        long activeNotZero = game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.isActive() != null && o.isActive() && o.getPosition() != 0)
+                .count();
+
+        long zeroNotActive = game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        (o.isActive() == null || !o.isActive()) && o.getPosition() == 0)
+                .count();
+
+        Assert.assertEquals(0, alreadyReady);
+        Assert.assertEquals(0, activeNotZero);
+        Assert.assertEquals(0, zeroNotActive);
+
+        Assert.assertEquals(4, diffs.size());
 
         Assert.assertEquals(roundMove, diffs.get(0));
 
@@ -1196,6 +1230,24 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(1, diffs.get(1).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffs.get(1).getAttributes().get(0).getType());
         Assert.assertEquals(MovePhaseEnum.NOT_MOVED.name(), diffs.get(1).getAttributes().get(0).getValue());
+
+        Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(2).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(2).getTypeObject());
+        Assert.assertEquals(null, diffs.get(2).getIdObject());
+        Assert.assertEquals(1, diffs.get(2).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(2).getAttributes().get(0).getValue());
+
+        Assert.assertEquals(game.getId(), diffs.get(3).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(3).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(3).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(3).getTypeObject());
+        Assert.assertEquals(null, diffs.get(3).getIdObject());
+        Assert.assertEquals(1, diffs.get(3).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffs.get(3).getAttributes().get(0).getType());
+        Assert.assertEquals("0", diffs.get(3).getAttributes().get(0).getValue());
     }
 
     public void testEndRound() {

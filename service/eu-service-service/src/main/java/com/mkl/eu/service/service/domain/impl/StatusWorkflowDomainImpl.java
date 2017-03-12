@@ -197,6 +197,12 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<DiffEntity> nextRound(GameEntity game) {
+        return nextRound(game, false);
+    }
+
     /**
      * Roll a die to go to next round (or first if init is <code>true</code>) and
      * creates the diffs ot it.
@@ -291,7 +297,48 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diff.getAttributes().add(diffAttributes);
 
         diffDao.create(diff);
+        diffs.add(diff);
 
+        // Invalidate (set ready to false) to all orders
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .forEach(o -> o.setReady(false));
+        diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.INVALIDATE);
+        diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+        diff.setIdObject(null);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        diffDao.create(diff);
+        diffs.add(diff);
+
+        // set the order of position 0 active
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .forEach(o -> o.setActive(false));
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.getPosition() == 0)
+                .forEach(o -> o.setActive(true));
+        diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+        diff.setIdObject(null);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.ACTIVE);
+        diffAttributes.setValue("0");
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
+
+        diffDao.create(diff);
         diffs.add(diff);
 
         return diffs;

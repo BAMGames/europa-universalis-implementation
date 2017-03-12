@@ -8,7 +8,11 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IEconomicService;
-import com.mkl.eu.client.service.service.eco.*;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.EconomicUtil;
 import com.mkl.eu.client.service.util.GameUtil;
@@ -1723,7 +1727,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse validateAdminActions(Request<ValidateAdminActionsRequest> request) throws FunctionalException, TechnicalException {
+    public DiffResponse validateAdminActions(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT).setParams(METHOD_VALIDATE_ADM_ACT));
 
