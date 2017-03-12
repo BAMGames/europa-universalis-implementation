@@ -211,14 +211,14 @@ public abstract class AbstractService implements INameConstants {
     /**
      * Check if game has the right status.
      *
-     * @param game    game to check.
-     * @param status  status the game should have.
-     * @param country asking for an action (some status are country ordered).
-     * @param method  calling this. For logging purpose.
-     * @param param   name of the param holding the gameInfo. For logging purpose.
+     * @param game      game to check.
+     * @param status    status the game should have.
+     * @param idCountry id of the country asking for an action (some status are country ordered).
+     * @param method    calling this. For logging purpose.
+     * @param param     name of the param holding the gameInfo. For logging purpose.
      * @throws FunctionalException functional exception.
      */
-    protected void checkGameStatus(GameEntity game, GameStatusEnum status, String country, String method, String param) throws FunctionalException {
+    protected void checkGameStatus(GameEntity game, GameStatusEnum status, Long idCountry, String method, String param) throws FunctionalException {
         switch (status) {
             case ADMINISTRATIVE_ACTIONS_CHOICE:
             case MILITARY_HIERARCHY:
@@ -233,7 +233,7 @@ public abstract class AbstractService implements INameConstants {
                 CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
                         order -> order.isActive() != null && order.isActive() &&
                                 order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                                StringUtils.equals(order.getCountry().getName(), country));
+                                order.getCountry().getId().equals(idCountry));
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                         .setTest(game.getStatus() == status && activeOrder != null)
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)

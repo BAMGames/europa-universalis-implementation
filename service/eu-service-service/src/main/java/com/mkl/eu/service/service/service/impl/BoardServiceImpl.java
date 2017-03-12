@@ -10,10 +10,7 @@ import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
-import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -64,6 +61,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_MOVE_STACK));
@@ -180,6 +178,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_END_MOVE_STACK));
@@ -241,6 +240,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT).setParams(METHOD_MOVE_COUNTER));
