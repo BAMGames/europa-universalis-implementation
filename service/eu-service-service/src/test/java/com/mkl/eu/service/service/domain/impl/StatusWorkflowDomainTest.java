@@ -18,14 +18,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -36,7 +33,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class StatusWorkflowDomainTest {
     @InjectMocks
-    @Spy
     private StatusWorkflowDomainImpl statusWorkflowDomain;
 
     @Mock
@@ -149,21 +145,6 @@ public class StatusWorkflowDomainTest {
     }
 
     @Test
-    public void testComputeEndAdministrativeActions() throws Exception {
-        GameEntity game = new GameEntity();
-
-        List<DiffEntity> diffsMil = new ArrayList<>();
-        diffsMil.add(new DiffEntity());
-        diffsMil.add(new DiffEntity());
-
-        doReturn(diffsMil).when(statusWorkflowDomain).computeEndMinorLogistics(game);
-
-        List<DiffEntity> diffs = statusWorkflowDomain.computeEndAdministrativeActions(game);
-
-        Assert.assertEquals(diffsMil, diffs);
-    }
-
-    @Test
     public void testComputeEndMinorLogisticsNoCountries() throws Exception {
         GameEntity game = new GameEntity();
         game.setId(12L);
@@ -189,30 +170,25 @@ public class StatusWorkflowDomainTest {
     }
 
     private void checkDiffsForMilitary(GameEntity game) {
-        List<DiffEntity> nextRounds = new ArrayList<>();
-        nextRounds.add(new DiffEntity());
-        doReturn(nextRounds).when(statusWorkflowDomain).nextRound(game, true);
-
         List<DiffEntity> diffs = statusWorkflowDomain.computeEndMinorLogistics(game);
 
-        Assert.assertEquals(3, diffs.size());
-        Assert.assertEquals(nextRounds.get(0), diffs.get(0));
+        Assert.assertEquals(true, diffs.size() >= 2);
+        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
+        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
+        Assert.assertEquals(null, diffs.get(0).getIdObject());
+        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
         Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
         Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(1).getTypeObject());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
         Assert.assertEquals(null, diffs.get(1).getIdObject());
         Assert.assertEquals(1, diffs.get(1).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(2).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(2).getTypeObject());
-        Assert.assertEquals(null, diffs.get(2).getIdObject());
-        Assert.assertEquals(1, diffs.get(2).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(2).getAttributes().get(0).getValue());
     }
 
     /**
@@ -1156,7 +1132,7 @@ public class StatusWorkflowDomainTest {
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W5", game)).thenReturn(winter5);
         DiffEntity end = new DiffEntity();
         end.setId(-1L);
-        doReturn(Collections.singletonList(end)).when(statusWorkflowDomain).endRound(game);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game)).thenReturn(end);
 
         checkNextRound(game, "B_MR_END", 1, true, winter0);
 

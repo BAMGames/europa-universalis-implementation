@@ -130,8 +130,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             }
         }
 
-        diffs.addAll(nextRound(game, true));
-
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());
@@ -163,6 +161,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffs.add(diff);
 
         diffDao.create(diff);
+
+        diffs.addAll(nextRound(game, true));
 
         return diffs;
     }
