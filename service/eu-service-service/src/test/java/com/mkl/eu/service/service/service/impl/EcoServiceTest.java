@@ -623,6 +623,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).getCounters().get(1).setId(4L);
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).setProvince("idf");
 
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
@@ -655,7 +657,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(6, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(request.getRequest().getIdCountry().toString(),
                 diffEntity.getAttributes().get(0).getValue());
@@ -666,6 +668,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.ID_OBJECT, diffEntity.getAttributes().get(3).getType());
         Assert.assertEquals(request.getRequest().getIdObject().toString(),
                 diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("idf", diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, diffEntity.getAttributes().get(5).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS.toString(),
+                diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
@@ -743,7 +750,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(5, diffEntity.getAttributes().size());
+        Assert.assertEquals(6, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(request.getRequest().getIdCountry().toString(),
                             diffEntity.getAttributes().get(0).getValue());
@@ -754,9 +761,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.ID_OBJECT, diffEntity.getAttributes().get(3).getType());
         Assert.assertEquals(request.getRequest().getIdObject().toString(),
                             diffEntity.getAttributes().get(3).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("idf", diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, diffEntity.getAttributes().get(5).getType());
         Assert.assertEquals(request.getRequest().getCounterFaceType().toString(),
-                            diffEntity.getAttributes().get(4).getValue());
+                diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
@@ -791,6 +800,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).getCounters().get(1).setId(4L);
         game.getStacks().get(1).getCounters().get(1).setCountry("france");
         game.getStacks().get(1).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(1).getCounters().get(1).setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).setProvince("idf");
 
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
             AdministrativeActionEntity action = (AdministrativeActionEntity) invocation.getArguments()[0];
@@ -821,7 +832,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntity.getTypeObject());
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(6, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.ID_COUNTRY, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(request.getRequest().getIdCountry().toString(),
                             diffEntity.getAttributes().get(0).getValue());
@@ -832,6 +843,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.ID_OBJECT, diffEntity.getAttributes().get(3).getType());
         Assert.assertEquals(request.getRequest().getIdObject().toString(),
                             diffEntity.getAttributes().get(3).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diffEntity.getAttributes().get(4).getType());
+        Assert.assertEquals("idf", diffEntity.getAttributes().get(4).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, diffEntity.getAttributes().get(5).getType());
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS.toString(),
+                diffEntity.getAttributes().get(5).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());

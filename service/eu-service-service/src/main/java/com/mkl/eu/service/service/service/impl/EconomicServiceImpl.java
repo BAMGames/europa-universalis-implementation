@@ -486,7 +486,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setStatus(AdminActionStatusEnum.PLANNED);
         admAct.setTurn(game.getTurn());
         admAct.setIdObject(counter.getId());
-        admAct.setCounterFaceType(request.getRequest().getCounterFaceType());
+        admAct.setProvince(counter.getOwner().getProvince());
+        CounterFaceTypeEnum face = request.getRequest().getCounterFaceType();
+        if (face == null) {
+            face = counter.getType();
+        }
+        admAct.setCounterFaceType(face);
         return admAct;
     }
 
