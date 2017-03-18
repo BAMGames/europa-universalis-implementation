@@ -55,9 +55,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -1380,14 +1378,24 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         .map(AdministrativeAction::getTurn)
                         .distinct()
                         .collect(Collectors.toList());
+                Collections.sort(turns, Comparator.reverseOrder());
+                turns.add(0, 0);
+                Integer turnBefore = choiceTurn.getSelectionModel().getSelectedItem();
                 choiceTurn.setItems(FXCollections.observableArrayList(turns));
+                if (turns.contains(turnBefore)) {
+                    choiceTurn.getSelectionModel().select(turnBefore);
+                }
             }
         });
         choiceCountry.getSelectionModel().select(country);
 
         choiceTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == null) {
-                table.setItems(null);
+            if (newValue == null || newValue == 0) {
+                List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
+                        .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE)
+                        .collect(Collectors.toList());
+                Collections.sort(actions, Comparator.comparing(AdministrativeAction::getTurn).reversed());
+                table.setItems(FXCollections.observableArrayList(actions));
             } else if (!newValue.equals(oldValue)) {
                 List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE && action.getTurn().equals(newValue))
@@ -1407,19 +1415,22 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private void configureAdminActionTable(TableView<AdministrativeAction> table, Consumer<AdministrativeAction> callback) {
         table.setTableMenuButtonVisible(true);
         table.setPrefWidth(750);
+        TableColumn<AdministrativeAction, String> column;
 
-        TableColumn<AdministrativeAction, String> column = new TableColumn<>(message.getMessage("admin_action.turn", null, globalConfiguration.getLocale()));
-        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
-        column.setCellValueFactory(new PropertyValueFactory<>("turn"));
-        table.getColumns().add(column);
+        if (callback == null) {
+            column = new TableColumn<>(message.getMessage("admin_action.turn", null, globalConfiguration.getLocale()));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+            column.setCellValueFactory(new PropertyValueFactory<>("turn"));
+            table.getColumns().add(column);
+        }
 
         column = new TableColumn<>(message.getMessage("admin_action.action", null, globalConfiguration.getLocale()));
-        column.prefWidthProperty().bind(table.widthProperty().multiply(0.3 + (callback == null ? 0.05 : 0)));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.type." + param.getValue().getType(), null, globalConfiguration.getLocale())));
         table.getColumns().add(column);
 
         column = new TableColumn<>(message.getMessage("admin_action.info", null, globalConfiguration.getLocale()));
-        column.prefWidthProperty().bind(table.widthProperty().multiply(0.35 + (callback == null ? 0.05 : 0)));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getInfo(param.getValue())));
         table.getColumns().add(column);
 
@@ -1438,14 +1449,31 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         column.setCellValueFactory(new PropertyValueFactory<>("bonus"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(message.getMessage("admin_action.result", null, globalConfiguration.getLocale()));
-        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
-        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.result." + param.getValue().getResult(), null, globalConfiguration.getLocale())));
-        table.getColumns().add(column);
+        if (callback == null) {
+            column = new TableColumn<>(message.getMessage("admin_action.die", null, globalConfiguration.getLocale()));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getDie() == null ? "" : param.getValue().getDie().toString()));
+            table.getColumns().add(column);
+
+            column = new TableColumn<>(message.getMessage("admin_action.secondary_die", null, globalConfiguration.getLocale()));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getSecondaryDie() == null ? "" : param.getValue().getSecondaryDie().toString()));
+            table.getColumns().add(column);
+
+            column = new TableColumn<>(message.getMessage("admin_action.secondary_result", null, globalConfiguration.getLocale()));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.secondary_result." + param.getValue().isSecondaryResult(), null, globalConfiguration.getLocale())));
+            table.getColumns().add(column);
+
+            column = new TableColumn<>(message.getMessage("admin_action.result", null, globalConfiguration.getLocale()));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.result." + param.getValue().getResult(), null, globalConfiguration.getLocale())));
+            table.getColumns().add(column);
+        }
 
         if (callback != null) {
             column = new TableColumn<>(message.getMessage("admin_action.actions", null, globalConfiguration.getLocale()));
-            column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
             column.setCellValueFactory(new PropertyValueFactory<>("NONE"));
             Callback<TableColumn<AdministrativeAction, String>, TableCell<AdministrativeAction, String>> cellFactory = new Callback<TableColumn<AdministrativeAction, String>, TableCell<AdministrativeAction, String>>() {
                 @Override
@@ -1480,15 +1508,20 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         if (action.getIdObject() != null) {
             Counter counter = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().get();
-            String provinceName = message.getMessage(counter.getOwner().getProvince(), null, globalConfiguration.getLocale());
-            info.append(provinceName).append(" - ").append(counter.getType());
+                    .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().orElse(null);
+            if (counter != null) {
+                String provinceName = message.getMessage(counter.getOwner().getProvince(), null, globalConfiguration.getLocale());
+                info.append(provinceName).append(" - ").append(counter.getType());
+            }
             if (action.getCounterFaceType() != null) {
                 info.append(" -> ").append(action.getCounterFaceType());
             }
         } else {
-            String provinceName = message.getMessage(action.getProvince(), null, "", globalConfiguration.getLocale());
-            info.append(provinceName).append(" - ").append(action.getCounterFaceType());
+            String provinceName = message.getMessage(action.getProvince(), null, globalConfiguration.getLocale());
+            info.append(provinceName);
+            if (action.getCounterFaceType() != null) {
+                info.append(" - ").append(action.getCounterFaceType());
+            }
         }
 
         return info.toString();
