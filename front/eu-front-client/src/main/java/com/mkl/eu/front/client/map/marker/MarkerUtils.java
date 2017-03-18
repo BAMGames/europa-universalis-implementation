@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.vo.Border;
 import com.thoughtworks.xstream.XStream;
 import de.fhpotsdam.unfolding.data.Feature;
@@ -149,9 +150,9 @@ public final class MarkerUtils {
      * @param pApplet     pApplet rendering the image.
      * @return the image of the counter.
      */
-    public static PImage getImageFromCounter(String nameCountry, String type, PApplet pApplet) {
+    public static PImage getImageFromCounter(String nameCountry, String type, InteractiveMap pApplet) {
         PImage image = getImageFromCache(nameCountry, type);
-        if (image == null) {
+        if (image == null && pApplet.isInit()) {
             // TODO configure externalization
             StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
             if (nameCountry != null) {

@@ -86,6 +86,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     private List<IDiffListenerContainer> components = new ArrayList<>();
     /** List of diffs listeners. */
     private List<IDiffListener> diffListeners = new ArrayList<>();
+    /** Flag saying that the component has been initialized. */
+    private boolean init;
 
     /**
      * Main method.
@@ -121,6 +123,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
 
     /** Set up the map and the markers. */
     public void setup() {
+        init = true;
         countryMarkers.values().stream().filter(marker -> marker instanceof IMapMarker).forEach(marker -> {
             for (StackMarker stack : ((IMapMarker) marker).getStacks()) {
                 for (CounterMarker counter : stack.getCounters()) {
@@ -218,6 +221,11 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
 
         // Disable the auto-draw feature. Manual redraw on change.
 //        noLoop();
+    }
+
+    /** @return the init. */
+    public boolean isInit() {
+        return init;
     }
 
     /** Draw the PApplet. */
