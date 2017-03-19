@@ -2362,6 +2362,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 int nextTechBox = GameUtil.getTechnology(nextTechCounter.getOwner().getProvince());
 
                 if (nextTechBox < targetBox) {
+                    if (land) {
+                        country.setLandTech(nextTechName);
+                    } else {
+                        country.setNavalTech(nextTechName);
+                    }
+
                     DiffEntity diff = new DiffEntity();
                     diff.setIdGame(game.getId());
                     diff.setVersionGame(game.getVersion());
@@ -2374,7 +2380,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     } else {
                         diffAttributes.setType(DiffAttributeTypeEnum.TECH_NAVAL);
                     }
-                    diffAttributes.setValue(nextTech.getName());
+                    diffAttributes.setValue(nextTechName);
                     diffAttributes.setDiff(diff);
                     diff.getAttributes().add(diffAttributes);
 

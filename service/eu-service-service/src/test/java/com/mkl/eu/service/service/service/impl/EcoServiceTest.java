@@ -5167,6 +5167,20 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         unit.setTech(carrack);
         unit.setPrice(40);
         units.add(unit);
+        unit = new Unit();
+        unit.setCountry("france");
+        unit.setAction(UnitActionEnum.MAINT);
+        unit.setType(ForceTypeEnum.FLEET_MINUS);
+        unit.setTech(naeG);
+        unit.setPrice(120);
+        units.add(unit);
+        unit = new Unit();
+        unit.setCountry("france");
+        unit.setAction(UnitActionEnum.MAINT);
+        unit.setType(ForceTypeEnum.ND);
+        unit.setTech(naeG);
+        unit.setPrice(50);
+        units.add(unit);
         tables.setUnits(units);
         List<BasicForce> basicForces = new ArrayList<>();
         BasicForce basicForce = new BasicForce();
@@ -5273,6 +5287,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(ResultEnum.CRITICAL_HIT, france.getAdministrativeActions().get(28).getResult());
         Assert.assertEquals("2", france.getAdministrativeActions().get(28).getProvince());
 
+        Assert.assertEquals(Tech.NAE_GALEON, france.getNavalTech());
+
         Assert.assertEquals(105, france.getEconomicalSheets().get(0).getUnitMaintExpense().intValue());
         Assert.assertEquals(1, france.getEconomicalSheets().get(0).getFortMaintExpense().intValue());
         Assert.assertEquals(1, france.getEconomicalSheets().get(0).getMissMaintExpense().intValue());
@@ -5337,7 +5353,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
 
-        Assert.assertEquals(140, france.getEconomicalSheets().get(0).getUnitMaintExpense().intValue());
+        Assert.assertEquals(160, france.getEconomicalSheets().get(0).getUnitMaintExpense().intValue());
         Assert.assertEquals(1, france.getEconomicalSheets().get(0).getFortMaintExpense().intValue());
         Assert.assertEquals(1, france.getEconomicalSheets().get(0).getMissMaintExpense().intValue());
     }
