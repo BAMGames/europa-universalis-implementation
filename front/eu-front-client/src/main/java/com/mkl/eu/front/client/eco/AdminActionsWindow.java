@@ -1506,7 +1506,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private String getInfo(AdministrativeAction action) {
         StringBuilder info = new StringBuilder();
 
-        if (action.getIdObject() != null) {
+        if (action.getType() == AdminActionTypeEnum.LF) {
             Counter counter = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                     .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().orElse(null);
             if (counter != null) {
@@ -1516,7 +1516,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             if (action.getCounterFaceType() != null) {
                 info.append(" -> ").append(action.getCounterFaceType());
             }
-        } else {
+        } else if (StringUtils.isNotEmpty(action.getProvince())) {
             String provinceName = message.getMessage(action.getProvince(), null, globalConfiguration.getLocale());
             info.append(provinceName);
             if (action.getCounterFaceType() != null) {
