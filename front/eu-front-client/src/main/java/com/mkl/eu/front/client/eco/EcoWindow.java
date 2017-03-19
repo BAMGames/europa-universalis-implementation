@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
@@ -77,7 +78,6 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     static {
         config = new ArrayList<>();
         int index = -1;
-        config.add(new TableConfig<>("eco.sheetB.#", "eco.sheetB.turnNumber", ++index, sheet -> toString(sheet.getTurn())));
         config.add(new TableConfig<>("1", "eco.sheetB.provinceIncome", ++index, sheet -> toString(sheet.getProvincesIncome())));
         config.add(new TableConfig<>("2", "eco.sheetB.vassalIncome", ++index, sheet -> toString(sheet.getVassalIncome())));
         config.add(new TableConfig<>("3", "eco.sheetB.pillages", ++index, sheet -> toString(sheet.getPillages())));
@@ -103,6 +103,29 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         config.add(new TableConfig<>("23", "eco.sheetB.income", ++index, sheet -> toString(sheet.getIncome())));
         config.add(new TableConfig<>("24", "eco.sheetB.eventIncome", ++index, sheet -> toString(sheet.getEventIncome())));
         config.add(new TableConfig<>("25", "eco.sheetB.grossIncome", ++index, sheet -> toString(sheet.getGrossIncome())));
+        config.add(new TableConfig<>("26", "eco.sheetB.interestExpense", ++index, sheet -> toString(sheet.getInterestExpense())));
+        config.add(new TableConfig<>("27", "eco.sheetB.mandatoryRefundExpense", ++index, sheet -> toString(sheet.getMandRefundExpense())));
+        config.add(new TableConfig<>("28", "eco.sheetB.rtCollapse", ++index, sheet -> toString(sheet.getRtCollapse())));
+        config.add(new TableConfig<>("29", "eco.sheetB.optionalRefundExpense", ++index, sheet -> toString(sheet.getOptRefundExpense())));
+        config.add(new TableConfig<>("30", "eco.sheetB.unitMaintenance", ++index, sheet -> toString(sheet.getUnitMaintExpense())));
+        config.add(new TableConfig<>("31", "eco.sheetB.fortMaintenance", ++index, sheet -> toString(sheet.getFortMaintExpense())));
+        config.add(new TableConfig<>("32", "eco.sheetB.missionMaintenance", ++index, sheet -> toString(sheet.getMissMaintExpense())));
+        config.add(new TableConfig<>("33", "eco.sheetB.unitPurchase", ++index, sheet -> toString(sheet.getUnitPurchExpense())));
+        config.add(new TableConfig<>("34", "eco.sheetB.fortPurchase", ++index, sheet -> toString(sheet.getFortPurchExpense())));
+        config.add(new TableConfig<>("35", "eco.sheetB.adminActions", ++index, sheet -> toString(sheet.getAdminActExpense())));
+        config.add(new TableConfig<>("36", "eco.sheetB.adminReactions", ++index, sheet -> toString(sheet.getAdminReactExpense())));
+        config.add(new TableConfig<>("37", "eco.sheetB.otherExpenses", ++index, sheet -> toString(sheet.getOtherExpense())));
+        config.add(new TableConfig<>("38", "eco.sheetB.adminTotalExpense", ++index, sheet -> toString(sheet.getAdmTotalExpense())));
+        config.add(new TableConfig<>("39", "eco.sheetB.excTaxesModifier", ++index, sheet -> toString(sheet.getExcTaxesMod())));
+        config.add(new TableConfig<>("40", "eco.sheetB.passiveCampaigns", ++index, sheet -> toString(sheet.getPassCampExpense())));
+        config.add(new TableConfig<>("41", "eco.sheetB.activeCampaigns", ++index, sheet -> toString(sheet.getActCampExpense())));
+        config.add(new TableConfig<>("42", "eco.sheetB.majorCampaigns", ++index, sheet -> toString(sheet.getMajCampExpense())));
+        config.add(new TableConfig<>("43", "eco.sheetB.multipleCampaigns", ++index, sheet -> toString(sheet.getMultCampExpense())));
+        config.add(new TableConfig<>("44", "eco.sheetB.excRecruits", ++index, sheet -> toString(sheet.getExcRecruitExpense())));
+        config.add(new TableConfig<>("45", "eco.sheetB.navalRefit", ++index, sheet -> toString(sheet.getNavalRefitExpense())));
+        config.add(new TableConfig<>("46", "eco.sheetB.praesidiosBuild", ++index, sheet -> toString(sheet.getPraesidioExpense())));
+        config.add(new TableConfig<>("47", "eco.sheetB.militaryTotal", ++index, sheet -> toString(sheet.getMilitaryExpense())));
+        config.add(new TableConfig<>("48", "eco.sheetB.total", ++index, sheet -> toString(sheet.getExpenses())));
     }
 
     /**
@@ -206,7 +229,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         tableB = new TableView<>();
         tableB.setTableMenuButtonVisible(true);
         tableB.setPrefWidth(750);
-        tableB.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableB.setPrefHeight(520);
 
         VBox vBox = new VBox();
         vBox.getChildren().addAll(hBox, tableB);
@@ -237,30 +260,48 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             datas.get(configItem.getIndex()).add(message.getMessage(configItem.getMessageColumn2(), null, globalConfiguration.getLocale()));
         }
 
+        int currentTurn = country.getEconomicalSheets().stream()
+                .map(EconomicalSheet::getTurn)
+                .max(Comparator.naturalOrder())
+                .orElse(0);
         for (EconomicalSheet sheet : country.getEconomicalSheets()) {
+            if (sheet.getTurn() < currentTurn - 10) {
+                continue;
+            }
             for (TableConfig<EconomicalSheet> configItem : config) {
                 datas.get(configItem.getIndex()).add(configItem.getFunction().apply(sheet));
             }
         }
+        for (int i = country.getEconomicalSheets().size(); i < 10; i++) {
+            for (TableConfig<EconomicalSheet> configItem : config) {
+                datas.get(configItem.getIndex()).add(null);
+            }
+        }
 
-        TableColumn<List<String>, String> column = new TableColumn<>("");
-        column.setPrefWidth(30);
+        TableColumn<List<String>, String> column = new TableColumn<>(message.getMessage("eco.sheetB.#", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
         column.setSortable(false);
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(0)));
         table.getColumns().add(column);
 
-        column = new TableColumn<>("");
-        column.setPrefWidth(200);
+        column = new TableColumn<>(message.getMessage("eco.sheetB.turnNumber", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.33));
         column.setSortable(false);
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(1)));
         table.getColumns().add(column);
 
         for (int i = 0; i < country.getEconomicalSheets().size(); i++) {
             column = new TableColumn<>(country.getEconomicalSheets().get(i).getTurn().toString());
-            column.setPrefWidth(50);
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
             column.setSortable(false);
             final int index = i + 2;
             column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(index)));
+            table.getColumns().add(column);
+        }
+        for (int i = country.getEconomicalSheets().size(); i < 10; i++) {
+            column = new TableColumn<>(null);
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
+            column.setSortable(false);
             table.getColumns().add(column);
         }
 
