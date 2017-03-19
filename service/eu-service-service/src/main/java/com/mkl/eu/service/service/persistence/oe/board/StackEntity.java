@@ -25,7 +25,7 @@ public class StackEntity implements IEntity, Serializable {
     /** Phase of the move the stack is (has moved, is moving,..). */
     private MovePhaseEnum movePhase;
     /** Flag saying that the stack is being besieged. */
-    private Boolean besieged;
+    private boolean besieged;
     /** Counters of the stack. */
     private List<CounterEntity> counters = new ArrayList<>();
     /**
@@ -73,13 +73,13 @@ public class StackEntity implements IEntity, Serializable {
     }
 
     /** @return the besieged. */
-    @Column(name = "BESIEGED")
-    public Boolean isBesieged() {
+    @Column(name = "BESIEGED", columnDefinition = "BIT default b'0'")
+    public boolean isBesieged() {
         return besieged;
     }
 
     /** @param besieged the besieged to set. */
-    public void setBesieged(Boolean besieged) {
+    public void setBesieged(boolean besieged) {
         this.besieged = besieged;
     }
 

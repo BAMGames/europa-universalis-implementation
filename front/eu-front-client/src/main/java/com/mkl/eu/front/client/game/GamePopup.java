@@ -331,8 +331,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
                 int activePosition = game.getOrders().stream()
-                        .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                                order.isActive() != null && order.isActive())
+                        .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE && order.isActive())
                         .map(CountryOrder::getPosition)
                         .findFirst()
                         .orElse(-1);
@@ -343,7 +342,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                             HBox hBox = new HBox();
                             Text text = new Text(order.getCountry().getName());
                             hBox.getChildren().add(text);
-                            if (order.isActive() != null && order.isActive()) {
+                            if (order.isActive()) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);

@@ -231,7 +231,7 @@ public abstract class AbstractService implements INameConstants {
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
                 CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
-                        order -> order.isActive() != null && order.isActive() &&
+                        order -> order.isActive() &&
                                 order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                                 order.getCountry().getId().equals(idCountry));
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()

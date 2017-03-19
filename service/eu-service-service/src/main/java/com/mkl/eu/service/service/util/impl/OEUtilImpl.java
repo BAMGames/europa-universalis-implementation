@@ -383,8 +383,7 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public boolean isMobile(StackEntity stack) {
-        return !(stack == null || stack.getCounters().isEmpty()) &&
-                (stack.isBesieged() == null || !stack.isBesieged()) &&
+        return !(stack == null || stack.getCounters().isEmpty()) && !stack.isBesieged() &&
                 stack.getCounters().stream().filter(c -> !CounterUtil.isMobile(c.getType())).count() == 0;
     }
 }

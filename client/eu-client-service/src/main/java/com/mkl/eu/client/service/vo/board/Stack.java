@@ -18,7 +18,7 @@ public class Stack extends EuObject {
     /** Phase of the move the stack is (has moved, is moving,..). */
     private MovePhaseEnum movePhase;
     /** Flag saying that the stack is being besieged. */
-    private Boolean besieged;
+    private boolean besieged;
     /** Counters of the stack. */
     private List<Counter> counters = new ArrayList<>();
 
@@ -43,12 +43,12 @@ public class Stack extends EuObject {
     }
 
     /** @return the besieged. */
-    public Boolean isBesieged() {
+    public boolean isBesieged() {
         return besieged;
     }
 
     /** @param besieged the besieged to set. */
-    public void setBesieged(Boolean besieged) {
+    public void setBesieged(boolean besieged) {
         this.besieged = besieged;
     }
 

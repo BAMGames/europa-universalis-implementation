@@ -26,7 +26,7 @@ public class CountryOrderEntity {
     /** Position of the country in the turn order. */
     private int position;
     /** Activity of this order segment (ie the one whose it is the turn). */
-    private Boolean active;
+    private boolean active;
     /** Flag saying that the country is ready for the next phase (currant phase ok). */
     private boolean ready;
 
@@ -81,13 +81,13 @@ public class CountryOrderEntity {
     }
 
     /** @return the active. */
-    @Column(name = "ACTIVE")
-    public Boolean isActive() {
+    @Column(name = "ACTIVE", columnDefinition = "BIT default b'0'")
+    public boolean isActive() {
         return active;
     }
 
     /** @param active the active to set. */
-    public void setActive(Boolean active) {
+    public void setActive(boolean active) {
         this.active = active;
     }
 

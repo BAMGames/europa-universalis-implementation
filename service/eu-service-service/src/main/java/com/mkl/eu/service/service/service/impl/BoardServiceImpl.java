@@ -420,7 +420,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             order.setReady(request.getRequest().isValidate());
 
             long countriesNotReady = game.getOrders().stream()
-                    .filter(o -> o.isActive() != null && o.isActive() &&
+                    .filter(o -> o.isActive() &&
                             o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                             !o.isReady())
                     .count();

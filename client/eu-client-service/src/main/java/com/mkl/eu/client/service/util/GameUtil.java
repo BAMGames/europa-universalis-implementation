@@ -233,8 +233,7 @@ public final class GameUtil {
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
                 countries = game.getOrders().stream()
-                        .filter(order -> order.isActive() != null && order.isActive() &&
-                                order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                        .filter(order -> order.isActive() && order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
                         .map(CountryOrder::getCountry)
                         .collect(Collectors.toList());
                 break;

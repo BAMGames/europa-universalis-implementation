@@ -1182,12 +1182,12 @@ public class StatusWorkflowDomainTest {
 
         long activeNotZero = game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.isActive() != null && o.isActive() && o.getPosition() != 0)
+                        o.isActive() && o.getPosition() != 0)
                 .count();
 
         long zeroNotActive = game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        (o.isActive() == null || !o.isActive()) && o.getPosition() == 0)
+                        !o.isActive() && o.getPosition() == 0)
                 .count();
 
         Assert.assertEquals(0, alreadyReady);
