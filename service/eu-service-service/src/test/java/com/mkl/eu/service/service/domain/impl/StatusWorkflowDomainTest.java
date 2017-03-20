@@ -172,23 +172,15 @@ public class StatusWorkflowDomainTest {
     private void checkDiffsForMilitary(GameEntity game) {
         List<DiffEntity> diffs = statusWorkflowDomain.computeEndMinorLogistics(game);
 
-        Assert.assertEquals(true, diffs.size() >= 2);
+        Assert.assertEquals(true, diffs.size() >= 1);
         Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
         Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(0).getTypeObject());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(0).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(0).getTypeObject());
         Assert.assertEquals(null, diffs.get(0).getIdObject());
         Assert.assertEquals(1, diffs.get(0).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(1).getAttributes().get(0).getValue());
     }
 
     /**

@@ -116,6 +116,13 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 .collect(Collectors.toList()));
 
         /**
+         * Hibernate will delete old values after inserting new one.
+         * And since the PK is often the same, it will fail.
+         * We need to flush so that the old values are deleted before.
+         */
+        diffDao.flush();
+
+        /**
          * And the alliances are transformed into CountryOrder.
          */
         Collections.sort(alliances, Comparator.comparing(Alliance::getInitiative).reversed());
@@ -130,29 +137,15 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             }
         }
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.INVALIDATE);
-        diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffs.add(diff);
-
-        diffDao.create(diff);
-
         // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
-        diff = new DiffEntity();
+        DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());
         diff.setType(DiffTypeEnum.MODIFY);
         diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-        diffAttributes = new DiffAttributesEntity();
+        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
         // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
         diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
