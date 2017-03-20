@@ -159,7 +159,7 @@
 				SUM(price)
 			FROM (
   				SELECT
-  					SUM(er.NUMBER) * CAST(SUBSTRING(s.R_PROVINCE, 6, 1) AS INT) AS PRICE
+  					SUM(er.NUMBER) * CAST(SUBSTRING(s.R_PROVINCE, 6, 1) AS SIGNED INTEGER) AS PRICE
   				FROM exotic_resources er
   					INNER JOIN establishment e ON er.ID_ESTABLISHMENT = e.ID
   					INNER JOIN counter c0 ON e.ID_COUNTER = c0.ID
