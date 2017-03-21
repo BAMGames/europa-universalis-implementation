@@ -6,10 +6,6 @@ import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-
 /**
  * Administrative action of a country at a given turn.
  * A country can have zero or multiple administrative actions at a given turn.
@@ -165,8 +161,6 @@ public class AdministrativeAction extends EuObject {
     }
 
     /** @return the counterFaceType. */
-    @Column(name = "COUNTER_FACE_TYPE")
-    @Enumerated(EnumType.STRING)
     public CounterFaceTypeEnum getCounterFaceType() {
         return counterFaceType;
     }
