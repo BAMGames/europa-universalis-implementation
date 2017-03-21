@@ -6,10 +6,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +37,12 @@ public class EconomicWsServiceImpl extends SpringBeanAutowiringSupport implement
     @Override
     public List<EconomicalSheetCountry> loadEconomicSheets(SimpleRequest<LoadEcoSheetsRequest> loadEcoSheets) throws FunctionalException, TechnicalException {
         return economicService.loadEconomicSheets(loadEcoSheets);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<AdministrativeActionCountry> loadAdminActions(SimpleRequest<LoadAdminActionsRequest> loadAdminActions) throws FunctionalException, TechnicalException {
+        return economicService.loadAdminActions(loadAdminActions);
     }
 
     /** {@inheritDoc} */

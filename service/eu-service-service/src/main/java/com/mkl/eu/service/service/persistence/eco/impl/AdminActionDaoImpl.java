@@ -45,7 +45,7 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
 
     /** {@inheritDoc} */
     @Override
-    public List<AdministrativeActionEntity> findAdminActions(Long idCountry, Integer turn, Long idObject, AdminActionTypeEnum... types) {
+    public List<AdministrativeActionEntity> findPlannedAdminActions(Long idCountry, Integer turn, Long idObject, AdminActionTypeEnum... types) {
         Criteria criteria = getSession().createCriteria(AdministrativeActionEntity.class);
 
         if (turn != null) {
@@ -61,6 +61,22 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
             criteria.add(Restrictions.in("type", types));
         }
         criteria.add(Restrictions.eq("status", AdminActionStatusEnum.PLANNED));
+
+        //noinspection unchecked
+        return (List<AdministrativeActionEntity>) criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<AdministrativeActionEntity> findDoneAdminActions(Integer turn, Long idGame) {
+        Criteria criteria = getSession().createCriteria(AdministrativeActionEntity.class);
+
+        if (turn != null) {
+            criteria.add(Restrictions.eq("turn", turn));
+        }
+        Criteria criteriaCountry = criteria.createCriteria("country", "country");
+        criteriaCountry.add(Restrictions.eq("game.id", idGame));
+        criteria.add(Restrictions.eq("status", AdminActionStatusEnum.DONE));
 
         //noinspection unchecked
         return (List<AdministrativeActionEntity>) criteria.list();

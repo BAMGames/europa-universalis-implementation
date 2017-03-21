@@ -43,10 +43,10 @@ public class AdminActionDaoImplTest {
     private IAdminActionDao adminActionDao;
 
     @Test
-    public void testFindAdminActions() {
+    public void testFindPlannedAdminActions() {
         List<AdministrativeActionEntity> actions;
 
-        actions = adminActionDao.findAdminActions(null, null, null);
+        actions = adminActionDao.findPlannedAdminActions(null, null, null);
 
         Assert.assertEquals(6, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
@@ -56,7 +56,7 @@ public class AdminActionDaoImplTest {
         Assert.assertEquals(6L, actions.get(4).getId().longValue());
         Assert.assertEquals(7L, actions.get(5).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(1L, null, null);
+        actions = adminActionDao.findPlannedAdminActions(1L, null, null);
 
         Assert.assertEquals(5, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
@@ -65,16 +65,16 @@ public class AdminActionDaoImplTest {
         Assert.assertEquals(6L, actions.get(3).getId().longValue());
         Assert.assertEquals(7L, actions.get(4).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(2L, null, null);
+        actions = adminActionDao.findPlannedAdminActions(2L, null, null);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(5L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(3L, null, null);
+        actions = adminActionDao.findPlannedAdminActions(3L, null, null);
 
         Assert.assertEquals(0, actions.size());
 
-        actions = adminActionDao.findAdminActions(null, 1, null);
+        actions = adminActionDao.findPlannedAdminActions(null, 1, null);
 
         Assert.assertEquals(5, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
@@ -83,16 +83,16 @@ public class AdminActionDaoImplTest {
         Assert.assertEquals(5L, actions.get(3).getId().longValue());
         Assert.assertEquals(7L, actions.get(4).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(null, 2, null);
+        actions = adminActionDao.findPlannedAdminActions(null, 2, null);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(6L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(null, 3, null);
+        actions = adminActionDao.findPlannedAdminActions(null, 3, null);
 
         Assert.assertEquals(0, actions.size());
 
-        actions = adminActionDao.findAdminActions(null, null, 12L);
+        actions = adminActionDao.findPlannedAdminActions(null, null, 12L);
 
         Assert.assertEquals(4, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
@@ -100,16 +100,16 @@ public class AdminActionDaoImplTest {
         Assert.assertEquals(6L, actions.get(2).getId().longValue());
         Assert.assertEquals(7L, actions.get(3).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(null, null, 13L);
+        actions = adminActionDao.findPlannedAdminActions(null, null, 13L);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(3L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(null, null, 14L);
+        actions = adminActionDao.findPlannedAdminActions(null, null, 14L);
 
         Assert.assertEquals(0, actions.size());
 
-        actions = adminActionDao.findAdminActions(null, null, null, AdminActionTypeEnum.TFI);
+        actions = adminActionDao.findPlannedAdminActions(null, null, null, AdminActionTypeEnum.TFI);
 
         Assert.assertEquals(5, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
@@ -118,16 +118,16 @@ public class AdminActionDaoImplTest {
         Assert.assertEquals(5L, actions.get(3).getId().longValue());
         Assert.assertEquals(6L, actions.get(4).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(null, null, null, AdminActionTypeEnum.COL);
+        actions = adminActionDao.findPlannedAdminActions(null, null, null, AdminActionTypeEnum.COL);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(7L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(null, null, null, AdminActionTypeEnum.TP);
+        actions = adminActionDao.findPlannedAdminActions(null, null, null, AdminActionTypeEnum.TP);
 
         Assert.assertEquals(0, actions.size());
 
-        actions = adminActionDao.findAdminActions(null, null, null, AdminActionTypeEnum.TFI, AdminActionTypeEnum.COL);
+        actions = adminActionDao.findPlannedAdminActions(null, null, null, AdminActionTypeEnum.TFI, AdminActionTypeEnum.COL);
 
         Assert.assertEquals(6, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
@@ -137,32 +137,63 @@ public class AdminActionDaoImplTest {
         Assert.assertEquals(6L, actions.get(4).getId().longValue());
         Assert.assertEquals(7L, actions.get(5).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(1L, 1, 12L, AdminActionTypeEnum.TFI);
+        actions = adminActionDao.findPlannedAdminActions(1L, 1, 12L, AdminActionTypeEnum.TFI);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(1L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(1L, 1, 13L, AdminActionTypeEnum.TFI);
+        actions = adminActionDao.findPlannedAdminActions(1L, 1, 13L, AdminActionTypeEnum.TFI);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(3L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(2L, 1, 12L, AdminActionTypeEnum.TFI);
+        actions = adminActionDao.findPlannedAdminActions(2L, 1, 12L, AdminActionTypeEnum.TFI);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(5L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(1L, 2, 12L, AdminActionTypeEnum.TFI);
+        actions = adminActionDao.findPlannedAdminActions(1L, 2, 12L, AdminActionTypeEnum.TFI);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(6L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(1L, 1, 12L, AdminActionTypeEnum.COL);
+        actions = adminActionDao.findPlannedAdminActions(1L, 1, 12L, AdminActionTypeEnum.COL);
 
         Assert.assertEquals(1, actions.size());
         Assert.assertEquals(7L, actions.get(0).getId().longValue());
 
-        actions = adminActionDao.findAdminActions(2L, 2, 13L, AdminActionTypeEnum.COL);
+        actions = adminActionDao.findPlannedAdminActions(2L, 2, 13L, AdminActionTypeEnum.COL);
+
+        Assert.assertEquals(0, actions.size());
+    }
+
+    @Test
+    public void testFindDoneAdminActions() {
+        List<AdministrativeActionEntity> actions;
+
+        actions = adminActionDao.findDoneAdminActions(null, null);
+
+        Assert.assertEquals(0, actions.size());
+
+        actions = adminActionDao.findDoneAdminActions(null, 3L);
+
+        Assert.assertEquals(0, actions.size());
+
+        actions = adminActionDao.findDoneAdminActions(null, 2L);
+
+        Assert.assertEquals(0, actions.size());
+
+        actions = adminActionDao.findDoneAdminActions(null, 1L);
+
+        Assert.assertEquals(1, actions.size());
+        Assert.assertEquals(2L, actions.get(0).getId().longValue());
+
+        actions = adminActionDao.findDoneAdminActions(1, 1L);
+
+        Assert.assertEquals(1, actions.size());
+        Assert.assertEquals(2L, actions.get(0).getId().longValue());
+
+        actions = adminActionDao.findDoneAdminActions(2, 1L);
 
         Assert.assertEquals(0, actions.size());
     }

@@ -5,10 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -44,6 +41,17 @@ public interface IEconomicService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     List<EconomicalSheetCountry> loadEconomicSheets(@WebParam(name = PARAMETER_LOAD_ECO_SHEETS) SimpleRequest<LoadEcoSheetsRequest> loadEcoSheets) throws FunctionalException, TechnicalException;
+
+    /**
+     * Load administrative actions.
+     *
+     * @param loadAdminActions info about the admin actions to load.
+     * @return the administrative actions.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    List<AdministrativeActionCountry> loadAdminActions(@WebParam(name = PARAMETER_LOAD_ADM_ACT) SimpleRequest<LoadAdminActionsRequest> loadAdminActions) throws FunctionalException, TechnicalException;
 
     /**
      * Adds a PLANNED administrative action (does not compute it).

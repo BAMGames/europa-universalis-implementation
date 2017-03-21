@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.mapping.eco;
 
+import com.mkl.eu.client.service.service.eco.AdministrativeActionCountry;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.enumeration.AdminActionStatusEnum;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
@@ -7,6 +8,7 @@ import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +73,52 @@ public class AdministrativeActionMapping extends AbstractMapping {
         target.setIdObject(source.getIdObject());
         target.setProvince(source.getProvince());
         target.setCounterFaceType(source.getCounterFaceType());
+
+        return target;
+    }
+
+    /**
+     * OEs to VOs.
+     *
+     * @param sources object source.
+     * @return object mapped.
+     */
+    public List<AdministrativeActionCountry> oesToVosCountry(List<AdministrativeActionEntity> sources) {
+        if (sources == null) {
+            return null;
+        }
+
+        List<AdministrativeActionCountry> targets = new ArrayList<>();
+
+        Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
+
+        for (AdministrativeActionEntity source : sources) {
+            AdministrativeActionCountry target = oeToVoCountry(source, objectsCreated);
+            if (target != null) {
+                targets.add(target);
+            }
+        }
+
+        return targets;
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source         object source.
+     * @param objectsCreated Objects created by the mappings (sort of caching).
+     * @return object mapped.
+     */
+    public AdministrativeActionCountry oeToVoCountry(AdministrativeActionEntity source, final Map<Class<?>, Map<Long, Object>> objectsCreated) {
+        if (source == null) {
+            return null;
+        }
+
+        AdministrativeActionCountry target = new AdministrativeActionCountry();
+        target.setAction(oeToVo(source, objectsCreated));
+        if (source.getCountry() != null) {
+            target.setIdCountry(source.getCountry().getId());
+        }
 
         return target;
     }

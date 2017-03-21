@@ -453,7 +453,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK_FROM);
         if (attribute != null) {
             Long idStack = Long.parseLong(attribute.getValue());
-            stack = findFirst(provinceTo.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+            stack = findFirst(provinceFrom.getStacks(), stack1 -> idStack.equals(stack1.getId()));
         }
         if (stack == null) {
             LOGGER.error("Missing stack from in counter move event.");

@@ -8,7 +8,9 @@ import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
+import com.mkl.eu.client.service.service.eco.AdministrativeActionCountry;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.service.eco.LoadAdminActionsRequest;
 import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
@@ -128,6 +130,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private GameConfiguration gameConfig;
     /** Component to be refreshed when status changed. */
     private VBox activeCountries = new VBox();
+    /** Title to be refreshed when status changed. */
+    private Text info = new Text();
 
     public GamePopup(Long idGame, Long idCountry) {
         gameConfig = new GameConfiguration();
@@ -226,9 +230,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        String statusText = message.getMessage("game.status." + game.getStatus(), null, globalConfiguration.getLocale());
-        Text info = new Text(message.getMessage("game.popup.info_phase", new Object[]{statusText}, globalConfiguration.getLocale()));
         grid.add(info, 0, 0, 1, 1);
+        updateTitle();
         updateActivePlayers();
 
         grid.add(activeCountries, 1, 0, 1, 5);
@@ -283,6 +286,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         dialog.show();
 
         dialog.setOnCloseRequest(this);
+    }
+
+    private void updateTitle() {
+        String statusText = message.getMessage("game.status." + game.getStatus(), null, globalConfiguration.getLocale());
+        info.setText(message.getMessage("game.popup.info_phase", new Object[]{statusText}, globalConfiguration.getLocale()));
     }
 
     /**
@@ -382,6 +390,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                     continue;
                 }
                 switch (diff.getTypeObject()) {
+                    case COUNTRY:
+                        updateCountry(game, diff);
+                        break;
                     case COUNTER:
                         updateCounter(game, diff);
                         break;
@@ -404,6 +415,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                         updateTurnOrder(game, diff);
                         break;
                     default:
+                        LOGGER.error("Unknown diff " + diff);
                         break;
                 }
                 map.update(diff);
@@ -451,6 +463,64 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
+     * Process a country diff event.
+     *
+     * @param game to update.
+     * @param diff involving a country.
+     */
+    private void updateCountry(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case MODIFY:
+                modifyCountry(game, diff);
+                break;
+            default:
+                LOGGER.error("Unknown diff " + diff);
+                break;
+        }
+    }
+
+    /**
+     * Process the modify country diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify country.
+     */
+    private void modifyCountry(Game game, Diff diff) {
+        PlayableCountry country = game.getCountries().stream()
+                .filter(c -> diff.getIdObject().equals(c.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (country != null) {
+            DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.DTI);
+            if (attribute != null) {
+                Integer dti = Integer.parseInt(attribute.getValue());
+                country.setDti(dti);
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.FTI);
+            if (attribute != null) {
+                Integer fti = Integer.parseInt(attribute.getValue());
+                country.setFti(fti);
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.FTI_ROTW);
+            if (attribute != null) {
+                Integer ftiRotw = Integer.parseInt(attribute.getValue());
+                country.setFtiRotw(ftiRotw);
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TECH_LAND);
+            if (attribute != null) {
+                country.setLandTech(attribute.getValue());
+            }
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TECH_NAVAL);
+            if (attribute != null) {
+                country.setNavalTech(attribute.getValue());
+            }
+        } else {
+            LOGGER.error("Invalid country in country modify event.");
+        }
+    }
+
+    /**
      * Process a counter diff event.
      *
      * @param game to update.
@@ -467,7 +537,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case REMOVE:
                 removeCounter(game, diff);
                 break;
+            case MODIFY:
+                modifyCounter(game, diff);
+                break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
     }
@@ -619,6 +693,37 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
+     * Process the modify counter diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify counter.
+     */
+    private void modifyCounter(Game game, Diff diff) {
+        Counter counter = findFirst(game.getStacks().stream()
+                        .flatMap(stack -> stack.getCounters().stream()),
+                counter1 -> diff.getIdObject().equals(counter1.getId()));
+        if (counter == null) {
+            LOGGER.error("Missing counter in counter move event.");
+            return;
+        }
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TYPE);
+        if (attribute != null) {
+            CounterFaceTypeEnum type = CounterFaceTypeEnum.valueOf(attribute.getValue());
+            counter.setType(type);
+        }
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.VETERANS);
+        if (attribute != null) {
+            Integer veterans = Integer.valueOf(attribute.getValue());
+            counter.setVeterans(veterans);
+        }
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);
+        if (attribute != null) {
+            LOGGER.error("Establishment not yet implemented.");
+        }
+    }
+
+    /**
      * Process a stack diff event.
      *
      * @param game to update.
@@ -637,6 +742,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case REMOVE:
                 break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
     }
@@ -687,10 +793,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private void modifyStack(Game game, Diff diff) {
         Stack stack;
         Long idStack = diff.getIdObject();
-        stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
-        if (stack != null) {
-            if (attribute != null) {
+        if (idStack != null) {
+            stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
+            if (stack != null && attribute != null) {
                 stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
             }
         } else if (attribute != null && StringUtils.equals(attribute.getValue(), MovePhaseEnum.NOT_MOVED.name())) {
@@ -732,6 +838,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 inviteKickRoom(game, diff);
                 break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
     }
@@ -832,6 +939,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 invalidateSheet(game, diff);
                 break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
     }
@@ -858,15 +966,17 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             try {
                 java.util.List<EconomicalSheetCountry> sheets = economicService.loadEconomicSheets(request);
 
-                for (EconomicalSheetCountry sheet : sheets) {
-                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> sheet.getIdCountry().equals(playableCountry.getId()));
-                    if (country != null) {
-                        int index = country.getEconomicalSheets().indexOf(
-                                CommonUtil.findFirst(country.getEconomicalSheets(), o -> o.getId().equals(sheet.getSheet().getId())));
-                        if (index != -1) {
-                            country.getEconomicalSheets().set(index, sheet.getSheet());
-                        } else {
-                            country.getEconomicalSheets().add(sheet.getSheet());
+                if (sheets != null) {
+                    for (EconomicalSheetCountry sheet : sheets) {
+                        PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> sheet.getIdCountry().equals(playableCountry.getId()));
+                        if (country != null) {
+                            int index = country.getEconomicalSheets().indexOf(
+                                    CommonUtil.findFirst(country.getEconomicalSheets(), o -> o.getId().equals(sheet.getSheet().getId())));
+                            if (index != -1) {
+                                country.getEconomicalSheets().set(index, sheet.getSheet());
+                            } else {
+                                country.getEconomicalSheets().add(sheet.getSheet());
+                            }
                         }
                     }
                 }
@@ -892,7 +1002,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             case REMOVE:
                 removeAdmAct(game, diff);
                 break;
+            case VALIDATE:
+                validateAdmAct(game, diff);
+                break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
     }
@@ -985,6 +1099,42 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /**
+     * Process the validate administrative action event.
+     *
+     * @param game to update.
+     * @param diff involving a validate administrative action.
+     */
+    private void validateAdmAct(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TURN);
+        if (attribute != null) {
+            Integer turn = Integer.parseInt(attribute.getValue());
+            SimpleRequest<LoadAdminActionsRequest> request = new SimpleRequest<>();
+            authentHolder.fillAuthentInfo(request);
+            request.setRequest(new LoadAdminActionsRequest(gameConfig.getIdGame(), turn));
+            try {
+                java.util.List<AdministrativeActionCountry> actions = economicService.loadAdminActions(request);
+
+                for (AdministrativeActionCountry action : actions) {
+                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> action.getIdCountry().equals(playableCountry.getId()));
+                    if (country != null) {
+                        int index = country.getAdministrativeActions().indexOf(
+                                CommonUtil.findFirst(country.getAdministrativeActions(), o -> o.getId().equals(action.getAction().getId())));
+                        if (index != -1) {
+                            country.getAdministrativeActions().set(index, action.getAction());
+                        } else {
+                            country.getAdministrativeActions().add(action.getAction());
+                        }
+                    }
+                }
+            } catch (FunctionalException e) {
+                LOGGER.error("Can't load economic sheets.", e);
+            }
+        } else {
+            LOGGER.error("Missing turn in invalidate sheet event.");
+        }
+    }
+
+    /**
      * Process a status diff event.
      *
      * @param game to update.
@@ -1002,6 +1152,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 invalidateStatus(game, diff);
                 break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
         updateActivePlayers();
@@ -1017,6 +1168,23 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
         if (attribute != null) {
             game.setStatus(GameStatusEnum.valueOf(attribute.getValue()));
+
+            // New turn order for military phase
+            if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
+                SimpleRequest<LoadTurnOrderRequest> request = new SimpleRequest<>();
+                authentHolder.fillAuthentInfo(request);
+                request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame(), GameStatusEnum.MILITARY_MOVE));
+                try {
+                    List<CountryOrder> orders = gameService.loadTurnOrder(request);
+
+                    game.getOrders().removeAll(game.getOrders().stream()
+                            .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                            .collect(Collectors.toList()));
+                    game.getOrders().addAll(orders);
+                } catch (FunctionalException e) {
+                    LOGGER.error("Can't load turn order.", e);
+                }
+            }
         }
     }
 
@@ -1099,13 +1267,46 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     private void updateTurnOrder(Game game, Diff diff) {
         switch (diff.getType()) {
+            case VALIDATE:
+                validateTurnOrder(game, diff);
+                break;
             case INVALIDATE:
                 invalidateTurnOrder(game, diff);
                 break;
+            case MODIFY:
+                modifyTurnOrder(game, diff);
+                break;
             default:
+                LOGGER.error("Unknown diff " + diff);
                 break;
         }
         updateActivePlayers();
+    }
+
+    /**
+     * Process the validate turn order diff event.
+     *
+     * @param game to update.
+     * @param diff involving an validate turn order.
+     */
+    private void validateTurnOrder(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (StringUtils.isEmpty(attribute.getValue())) {
+            LOGGER.error("Missing status in modify turn order event.");
+        }
+        GameStatusEnum gameStatus = GameStatusEnum.valueOf(attribute.getValue());
+
+        Long tmp = null;
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            tmp = Long.parseLong(attribute.getValue());
+        }
+        Long idCountry = tmp;
+
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == gameStatus &&
+                        (idCountry == null || idCountry.equals(o.getCountry().getId())))
+                .forEach(o -> o.setReady(true));
     }
 
     /**
@@ -1116,25 +1317,49 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     private void invalidateTurnOrder(Game game, Diff diff) {
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
-        if (attribute != null && !StringUtils.isEmpty(attribute.getValue())) {
-            GameStatusEnum gameStatus = GameStatusEnum.valueOf(attribute.getValue());
-
-            SimpleRequest<LoadTurnOrderRequest> request = new SimpleRequest<>();
-            authentHolder.fillAuthentInfo(request);
-            request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame(), gameStatus));
-            try {
-                List<CountryOrder> orders = gameService.loadTurnOrder(request);
-
-                game.getOrders().removeAll(game.getOrders().stream()
-                        .filter(order -> order.getGameStatus() == gameStatus)
-                        .collect(Collectors.toList()));
-                game.getOrders().addAll(orders);
-            } catch (FunctionalException e) {
-                LOGGER.error("Can't load turn order.", e);
-            }
-        } else {
-            LOGGER.error("Missing status in invalidate turn order event.");
+        if (StringUtils.isEmpty(attribute.getValue())) {
+            LOGGER.error("Missing status in modify turn order event.");
         }
+        GameStatusEnum gameStatus = GameStatusEnum.valueOf(attribute.getValue());
+
+        Long tmp = null;
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute != null) {
+            tmp = Long.parseLong(attribute.getValue());
+        }
+        Long idCountry = tmp;
+
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == gameStatus &&
+                        (idCountry == null || idCountry.equals(o.getCountry().getId())))
+                .forEach(o -> o.setReady(false));
+    }
+
+    /**
+     * Process the modify turn order diff event.
+     *
+     * @param game to update.
+     * @param diff involving an modify turn order.
+     */
+    private void modifyTurnOrder(Game game, Diff diff) {
+        DiffAttributes attributeActive = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ACTIVE);
+        DiffAttributes attributeStatus = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (StringUtils.isEmpty(attributeActive.getValue())) {
+            LOGGER.error("Missing active in modify turn order event.");
+        }
+        if (StringUtils.isEmpty(attributeStatus.getValue())) {
+            LOGGER.error("Missing status in modify turn order event.");
+        }
+        int position = Integer.valueOf(attributeActive.getValue());
+        GameStatusEnum gameStatus = GameStatusEnum.valueOf(attributeStatus.getValue());
+
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == gameStatus)
+                .forEach(o -> o.setActive(false));
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == gameStatus &&
+                        o.getPosition() == position)
+                .forEach(o -> o.setActive(true));
     }
 
     /** {@inheritDoc} */

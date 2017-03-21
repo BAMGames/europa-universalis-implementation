@@ -128,7 +128,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private TableView<AdministrativeAction> domesticTable;
 
     /********************************************/
-    /**        Nodes about Establishments   */
+    /**        Nodes about Establishments       */
     /********************************************/
     /** The TitledPane containing all the other nodes. */
     private TitledPane establishmentPane;
@@ -136,12 +136,23 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private TableView<AdministrativeAction> establishmentTable;
 
     /********************************************/
-    /**        Nodes about Technology   */
+    /**        Nodes about Technology           */
     /********************************************/
     /** The TitledPane containing all the other nodes. */
     private TitledPane technologyPane;
     /** The TableView containing the already planned actions. */
     private TableView<AdministrativeAction> technologyTable;
+
+    /********************************************/
+    /**        Nodes about past actions         */
+    /********************************************/
+    /** The selected country. */
+    private ChoiceBox<PlayableCountry> choiceCountry;
+    /** The selected turn. */
+    private ChoiceBox<Integer> choiceTurn;
+    /** The tableList with past actions. */
+    private TableView<AdministrativeAction> tableList;
+
 
     /**
      * Constructor.
@@ -415,87 +426,84 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @param country of the current player.
      */
     private void updateMaintenanceNode(PlayableCountry country) {
-        {
-            List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
-                    .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
-                            (admAct.getType() == AdminActionTypeEnum.DIS || admAct.getType() == AdminActionTypeEnum.LM) || admAct.getType() == AdminActionTypeEnum.LF)
-                    .collect(Collectors.toList());
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        (admAct.getType() == AdminActionTypeEnum.DIS || admAct.getType() == AdminActionTypeEnum.LM || admAct.getType() == AdminActionTypeEnum.LF))
+                .collect(Collectors.toList());
 
-            List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            CounterUtil.isArmy(counter.getType())))
-                    .collect(Collectors.toList());
-            List<Counter> conscriptCounters = new ArrayList<>();
-            List<Counter> fortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            CounterUtil.isFortress(counter.getType())))
-                    .collect(Collectors.toList());
-            Map<Pair<Integer, Boolean>, Integer> orderedFortresses = fortresses.stream().collect(Collectors.groupingBy(
-                    this::getFortressKeyFromCounter,
-                    Collectors.summingInt(value -> 1)));
+        List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                        CounterUtil.isArmy(counter.getType())))
+                .collect(Collectors.toList());
+        List<Counter> conscriptCounters = new ArrayList<>();
+        List<Counter> fortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                        CounterUtil.isFortress(counter.getType())))
+                .collect(Collectors.toList());
+        Map<Pair<Integer, Boolean>, Integer> orderedFortresses = fortresses.stream().collect(Collectors.groupingBy(
+                this::getFortressKeyFromCounter,
+                Collectors.summingInt(value -> 1)));
 
-            actions.stream().forEach(action -> {
-                Counter counter = CommonUtil.findFirst(counters, o -> o.getId().equals(action.getIdObject()));
-                if (counter != null) {
-                    if (action.getType() == AdminActionTypeEnum.LM) {
-                        conscriptCounters.add(counter);
-                    }
-                    counters.remove(counter);
+        actions.stream().forEach(action -> {
+            Counter counter = CommonUtil.findFirst(counters, o -> o.getId().equals(action.getIdObject()));
+            if (counter != null) {
+                if (action.getType() == AdminActionTypeEnum.LM) {
+                    conscriptCounters.add(counter);
                 }
-                counter = CommonUtil.findFirst(fortresses, o -> o.getId().equals(action.getIdObject()));
-                if (counter != null) {
-                    if (action.getType() == AdminActionTypeEnum.LF) {
-                        CommonUtil.addOne(orderedFortresses,
-                                new ImmutablePair<>(CounterUtil.getFortressLevelFromType(action.getCounterFaceType()), counter.getOwner().getProvince().startsWith("r")));
-                    }
-                    CommonUtil.subtractOne(orderedFortresses, getFortressKeyFromCounter(counter));
-                    fortresses.remove(counter);
+                counters.remove(counter);
+            }
+            counter = CommonUtil.findFirst(fortresses, o -> o.getId().equals(action.getIdObject()));
+            if (counter != null) {
+                if (action.getType() == AdminActionTypeEnum.LF) {
+                    CommonUtil.addOne(orderedFortresses,
+                            new ImmutablePair<>(CounterUtil.getFortressLevelFromType(action.getCounterFaceType()), counter.getOwner().getProvince().startsWith("r")));
                 }
-            });
+                CommonUtil.subtractOne(orderedFortresses, getFortressKeyFromCounter(counter));
+                fortresses.remove(counter);
+            }
+        });
 
-            Map<CounterFaceTypeEnum, Long> forces = counters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
-            List<BasicForce> basicForces = globalConfiguration.getTables().getBasicForces().stream()
-                    .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
-                            basicForce.getPeriod().getBegin() <= game.getTurn() &&
-                            basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
-            // TODO manage wars
-            List<Unit> units = globalConfiguration.getTables().getUnits().stream()
-                    .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
-                            (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
-                            !unit.isSpecial() &&
-                            (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
-            Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
+        Map<CounterFaceTypeEnum, Long> forces = counters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
+        List<BasicForce> basicForces = globalConfiguration.getTables().getBasicForces().stream()
+                .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
+                        basicForce.getPeriod().getBegin() <= game.getTurn() &&
+                        basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
+        // TODO manage wars
+        List<Unit> units = globalConfiguration.getTables().getUnits().stream()
+                .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                        (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
+                        !unit.isSpecial() &&
+                        (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
+        Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
 
-            Map<CounterFaceTypeEnum, Long> conscriptForces = conscriptCounters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
-            List<Unit> conscriptUnits = globalConfiguration.getTables().getUnits().stream()
-                    .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
-                            unit.getAction() == UnitActionEnum.MAINT_WAR &&
-                            unit.isSpecial() &&
-                            StringUtils.equals(unit.getTech().getName(), country.getLandTech())).collect(Collectors.toList());
-            Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
+        Map<CounterFaceTypeEnum, Long> conscriptForces = conscriptCounters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
+        List<Unit> conscriptUnits = globalConfiguration.getTables().getUnits().stream()
+                .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
+                        unit.getAction() == UnitActionEnum.MAINT_WAR &&
+                        unit.isSpecial() &&
+                        StringUtils.equals(unit.getTech().getName(), country.getLandTech())).collect(Collectors.toList());
+        Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
 
-            Tech ownerLandTech = CommonUtil.findFirst(globalConfiguration.getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+        Tech ownerLandTech = CommonUtil.findFirst(globalConfiguration.getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
 
-            Integer fortressesMaintenance = MaintenanceUtil.computeFortressesMaintenance(
-                    orderedFortresses,
-                    globalConfiguration.getTables().getTechs(),
-                    ownerLandTech,
-                    game.getTurn());
+        Integer fortressesMaintenance = MaintenanceUtil.computeFortressesMaintenance(
+                orderedFortresses,
+                globalConfiguration.getTables().getTechs(),
+                ownerLandTech,
+                game.getTurn());
 
-            List<Counter> missions = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
-                            counter.getType() == CounterFaceTypeEnum.MISSION))
-                    .collect(Collectors.toList());
+        List<Counter> missions = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                        counter.getType() == CounterFaceTypeEnum.MISSION))
+                .collect(Collectors.toList());
 
-            Integer missionMaintenance = missions.size();
+        Integer missionMaintenance = missions.size();
 
-            maintenancePane.setText(message.getMessage("admin_action.form.unit_maintenance", new Object[]{add(unitMaintenanceCost, unitMaintenanceConscriptCost), fortressesMaintenance, missionMaintenance}, globalConfiguration.getLocale()));
-            maintenanceTable.setItems(FXCollections.observableArrayList(actions));
-            ObservableList<Counter> counterList = FXCollections.observableArrayList(counters);
-            counterList.addAll(fortresses);
-            maintenanceCountersChoice.setItems(counterList);
-        }
-
+        maintenancePane.setText(message.getMessage("admin_action.form.unit_maintenance", new Object[]{add(unitMaintenanceCost, unitMaintenanceConscriptCost), fortressesMaintenance, missionMaintenance}, globalConfiguration.getLocale()));
+        maintenanceTable.setItems(FXCollections.observableArrayList(actions));
+        ObservableList<Counter> counterList = FXCollections.observableArrayList(counters);
+        counterList.addAll(fortresses);
+        maintenanceCountersChoice.setItems(counterList);
     }
 
     /**
@@ -1333,7 +1341,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Tab tab = new Tab(message.getMessage("admin_action.list", null, globalConfiguration.getLocale()));
         tab.setClosable(false);
 
-        ChoiceBox<PlayableCountry> choiceCountry = new ChoiceBox<>();
+        choiceCountry = new ChoiceBox<>();
         choiceCountry.setItems(FXCollections.observableArrayList(game.getCountries()));
         choiceCountry.converterProperty().set(new StringConverter<PlayableCountry>() {
             /** {@inheritDoc} */
@@ -1358,16 +1366,16 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        ChoiceBox<Integer> choiceTurn = new ChoiceBox<>();
+        choiceTurn = new ChoiceBox<>();
 
         HBox hBox = new HBox();
         hBox.getChildren().addAll(choiceCountry, choiceTurn);
 
-        TableView<AdministrativeAction> table = new TableView<>();
-        configureAdminActionTable(table, null);
+        tableList = new TableView<>();
+        configureAdminActionTable(tableList, null);
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(hBox, table);
+        vBox.getChildren().addAll(hBox, tableList);
 
         tab.setContent(vBox);
 
@@ -1395,12 +1403,12 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE)
                         .collect(Collectors.toList());
                 Collections.sort(actions, Comparator.comparing(AdministrativeAction::getTurn).reversed());
-                table.setItems(FXCollections.observableArrayList(actions));
+                tableList.setItems(FXCollections.observableArrayList(actions));
             } else if (!newValue.equals(oldValue)) {
                 List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE && action.getTurn().equals(newValue))
                         .collect(Collectors.toList());
-                table.setItems(FXCollections.observableArrayList(actions));
+                tableList.setItems(FXCollections.observableArrayList(actions));
             }
         });
 
@@ -1408,7 +1416,22 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Configure the administrative actions table.
+     * Update the list of past actions.
+     */
+    private void updateActionList() {
+        PlayableCountry country = choiceCountry.getSelectionModel().getSelectedItem();
+        Integer turn = choiceTurn.getSelectionModel().getSelectedItem();
+        if (country != null && turn != null) {
+            List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                    .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE &&
+                            (turn == 0 || action.getTurn().equals(turn)))
+                    .collect(Collectors.toList());
+            tableList.setItems(FXCollections.observableArrayList(actions));
+        }
+    }
+
+    /**
+     * Configure the administrative actions tableList.
      *
      * @param table to configure.
      */
@@ -1565,6 +1588,14 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             case ADM_ACT:
                 updateAdmAct(diff);
                 break;
+            case COUNTRY:
+                if (gameConfig.getIdCountry().equals(diff.getIdObject())) {
+                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
+                    if (country != null) {
+                        updateMaintenanceNode(country);
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -1615,6 +1646,18 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         }
                     }
                 }
+                break;
+            case VALIDATE:
+                PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
+                if (country != null) {
+                    updateMaintenanceNode(country);
+                    updatePurchaseNode(country);
+                    updateTfiNode(country);
+                    updateDomesticOperationNode(country);
+                    updateEstablishmentNode(country);
+                    updateTechnologyNode(country);
+                }
+                updateActionList();
                 break;
             default:
                 break;

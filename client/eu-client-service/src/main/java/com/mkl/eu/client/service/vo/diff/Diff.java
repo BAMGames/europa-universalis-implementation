@@ -74,4 +74,13 @@ public class Diff implements Serializable {
     public void setAttributes(List<DiffAttributes> attributes) {
         this.attributes = attributes;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return "Diff{" +
+                "type=" + type +
+                ", typeObject=" + typeObject +
+                '}';
+    }
 }

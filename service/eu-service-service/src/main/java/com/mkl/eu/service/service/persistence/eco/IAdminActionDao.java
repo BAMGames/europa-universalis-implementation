@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity, Long> {
     /**
-     * Find the administrative actions that matches.
+     * Find the planned administrative actions that matches.
      *
      * @param idCountry id of the country owning the action.
      * @param turn      turn of the action.
@@ -22,7 +22,16 @@ public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity,
      * @param types     the action must be one of the types.
      * @return the administrative actions that matches.
      */
-    List<AdministrativeActionEntity> findAdminActions(Long idCountry, Integer turn, Long idObject, AdminActionTypeEnum... types);
+    List<AdministrativeActionEntity> findPlannedAdminActions(Long idCountry, Integer turn, Long idObject, AdminActionTypeEnum... types);
+
+    /**
+     * Find the done administrative actions that matches.
+     *
+     * @param turn   turn of the action.
+     * @param idGame the id of the game.
+     * @return the administrative actions that matches.
+     */
+    List<AdministrativeActionEntity> findDoneAdminActions(Integer turn, Long idGame);
 
     /**
      * @param province the name of the ROTW province.

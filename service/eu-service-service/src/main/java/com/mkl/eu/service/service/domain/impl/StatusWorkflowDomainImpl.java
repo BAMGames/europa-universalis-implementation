@@ -330,6 +330,11 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setValue("0");
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
 
         diffDao.create(diff);
         diffs.add(diff);

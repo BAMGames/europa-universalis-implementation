@@ -9,10 +9,7 @@ import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
-import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.EconomicUtil;
 import com.mkl.eu.client.service.util.GameUtil;
@@ -27,6 +24,7 @@ import com.mkl.eu.client.service.vo.ref.country.LimitReferential;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
+import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
@@ -101,9 +99,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Country DAO. */
     @Autowired
     private ICountryDao countryDao;
-    /** Game mapping. */
+    /** Economical sheet mapping. */
     @Autowired
     private EconomicalSheetMapping ecoSheetsMapping;
+    /** Administrative action mapping. */
+    @Autowired
+    private AdministrativeActionMapping adminActMapping;
     /** OEUtil. */
     @Autowired
     private IOEUtil oeUtil;
@@ -122,6 +123,19 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 request.getRequest().getIdGame());
 
         return ecoSheetsMapping.oesToVosCountry(sheetEntities);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<AdministrativeActionCountry> loadAdminActions(SimpleRequest<LoadAdminActionsRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_ADM_ACT).setParams(METHOD_LOAD_ADM_ACT));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_ADM_ACT, PARAMETER_REQUEST).setParams(METHOD_LOAD_ADM_ACT));
+
+        List<AdministrativeActionEntity> adminActions = adminActionDao.findDoneAdminActions(request.getRequest().getTurn(), request.getRequest().getIdGame());
+
+        return adminActMapping.oesToVosCountry(adminActions);
     }
 
     /** {@inheritDoc} */
@@ -475,7 +489,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     .setMsgFormat("{1}: {0} The fortress {2} of level {5} cannot be lowered to {3} (natural fortress: {4}).").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject(), desiredLevel, naturalLevel, actualLevel));
         }
 
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
                 request.getRequest().getIdObject(), AdminActionTypeEnum.LM, AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
         failIfFalse(new CheckForThrow<Boolean>().setTest(actions == null || actions.isEmpty()).setCodeError(IConstantsServiceException.COUNTER_ALREADY_PLANNED)
                 .setMsgFormat("{1}: {0} The counter {2} has already a DIS or LM or LF administrative action PLANNED this turn.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_ID_OBJECT).setParams(METHOD_ADD_ADM_ACT, request.getRequest().getIdObject()));
@@ -686,7 +700,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         Integer plannedSize;
         final LimitTypeEnum limitType;
 
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.PU);
         if (land) {
             plannedSize = actions.stream().filter(action -> CounterUtil.isLandArmy(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
@@ -734,7 +748,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeTradeFleetImplantation(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.TFI);
 
         Integer plannedTfis = actions.stream().collect(Collectors.summingInt(action -> 1));
@@ -853,7 +867,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeManufacture(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
@@ -1024,6 +1038,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setStatus(AdminActionStatusEnum.PLANNED);
         admAct.setTurn(game.getTurn());
         admAct.setProvince(province);
+        admAct.setCounterFaceType(type);
         admAct.setCost(EconomicUtil.getAdminActionCost(request.getRequest().getType(), request.getRequest().getInvestment()));
         if (mnu != null) {
             admAct.setIdObject(mnu.getId());
@@ -1044,7 +1059,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeFtiDti(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
@@ -1156,7 +1171,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeExceptionalTaxes(GameEntity game, PlayableCountryEntity country) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI, AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(actions.isEmpty()).setCodeError(IConstantsServiceException.ACTION_ALREADY_PLANNED)
@@ -1208,7 +1223,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeColonisation(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.COL);
 
         Integer plannedCols = actions.stream().collect(Collectors.summingInt(action -> 1));
@@ -1360,7 +1375,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeTradingPost(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.TP);
 
         Integer plannedCols = actions.stream().collect(Collectors.summingInt(action -> 1));
@@ -1518,7 +1533,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @throws FunctionalException Exception.
      */
     private AdministrativeActionEntity computeTechnology(Request<AddAdminActionRequest> request, GameEntity game, PlayableCountryEntity country, boolean land) throws FunctionalException {
-        List<AdministrativeActionEntity> actions = adminActionDao.findAdminActions(country.getId(), game.getTurn(),
+        List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.ELT, AdminActionTypeEnum.ENT);
 
         boolean techAlreadyPlanned = false;
@@ -1719,6 +1734,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
+        diffDao.create(diff);
+
         diffs.add(diff);
 
         DiffResponse response = new DiffResponse();
@@ -1810,6 +1827,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes.setValue(Integer.toString(game.getTurn()));
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
+                diffDao.create(diff);
                 diffs.add(diff);
 
                 diff = new DiffEntity();
@@ -1822,6 +1840,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes.setValue(Integer.toString(game.getTurn()));
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
+                diffDao.create(diff);
                 diffs.add(diff);
 
                 diff = new DiffEntity();
@@ -1829,6 +1848,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diff.setVersionGame(game.getVersion());
                 diff.setType(DiffTypeEnum.INVALIDATE);
                 diff.setTypeObject(DiffTypeObjectEnum.STATUS);
+                diffDao.create(diff);
                 diffs.add(diff);
 
                 diffs.addAll(statusWorkflowDomain.computeEndAdministrativeActions(game));

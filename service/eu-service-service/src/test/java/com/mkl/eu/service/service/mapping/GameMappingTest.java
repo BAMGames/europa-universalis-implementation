@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.mapping;
 
+import com.mkl.eu.client.service.service.eco.AdministrativeActionCountry;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
@@ -13,6 +14,7 @@ import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
+import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
@@ -54,6 +56,8 @@ public class GameMappingTest {
     private GameMapping gameMapping;
     @Autowired
     private EconomicalSheetMapping economicalSheetMapping;
+    @Autowired
+    private AdministrativeActionMapping administrativeActionMapping;
 
     static {
         FRA_VO = new PlayableCountry();
@@ -124,6 +128,19 @@ public class GameMappingTest {
         Assert.assertEquals(vos.size(), expected.size());
         for (int i = 0; i < vos.size() && i < expected.size(); i++) {
             ReflectionAssert.assertReflectionEquals(vos.get(i).getSheet(), expected.get(i));
+            Assert.assertEquals(vos.get(i).getIdCountry(), FRA_OE.getId());
+        }
+    }
+
+    @Test
+    public void testAdministrativeActionsMapping() {
+        List<AdministrativeActionCountry> vos = administrativeActionMapping.oesToVosCountry(createAdministrativeActionsEntities());
+
+        List<AdministrativeAction> expected = createAdministrativeActionsVos();
+
+        Assert.assertEquals(vos.size(), expected.size());
+        for (int i = 0; i < vos.size() && i < expected.size(); i++) {
+            ReflectionAssert.assertReflectionEquals(vos.get(i).getAction(), expected.get(i));
             Assert.assertEquals(vos.get(i).getIdCountry(), FRA_OE.getId());
         }
     }
@@ -559,6 +576,7 @@ public class GameMappingTest {
 
         AdministrativeActionEntity object = new AdministrativeActionEntity();
         object.setId(1L);
+        object.setCountry(FRA_OE);
         object.setTurn(2);
         object.setProvince("province");
         object.setBonus(6);

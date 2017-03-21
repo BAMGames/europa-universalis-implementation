@@ -142,5 +142,15 @@ public class CountryOrderEntity {
         public void setGameStatus(GameStatusEnum gameStatus) {
             this.gameStatus = gameStatus;
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public String toString() {
+            return "EmbeddedId{" +
+                    "game=" + game.getId() +
+                    ", country=" + country.getName() +
+                    ", gameStatus=" + gameStatus +
+                    '}';
+        }
     }
 }

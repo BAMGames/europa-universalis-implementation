@@ -196,11 +196,14 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#DTI to know the new DTI of the country.</li>
      * <li>DiffAttributeTypeEnum#FTI to know the new FTI of the country.</li>
      * <li>DiffAttributeTypeEnum#FTI_ROTW to know the new FTI_ROTW of the country.</li>
+     * <li>DiffAttributeTypeEnum#TECH_LAND to know the new land technology of the country.</li>
+     * <li>DiffAttributeTypeEnum#NAVAL_LAND to know the new naval technology of the country.</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#TURN_ORDER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#ACTIVE to know which position are active (all others are then inactive).</li>
+     * <li>DiffAttributeTypeEnum#STATUS to know which status turn order should be activated.</li>
      * </ul>
      * </li>
      * </ul>
