@@ -11,6 +11,8 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
+import com.mkl.eu.client.service.vo.eco.Competition;
+import com.mkl.eu.client.service.vo.eco.CompetitionRound;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
@@ -24,6 +26,8 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.CompetitionRoundEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
 import org.junit.Assert;
@@ -166,6 +170,8 @@ public class GameMappingTest {
         object.setRelations(createRelationsVos(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksVos());
+
+        object.setCompetitions(createCompetitionsVos());
 
         object.setOrders(createCountryOrdersVos());
 
@@ -409,6 +415,43 @@ public class GameMappingTest {
         return objects;
     }
 
+    private List<Competition> createCompetitionsVos() {
+        List<Competition> objects = new ArrayList<>();
+
+        Competition object = new Competition();
+        object.setId(1L);
+        object.setTurn(3);
+        object.setType(CompetitionTypeEnum.TF_4);
+        object.setProvince("ZPFrance");
+        object.getRounds().add(new CompetitionRound());
+        object.getRounds().get(0).setId(1L);
+        object.getRounds().get(0).setRound(1);
+        object.getRounds().get(0).setCountry("france");
+        object.getRounds().get(0).setColumn(1);
+        object.getRounds().get(0).setDie(6);
+        object.getRounds().get(0).setResult(ResultEnum.AVERAGE_PLUS);
+        object.getRounds().get(0).setSecondaryDie(5);
+        object.getRounds().get(0).setSecondaryResult(false);
+        objects.add(object);
+
+        object = new Competition();
+        object.setId(2L);
+        object.setTurn(5);
+        object.setType(CompetitionTypeEnum.ESTABLISHMENT);
+        object.setProvince("rGuyana~E");
+        object.getRounds().add(new CompetitionRound());
+        object.getRounds().add(new CompetitionRound());
+        object.getRounds().get(1).setId(3L);
+        object.getRounds().get(1).setRound(2);
+        object.getRounds().get(1).setCountry("espagne");
+        object.getRounds().get(1).setColumn(-1);
+        object.getRounds().get(1).setDie(9);
+        object.getRounds().get(1).setResult(ResultEnum.CRITICAL_HIT);
+        objects.add(object);
+
+        return objects;
+    }
+
     private List<CountryOrder> createCountryOrdersVos() {
         List<CountryOrder> objects = new ArrayList<>();
 
@@ -457,10 +500,11 @@ public class GameMappingTest {
 
         object.setEvents(createEventsEntities());
 
-
         object.setRelations(createRelationsEntities(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksEntities());
+
+        object.setCompetitions(createCompetitionsEntities());
 
         object.setOrders(createCountryOrdersEntities());
 
@@ -702,6 +746,43 @@ public class GameMappingTest {
         object.setDiplomacy(3);
         object.setMilitary(3);
         object.setMilitaryAverage(0);
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<CompetitionEntity> createCompetitionsEntities() {
+        List<CompetitionEntity> objects = new ArrayList<>();
+
+        CompetitionEntity object = new CompetitionEntity();
+        object.setId(1L);
+        object.setTurn(3);
+        object.setType(CompetitionTypeEnum.TF_4);
+        object.setProvince("ZPFrance");
+        object.getRounds().add(new CompetitionRoundEntity());
+        object.getRounds().get(0).setId(1L);
+        object.getRounds().get(0).setRound(1);
+        object.getRounds().get(0).setCountry("france");
+        object.getRounds().get(0).setColumn(1);
+        object.getRounds().get(0).setDie(6);
+        object.getRounds().get(0).setResult(ResultEnum.AVERAGE_PLUS);
+        object.getRounds().get(0).setSecondaryDie(5);
+        object.getRounds().get(0).setSecondaryResult(false);
+        objects.add(object);
+
+        object = new CompetitionEntity();
+        object.setId(2L);
+        object.setTurn(5);
+        object.setType(CompetitionTypeEnum.ESTABLISHMENT);
+        object.setProvince("rGuyana~E");
+        object.getRounds().add(new CompetitionRoundEntity());
+        object.getRounds().add(new CompetitionRoundEntity());
+        object.getRounds().get(1).setId(3L);
+        object.getRounds().get(1).setRound(2);
+        object.getRounds().get(1).setCountry("espagne");
+        object.getRounds().get(1).setColumn(-1);
+        object.getRounds().get(1).setDie(9);
+        object.getRounds().get(1).setResult(ResultEnum.CRITICAL_HIT);
         objects.add(object);
 
         return objects;

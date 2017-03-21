@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Mapping between VO and OE for an Economical sheet.
+ * Mapping between VO and OE for an Administrative action.
  *
  * @author MKL.
  */

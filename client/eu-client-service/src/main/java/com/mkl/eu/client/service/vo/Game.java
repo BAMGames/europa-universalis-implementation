@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 
@@ -25,6 +26,8 @@ public class Game extends EuObject {
     private List<PoliticalEvent> events = new ArrayList<>();
     /** Stacks of counters of the game. */
     private List<Stack> stacks = new ArrayList<>();
+    /** Automatic competitions that happened. */
+    private List<Competition> competitions = new ArrayList<>();
     /** Orders of countries in phases. */
     private List<CountryOrder> orders = new ArrayList<>();
     /** All the chat-related stuff. */
@@ -74,6 +77,16 @@ public class Game extends EuObject {
     /** @param stacks the stacks to set. */
     public void setStacks(List<Stack> stacks) {
         this.stacks = stacks;
+    }
+
+    /** @return the competitions. */
+    public List<Competition> getCompetitions() {
+        return competitions;
+    }
+
+    /** @param competitions the competitions to set. */
+    public void setCompetitions(List<Competition> competitions) {
+        this.competitions = competitions;
     }
 
     /** @return the orders. */
