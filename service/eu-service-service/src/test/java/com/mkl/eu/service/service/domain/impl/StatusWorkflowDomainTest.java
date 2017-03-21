@@ -1213,9 +1213,11 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(3).getType());
         Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(3).getTypeObject());
         Assert.assertEquals(null, diffs.get(3).getIdObject());
-        Assert.assertEquals(1, diffs.get(3).getAttributes().size());
+        Assert.assertEquals(2, diffs.get(3).getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffs.get(3).getAttributes().get(0).getType());
         Assert.assertEquals("0", diffs.get(3).getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(3).getAttributes().get(1).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(3).getAttributes().get(1).getValue());
     }
 
     public void testEndRound() {
