@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
+	<entry key="income.exoRes">
+		<![CDATA[
+			SELECT
+				SUM(price)
+			FROM (
+  				SELECT
+  					SUM(er.NUMBER) * CAST(SUBSTRING(s.R_PROVINCE, 6, 1) AS INTEGER) AS PRICE
+  				FROM exotic_resources er
+  					INNER JOIN establishment e ON er.ID_ESTABLISHMENT = e.ID
+  					INNER JOIN counter c0 ON e.ID_COUNTER = c0.ID
+  					INNER JOIN counter c1 ON c1.type = concat(er.RESOURCE, '_PRICE')
+  					INNER JOIN stack s ON c1.ID_STACK = s.ID
+  				WHERE c0.R_COUNTRY = ':countryName'
+  					AND s.ID_GAME = :idGame
+  				GROUP BY er.RESOURCE, s.R_PROVINCE
+			) as t
+		;
+		]]>
+	</entry>
     <entry key="tech.culture">
         <![CDATA[
 			SELECT
