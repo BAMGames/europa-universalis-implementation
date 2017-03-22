@@ -16,6 +16,8 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
+import com.mkl.eu.client.service.vo.eco.Competition;
+import com.mkl.eu.client.service.vo.eco.CompetitionRound;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.BasicForce;
@@ -147,11 +149,21 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /**        Nodes about past actions         */
     /********************************************/
     /** The selected country. */
-    private ChoiceBox<PlayableCountry> choiceCountry;
+    private ChoiceBox<PlayableCountry> choiceListCountry;
     /** The selected turn. */
-    private ChoiceBox<Integer> choiceTurn;
+    private ChoiceBox<Integer> choiceListTurn;
     /** The tableList with past actions. */
     private TableView<AdministrativeAction> tableList;
+
+    /********************************************/
+    /**    Nodes about past competitions        */
+    /********************************************/
+    /** The selected turn. */
+    private ChoiceBox<Integer> choiceCompetitionTurn;
+    /** The selected competition. */
+    private ChoiceBox<Competition> choiceCompetition;
+    /** The tableList with past actions. */
+    private TableView<CompetitionRound> tableCompetition;
 
 
     /**
@@ -183,6 +195,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             tabPane.getTabs().add(createAdminForm(country));
         }
         tabPane.getTabs().add(createAdminList(country));
+        tabPane.getTabs().add(createCompetition());
 
         border.setCenter(tabPane);
 
@@ -1341,9 +1354,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         Tab tab = new Tab(message.getMessage("admin_action.list", null, globalConfiguration.getLocale()));
         tab.setClosable(false);
 
-        choiceCountry = new ChoiceBox<>();
-        choiceCountry.setItems(FXCollections.observableArrayList(game.getCountries()));
-        choiceCountry.converterProperty().set(new StringConverter<PlayableCountry>() {
+        choiceListCountry = new ChoiceBox<>();
+        choiceListCountry.setItems(FXCollections.observableArrayList(game.getCountries()));
+        choiceListCountry.converterProperty().set(new StringConverter<PlayableCountry>() {
             /** {@inheritDoc} */
             @Override
             public String toString(PlayableCountry object) {
@@ -1366,10 +1379,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        choiceTurn = new ChoiceBox<>();
+        choiceListTurn = new ChoiceBox<>();
 
         HBox hBox = new HBox();
-        hBox.getChildren().addAll(choiceCountry, choiceTurn);
+        hBox.getChildren().addAll(choiceListCountry, choiceListTurn);
 
         tableList = new TableView<>();
         configureAdminActionTable(tableList, null);
@@ -1379,7 +1392,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         tab.setContent(vBox);
 
-        choiceCountry.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        choiceListCountry.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
                 List<Integer> turns = newValue.getAdministrativeActions().stream()
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE)
@@ -1388,24 +1401,24 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         .collect(Collectors.toList());
                 Collections.sort(turns, Comparator.reverseOrder());
                 turns.add(0, 0);
-                Integer turnBefore = choiceTurn.getSelectionModel().getSelectedItem();
-                choiceTurn.setItems(FXCollections.observableArrayList(turns));
+                Integer turnBefore = choiceListTurn.getSelectionModel().getSelectedItem();
+                choiceListTurn.setItems(FXCollections.observableArrayList(turns));
                 if (turns.contains(turnBefore)) {
-                    choiceTurn.getSelectionModel().select(turnBefore);
+                    choiceListTurn.getSelectionModel().select(turnBefore);
                 }
             }
         });
-        choiceCountry.getSelectionModel().select(country);
+        choiceListCountry.getSelectionModel().select(country);
 
-        choiceTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        choiceListTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue == 0) {
-                List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
+                List<AdministrativeAction> actions = choiceListCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE)
                         .collect(Collectors.toList());
                 Collections.sort(actions, Comparator.comparing(AdministrativeAction::getTurn).reversed());
                 tableList.setItems(FXCollections.observableArrayList(actions));
             } else if (!newValue.equals(oldValue)) {
-                List<AdministrativeAction> actions = choiceCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
+                List<AdministrativeAction> actions = choiceListCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE && action.getTurn().equals(newValue))
                         .collect(Collectors.toList());
                 tableList.setItems(FXCollections.observableArrayList(actions));
@@ -1419,8 +1432,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * Update the list of past actions.
      */
     private void updateActionList() {
-        PlayableCountry country = choiceCountry.getSelectionModel().getSelectedItem();
-        Integer turn = choiceTurn.getSelectionModel().getSelectedItem();
+        PlayableCountry country = choiceListCountry.getSelectionModel().getSelectedItem();
+        Integer turn = choiceListTurn.getSelectionModel().getSelectedItem();
         if (country != null && turn != null) {
             List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
                     .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE &&
@@ -1478,19 +1491,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getDie() == null ? "" : param.getValue().getDie().toString()));
             table.getColumns().add(column);
 
-            column = new TableColumn<>(message.getMessage("admin_action.secondary_die", null, globalConfiguration.getLocale()));
-            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
-            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getSecondaryDie() == null ? "" : param.getValue().getSecondaryDie().toString()));
-            table.getColumns().add(column);
-
-            column = new TableColumn<>(message.getMessage("admin_action.secondary_result", null, globalConfiguration.getLocale()));
-            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
-            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.secondary_result." + param.getValue().isSecondaryResult(), null, globalConfiguration.getLocale())));
-            table.getColumns().add(column);
-
             column = new TableColumn<>(message.getMessage("admin_action.result", null, globalConfiguration.getLocale()));
-            column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
-            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("admin_action.result." + param.getValue().getResult(), null, globalConfiguration.getLocale())));
+            column.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
+            column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getResult(param.getValue().getResult(), param.getValue().getSecondaryDie(),
+                    param.getValue().isSecondaryResult())));
             table.getColumns().add(column);
         }
 
@@ -1548,6 +1552,152 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         }
 
         return info.toString();
+    }
+
+    /**
+     * Creates the tab for the competitions.
+     *
+     * @return the tab for the competitions.
+     */
+    private Tab createCompetition() {
+        Tab tab = new Tab(message.getMessage("admin_action.competitions", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+
+        choiceCompetitionTurn = new ChoiceBox<>();
+
+        choiceCompetition = new ChoiceBox<>();
+        choiceCompetition.converterProperty().set(new StringConverter<Competition>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(Competition object) {
+                String province = message.getMessage(object.getProvince(), null, globalConfiguration.getLocale());
+                String type = message.getMessage("competition.type." + object.getType(), null, globalConfiguration.getLocale());
+                return province + " - " + type;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Competition fromString(String string) {
+                return null;
+            }
+        });
+
+        HBox hBox = new HBox();
+        hBox.getChildren().addAll(choiceCompetitionTurn, choiceCompetition);
+
+        tableCompetition = new TableView<>();
+        configureCompetitions(tableCompetition);
+
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(hBox, tableCompetition);
+
+        tab.setContent(vBox);
+
+        choiceCompetitionTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                choiceCompetition.setItems(null);
+            } else if (!newValue.equals(oldValue)) {
+                List<Competition> competitions = game.getCompetitions().stream()
+                        .filter(comp -> comp.getTurn().equals(newValue))
+                        .collect(Collectors.toList());
+                choiceCompetition.setItems(FXCollections.observableArrayList(competitions));
+            }
+        });
+
+        choiceCompetition.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                tableCompetition.setItems(null);
+            } else if (!newValue.equals(oldValue)) {
+                Collections.sort(newValue.getRounds(), (o1, o2) -> {
+                    int compare = o1.getRound().compareTo(o2.getRound());
+                    if (compare == 0) {
+                        compare = o1.getCountry().compareTo(o2.getCountry());
+                    }
+                    return compare;
+                });
+                tableCompetition.setItems(FXCollections.observableArrayList(newValue.getRounds()));
+            }
+        });
+
+        updateCompetitions();
+
+        return tab;
+    }
+
+    /**
+     * Update the list of competitions.
+     */
+    private void updateCompetitions() {
+        Integer turn = choiceCompetitionTurn.getSelectionModel().getSelectedItem();
+        Competition competition = choiceCompetition.getSelectionModel().getSelectedItem();
+
+        List<Integer> turns = game.getCompetitions().stream()
+                .map(Competition::getTurn)
+                .distinct()
+                .collect(Collectors.toList());
+        choiceCompetitionTurn.setItems(FXCollections.observableArrayList(turns));
+
+        if (turn != null) {
+            choiceCompetitionTurn.getSelectionModel().select(turn);
+            if (competition != null) {
+                choiceCompetition.getSelectionModel().select(competition);
+            }
+        }
+    }
+
+    private void configureCompetitions(TableView<CompetitionRound> table) {
+        table.setTableMenuButtonVisible(true);
+        table.setPrefWidth(750);
+        TableColumn<CompetitionRound, String> column;
+
+        column = new TableColumn<>(message.getMessage("admin_action.competition.round", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        column.setCellValueFactory(new PropertyValueFactory<>("round"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("admin_action.competition.country", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage(param.getValue().getCountry(), null, globalConfiguration.getLocale())));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("admin_action.competition.column", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        column.setCellValueFactory(new PropertyValueFactory<>("column"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("admin_action.competition.die", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        column.setCellValueFactory(new PropertyValueFactory<>("die"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("admin_action.competition.result", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getResult(param.getValue().getResult(), param.getValue().getSecondaryDie(),
+                param.getValue().isSecondaryResult())));
+        table.getColumns().add(column);
+    }
+
+    /**
+     * Displays the result of an administrative action/competition round.
+     *
+     * @param result          main result.
+     * @param secondaryDie    if result is average, another die is rolled.
+     * @param secondaryResult if another die was rolled, tells if it was a success or not.
+     * @return the display of a result.
+     */
+    private String getResult(ResultEnum result, Integer secondaryDie, Boolean secondaryResult) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(message.getMessage("admin_action.result." + result, null, globalConfiguration.getLocale()));
+        if (secondaryDie != null && secondaryResult != null) {
+            sb.append(" (")
+                    .append(secondaryDie)
+                    .append(" -> ")
+                    .append(message.getMessage("admin_action.secondary_result." + secondaryResult, null, globalConfiguration.getLocale()))
+                    .append(")");
+        }
+
+        return sb.toString();
     }
 
     /**
