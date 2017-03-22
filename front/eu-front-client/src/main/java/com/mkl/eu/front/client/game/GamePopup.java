@@ -8,10 +8,7 @@ import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
-import com.mkl.eu.client.service.service.eco.AdministrativeActionCountry;
-import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
-import com.mkl.eu.client.service.service.eco.LoadAdminActionsRequest;
-import com.mkl.eu.client.service.service.eco.LoadEcoSheetsRequest;
+import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.util.GameUtil;
@@ -26,6 +23,7 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
+import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
@@ -56,6 +54,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1127,10 +1126,23 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                     }
                 }
             } catch (FunctionalException e) {
-                LOGGER.error("Can't load economic sheets.", e);
+                LOGGER.error("Can't load administrative actions.", e);
+            }
+
+            SimpleRequest<LoadCompetitionsRequest> requestComp = new SimpleRequest<>();
+            authentHolder.fillAuthentInfo(requestComp);
+            requestComp.setRequest(new LoadCompetitionsRequest(gameConfig.getIdGame(), turn));
+            try {
+                java.util.List<Competition> competitions = economicService.loadCompetitions(requestComp);
+
+                if (CollectionUtils.isNotEmpty(competitions)) {
+                    game.getCompetitions().addAll(competitions);
+                }
+            } catch (FunctionalException e) {
+                LOGGER.error("Can't load competitions.", e);
             }
         } else {
-            LOGGER.error("Missing turn in invalidate sheet event.");
+            LOGGER.error("Missing turn in invalidate administrative action event.");
         }
     }
 

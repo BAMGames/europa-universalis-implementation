@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.impl.GenericDaoImpl;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,20 @@ public class AdminActionDaoImpl extends GenericDaoImpl<AdministrativeActionEntit
 
         //noinspection unchecked
         return (List<AdministrativeActionEntity>) criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<CompetitionEntity> findCompetitions(Integer turn, Long idGame) {
+        Criteria criteria = getSession().createCriteria(CompetitionEntity.class);
+
+        if (turn != null) {
+            criteria.add(Restrictions.eq("turn", turn));
+        }
+        criteria.add(Restrictions.eq("game.id", idGame));
+
+        //noinspection unchecked
+        return (List<CompetitionEntity>) criteria.list();
     }
 
     /** {@inheritDoc} */

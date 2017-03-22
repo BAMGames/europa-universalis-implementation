@@ -1808,6 +1808,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                     updateTechnologyNode(country);
                 }
                 updateActionList();
+                updateCompetitions();
                 break;
             default:
                 break;

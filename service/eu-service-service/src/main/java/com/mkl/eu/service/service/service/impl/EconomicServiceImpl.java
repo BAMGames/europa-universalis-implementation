@@ -17,6 +17,7 @@ import com.mkl.eu.client.service.util.MaintenanceUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
@@ -25,6 +26,7 @@ import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
+import com.mkl.eu.service.service.mapping.eco.CompetitionMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.country.IPlayableCountryDao;
@@ -105,6 +107,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Administrative action mapping. */
     @Autowired
     private AdministrativeActionMapping adminActMapping;
+    /** Competition mapping. */
+    @Autowired
+    private CompetitionMapping competitionMapping;
     /** OEUtil. */
     @Autowired
     private IOEUtil oeUtil;
@@ -136,6 +141,19 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         List<AdministrativeActionEntity> adminActions = adminActionDao.findDoneAdminActions(request.getRequest().getTurn(), request.getRequest().getIdGame());
 
         return adminActMapping.oesToVosCountry(adminActions);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Competition> loadCompetitions(SimpleRequest<LoadCompetitionsRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_COMPETITIONS).setParams(METHOD_LOAD_COMPETITIONS));
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_COMPETITIONS, PARAMETER_REQUEST).setParams(METHOD_LOAD_COMPETITIONS));
+
+        List<CompetitionEntity> competitions = adminActionDao.findCompetitions(request.getRequest().getTurn(), request.getRequest().getIdGame());
+
+        return competitionMapping.oesToVos(competitions, new HashMap<>());
     }
 
     /** {@inheritDoc} */

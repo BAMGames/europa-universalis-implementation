@@ -48,6 +48,8 @@ public interface INameConstants {
     String PARAMETER_LOAD_ECO_SHEETS = "loadEcoSheets";
     /** Name of the parameter loadAdminActions. */
     String PARAMETER_LOAD_ADM_ACT = "loadAdminActions";
+    /** Name of the parameter loadCompetitions. */
+    String PARAMETER_LOAD_COMPETITIONS = "loadCompetitions";
     /** Name of the parameter addAdminAction. */
     String PARAMETER_ADD_ADM_ACT = "addAdminAction";
     /** Name of the parameter removeAdminAction. */
@@ -132,6 +134,8 @@ public interface INameConstants {
     String METHOD_LOAD_ECO_SHEETS = "loadEcoSheets";
     /** Name of the method loadAdminActions. */
     String METHOD_LOAD_ADM_ACT = "loadAdminActions";
+    /** Name of the method loadCompetitions. */
+    String METHOD_LOAD_COMPETITIONS = "loadCompetitions";
     /** Name of the method addAdminAction. */
     String METHOD_ADD_ADM_ACT = "addAdminAction";
     /** Name of the method removeAdminAction. */

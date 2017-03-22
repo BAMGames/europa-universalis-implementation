@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
 
 import java.util.List;
 
@@ -32,6 +33,15 @@ public interface IAdminActionDao extends IGenericDao<AdministrativeActionEntity,
      * @return the administrative actions that matches.
      */
     List<AdministrativeActionEntity> findDoneAdminActions(Integer turn, Long idGame);
+
+    /**
+     * Find the competitions that matches.
+     *
+     * @param turn   turn of the competition.
+     * @param idGame the id of the game.
+     * @return the competitions that matches.
+     */
+    List<CompetitionEntity> findCompetitions(Integer turn, Long idGame);
 
     /**
      * @param province the name of the ROTW province.

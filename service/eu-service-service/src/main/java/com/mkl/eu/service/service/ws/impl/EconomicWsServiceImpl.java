@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.eco.Competition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
@@ -35,14 +36,20 @@ public class EconomicWsServiceImpl extends SpringBeanAutowiringSupport implement
 
     /** {@inheritDoc} */
     @Override
-    public List<EconomicalSheetCountry> loadEconomicSheets(SimpleRequest<LoadEcoSheetsRequest> loadEcoSheets) throws FunctionalException, TechnicalException {
-        return economicService.loadEconomicSheets(loadEcoSheets);
+    public List<EconomicalSheetCountry> loadEconomicSheets(SimpleRequest<LoadEcoSheetsRequest> request) throws FunctionalException, TechnicalException {
+        return economicService.loadEconomicSheets(request);
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<AdministrativeActionCountry> loadAdminActions(SimpleRequest<LoadAdminActionsRequest> loadAdminActions) throws FunctionalException, TechnicalException {
-        return economicService.loadAdminActions(loadAdminActions);
+    public List<AdministrativeActionCountry> loadAdminActions(SimpleRequest<LoadAdminActionsRequest> request) throws FunctionalException, TechnicalException {
+        return economicService.loadAdminActions(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Competition> loadCompetitions(SimpleRequest<LoadCompetitionsRequest> request) throws FunctionalException, TechnicalException {
+        return economicService.loadCompetitions(request);
     }
 
     /** {@inheritDoc} */

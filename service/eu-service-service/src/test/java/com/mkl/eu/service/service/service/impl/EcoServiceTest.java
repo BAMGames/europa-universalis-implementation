@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
@@ -21,6 +22,7 @@ import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
+import com.mkl.eu.service.service.mapping.eco.CompetitionMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
@@ -107,6 +109,9 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private AdministrativeActionMapping admActMapping;
+
+    @Mock
+    private CompetitionMapping competitionMapping;
 
     @Mock
     private ChatMapping chatMapping;
@@ -390,7 +395,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     public void testLoadAdminActions() {
         try {
             economicService.loadAdminActions(null);
-            Assert.fail("Should break because loadEcoSheets is null");
+            Assert.fail("Should break because loadAdminActions is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
             Assert.assertEquals("loadAdminActions", e.getParams()[0]);
@@ -425,6 +430,50 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             inOrder.verify(admActMapping).oesToVosCountry(actions);
 
             Assert.assertEquals(admActions, actionCountries);
+        } catch (FunctionalException e) {
+            Assert.fail("Should not break " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testLoadCompetitions() {
+        try {
+            economicService.loadCompetitions(null);
+            Assert.fail("Should break because loadCompetitions is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadCompetitions", e.getParams()[0]);
+        }
+
+        Request<LoadCompetitionsRequest> request = new Request<>();
+
+        try {
+            economicService.loadCompetitions(request);
+            Assert.fail("Should break because loadCompetitions.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("loadCompetitions.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new LoadCompetitionsRequest(1L, 2));
+
+        List<CompetitionEntity> competitionEntities = new ArrayList<>();
+        competitionEntities.add(new CompetitionEntity());
+        when(adminActionDao.findCompetitions(2, 1L)).thenReturn(competitionEntities);
+        List<Competition> comptetitionVos = new ArrayList<>();
+        comptetitionVos.add(new Competition());
+        comptetitionVos.add(new Competition());
+        when(competitionMapping.oesToVos(competitionEntities, new HashMap<>())).thenReturn(comptetitionVos);
+
+        try {
+            List<Competition> competitions = economicService.loadCompetitions(request);
+
+            InOrder inOrder = inOrder(adminActionDao, competitionMapping);
+
+            inOrder.verify(adminActionDao).findCompetitions(2, 1L);
+            inOrder.verify(competitionMapping).oesToVos(competitionEntities, new HashMap<>());
+
+            Assert.assertEquals(competitions, comptetitionVos);
         } catch (FunctionalException e) {
             Assert.fail("Should not break " + e.getMessage());
         }

@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.vo.enumeration.AdminActionTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.service.service.persistence.eco.IAdminActionDao;
 import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -196,6 +197,37 @@ public class AdminActionDaoImplTest {
         actions = adminActionDao.findDoneAdminActions(2, 1L);
 
         Assert.assertEquals(0, actions.size());
+    }
+
+    @Test
+    public void testFindCompetitions() {
+        List<CompetitionEntity> competitions;
+
+        competitions = adminActionDao.findCompetitions(null, null);
+
+        Assert.assertEquals(0, competitions.size());
+
+        competitions = adminActionDao.findCompetitions(null, 3L);
+
+        Assert.assertEquals(0, competitions.size());
+
+        competitions = adminActionDao.findCompetitions(null, 2L);
+
+        Assert.assertEquals(0, competitions.size());
+
+        competitions = adminActionDao.findCompetitions(null, 1L);
+
+        Assert.assertEquals(1, competitions.size());
+        Assert.assertEquals(2L, competitions.get(0).getId().longValue());
+
+        competitions = adminActionDao.findCompetitions(1, 1L);
+
+        Assert.assertEquals(1, competitions.size());
+        Assert.assertEquals(2L, competitions.get(0).getId().longValue());
+
+        competitions = adminActionDao.findCompetitions(2, 1L);
+
+        Assert.assertEquals(0, competitions.size());
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.mkl.eu.client.common.vo.SimpleRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.eco.Competition;
 
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -34,24 +35,35 @@ public interface IEconomicService extends INameConstants {
     /**
      * Load economical sheets.
      *
-     * @param loadEcoSheets info about the sheets to load.
+     * @param request info about the sheets to load.
      * @return the economical sheets.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    List<EconomicalSheetCountry> loadEconomicSheets(@WebParam(name = PARAMETER_LOAD_ECO_SHEETS) SimpleRequest<LoadEcoSheetsRequest> loadEcoSheets) throws FunctionalException, TechnicalException;
+    List<EconomicalSheetCountry> loadEconomicSheets(@WebParam(name = PARAMETER_LOAD_ECO_SHEETS) SimpleRequest<LoadEcoSheetsRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * Load administrative actions.
      *
-     * @param loadAdminActions info about the admin actions to load.
+     * @param request info about the admin actions to load.
      * @return the administrative actions.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    List<AdministrativeActionCountry> loadAdminActions(@WebParam(name = PARAMETER_LOAD_ADM_ACT) SimpleRequest<LoadAdminActionsRequest> loadAdminActions) throws FunctionalException, TechnicalException;
+    List<AdministrativeActionCountry> loadAdminActions(@WebParam(name = PARAMETER_LOAD_ADM_ACT) SimpleRequest<LoadAdminActionsRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Load competitions.
+     *
+     * @param request info about the competitions to load.
+     * @return the competitions.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    List<Competition> loadCompetitions(@WebParam(name = PARAMETER_LOAD_COMPETITIONS) SimpleRequest<LoadCompetitionsRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * Adds a PLANNED administrative action (does not compute it).
