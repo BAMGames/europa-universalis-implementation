@@ -7,6 +7,7 @@ import com.mkl.eu.service.service.mapping.country.PlayableCountryMapping;
 import com.mkl.eu.service.service.mapping.country.RelationMapping;
 import com.mkl.eu.service.service.mapping.diplo.CountryOrderMapping;
 import com.mkl.eu.service.service.mapping.eco.CompetitionMapping;
+import com.mkl.eu.service.service.mapping.eco.TradeFleetMapping;
 import com.mkl.eu.service.service.mapping.event.PoliticalEventMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class GameMapping {
     /** Mapping for stacks. */
     @Autowired
     private StackMapping stackMapping;
+    /** Mapping for trade fleets. */
+    @Autowired
+    private TradeFleetMapping tradeFleetMapping;
     /** Mapping for competition. */
     @Autowired
     private CompetitionMapping competitionMapping;
@@ -69,6 +73,8 @@ public class GameMapping {
         target.setRelations(relationMapping.oesToVos(source.getRelations(), objectsCreated));
 
         target.setStacks(stackMapping.oesToVos(source.getStacks(), objectsCreated));
+
+        target.setTradeFleets(tradeFleetMapping.oesToVos(source.getTradeFleets(), objectsCreated));
 
         target.setCompetitions(competitionMapping.oesToVos(source.getCompetitions(), objectsCreated));
 

@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.Competition;
+import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 
@@ -26,6 +27,8 @@ public class Game extends EuObject {
     private List<PoliticalEvent> events = new ArrayList<>();
     /** Stacks of counters of the game. */
     private List<Stack> stacks = new ArrayList<>();
+    /** Trade fleets of the game. */
+    private List<TradeFleet> tradeFleets = new ArrayList<>();
     /** Automatic competitions that happened. */
     private List<Competition> competitions = new ArrayList<>();
     /** Orders of countries in phases. */
@@ -77,6 +80,16 @@ public class Game extends EuObject {
     /** @param stacks the stacks to set. */
     public void setStacks(List<Stack> stacks) {
         this.stacks = stacks;
+    }
+
+    /** @return the tradeFleets. */
+    public List<TradeFleet> getTradeFleets() {
+        return tradeFleets;
+    }
+
+    /** @param tradeFleets the tradeFleets to set. */
+    public void setTradeFleets(List<TradeFleet> tradeFleets) {
+        this.tradeFleets = tradeFleets;
     }
 
     /** @return the competitions. */

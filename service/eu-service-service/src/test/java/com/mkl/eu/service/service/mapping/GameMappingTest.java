@@ -10,10 +10,7 @@ import com.mkl.eu.client.service.vo.country.Monarch;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
-import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
-import com.mkl.eu.client.service.vo.eco.Competition;
-import com.mkl.eu.client.service.vo.eco.CompetitionRound;
-import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
+import com.mkl.eu.client.service.vo.eco.*;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
 import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
@@ -25,10 +22,7 @@ import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.AdministrativeActionEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.CompetitionRoundEntity;
-import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.*;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
 import org.junit.Assert;
 import org.junit.Test;
@@ -170,6 +164,8 @@ public class GameMappingTest {
         object.setRelations(createRelationsVos(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksVos());
+
+        object.setTradeFleets(createTradeFleetsVos());
 
         object.setCompetitions(createCompetitionsVos());
 
@@ -389,6 +385,24 @@ public class GameMappingTest {
         return objects;
     }
 
+    private List<TradeFleet> createTradeFleetsVos() {
+        List<TradeFleet> objects = new ArrayList<>();
+
+        TradeFleet object = new TradeFleet();
+        object.setId(1L);
+        object.setCountry("france");
+        object.setProvince("ZPFrance");
+        object.setLevel(4);
+        objects.add(object);
+        object = new TradeFleet();
+        objects.add(object);
+        object.setId(2L);
+        object.setCountry("angleterre");
+        object.setProvince("ZPFrance");
+
+        return objects;
+    }
+
     private List<Monarch> createMonarchsVos() {
         List<Monarch> objects = new ArrayList<>();
 
@@ -503,6 +517,8 @@ public class GameMappingTest {
         object.setRelations(createRelationsEntities(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
 
         object.setStacks(createStacksEntities());
+
+        object.setTradeFleets(createTradeFleetsEntities());
 
         object.setCompetitions(createCompetitionsEntities());
 
@@ -721,6 +737,24 @@ public class GameMappingTest {
         object.setMovePhase(MovePhaseEnum.NOT_MOVED);
         object.setBesieged(false);
         objects.add(object);
+
+        return objects;
+    }
+
+    private List<TradeFleetEntity> createTradeFleetsEntities() {
+        List<TradeFleetEntity> objects = new ArrayList<>();
+
+        TradeFleetEntity object = new TradeFleetEntity();
+        object.setId(1L);
+        object.setCountry("france");
+        object.setProvince("ZPFrance");
+        object.setLevel(4);
+        objects.add(object);
+        object = new TradeFleetEntity();
+        objects.add(object);
+        object.setId(2L);
+        object.setCountry("angleterre");
+        object.setProvince("ZPFrance");
 
         return objects;
     }
