@@ -17,10 +17,10 @@ public interface IReferentielConstants {
             "ZPturquie", "ZPvenise"};
     /** List of the names of the trade zones in the atlantic trade center. */
     String[] TRADE_ZONES_ATLANTIC = {"ZMAmerique", "ZMCanarias", "ZMCaraibes", "ZMGuinee",
-            "ZMNord", "ZMPatagonie", "ZMPerou", "ZMRecife", "ZMTempetes",
+            "ZMNord", "ZMPatagonie", "ZMPerou", "ZMRecife",
             "ZPangleterre", "ZPBaltique", "ZPespagne", "ZPfrance", "ZPhollande", "ZPrussie"};
     /** List of the names of the trade zones in the indian trade center. */
-    String[] TRADE_ZONES_INDIEN = {"ZMArabie", "ZMChine", "ZMIndien"};
+    String[] TRADE_ZONES_INDIEN = {"ZMArabie", "ZMChine", "ZMIndien", "ZMTempetes"};
     /** List of the names of the trade zones that accept trade. */
     String[] TRADE_ZONES_TRADE = {"ZMArabie", "ZMCanarias", "ZMChine", "ZMGuinee", "ZMIndien"};
 }
