@@ -208,7 +208,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      * @param markers displayed on the map.
      */
     private void initEco(Map<String, Marker> markers) {
-        ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), gameConfig);
+        ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
         List<IMapMarker> mapMarkers = markers.values().stream().filter(marker -> marker instanceof IMapMarker).map(marker -> (IMapMarker) marker).collect(Collectors.toList());
         adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);

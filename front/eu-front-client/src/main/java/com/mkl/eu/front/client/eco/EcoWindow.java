@@ -7,7 +7,9 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
+import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
+import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
@@ -18,9 +20,11 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -33,10 +37,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -66,14 +69,22 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private AuthentHolder authentHolder;
     /** Countries in the game. */
     private List<PlayableCountry> countries;
+    /** Trade fleets in the game. */
+    private List<TradeFleet> tradeFleets;
     /** Game configuration. */
     private GameConfiguration gameConfig;
     /** Stage of the window. */
     private Stage stage;
-    /** Combobox for the countries for sheet B. */
+    /** ChoiceBox for the countries for sheet B. */
     private ChoiceBox<PlayableCountry> choiceB;
     /** TableView for the sheets B. */
     private TableView<List<String>> tableB;
+    /** TableView for trade fleets in mediterranean trade center. */
+    private TableView<TradeFleetSheet> tableTFMed;
+    /** TableView for trade fleets in atlantic trade center. */
+    private TableView<TradeFleetSheet> tableTFAtl;
+    /** TableView for trade fleets in indian trade center. */
+    private TableView<TradeFleetSheet> tableTFInd;
 
     static {
         config = new ArrayList<>();
@@ -131,11 +142,13 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     /**
      * Constructor.
      *
-     * @param countries  the countries to set.
-     * @param gameConfig the gameConfig to set.
+     * @param countries   the countries to set.
+     * @param tradeFleets the tradeFleets to set.
+     * @param gameConfig  the gameConfig to set.
      */
-    public EcoWindow(List<PlayableCountry> countries, GameConfiguration gameConfig) {
+    public EcoWindow(List<PlayableCountry> countries, List<TradeFleet> tradeFleets, GameConfiguration gameConfig) {
         this.countries = countries;
+        this.tradeFleets = tradeFleets;
         this.gameConfig = gameConfig;
     }
 
@@ -154,6 +167,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
         tabPane.getTabs().add(createSheetA(country));
         tabPane.getTabs().add(createSheetB(country));
+        tabPane.getTabs().add(createTradeFleets());
 
         border.setCenter(tabPane);
 
@@ -309,6 +323,183 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * Creates the tab for the trade fleets.
+     *
+     * @return the tab for the trade fleets.
+     */
+    private Tab createTradeFleets() {
+        Tab tab = new Tab(message.getMessage("eco.tfs", null, globalConfiguration.getLocale()));
+
+        List<String> tradeZones = tradeFleets.stream()
+                .map(TradeFleet::getProvince)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<TradeFleetSheet> sheets = new ArrayList<>();
+        for (String tradeZone : tradeZones) {
+            TradeFleetSheet sheet = new TradeFleetSheet();
+
+            sheet.setTradeZone(tradeZone);
+            sheet.setLevelEngland(getLevel(tradeZone, PlayableCountry.ENGLAND));
+            sheet.setLevelHolland(getLevel(tradeZone, PlayableCountry.HOLLAND));
+            sheet.setLevelFrance(getLevel(tradeZone, PlayableCountry.FRANCE));
+            sheet.setLevelVenice(getLevel(tradeZone, PlayableCountry.VENICE));
+            sheet.setLevelTurkey(getLevel(tradeZone, PlayableCountry.TURKEY));
+            sheet.setLevelSpain(getLevel(tradeZone, PlayableCountry.SPAIN));
+            sheet.setLevelPortugal(getLevel(tradeZone, PlayableCountry.PORTUGAL));
+            sheet.setLevelSweden(getLevel(tradeZone, PlayableCountry.SWEDEN));
+            sheet.setLevelPoland(getLevel(tradeZone, PlayableCountry.POLAND));
+            sheet.setLevelPrusse(getLevel(tradeZone, PlayableCountry.PRUSSE));
+            sheet.setLevelHabsbourg(getLevel(tradeZone, PlayableCountry.HABSBOURG));
+            sheet.setLevelRussia(getLevel(tradeZone, PlayableCountry.RUSSIA));
+            sheet.setOtherLevels(tradeFleets.stream()
+                    .filter(tf -> StringUtils.equals(tradeZone, tf.getProvince())
+                            && Arrays.binarySearch(PlayableCountry.TRADE_FLEET_MAJORS, tf.getCountry()) < 0)
+                    .collect(Collectors.toMap(TradeFleet::getCountry, TradeFleet::getLevel)));
+
+            sheets.add(sheet);
+        }
+
+        Text titleMed = new Text(message.getMessage("eco.tfs.mediterranean", null, globalConfiguration.getLocale()));
+        tableTFMed = new TableView<>();
+        configureTableTradeFleet(tableTFMed);
+
+        Text titleAtl = new Text(message.getMessage("eco.tfs.atlantic", null, globalConfiguration.getLocale()));
+        tableTFAtl = new TableView<>();
+        configureTableTradeFleet(tableTFAtl);
+
+        Text titleInd = new Text(message.getMessage("eco.tfs.indian", null, globalConfiguration.getLocale()));
+        tableTFInd = new TableView<>();
+        configureTableTradeFleet(tableTFInd);
+
+        tableTFMed.setItems(FXCollections.observableList(sheets.stream()
+                .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_MEDITERRANEAN, tf.getTradeZone()) >= 0)
+                .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
+                .collect(Collectors.toList())));
+        tableTFAtl.setItems(FXCollections.observableList(sheets.stream()
+                .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_ATLANTIC, tf.getTradeZone()) >= 0)
+                .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
+                .collect(Collectors.toList())));
+        tableTFInd.setItems(FXCollections.observableList(sheets.stream()
+                .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_INDIEN, tf.getTradeZone()) >= 0)
+                .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
+                .collect(Collectors.toList())));
+
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(titleMed, tableTFMed, titleAtl, tableTFAtl, titleInd, tableTFInd);
+
+        tab.setContent(vBox);
+
+        return tab;
+    }
+
+    /**
+     * @param province trade zone where is the trade fleet.
+     * @param country  owner of the trade fleet.
+     * @return the trade fleet level.
+     */
+    private Integer getLevel(String province, String country) {
+        return tradeFleets.stream()
+                .filter(tf -> StringUtils.equals(province, tf.getProvince()) &&
+                        StringUtils.equals(country, tf.getCountry()))
+                .map(TradeFleet::getLevel)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Configure the trade fleets table.
+     *
+     * @param table the trade fleets table.
+     */
+    private void configureTableTradeFleet(TableView<TradeFleetSheet> table) {
+        table.setTableMenuButtonVisible(true);
+        table.setPrefWidth(750);
+        TableColumn<TradeFleetSheet, String> column;
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.country", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage(param.getValue().getTradeZone(), null, globalConfiguration.getLocale())));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.england", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelEngland"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.holland", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelHolland"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.france", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelFrance"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.venice", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelVenice"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.turkey", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelTurkey"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.spain", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelSpain"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.portugal", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelPortugal"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.sweden", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelSweden"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.poland", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelPoland"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.prusse", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelPrusse"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.habsbourg", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelHabsbourg"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.russia", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        column.setCellValueFactory(new PropertyValueFactory<>("levelRussia"));
+        table.getColumns().add(column);
+
+        column = new TableColumn<>(message.getMessage("eco.tfs.others", null, globalConfiguration.getLocale()));
+        column.prefWidthProperty().bind(table.widthProperty().multiply(0.2));
+        column.setCellValueFactory(param -> {
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, Integer> entry : param.getValue().getOtherLevels().entrySet()) {
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append(message.getMessage(entry.getKey(), null, globalConfiguration.getLocale()))
+                        .append(" ")
+                        .append(entry.getValue());
+            }
+            return new ReadOnlyStringWrapper(sb.toString());
+        });
+        table.getColumns().add(column);
+    }
+
+    /**
      * Returns the String value of an integer.
      *
      * @param i to format in String.
@@ -445,6 +636,191 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         /** @return the index. */
         public int getIndex() {
             return index;
+        }
+    }
+
+    /**
+     * Object used in the table view to display all the trade fleets in a single trade zone.
+     */
+    public class TradeFleetSheet {
+        /** Trade zone. */
+        private String tradeZone;
+        /** Trade fleet level of the country England. */
+        private Integer levelEngland;
+        /** Trade fleet level of the country Holland. */
+        private Integer levelHolland;
+        /** Trade fleet level of the country France. */
+        private Integer levelFrance;
+        /** Trade fleet level of the country Venice. */
+        private Integer levelVenice;
+        /** Trade fleet level of the country Turkey. */
+        private Integer levelTurkey;
+        /** Trade fleet level of the country Spain. */
+        private Integer levelSpain;
+        /** Trade fleet level of the country Portugal. */
+        private Integer levelPortugal;
+        /** Trade fleet level of the country Sweden. */
+        private Integer levelSweden;
+        /** Trade fleet level of the country Poland. */
+        private Integer levelPoland;
+        /** Trade fleet level of the country Prusse. */
+        private Integer levelPrusse;
+        /** Trade fleet level of the country Habsbourg. */
+        private Integer levelHabsbourg;
+        /** Trade fleet level of the country Russia. */
+        private Integer levelRussia;
+        /** Trade fleet levels of other minor countries. */
+        private Map<String, Integer> otherLevels = new HashMap<>();
+
+        /** @return the tradeZone. */
+        public String getTradeZone() {
+            return tradeZone;
+        }
+
+        /** @param tradeZone the tradeZone to set. */
+        public void setTradeZone(String tradeZone) {
+            this.tradeZone = tradeZone;
+        }
+
+        /** @return the levelEngland. */
+        public Integer getLevelEngland() {
+            return levelEngland;
+        }
+
+        /** @param levelEngland the levelEngland to set. */
+        public void setLevelEngland(Integer levelEngland) {
+            this.levelEngland = levelEngland;
+        }
+
+        /** @return the levelHolland. */
+        public Integer getLevelHolland() {
+            return levelHolland;
+        }
+
+        /** @param levelHolland the levelHolland to set. */
+        public void setLevelHolland(Integer levelHolland) {
+            this.levelHolland = levelHolland;
+        }
+
+        /** @return the levelFrance. */
+        public Integer getLevelFrance() {
+            return levelFrance;
+        }
+
+        /** @param levelFrance the levelFrance to set. */
+        public void setLevelFrance(Integer levelFrance) {
+            this.levelFrance = levelFrance;
+        }
+
+        /** @return the levelVenice. */
+        public Integer getLevelVenice() {
+            return levelVenice;
+        }
+
+        /** @param levelVenice the levelVenice to set. */
+        public void setLevelVenice(Integer levelVenice) {
+            this.levelVenice = levelVenice;
+        }
+
+        /** @return the levelTurkey. */
+        public Integer getLevelTurkey() {
+            return levelTurkey;
+        }
+
+        /** @param levelTurkey the levelTurkey to set. */
+        public void setLevelTurkey(Integer levelTurkey) {
+            this.levelTurkey = levelTurkey;
+        }
+
+        /** @return the levelSpain. */
+        public Integer getLevelSpain() {
+            return levelSpain;
+        }
+
+        /** @param levelSpain the levelSpain to set. */
+        public void setLevelSpain(Integer levelSpain) {
+            this.levelSpain = levelSpain;
+        }
+
+        /** @return the levelPortugal. */
+        public Integer getLevelPortugal() {
+            return levelPortugal;
+        }
+
+        /** @param levelPortugal the levelPortugal to set. */
+        public void setLevelPortugal(Integer levelPortugal) {
+            this.levelPortugal = levelPortugal;
+        }
+
+        /** @return the levelSweden. */
+        public Integer getLevelSweden() {
+            return levelSweden;
+        }
+
+        /** @param levelSweden the levelSweden to set. */
+        public void setLevelSweden(Integer levelSweden) {
+            this.levelSweden = levelSweden;
+        }
+
+        /** @return the levelPoland. */
+        public Integer getLevelPoland() {
+            return levelPoland;
+        }
+
+        /** @param levelPoland the levelPoland to set. */
+        public void setLevelPoland(Integer levelPoland) {
+            this.levelPoland = levelPoland;
+        }
+
+        /** @return the levelPrusse. */
+        public Integer getLevelPrusse() {
+            return levelPrusse;
+        }
+
+        /** @param levelPrusse the levelPrusse to set. */
+        public void setLevelPrusse(Integer levelPrusse) {
+            this.levelPrusse = levelPrusse;
+        }
+
+        /** @return the levelHabsbourg. */
+        public Integer getLevelHabsbourg() {
+            return levelHabsbourg;
+        }
+
+        /** @param levelHabsbourg the levelHabsbourg to set. */
+        public void setLevelHabsbourg(Integer levelHabsbourg) {
+            this.levelHabsbourg = levelHabsbourg;
+        }
+
+        /** @return the levelRussia. */
+        public Integer getLevelRussia() {
+            return levelRussia;
+        }
+
+        /** @param levelRussia the levelRussia to set. */
+        public void setLevelRussia(Integer levelRussia) {
+            this.levelRussia = levelRussia;
+        }
+
+        /** @return the otherLevels. */
+        public Map<String, Integer> getOtherLevels() {
+            return otherLevels;
+        }
+
+        /** @param otherLevels the otherLevels to set. */
+        public void setOtherLevels(Map<String, Integer> otherLevels) {
+            this.otherLevels = otherLevels;
+        }
+
+        /**
+         * Adds a trade fleet level of a minor country.
+         *
+         * @param country minor country.
+         * @param level   of the trade fleet.
+         * @return this.
+         */
+        public void addOtherLevel(String country, Integer level) {
+            otherLevels.put(country, level);
         }
     }
 }

@@ -12,6 +12,9 @@ public interface IReferentielConstants {
     String[] TRADE_ZONES_EUROPE = {"ZMCaspienne", "ZMIonienne", "ZMLion", "ZMNoire W", "ZMNord",
             "ZPBaltique", "ZPangleterre", "ZPespagne", "ZPfrance", "ZPhollande", "ZPrussie",
             "ZPturquie", "ZPvenise"};
+    /** List of the names of the trade zones in mediterranean trace center. */
+    String[] TRADE_ZONES_MEDITERRANEAN = {"ZMCaspienne", "ZMIonienne", "ZMLion", "ZMNoire W",
+            "ZPturquie", "ZPvenise"};
     /** List of the names of the trade zones in the atlantic trade center. */
     String[] TRADE_ZONES_ATLANTIC = {"ZMAmerique", "ZMCanarias", "ZMCaraibes", "ZMGuinee",
             "ZMNord", "ZMPatagonie", "ZMPerou", "ZMRecife", "ZMTempetes",

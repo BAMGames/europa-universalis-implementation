@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.event.EconomicalEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,6 +35,45 @@ public class PlayableCountry extends EuObject {
      * Name of the major country england.
      */
     public final static String ENGLAND = "angleterre";
+    /**
+     * Name of the major country holland.
+     */
+    public final static String HOLLAND = "hollande";
+    /**
+     * Name of the major country france.
+     */
+    public final static String FRANCE = "france";
+    /**
+     * Name of the major country venice.
+     */
+    public final static String VENICE = "venise";
+    /**
+     * Name of the major country portugal.
+     */
+    public final static String PORTUGAL = "portugal";
+    /**
+     * Name of the major country sweden.
+     */
+    public final static String SWEDEN = "suede";
+    /**
+     * Name of the major country prusse.
+     */
+    public final static String PRUSSE = "prusse";
+    /**
+     * Name of the major country habsbourg.
+     */
+    public final static String HABSBOURG = "habsbourg";
+    /**
+     * Array of major countries for trade fleet sheet.
+     */
+    public final static String[] TRADE_FLEET_MAJORS = new String[]{TURKEY, SPAIN, RUSSIA, POLAND,
+            ENGLAND, HOLLAND, FRANCE, VENICE, PORTUGAL, SWEDEN, PRUSSE, HABSBOURG};
+
+    static {
+        /** Sort the array so that we can use Arrays.binarySearch later on. */
+        Arrays.sort(TRADE_FLEET_MAJORS);
+    }
+
     /**
      * Name of the country.
      */
