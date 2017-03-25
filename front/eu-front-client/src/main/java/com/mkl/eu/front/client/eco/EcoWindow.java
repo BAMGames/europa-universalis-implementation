@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.eco.TradeFleet;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
@@ -75,6 +76,8 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private GameConfiguration gameConfig;
     /** Stage of the window. */
     private Stage stage;
+    /** Flag saying that a trading fleet has changed and that trade fleet tab should be updated. */
+    private boolean tradeFleetModified;
     /** ChoiceBox for the countries for sheet B. */
     private ChoiceBox<PlayableCountry> choiceB;
     /** TableView for the sheets B. */
@@ -330,6 +333,34 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private Tab createTradeFleets() {
         Tab tab = new Tab(message.getMessage("eco.tfs", null, globalConfiguration.getLocale()));
 
+
+
+        Text titleMed = new Text(message.getMessage("eco.tfs.mediterranean", null, globalConfiguration.getLocale()));
+        tableTFMed = new TableView<>();
+        configureTableTradeFleet(tableTFMed);
+
+        Text titleAtl = new Text(message.getMessage("eco.tfs.atlantic", null, globalConfiguration.getLocale()));
+        tableTFAtl = new TableView<>();
+        configureTableTradeFleet(tableTFAtl);
+
+        Text titleInd = new Text(message.getMessage("eco.tfs.indian", null, globalConfiguration.getLocale()));
+        tableTFInd = new TableView<>();
+        configureTableTradeFleet(tableTFInd);
+
+        updateTradeFleetsTab();
+
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(titleMed, tableTFMed, titleAtl, tableTFAtl, titleInd, tableTFInd);
+
+        tab.setContent(vBox);
+
+        return tab;
+    }
+
+    /**
+     * Update content of the trade fleets tab.
+     */
+    private void updateTradeFleetsTab() {
         List<String> tradeZones = tradeFleets.stream()
                 .map(TradeFleet::getProvince)
                 .distinct()
@@ -359,19 +390,6 @@ public class EcoWindow extends AbstractDiffListenerContainer {
 
             sheets.add(sheet);
         }
-
-        Text titleMed = new Text(message.getMessage("eco.tfs.mediterranean", null, globalConfiguration.getLocale()));
-        tableTFMed = new TableView<>();
-        configureTableTradeFleet(tableTFMed);
-
-        Text titleAtl = new Text(message.getMessage("eco.tfs.atlantic", null, globalConfiguration.getLocale()));
-        tableTFAtl = new TableView<>();
-        configureTableTradeFleet(tableTFAtl);
-
-        Text titleInd = new Text(message.getMessage("eco.tfs.indian", null, globalConfiguration.getLocale()));
-        tableTFInd = new TableView<>();
-        configureTableTradeFleet(tableTFInd);
-
         tableTFMed.setItems(FXCollections.observableList(sheets.stream()
                 .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_MEDITERRANEAN, tf.getTradeZone()) >= 0)
                 .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
@@ -384,13 +402,6 @@ public class EcoWindow extends AbstractDiffListenerContainer {
                 .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_INDIEN, tf.getTradeZone()) >= 0)
                 .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
                 .collect(Collectors.toList())));
-
-        VBox vBox = new VBox();
-        vBox.getChildren().addAll(titleMed, tableTFMed, titleAtl, tableTFAtl, titleInd, tableTFInd);
-
-        tab.setContent(vBox);
-
-        return tab;
     }
 
     /**
@@ -547,9 +558,23 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             case ECO_SHEET:
                 updateEcoSheet(diff);
                 break;
+            case COUNTER:
+                updateCounter(diff);
+                break;
             default:
                 break;
         }
+    }
+
+    /**
+     * Method called when all diffs of a DiffEvent have been computed.
+     */
+    public void updateComplete() {
+        if (tradeFleetModified) {
+            updateTradeFleetsTab();
+        }
+
+        tradeFleetModified = false;
     }
 
     /**
@@ -585,6 +610,41 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         }
         if (idCountry == null || idCountry.equals(idSelectedCountry)) {
             populateTable(tableB, choiceB.getSelectionModel().getSelectedItem(), config);
+        }
+    }
+
+    /**
+     * Process a counter diff event.
+     *
+     * @param diff involving a counter.
+     */
+    private void updateCounter(Diff diff) {
+        switch (diff.getType()) {
+            case MODIFY:
+                modifyCounter(diff);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Process the modify counter diff event.
+     *
+     * @param diff involving a modify counter.
+     */
+    private void modifyCounter(Diff diff) {
+        if (tradeFleetModified) {
+            return;
+        }
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TYPE);
+        if (attribute != null) {
+            CounterFaceTypeEnum type = CounterFaceTypeEnum.valueOf(attribute.getValue());
+
+            attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);
+            if (attribute != null && (type == CounterFaceTypeEnum.TRADING_FLEET_MINUS || type == CounterFaceTypeEnum.TRADING_FLEET_PLUS)) {
+                tradeFleetModified = true;
+            }
         }
     }
 

@@ -422,6 +422,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 ecoWindow.update(diff);
                 adminActionsWindow.update(diff);
             }
+            ecoWindow.updateComplete();
 
             event.getResponse().getMessages().forEach(message -> {
                 if ((message.getIdRoom() == null && message.getId() > gameConfig.getMaxIdGlobalMessage())
