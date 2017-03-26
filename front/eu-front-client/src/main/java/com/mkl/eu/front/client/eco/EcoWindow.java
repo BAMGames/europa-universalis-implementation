@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.eco;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IEconomicService;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
@@ -642,7 +643,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             CounterFaceTypeEnum type = CounterFaceTypeEnum.valueOf(attribute.getValue());
 
             attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);
-            if (attribute != null && (type == CounterFaceTypeEnum.TRADING_FLEET_MINUS || type == CounterFaceTypeEnum.TRADING_FLEET_PLUS)) {
+            if (attribute != null && CounterUtil.isTradingFleet(type)) {
                 tradeFleetModified = true;
             }
         }

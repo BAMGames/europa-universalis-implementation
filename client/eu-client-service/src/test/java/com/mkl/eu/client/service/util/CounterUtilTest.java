@@ -612,6 +612,14 @@ public class CounterUtilTest {
     }
 
     @Test
+    public void testTradingFleet() {
+        Assert.assertFalse(CounterUtil.isTradingFleet(null));
+        Assert.assertFalse(CounterUtil.isTradingFleet(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertTrue(CounterUtil.isTradingFleet(CounterFaceTypeEnum.TRADING_FLEET_MINUS));
+        Assert.assertTrue(CounterUtil.isTradingFleet(CounterFaceTypeEnum.TRADING_FLEET_PLUS));
+    }
+
+    @Test
     public void testFace() {
         Assert.assertNull(CounterUtil.getFacePlus(null));
         Assert.assertNull(CounterUtil.getFacePlus(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN));

@@ -954,6 +954,27 @@ public final class CounterUtil {
     }
 
     /**
+     * @param type of the counter to test.
+     * @return <code>true</code> if the counter face type is a trading fleet, <code>false</code> otherwise.
+     */
+    public static boolean isTradingFleet(CounterFaceTypeEnum type) {
+        boolean tf = false;
+
+        if (type != null) {
+            switch (type) {
+                case TRADING_FLEET_MINUS:
+                case TRADING_FLEET_PLUS:
+                    tf = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return tf;
+    }
+
+    /**
      * @param type face type which we want the face plus.
      * @return the face plus of a face type.
      */
