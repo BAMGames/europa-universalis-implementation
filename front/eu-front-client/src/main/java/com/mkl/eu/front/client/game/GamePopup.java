@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.chat.LoadRoomRequest;
 import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -24,6 +25,7 @@ import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.Competition;
+import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
@@ -719,7 +721,27 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         }
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);
         if (attribute != null) {
-            LOGGER.error("Establishment not yet implemented.");
+            Integer level = Integer.parseInt(attribute.getValue());
+            if (CounterUtil.isTradingFleet(counter.getType())) {
+                TradeFleet tradeFleet = game.getTradeFleets().stream()
+                        .filter(tf -> StringUtils.equals(tf.getProvince(), counter.getOwner().getProvince()) &&
+                                StringUtils.equals(tf.getCountry(), counter.getCountry()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (tradeFleet == null) {
+                    tradeFleet = new TradeFleet();
+                    tradeFleet.setCountry(counter.getCountry());
+                    tradeFleet.setProvince(counter.getOwner().getProvince());
+                    game.getTradeFleets().add(tradeFleet);
+                }
+
+                tradeFleet.setLevel(level);
+            } else if (CounterUtil.isEstablishment(counter.getType())) {
+                LOGGER.error("Establishment not yet implemented.");
+            } else {
+                LOGGER.error("Unknown effect of level for this type: " + counter.getType());
+            }
         }
     }
 

@@ -48,6 +48,11 @@ public class CounterMarker {
         return type;
     }
 
+    /** @param type the type to set. */
+    public void setType(CounterFaceTypeEnum type) {
+        this.type = type;
+    }
+
     /** @param image the image to set. */
     public void setImage(PImage image) {
         this.image = image;

@@ -145,6 +145,17 @@ public final class MarkerUtils {
     /**
      * Retrieves the image of the counter.
      *
+     * @param counter the counter.
+     * @param pApplet     pApplet rendering the image.
+     * @return the image of the counter.
+     */
+    public static PImage getImageFromCounter(CounterMarker counter, InteractiveMap pApplet) {
+        return getImageFromCounter(counter.getCountry(), counter.getType().name(), pApplet);
+    }
+
+    /**
+     * Retrieves the image of the counter.
+     *
      * @param type        of the counter.
      * @param nameCountry name of the country of the counter.
      * @param pApplet     pApplet rendering the image.

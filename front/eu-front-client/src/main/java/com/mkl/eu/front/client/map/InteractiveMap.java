@@ -127,7 +127,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
         countryMarkers.values().stream().filter(marker -> marker instanceof IMapMarker).forEach(marker -> {
             for (StackMarker stack : ((IMapMarker) marker).getStacks()) {
                 for (CounterMarker counter : stack.getCounters()) {
-                    counter.setImage(MarkerUtils.getImageFromCounter(counter.getCountry(), counter.getType().name(), this));
+                    counter.setImage(MarkerUtils.getImageFromCounter(counter, this));
                 }
             }
         });
@@ -363,6 +363,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             case REMOVE:
                 removeCounter(diff);
                 break;
+            case MODIFY:
+                modifyCounter(diff);
+                break;
             default:
                 break;
         }
@@ -542,6 +545,43 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             } else {
                 LOGGER.error("Stack to del is not the counter owner in counter remove event.");
             }
+        }
+    }
+
+    /**
+     * Process the modify counter diff event.
+     *
+     * @param diff involving a modify counter.
+     */
+    private void modifyCounter(Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        if (attribute == null) {
+            LOGGER.error("Missing province in counter modify event.");
+            return;
+        }
+        Marker prov = countryMarkers.get(attribute.getValue());
+        if (!(prov instanceof IMapMarker)) {
+            LOGGER.error("province is not a IMapMarker.");
+            return;
+        }
+        IMapMarker province = (IMapMarker) prov;
+
+        CounterMarker counter = province.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> diff.getIdObject().equals(c.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (counter == null) {
+            LOGGER.error("Missing counter in counter modify event.");
+            return;
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TYPE);
+        if (attribute != null) {
+            CounterFaceTypeEnum type = CounterFaceTypeEnum.valueOf(attribute.getValue());
+            counter.setType(type);
+            counter.setImage(MarkerUtils.getImageFromCounter(counter, this));
         }
     }
 
