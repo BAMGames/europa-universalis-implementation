@@ -283,7 +283,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
                 .max(Comparator.naturalOrder())
                 .orElse(0);
         for (EconomicalSheet sheet : country.getEconomicalSheets()) {
-            if (sheet.getTurn() < currentTurn - 10) {
+            if (sheet.getTurn() <= currentTurn - 10) {
                 continue;
             }
             for (TableConfig<EconomicalSheet> configItem : config) {
@@ -308,11 +308,12 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(1)));
         table.getColumns().add(column);
 
-        for (int i = 0; i < country.getEconomicalSheets().size(); i++) {
+        int begin = Math.max(currentTurn - 10, 0);
+        for (int i = begin; i < country.getEconomicalSheets().size(); i++) {
             column = new TableColumn<>(country.getEconomicalSheets().get(i).getTurn().toString());
             column.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
             column.setSortable(false);
-            final int index = i + 2;
+            final int index = i + 2 - begin;
             column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(index)));
             table.getColumns().add(column);
         }
