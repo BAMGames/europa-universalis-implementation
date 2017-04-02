@@ -5477,6 +5477,10 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getTradeFleets().get(4).setProvince("ZMCaraibes");
         game.getTradeFleets().get(4).setCountry("angleterre");
         game.getTradeFleets().get(4).setLevel(1);
+        game.getTradeFleets().add(new TradeFleetEntity());
+        game.getTradeFleets().get(5).setProvince("ZMCaraibes");
+        game.getTradeFleets().get(5).setCountry("portugal");
+        game.getTradeFleets().get(5).setLevel(0);
 
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setId(100L);

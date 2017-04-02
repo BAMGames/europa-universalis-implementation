@@ -2440,8 +2440,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
     /**
      * @param targetBox the number of technology box wanted.
-     * @param land type of technology.
-     * @param game the game.
+     * @param land      type of technology.
+     * @param game      the game.
      * @return the first available technology box greater or equals than targetBox.
      */
     private int getAvailableTechBox(int targetBox, boolean land, GameEntity game) {
@@ -2542,7 +2542,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @param newTfis  the trade fleets added during the administrative actions that will be updated with the destruction during automatic competition.
      */
     private void computeAutomaticTfCompetition(GameEntity game, String province, Map<String, Map<String, Integer>> newTfis) {
-        Map<String, Integer> tfPresents = game.getTradeFleets().stream().filter(tf -> StringUtils.equals(tf.getProvince(), province))
+        Map<String, Integer> tfPresents = game.getTradeFleets().stream()
+                .filter(tf -> StringUtils.equals(tf.getProvince(), province) && tf.getLevel() != null &&
+                        tf.getLevel() > 0)
                 .collect(Collectors.groupingBy(TradeFleetEntity::getCountry, Collectors.summingInt(TradeFleetEntity::getLevel)));
         if (newTfis.get(province) != null) {
             for (String country : newTfis.get(province).keySet()) {
@@ -2562,7 +2564,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             return multiple && has6;
         }, country -> additionalRemoveTfFromMaps(newTfis, province, country));
 
-        Map<String, Integer> tfPresents4More = tfPresents.entrySet().stream().filter(map -> map.getValue() >= 4)
+        Map<String, Integer> tfPresents4More = tfPresents.entrySet().stream()
+                .filter(map -> map.getValue() >= 4)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         computeSingleCompetition(game, prov, CompetitionTypeEnum.TF_4, tfPresents4More, map -> map.size() > 1,
                 country -> additionalRemoveTfFromMaps(newTfis, province, country));
@@ -2932,9 +2935,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
     /**
      * Adds all the elements of the listToAdd to the listSource.
+     *
      * @param listSource initial list.
-     * @param listToAdd list to add.
-     * @param <E> Generic parameter.
+     * @param listToAdd  list to add.
+     * @param <E>        Generic parameter.
      */
     private <E> void addAll(List<E> listSource, List<E> listToAdd) {
         if (listSource != null && listToAdd != null) {
