@@ -623,7 +623,11 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private void updateCounter(Diff diff) {
         switch (diff.getType()) {
             case MODIFY:
+            case ADD:
                 modifyCounter(diff);
+                break;
+            case REMOVE:
+                removeCounter(diff);
                 break;
             default:
                 break;
@@ -647,6 +651,25 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             if (attribute != null && CounterUtil.isTradingFleet(type)) {
                 tradeFleetModified = true;
             }
+        }
+    }
+
+    /**
+     * Process the remove counter diff event.
+     *
+     * @param diff involving a remove counter.
+     */
+    private void removeCounter(Diff diff) {
+        if (tradeFleetModified) {
+            return;
+        }
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        if (attribute != null) {
+            String province = attribute.getValue();
+            tradeFleetModified = tradeFleets.stream()
+                    .filter(tf -> StringUtils.equals(tf.getProvince(), province))
+                    .findAny()
+                    .isPresent();
         }
     }
 

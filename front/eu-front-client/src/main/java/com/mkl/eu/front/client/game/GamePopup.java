@@ -698,6 +698,8 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 LOGGER.error("Stack to del is not the counter owner in counter remove event.");
             }
         }
+
+        updateCounterLevel(counter, 0, game);
     }
 
     /**
@@ -757,7 +759,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             tradeFleet.setLevel(level);
         } else if (CounterUtil.isEstablishment(counter.getType())) {
             LOGGER.error("Establishment not yet implemented.");
-        } else {
+        } else if (level != 0) {
             LOGGER.error("Unknown effect of level for this type: " + counter.getType());
         }
     }
