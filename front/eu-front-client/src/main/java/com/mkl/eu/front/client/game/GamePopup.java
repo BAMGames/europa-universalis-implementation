@@ -595,6 +595,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         } else {
             LOGGER.error("Missing country in counter add event.");
         }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);
+        if (attribute != null) {
+            Integer level = Integer.parseInt(attribute.getValue());
+            updateCounterLevel(counter, level, game);
+        }
     }
 
     /**
@@ -722,26 +728,37 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);
         if (attribute != null) {
             Integer level = Integer.parseInt(attribute.getValue());
-            if (CounterUtil.isTradingFleet(counter.getType())) {
-                TradeFleet tradeFleet = game.getTradeFleets().stream()
-                        .filter(tf -> StringUtils.equals(tf.getProvince(), counter.getOwner().getProvince()) &&
-                                StringUtils.equals(tf.getCountry(), counter.getCountry()))
-                        .findFirst()
-                        .orElse(null);
+            updateCounterLevel(counter, level, game);
+        }
+    }
 
-                if (tradeFleet == null) {
-                    tradeFleet = new TradeFleet();
-                    tradeFleet.setCountry(counter.getCountry());
-                    tradeFleet.setProvince(counter.getOwner().getProvince());
-                    game.getTradeFleets().add(tradeFleet);
-                }
+    /**
+     * Update the level of a counter.
+     *
+     * @param counter whose level changed.
+     * @param level   for trade fleet or establishment.
+     * @param game    to update.
+     */
+    private void updateCounterLevel(Counter counter, Integer level, Game game) {
+        if (CounterUtil.isTradingFleet(counter.getType())) {
+            TradeFleet tradeFleet = game.getTradeFleets().stream()
+                    .filter(tf -> StringUtils.equals(tf.getProvince(), counter.getOwner().getProvince()) &&
+                            StringUtils.equals(tf.getCountry(), counter.getCountry()))
+                    .findFirst()
+                    .orElse(null);
 
-                tradeFleet.setLevel(level);
-            } else if (CounterUtil.isEstablishment(counter.getType())) {
-                LOGGER.error("Establishment not yet implemented.");
-            } else {
-                LOGGER.error("Unknown effect of level for this type: " + counter.getType());
+            if (tradeFleet == null) {
+                tradeFleet = new TradeFleet();
+                tradeFleet.setCountry(counter.getCountry());
+                tradeFleet.setProvince(counter.getOwner().getProvince());
+                game.getTradeFleets().add(tradeFleet);
             }
+
+            tradeFleet.setLevel(level);
+        } else if (CounterUtil.isEstablishment(counter.getType())) {
+            LOGGER.error("Establishment not yet implemented.");
+        } else {
+            LOGGER.error("Unknown effect of level for this type: " + counter.getType());
         }
     }
 
@@ -1190,6 +1207,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 LOGGER.error("Unknown diff " + diff);
                 break;
         }
+        updateTitle();
         updateActivePlayers();
     }
 
