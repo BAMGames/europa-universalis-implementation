@@ -1635,6 +1635,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         List<Integer> turns = game.getCompetitions().stream()
                 .map(Competition::getTurn)
                 .distinct()
+                .sorted(Comparator.<Integer>reverseOrder())
                 .collect(Collectors.toList());
         choiceCompetitionTurn.setItems(FXCollections.observableArrayList(turns));
 
