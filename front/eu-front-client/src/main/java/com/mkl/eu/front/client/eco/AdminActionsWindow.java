@@ -1414,8 +1414,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             if (newValue == null || newValue == 0) {
                 List<AdministrativeAction> actions = choiceListCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
                         .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE)
+                        .sorted(Comparator.comparing(AdministrativeAction::getTurn).reversed())
                         .collect(Collectors.toList());
-                Collections.sort(actions, Comparator.comparing(AdministrativeAction::getTurn).reversed());
                 tableList.setItems(FXCollections.observableArrayList(actions));
             } else if (!newValue.equals(oldValue)) {
                 List<AdministrativeAction> actions = choiceListCountry.getSelectionModel().getSelectedItem().getAdministrativeActions().stream()
@@ -1438,6 +1438,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
                     .filter(action -> action.getStatus() == AdminActionStatusEnum.DONE &&
                             (turn == 0 || action.getTurn().equals(turn)))
+                    .sorted(Comparator.comparing(AdministrativeAction::getTurn).reversed())
                     .collect(Collectors.toList());
             tableList.setItems(FXCollections.observableArrayList(actions));
         }
