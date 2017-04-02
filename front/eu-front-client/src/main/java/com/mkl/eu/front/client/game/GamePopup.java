@@ -222,7 +222,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     private void initUI() {
         Stage dialog = new Stage();
-        dialog.setTitle(message.getMessage("game.popup.title", null, globalConfiguration.getLocale()));
+        String countryName = game.getCountries().stream()
+                .filter(country -> country.getId().equals(gameConfig.getIdCountry()))
+                .map(PlayableCountry::getName)
+                .findAny()
+                .orElse("");
+        dialog.setTitle(message.getMessage("game.popup.title", new Object[]{countryName, game.getId()}, globalConfiguration.getLocale()));
         dialog.initModality(Modality.WINDOW_MODAL);
 
         GridPane grid = new GridPane();
@@ -290,8 +295,14 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     private void updateTitle() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(message.getMessage("game.popup.turn", new Object[]{game.getTurn()}, globalConfiguration.getLocale()));
+        sb.append("\n");
         String statusText = message.getMessage("game.status." + game.getStatus(), null, globalConfiguration.getLocale());
-        info.setText(message.getMessage("game.popup.info_phase", new Object[]{statusText}, globalConfiguration.getLocale()));
+        sb.append(message.getMessage("game.popup.info_phase", new Object[]{statusText}, globalConfiguration.getLocale()));
+
+        info.setText(sb.toString());
     }
 
     /**
