@@ -428,16 +428,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         try {
             boardService.moveCounter(request);
-            Assert.fail("Should break because moveCounter.authent is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("moveCounter.authent", e.getParams()[0]);
-        }
-
-        request.setAuthent(new AuthentInfo());
-
-        try {
-            boardService.moveCounter(request);
             Assert.fail("Should break because moveCounter.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -459,9 +449,8 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testMoveCounterFailComplex() {
         Request<MoveCounterRequest> request = new Request<>();
         request.setRequest(new MoveCounterRequest());
-        request.setAuthent(new AuthentInfo());
+        request.setIdCountry(27L);
         request.setGame(new GameInfo());
-        request.setIdCountry(26L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdCounter(13L);
@@ -475,7 +464,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         pecs.setId(256L);
         pecs.setName("pecs");
 
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L, 27L);
 
         StackEntity stack = new StackEntity();
         stack.setProvince("IdF");
@@ -488,11 +477,17 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
-        counter.setCountry("france");
+        counter.setCountry("genes");
         game.getStacks().add(stack);
         PlayableCountryEntity country = new PlayableCountryEntity();
         country.setName("france");
         country.setUsername("toto");
+        country.setId(26L);
+        game.getCountries().add(country);
+        country = new PlayableCountryEntity();
+        country.setName("angleterre");
+        country.setUsername("toto");
+        country.setId(27L);
         game.getCountries().add(country);
 
         try {
@@ -504,16 +499,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
-
-        try {
-            boardService.moveCounter(request);
-            Assert.fail("Should break because username has not the right to move this counter");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
-            Assert.assertEquals("moveCounter.authent.username", e.getParams()[0]);
-        }
-
-        counter.setCountry("genes");
 
         List<String> patrons = new ArrayList<>();
         patrons.add("france");
@@ -527,7 +512,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("username", e.getParams()[0]);
         }
 
-        request.getAuthent().setUsername("toto");
+        request.setIdCountry(26L);
 
         try {
             boardService.moveCounter(request);
@@ -552,16 +537,14 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testMoveCounterSuccess() throws Exception {
         Request<MoveCounterRequest> request = new Request<>();
         request.setRequest(new MoveCounterRequest());
-        request.setAuthent(new AuthentInfo());
-        request.getAuthent().setUsername("toto");
+        request.setIdCountry(666L);
         request.setGame(new GameInfo());
-        request.setIdCountry(26L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdCounter(13L);
         request.getRequest().setIdStack(8L);
 
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 666L);
 
         StackEntity stack = new StackEntity();
         stack.setProvince("IdF");
@@ -581,6 +564,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         PlayableCountryEntity country = new PlayableCountryEntity();
         country.setName("france");
         country.setUsername("toto");
+        country.setId(666L);
         game.getCountries().add(country);
 
         List<String> patrons = new ArrayList<>();

@@ -250,14 +250,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         GameEntity game = gameDiffs.getGame();
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
 
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT).setParams(METHOD_MOVE_COUNTER));
+        // TODO Authorization
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST).setParams(METHOD_MOVE_COUNTER));
 
         Long idCounter = request.getRequest().getIdCounter();
         Long idStack = request.getRequest().getIdStack();
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
 
         failIfNull(new CheckForThrow<>().setTest(idCounter).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER));
@@ -267,24 +271,31 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER, game.getId()));
 
-        Optional<PlayableCountryEntity> country = game.getCountries().stream().filter(x -> StringUtils.equals(counter.getCountry(), x.getName())).findFirst();
-        if (country.isPresent()) {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.get().getUsername()))
+        PlayableCountryEntity owner = game.getCountries().stream()
+                .filter(x -> StringUtils.equals(counter.getCountry(), x.getName()))
+                .findFirst()
+                .orElse(null);
+        if (owner != null) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(country.getId().equals(owner.getId()))
                     .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), country.get().getUsername()));
+                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, country.getName(), owner.getName()));
 
         } else {
             List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
             if (patrons.size() == 1) {
-                country = game.getCountries().stream().filter(x -> StringUtils.equals(patrons.get(0), x.getName())).findFirst();
-                if (country.isPresent()) {
-                    failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.get().getUsername()))
+                owner = game.getCountries().stream()
+                        .filter(x -> StringUtils.equals(patrons.get(0), x.getName()))
+                        .findFirst()
+                        .orElse(null);
+                boolean ok = owner != null && country.getId().equals(owner.getId());
+                failIfFalse(new CheckForThrow<Boolean>().setTest(ok)
                             .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                            .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, request.getAuthent().getUsername(), country.get().getUsername()));
+                        .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, country.getName(), owner.getName()));
 
-                }
             } else {
                 // TODO manage minor countries in war with no or multiple patrons
+                // If minor at war with no patron, creation of a fake playable country
+                // so only multiple patrons use case remains
             }
         }
 

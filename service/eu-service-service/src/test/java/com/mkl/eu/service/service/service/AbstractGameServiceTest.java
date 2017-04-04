@@ -72,15 +72,18 @@ public abstract class AbstractGameServiceTest {
         return game;
     }
 
-    protected GameEntity createGameUsingMocks(GameStatusEnum gameStatus, Long idCountry) {
+    protected GameEntity createGameUsingMocks(GameStatusEnum gameStatus, Long... idCountries) {
         GameEntity game = createGameUsingMocks();
 
         game.setStatus(gameStatus);
-        game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(0).setGameStatus(gameStatus);
-        game.getOrders().get(0).setCountry(new PlayableCountryEntity());
-        game.getOrders().get(0).getCountry().setId(idCountry);
-        game.getOrders().get(0).setActive(true);
+        for (Long idCountry : idCountries) {
+            CountryOrderEntity order = new CountryOrderEntity();
+            order.setGameStatus(gameStatus);
+            order.setCountry(new PlayableCountryEntity());
+            order.getCountry().setId(idCountry);
+            order.setActive(true);
+            game.getOrders().add(order);
+        }
 
         return game;
     }
