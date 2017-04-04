@@ -144,6 +144,12 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         pecs.setName("pecs");
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(27L);
+        game.getCountries().get(0).setName("angleterre");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(26L);
+        game.getCountries().get(1).setName("france");
 
         when(oeUtil.isMobile(any())).thenReturn(false);
 
@@ -166,6 +172,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.setMovePhase(MovePhaseEnum.MOVED);
         stack.setProvince("pecs");
         stack.setId(14L);
+        stack.setCountry("angleterre");
         game.getStacks().add(stack);
 
         try {
@@ -226,6 +233,18 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
             Assert.assertEquals("moveStack.request.provinceTo", e.getParams()[0]);
         }
+
+        pecs.getBorders().add(new BorderEntity());
+        pecs.getBorders().get(0).setProvinceFrom(pecs);
+        pecs.getBorders().get(0).setProvinceTo(idf);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("moveStack.idCountry", e.getParams()[0]);
+        }
     }
 
     @Test
@@ -264,11 +283,15 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             stack.setMovePhase(MovePhaseEnum.IS_MOVING);
         }
         stack.setId(13L);
+        stack.setCountry("france");
         BorderEntity border = new BorderEntity();
         border.setProvinceFrom(pecs);
         border.setProvinceTo(idf);
         pecs.getBorders().add(border);
         game.getStacks().add(stack);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(26L);
+        game.getCountries().get(0).setName("france");
 
         when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
@@ -329,7 +352,14 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).setMovePhase(MovePhaseEnum.MOVED);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(2).setId(8L);
+        game.getStacks().get(2).setCountry("angleterre");
         game.getStacks().get(2).setMovePhase(MovePhaseEnum.IS_MOVING);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(27L);
+        game.getCountries().get(0).setName("angleterre");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(26L);
+        game.getCountries().get(1).setName("france");
 
         try {
             boardService.endMoveStack(request);
@@ -359,7 +389,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("endMoveStack.request.idStack", e.getParams()[0]);
         }
 
-
         request.getRequest().setIdStack(7L);
 
         try {
@@ -368,6 +397,16 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.STACK_NOT_MOVING, e.getCode());
             Assert.assertEquals("endMoveStack.request.idStack", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdStack(8L);
+
+        try {
+            boardService.endMoveStack(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("endMoveStack.idCountry", e.getParams()[0]);
         }
     }
 
@@ -386,8 +425,12 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setProvince("pecs");
         stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+        stack.setCountry("france");
         stack.setId(13L);
         game.getStacks().add(stack);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(26L);
+        game.getCountries().get(0).setName("france");
 
         when(oeUtil.isMobile(stack)).thenReturn(true);
 

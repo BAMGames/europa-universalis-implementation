@@ -74,6 +74,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_MOVE_STACK));
         // TODO authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
 
         Long idStack = request.getRequest().getIdStack();
         String provinceTo = request.getRequest().getProvinceTo();
@@ -135,6 +140,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfFalse(new CheckForThrow<Boolean>().setTest(isNear).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_NOT_NEIGHBOR).setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO).setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince()));
 
+        checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
+
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());
@@ -191,24 +198,32 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST).setParams(METHOD_END_MOVE_STACK));
         // TODO authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
 
         Long idStack = request.getRequest().getIdStack();
 
         failIfNull(new CheckForThrow<>().setTest(idStack).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_END_MOVE_STACK));
 
-        Optional<StackEntity> stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
+        StackEntity stack = game.getStacks().stream()
+                .filter(x -> idStack.equals(x.getId()))
+                .findFirst()
+                .orElse(null);
 
-        failIfFalse(new CheckForThrow<Boolean>().setTest(stackOpt.isPresent()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+        failIfTrue(new CheckForThrow<Boolean>().setTest(stack == null).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK).setParams(METHOD_END_MOVE_STACK, idStack));
-
-        StackEntity stack = stackOpt.get();
 
         failIfFalse(new CheckForThrow<Boolean>().setTest(stack.getMovePhase() == MovePhaseEnum.IS_MOVING)
                 .setCodeError(IConstantsServiceException.STACK_NOT_MOVING)
                 .setMsgFormat("{1}: {0} {2} Stack is not moving.")
                 .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_END_MOVE_STACK, idStack));
+
+        checkCanManipulateObject(stack.getCountry(), country, game, METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
 
         stack.setMovePhase(MovePhaseEnum.MOVED);
 
