@@ -509,7 +509,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because username has not the right to move this counter");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
-            Assert.assertEquals("username", e.getParams()[0]);
+            Assert.assertEquals("moveCounter.idCountry", e.getParams()[0]);
         }
 
         request.setIdCountry(26L);

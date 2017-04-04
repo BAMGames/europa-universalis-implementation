@@ -271,33 +271,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_MOVE_COUNTER, game.getId()));
 
-        PlayableCountryEntity owner = game.getCountries().stream()
-                .filter(x -> StringUtils.equals(counter.getCountry(), x.getName()))
-                .findFirst()
-                .orElse(null);
-        if (owner != null) {
-            failIfFalse(new CheckForThrow<Boolean>().setTest(country.getId().equals(owner.getId()))
-                    .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_MOVE_COUNTER, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, country.getName(), owner.getName()));
-
-        } else {
-            List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
-            if (patrons.size() == 1) {
-                owner = game.getCountries().stream()
-                        .filter(x -> StringUtils.equals(patrons.get(0), x.getName()))
-                        .findFirst()
-                        .orElse(null);
-                boolean ok = owner != null && country.getId().equals(owner.getId());
-                failIfFalse(new CheckForThrow<Boolean>().setTest(ok)
-                            .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                        .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_USERNAME).setParams(METHOD_MOVE_COUNTER, country.getName(), owner.getName()));
-
-            } else {
-                // TODO manage minor countries in war with no or multiple patrons
-                // If minor at war with no patron, creation of a fake playable country
-                // so only multiple patrons use case remains
-            }
-        }
+        checkCanManipulateObject(counter.getCountry(), country, game, METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
 
         Optional<StackEntity> stackOpt = null;
         if (idStack != null) {
@@ -387,6 +361,46 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         response.setMessages(getMessagesSince(request));
 
         return response;
+    }
+
+    /**
+     * Throws an exception if the country has no right to manipulate an object owned by countryName.
+     *
+     * @param countryName real owner of the object. Can be a minor country in which case country must be a patron of countryName.
+     * @param country     country asking to manipulate the object.
+     * @param game        the game.
+     * @param method      calling this. For logging purpose.
+     * @param param       name of the param holding the gameInfo. For logging purpose.
+     * @throws FunctionalException
+     */
+    private void checkCanManipulateObject(String countryName, PlayableCountryEntity country, GameEntity game, String method, String param) throws FunctionalException {
+        PlayableCountryEntity owner = game.getCountries().stream()
+                .filter(x -> StringUtils.equals(countryName, x.getName()))
+                .findFirst()
+                .orElse(null);
+        if (owner != null) {
+            failIfFalse(new CheckForThrow<Boolean>().setTest(country.getId().equals(owner.getId()))
+                    .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                    .setMsgFormat(MSG_ACCESS_RIGHT).setName(param, PARAMETER_ID_COUNTRY).setParams(method, country.getName(), countryName));
+
+        } else {
+            List<String> patrons = counterDao.getPatrons(countryName, game.getId());
+            if (patrons.size() == 1) {
+                owner = game.getCountries().stream()
+                        .filter(x -> StringUtils.equals(patrons.get(0), x.getName()))
+                        .findFirst()
+                        .orElse(null);
+                boolean ok = owner != null && country.getId().equals(owner.getId());
+                failIfFalse(new CheckForThrow<Boolean>().setTest(ok)
+                        .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                        .setMsgFormat(MSG_ACCESS_RIGHT).setName(param, PARAMETER_ID_COUNTRY).setParams(method, country.getName(), countryName));
+
+            } else {
+                // TODO manage minor countries in war with no or multiple patrons
+                // If minor at war with no patron, creation of a fake playable country
+                // so only multiple patrons use case remains
+            }
+        }
     }
 
     /** {@inheritDoc} */

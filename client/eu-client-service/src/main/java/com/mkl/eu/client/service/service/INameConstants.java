@@ -105,7 +105,7 @@ public interface INameConstants {
     /** Name of the method moveStack. */
     String METHOD_REMOVE_COUNTER = "removeCounter";
     /** Name of the method moveCounter. */
-    String METHOD_MOVE_COUNTER = "moveStack";
+    String METHOD_MOVE_COUNTER = "moveCounter";
     /** Name of the method createCounter. */
     String METHOD_CREATE_COUNTER = "createCounter";
     /** Name of the method validateMilitaryRound. */
