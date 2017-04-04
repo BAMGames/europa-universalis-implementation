@@ -26,6 +26,10 @@ public class StackEntity implements IEntity, Serializable {
     private MovePhaseEnum movePhase;
     /** Flag saying that the stack is being besieged. */
     private boolean besieged;
+    /** Country managing the stack. */
+    private String country;
+    /** Number of movement points already done by this stack. */
+    private int move;
     /** Counters of the stack. */
     private List<CounterEntity> counters = new ArrayList<>();
     /**
@@ -107,6 +111,28 @@ public class StackEntity implements IEntity, Serializable {
     /** @param discoveries the discoveries to set. */
     public void setDiscoveries(List<DiscoveryEntity> discoveries) {
         this.discoveries = discoveries;
+    }
+
+    /** @return the country. */
+    @Column(name = "R_COUNTRY")
+    public String getCountry() {
+        return country;
+    }
+
+    /** @param country the country to set. */
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    /** @return the move. */
+    @Column(name = "MOVE")
+    public int getMove() {
+        return move;
+    }
+
+    /** @param move the move to set. */
+    public void setMove(int move) {
+        this.move = move;
     }
 
     /** @return the game. */
