@@ -26,6 +26,8 @@ public interface INameConstants {
     String PARAMETER_LOAD_TURN_ORDER = "loadTurnOrder";
     /** Name of the parameter moveStack. */
     String PARAMETER_MOVE_STACK = "moveStack";
+    /** Name of the parameter takeStackControl. */
+    String PARAMETER_TAKE_STACK_CONTROL = "takeStackControl";
     /** Name of the parameter endMoveStack. */
     String PARAMETER_END_MOVE_STACK = "endMoveStack";
     /** Name of the parameter moveCounter. */
@@ -72,6 +74,8 @@ public interface INameConstants {
     String PARAMETER_PROVINCE_TO = "provinceTo";
     /** Name of the parameter province. */
     String PARAMETER_PROVINCE = "province";
+    /** Name of the parameter country. */
+    String PARAMETER_COUNTRY = "country";
     /** Name of the parameter counter. */
     String PARAMETER_COUNTER = "counter";
     /** Name of the parameter message. */
@@ -100,6 +104,8 @@ public interface INameConstants {
     String RESPONSE_GAMES = "games";
     /** Name of the method moveStack. */
     String METHOD_MOVE_STACK = "moveStack";
+    /** Name of the method takeStackControl. */
+    String METHOD_TAKE_STACK_CONTROL = "takeStackControl";
     /** Name of the method endMoveStack. */
     String METHOD_END_MOVE_STACK = "endMoveStack";
     /** Name of the method moveStack. */

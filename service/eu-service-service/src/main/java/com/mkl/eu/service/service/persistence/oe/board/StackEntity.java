@@ -26,7 +26,7 @@ public class StackEntity implements IEntity, Serializable {
     private MovePhaseEnum movePhase;
     /** Flag saying that the stack is being besieged. */
     private boolean besieged;
-    /** Country managing the stack. */
+    /** Country controlling the stack. */
     private String country;
     /** Number of movement points already done by this stack. */
     private int move;

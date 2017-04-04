@@ -848,8 +848,15 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
         if (idStack != null) {
             stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
-            if (stack != null && attribute != null) {
-                stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
+            if (stack != null) {
+                if (attribute != null) {
+                    stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
+                }
+
+                attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY);
+                if (attribute != null) {
+                    stack.setCountry(attribute.getValue());
+                }
             }
         } else if (attribute != null && StringUtils.equals(attribute.getValue(), MovePhaseEnum.NOT_MOVED.name())) {
             // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.

@@ -181,6 +181,7 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#STACK in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#MOVE_PHASE to know the new move phase of the stack.</li>
+     * <li>DiffAttributeTypeEnum#COUNTRY to know the new controller of the stack.</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:

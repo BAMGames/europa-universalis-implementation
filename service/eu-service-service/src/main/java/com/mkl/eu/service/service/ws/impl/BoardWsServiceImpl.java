@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,20 +30,26 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveStack(Request<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException {
-        return boardService.moveStack(moveStack);
+    public DiffResponse moveStack(Request<MoveStackRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.moveStack(request);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse endMoveStack(Request<EndMoveStackRequest> endMoveStack) throws FunctionalException, TechnicalException {
-        return boardService.endMoveStack(endMoveStack);
+    public DiffResponse takeStackControl(Request<TakeStackControlRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.takeStackControl(request);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse moveCounter(Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException {
-        return boardService.moveCounter(moveCounter);
+    public DiffResponse endMoveStack(Request<EndMoveStackRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.endMoveStack(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse moveCounter(Request<MoveCounterRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.moveCounter(request);
     }
 
     /** {@inheritDoc} */

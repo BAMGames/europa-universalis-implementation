@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -23,35 +24,46 @@ public interface IBoardService extends INameConstants {
     /**
      * Move a stack on the board.
      *
-     * @param moveStack info of the stack to move.
+     * @param request info of the stack to move.
      * @return the diffs involved by this service.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse moveStack(@WebParam(name = PARAMETER_MOVE_STACK) Request<MoveStackRequest> moveStack) throws FunctionalException, TechnicalException;
+    DiffResponse moveStack(@WebParam(name = PARAMETER_MOVE_STACK) Request<MoveStackRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Take control of the stack.
+     *
+     * @param request info of the stack to take control.
+     * @return the diffs involved by this service.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse takeStackControl(@WebParam(name = PARAMETER_TAKE_STACK_CONTROL) Request<TakeStackControlRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * End the movement of a stack on the board.
      *
-     * @param endMoveStack info of the stack to end move.
+     * @param request info of the stack to end move.
      * @return the diffs involved by this service.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse endMoveStack(@WebParam(name = PARAMETER_END_MOVE_STACK) Request<EndMoveStackRequest> endMoveStack) throws FunctionalException, TechnicalException;
+    DiffResponse endMoveStack(@WebParam(name = PARAMETER_END_MOVE_STACK) Request<EndMoveStackRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * Move a counter from a stack to another..
      *
-     * @param moveCounter info of the counter to move.
+     * @param request info of the counter to move.
      * @return the diffs involved by this service.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) Request<MoveCounterRequest> moveCounter) throws FunctionalException, TechnicalException;
+    DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) Request<MoveCounterRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * Validate/Invalidate the military round for a country.

@@ -488,7 +488,7 @@ public interface IConstantsServiceException {
     String INLAND_ADVANCE = "exception.eu.inland_advance";
 
     /**********************************************************************/
-    /**           ECONOMIC SERVICE EXCEPTION                              */
+    /**              BOARD SERVICE EXCEPTION                              */
     /**********************************************************************/
 
     /**
@@ -547,4 +547,36 @@ public interface IConstantsServiceException {
      * </p>
      */
     String STACK_NOT_MOVING = "exception.eu.board.stack_not_moving";
+
+    /**
+     * <p>
+     * Exception thrown when trying to control an already controlled stack.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * <li>2: controller (country).</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_ALREADY_CONTROLLED = "exception.eu.board.stack_already_controlled";
+
+    /**
+     * <p>
+     * Exception thrown when trying to control a stack with not enough presence.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * <li>2: country who wants to control the stack.</li>
+     * <li>3: presence of the country.</li>
+     * <li>4: presence needed to control the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_CANT_CONTROL = "exception.eu.board.stack_already_controlled";
 }

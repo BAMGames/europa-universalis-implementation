@@ -9,6 +9,7 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -41,6 +42,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
@@ -460,6 +462,180 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+    }
+
+    @Test
+    public void testTakeStackControlFail() {
+        Pair<Request<TakeStackControlRequest>, GameEntity> pair = testCheckGame(boardService::takeStackControl, "takeStackControl");
+        Request<TakeStackControlRequest> request = pair.getLeft();
+        request.setIdCountry(26L);
+        GameEntity game = pair.getRight();
+        testCheckStatus(game, request, boardService::takeStackControl, "takeStackControl", GameStatusEnum.MILITARY_MOVE);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(27L);
+        game.getCountries().get(0).setName("espagne");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(26L);
+        game.getCountries().get(1).setName("france");
+        StackEntity stack = new StackEntity();
+        stack.setId(7L);
+        stack.setCountry("france");
+        CounterEntity counter = new CounterEntity();
+        counter.setCountry("france");
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        stack.getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setCountry("genes");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setCountry("espagne");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setCountry("espagne");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because takeStackControl.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new TakeStackControlRequest());
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because idStack is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request.idStack", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdStack(666L);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because stack does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request.idStack", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdStack(7L);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because country is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request.country", e.getParams()[0]);
+        }
+
+        request.getRequest().setCountry("france");
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because stack is already controller by requested country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_ALREADY_CONTROLLED, e.getCode());
+            Assert.assertEquals("takeStackControl.request.country", e.getParams()[0]);
+        }
+
+        request.getRequest().setCountry("genes");
+        when(counterDao.getPatrons("genes", game.getId())).thenReturn(Collections.singletonList("angleterre"));
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("takeStackControl.idCountry", e.getParams()[0]);
+        }
+
+        when(counterDao.getPatrons("genes", game.getId())).thenReturn(Collections.singletonList("france"));
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because stack cant be controlled by requested country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_CANT_CONTROL, e.getCode());
+            Assert.assertEquals("takeStackControl.request.country", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testTakeStackControlSuccess() throws Exception {
+        Request<TakeStackControlRequest> request = new Request<>();
+        request.setRequest(new TakeStackControlRequest());
+        request.setAuthent(new AuthentInfo());
+        request.setGame(new GameInfo());
+        request.setIdCountry(27L);
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.getRequest().setIdStack(7L);
+        request.getRequest().setCountry("espagne");
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 27L);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(27L);
+        game.getCountries().get(0).setName("espagne");
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(26L);
+        game.getCountries().get(1).setName("france");
+        StackEntity stack = new StackEntity();
+        stack.setId(7L);
+        stack.setCountry("france");
+        CounterEntity counter = new CounterEntity();
+        counter.setCountry("france");
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        stack.getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setCountry("genes");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setCountry("espagne");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setCountry("espagne");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        simulateDiff();
+
+        DiffResponse response = boardService.takeStackControl(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
+
+        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, diffMapping);
+
+        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).create(anyObject());
+        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
+        inOrder.verify(diffMapping).oesToVos(anyObject());
+
+        Assert.assertEquals(7L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.COUNTRY, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals("espagne", diffEntity.getAttributes().get(0).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
+
+        Assert.assertEquals("espagne", stack.getCountry());
     }
 
     @Test
