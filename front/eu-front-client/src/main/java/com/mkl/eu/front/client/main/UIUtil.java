@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
 
 import java.io.PrintWriter;
@@ -24,6 +25,20 @@ public final class UIUtil {
      */
     private UIUtil() {
 
+    }
+
+    /**
+     * @param countryCode         code of the country.
+     * @param message             internationalization.
+     * @param globalConfiguration configuration containing the locale.
+     * @return the country name to be displayed given the country code and the locale.
+     */
+    public static String getCountryName(String countryCode, MessageSource message, GlobalConfiguration globalConfiguration) {
+        if (StringUtils.isEmpty(countryCode)) {
+            countryCode = "none";
+        }
+
+        return message.getMessage(countryCode, null, globalConfiguration.getLocale());
     }
 
     /**

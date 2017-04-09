@@ -567,6 +567,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     private void addCounter(Game game, Diff diff) {
         Stack stack;
+        boolean newStack = false;
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STACK);
         if (attribute != null) {
             Long idStack = Long.parseLong(attribute.getValue());
@@ -575,10 +576,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 stack = new Stack();
                 stack.setId(idStack);
                 game.getStacks().add(stack);
+                newStack = true;
             }
         } else {
             LOGGER.error("Missing stack id in counter add event.");
             stack = new Stack();
+            newStack = true;
         }
 
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
@@ -603,6 +606,9 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY);
         if (attribute != null) {
             counter.setCountry(attribute.getValue());
+            if (newStack) {
+                stack.setCountry(attribute.getValue());
+            }
         } else {
             LOGGER.error("Missing country in counter add event.");
         }
@@ -646,6 +652,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             if (stackTo == null) {
                 stackTo = new Stack();
                 stackTo.setId(idStack);
+                stackTo.setCountry(counter.getCountry());
 
                 attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_TO);
                 if (attribute != null) {
@@ -659,6 +666,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         } else {
             LOGGER.error("Missing stack id in counter add event.");
             stackTo = new Stack();
+            stackTo.setCountry(counter.getCountry());
         }
 
         stack.getCounters().remove(counter);
