@@ -475,6 +475,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             stack = new StackEntity();
             stack.setProvince(counter.getOwner().getProvince());
             stack.setGame(game);
+            stack.setCountry(counter.getCountry());
 
         /*
          Thanks Hibernate to have 7 years old bugs.

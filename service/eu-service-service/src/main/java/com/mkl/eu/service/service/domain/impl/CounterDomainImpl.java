@@ -58,6 +58,7 @@ public class CounterDomainImpl implements ICounterDomain {
         StackEntity stack = new StackEntity();
         stack.setProvince(province);
         stack.setGame(game);
+        stack.setCountry(country);
 
         CounterEntity counterEntity = new CounterEntity();
         counterEntity.setCountry(country);
@@ -322,6 +323,7 @@ public class CounterDomainImpl implements ICounterDomain {
             stack = new StackEntity();
             stack.setProvince(province);
             stack.setGame(game);
+            stack.setCountry(counter.getCountry());
 
             /**
              Thanks Hibernate to have 7 years old bugs.

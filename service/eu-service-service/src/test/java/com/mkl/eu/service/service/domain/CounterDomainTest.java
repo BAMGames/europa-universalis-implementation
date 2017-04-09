@@ -86,6 +86,7 @@ public class CounterDomainTest {
         Assert.assertEquals(1, game.getStacks().size());
         Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
         Assert.assertEquals("idf", game.getStacks().get(0).getProvince());
+        Assert.assertEquals("france", game.getStacks().get(0).getCountry());
         Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
         Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
         Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());

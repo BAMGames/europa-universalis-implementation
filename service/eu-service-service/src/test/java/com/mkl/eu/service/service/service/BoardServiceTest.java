@@ -855,6 +855,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.setId(9L);
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
+        counter.setCountry("france");
         counter.setOwner(stack);
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
@@ -904,6 +905,8 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+
+        Assert.assertEquals("france", game.getStacks().get(0).getCountry());
     }
 
     @Test
