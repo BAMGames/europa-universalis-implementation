@@ -41,12 +41,22 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     @Override
     public List<DiffEntity> computeEndAdministrativeActions(GameEntity game) {
         // FIXME check minors at war
-        return computeEndMinorLogistics(game);
+        return initMilitaryPhase(game);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<DiffEntity> computeEndMinorLogistics(GameEntity game) {
+        return initMilitaryPhase(game);
+    }
+
+    /**
+     * Initialize the military phase.
+     *
+     * @param game the game.
+     * @return the List of Diff.
+     */
+    private List<DiffEntity> initMilitaryPhase(GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
 
         Map<PlayableCountryEntity, Integer> initiatives = game.getCountries().stream()
