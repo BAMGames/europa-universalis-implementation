@@ -16,6 +16,8 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
@@ -385,5 +387,106 @@ public final class OEUtilImpl implements IOEUtil {
     public boolean isMobile(StackEntity stack) {
         return !(stack == null || stack.getCounters().isEmpty()) && !stack.isBesieged() &&
                 stack.getCounters().stream().filter(c -> !CounterUtil.isMobile(c.getType())).count() == 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getMovePoints(AbstractProvinceEntity provinceFrom, AbstractProvinceEntity provinceTo, boolean provinceToFriendly) {
+        if (provinceFrom == provinceTo) {
+            return 0;
+        }
+
+        boolean provinceFromOk = provinceFrom instanceof EuropeanProvinceEntity || provinceFrom instanceof RotwProvinceEntity;
+        boolean provinceToOk = provinceTo instanceof EuropeanProvinceEntity || provinceTo instanceof RotwProvinceEntity;
+        boolean provinceToRotw = provinceTo instanceof RotwProvinceEntity;
+
+        if (!provinceFromOk || !provinceToOk) {
+            return -1;
+        }
+
+        int move = 0;
+
+        if (provinceFrom.getTerrain() == TerrainEnum.SWAMP) {
+            if (provinceFrom instanceof RotwProvinceEntity) {
+                move += 2;
+            } else {
+                move += 1;
+            }
+        }
+        if (provinceTo.getTerrain() == TerrainEnum.SWAMP) {
+            if (provinceToRotw) {
+                move += 2;
+            } else {
+                move += 1;
+            }
+        }
+
+        boolean found = false;
+        for (BorderEntity border : provinceFrom.getBorders()) {
+            if (border.getProvinceTo() == provinceTo) {
+                found = true;
+                switch (provinceTo.getTerrain()) {
+                    case PLAIN:
+                        if (provinceToRotw) {
+                            if (provinceToFriendly) {
+                                move += 2;
+                            } else {
+                                move += 4;
+                            }
+                        } else {
+                            if (provinceToFriendly) {
+                                move += 1;
+                            } else {
+                                move += 2;
+                            }
+                        }
+                        break;
+                    case MOUNTAIN:
+                        if (!provinceToFriendly) {
+                            if (provinceToRotw) {
+                                move += 6;
+                            } else {
+                                move += 3;
+                            }
+                            break;
+                        }
+                    case SWAMP:
+                    case DENSE_FOREST:
+                    case DESERT:
+                    case SPARSE_FOREST:
+                        if (provinceToRotw) {
+                            move += 6;
+                        } else {
+                            move += 2;
+                        }
+                        break;
+                }
+
+                if (border.getType() != null) {
+                    switch (border.getType()) {
+                        case STRAIT:
+                        case PASS:
+                        case RIVER:
+                            if (provinceToRotw) {
+                                move += 2;
+                            } else {
+                                move += 1;
+                            }
+                            break;
+                        case BERING_STRAIT:
+                            move = 12;
+                            break;
+                    }
+                }
+            }
+        }
+
+        if (!found) {
+            move = -1;
+        }
+
+        return move;
     }
 }

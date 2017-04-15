@@ -128,4 +128,13 @@ public interface IOEUtil {
      * @return <code>true</code> if the stack is mobile (can be moved), <code>false</code> otherwise.
      */
     boolean isMobile(StackEntity stack);
+
+    /**
+     * @param provinceFrom       origin.
+     * @param provinceTo         destination.
+     * @param provinceToFriendly if the provinceTo is friendly (in case of doubt, it is not).
+     * @return the move points needed to move from provinceFrom to provinceTo. If provinces
+     * are not adjacent, returns -1.
+     */
+    int getMovePoints(AbstractProvinceEntity provinceFrom, AbstractProvinceEntity provinceTo, boolean provinceToFriendly);
 }

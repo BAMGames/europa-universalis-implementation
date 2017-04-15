@@ -16,8 +16,11 @@ import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -717,5 +720,129 @@ public class OEUtilTest {
         Collections.sort(enemies);
 
         Assert.assertEquals(0, enemies.size());
+    }
+
+    @Test
+    public void testGetMovePoints() {
+        AbstractProvinceEntity from = new EuropeanProvinceEntity();
+        AbstractProvinceEntity to = from;
+
+        Assert.assertEquals(0, oeUtil.getMovePoints(from, to, false));
+        Assert.assertEquals(0, oeUtil.getMovePoints(from, to, true));
+
+        to = new EuropeanProvinceEntity();
+
+        Assert.assertEquals(-1, oeUtil.getMovePoints(from, to, false));
+        Assert.assertEquals(-1, oeUtil.getMovePoints(from, to, true));
+
+        Pair<AbstractProvinceEntity, AbstractProvinceEntity> pair = createProvinces(TerrainEnum.PLAIN, false, TerrainEnum.PLAIN, false, null);
+
+        Assert.assertEquals(2, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(1, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.PLAIN, true, TerrainEnum.PLAIN, false, null);
+
+        Assert.assertEquals(2, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(1, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.PLAIN, false, TerrainEnum.PLAIN, true, null);
+
+        Assert.assertEquals(4, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(2, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.PLAIN, true, TerrainEnum.PLAIN, true, null);
+
+        Assert.assertEquals(4, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(2, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.PLAIN, true, TerrainEnum.PLAIN, true, BorderEnum.RIVER);
+
+        Assert.assertEquals(6, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(4, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.PLAIN, true, TerrainEnum.PLAIN, false, BorderEnum.RIVER);
+
+        Assert.assertEquals(3, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(2, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.SWAMP, true, TerrainEnum.DESERT, false, BorderEnum.STRAIT);
+
+        Assert.assertEquals(5, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(5, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.DENSE_FOREST, true, TerrainEnum.SWAMP, false, BorderEnum.PASS);
+
+        Assert.assertEquals(4, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(4, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.DENSE_FOREST, true, TerrainEnum.SPARSE_FOREST, true, BorderEnum.PASS);
+
+        Assert.assertEquals(8, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(8, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.SWAMP, true, TerrainEnum.DENSE_FOREST, true, BorderEnum.PASS);
+
+        Assert.assertEquals(10, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(10, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.MOUNTAIN, false, TerrainEnum.MOUNTAIN, false, BorderEnum.PASS);
+
+        Assert.assertEquals(4, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(3, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.MOUNTAIN, true, TerrainEnum.MOUNTAIN, true, BorderEnum.PASS);
+
+        Assert.assertEquals(8, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(8, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.SWAMP, true, TerrainEnum.SWAMP, true, BorderEnum.RIVER);
+
+        Assert.assertEquals(12, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(12, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.SWAMP, true, TerrainEnum.SWAMP, true, BorderEnum.BERING_STRAIT);
+
+        Assert.assertEquals(12, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(12, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+
+        pair = createProvinces(TerrainEnum.PLAIN, true, TerrainEnum.PLAIN, true, BorderEnum.BERING_STRAIT);
+
+        Assert.assertEquals(12, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), false));
+        Assert.assertEquals(12, oeUtil.getMovePoints(pair.getLeft(), pair.getRight(), true));
+    }
+
+    private Pair<AbstractProvinceEntity, AbstractProvinceEntity> createProvinces(TerrainEnum terrainFrom, boolean fromRotw, TerrainEnum terrainTo, boolean toRotw, BorderEnum borderType) {
+        AbstractProvinceEntity from;
+        if (fromRotw) {
+            from = new RotwProvinceEntity();
+        } else {
+            from = new EuropeanProvinceEntity();
+        }
+        from.setTerrain(terrainFrom);
+
+        AbstractProvinceEntity to;
+        if (toRotw) {
+            to = new RotwProvinceEntity();
+        } else {
+            to = new EuropeanProvinceEntity();
+        }
+        to.setTerrain(terrainTo);
+
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(from);
+        border.setProvinceTo(new EuropeanProvinceEntity());
+        from.getBorders().add(border);
+        border = new BorderEntity();
+        border.setProvinceFrom(from);
+        border.setProvinceTo(to);
+        border.setType(borderType);
+        from.getBorders().add(border);
+        border = new BorderEntity();
+        border.setProvinceFrom(from);
+        border.setProvinceTo(new RotwProvinceEntity());
+        border.setType(BorderEnum.RIVER);
+        from.getBorders().add(border);
+
+        return new ImmutablePair<>(from, to);
     }
 }
