@@ -489,4 +489,45 @@ public final class OEUtilImpl implements IOEUtil {
 
         return move;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getController(AbstractProvinceEntity province, GameEntity game) {
+        String controller = null;
+
+        // By default, the controller is the default owner.
+        if (province instanceof EuropeanProvinceEntity) {
+            controller = ((EuropeanProvinceEntity) province).getDefaultOwner();
+        }
+
+        List<CounterEntity> counters = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(province.getName(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .collect(Collectors.toList());
+
+        // In ROTW, having an establishment means we owns the province.
+        controller = counters.stream()
+                .filter(counter -> CounterUtil.isEstablishment(counter.getType()))
+                .map(CounterEntity::getCountry)
+                .findFirst()
+                .orElse(controller);
+
+        // If the province is owned by another country, then it will be the controller.
+        controller = counters.stream()
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.OWN)
+                .map(CounterEntity::getCountry)
+                .findFirst()
+                .orElse(controller);
+
+        // Except if another country explicitly controls it.
+        controller = counters.stream()
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.CONTROL)
+                .map(CounterEntity::getCountry)
+                .findFirst()
+                .orElse(controller);
+
+        return controller;
+    }
 }

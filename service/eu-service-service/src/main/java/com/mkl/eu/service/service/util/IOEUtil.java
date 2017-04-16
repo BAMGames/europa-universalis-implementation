@@ -137,4 +137,11 @@ public interface IOEUtil {
      * are not adjacent, returns -1.
      */
     int getMovePoints(AbstractProvinceEntity provinceFrom, AbstractProvinceEntity provinceTo, boolean provinceToFriendly);
+
+    /**
+     * @param province the province.
+     * @param game     the game.
+     * @return the name of the country controlling the province.
+     */
+    String getController(AbstractProvinceEntity province, GameEntity game);
 }

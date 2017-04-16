@@ -845,4 +845,60 @@ public class OEUtilTest {
 
         return new ImmutablePair<>(from, to);
     }
+
+    @Test
+    public void testGetController() {
+        GameEntity game = new GameEntity();
+        EuropeanProvinceEntity provinceEu = new EuropeanProvinceEntity();
+
+        Assert.assertEquals(null, oeUtil.getController(provinceEu, game));
+
+        provinceEu.setDefaultOwner("france");
+
+        Assert.assertEquals("france", oeUtil.getController(provinceEu, game));
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("eArtois");
+        CounterEntity counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.OWN);
+        counter.setCountry("espagne");
+        game.getStacks().get(0).getCounters().add(counter);
+
+        Assert.assertEquals("france", oeUtil.getController(provinceEu, game));
+
+        provinceEu.setName("eArtois");
+
+        Assert.assertEquals("espagne", oeUtil.getController(provinceEu, game));
+
+        counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.CONTROL);
+        counter.setCountry("hollande");
+        game.getStacks().get(0).getCounters().add(counter);
+
+        Assert.assertEquals("hollande", oeUtil.getController(provinceEu, game));
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("rAral");
+
+        RotwProvinceEntity provinceRotw = new RotwProvinceEntity();
+        provinceRotw.setName("rAral");
+
+        Assert.assertEquals(null, oeUtil.getController(provinceRotw, game));
+
+        counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.COLONY_PLUS);
+        counter.setCountry("russie");
+        game.getStacks().get(1).getCounters().add(counter);
+
+        Assert.assertEquals("russie", oeUtil.getController(provinceRotw, game));
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setProvince("rAral");
+        counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.CONTROL);
+        counter.setCountry("turquie");
+        game.getStacks().get(2).getCounters().add(counter);
+
+        Assert.assertEquals("turquie", oeUtil.getController(provinceRotw, game));
+    }
 }
