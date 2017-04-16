@@ -901,4 +901,138 @@ public class OEUtilTest {
 
         Assert.assertEquals("turquie", oeUtil.getController(provinceRotw, game));
     }
+
+    @Test
+    public void getAlliesEnemies() {
+        GameEntity game = new GameEntity();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setName("france");
+
+        List<String> allies;
+        List<String> enemies;
+
+        allies = oeUtil.getAllies(country, game);
+        enemies = oeUtil.getEnemies(country, game);
+
+        Assert.assertEquals(1, allies.size());
+        Assert.assertEquals("france", allies.get(0));
+        Assert.assertEquals(0, enemies.size());
+
+        WarEntity war1 = new WarEntity();
+        war1.setType(WarTypeEnum.CLASSIC_WAR);
+        CountryInWarEntity countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("france");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(true);
+        countryWar.setWar(war1);
+        war1.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("espagne");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(false);
+        countryWar.setWar(war1);
+        war1.getCountries().add(countryWar);
+        game.getWars().add(war1);
+
+        allies = oeUtil.getAllies(country, game);
+        enemies = oeUtil.getEnemies(country, game);
+
+        Assert.assertEquals(1, allies.size());
+        Assert.assertEquals("france", allies.get(0));
+        Assert.assertEquals(1, enemies.size());
+        Assert.assertEquals("espagne", enemies.get(0));
+
+        WarEntity war2 = new WarEntity();
+        war2.setType(WarTypeEnum.RELIGIOUS_WAR);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("espagne");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(true);
+        countryWar.setWar(war2);
+        war2.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("portugal");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(true);
+        countryWar.setWar(war2);
+        war2.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("angleterre");
+        countryWar.setImplication(WarImplicationEnum.LIMITED);
+        countryWar.setOffensive(true);
+        countryWar.setWar(war2);
+        war2.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("france");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(false);
+        countryWar.setWar(war2);
+        war2.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("turquie");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(false);
+        countryWar.setWar(war2);
+        war2.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("hollande");
+        countryWar.setImplication(WarImplicationEnum.FOREIGN);
+        countryWar.setOffensive(false);
+        countryWar.setWar(war2);
+        war2.getCountries().add(countryWar);
+        game.getWars().add(war2);
+
+        allies = oeUtil.getAllies(country, game);
+        enemies = oeUtil.getEnemies(country, game);
+
+        Assert.assertEquals(2, allies.size());
+        Assert.assertEquals("france", allies.get(0));
+        Assert.assertEquals("turquie", allies.get(1));
+        Assert.assertEquals(2, enemies.size());
+        Assert.assertEquals("espagne", enemies.get(0));
+        Assert.assertEquals("portugal", enemies.get(1));
+
+        WarEntity war3 = new WarEntity();
+        war3.setType(WarTypeEnum.CIVIL_WAR);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("habsbourg");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(true);
+        countryWar.setWar(war3);
+        war3.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("france");
+        countryWar.setImplication(WarImplicationEnum.LIMITED);
+        countryWar.setOffensive(true);
+        countryWar.setWar(war3);
+        war3.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName("pologne");
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setOffensive(false);
+        countryWar.setWar(war3);
+        war3.getCountries().add(countryWar);
+        game.getWars().add(war3);
+
+        allies = oeUtil.getAllies(country, game);
+        enemies = oeUtil.getEnemies(country, game);
+
+        Assert.assertEquals(2, allies.size());
+        Assert.assertEquals("france", allies.get(0));
+        Assert.assertEquals("turquie", allies.get(1));
+        Assert.assertEquals(2, enemies.size());
+        Assert.assertEquals("espagne", enemies.get(0));
+        Assert.assertEquals("portugal", enemies.get(1));
+    }
 }

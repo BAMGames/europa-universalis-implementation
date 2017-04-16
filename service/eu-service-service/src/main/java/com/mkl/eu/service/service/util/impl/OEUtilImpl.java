@@ -530,4 +530,51 @@ public final class OEUtilImpl implements IOEUtil {
 
         return controller;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getAllies(PlayableCountryEntity country, GameEntity game) {
+        List<String> allies = getCountries(country.getName(), game, true);
+        if (!allies.contains(country.getName())) {
+            allies.add(country.getName());
+        }
+
+        return allies;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getEnemies(PlayableCountryEntity country, GameEntity game) {
+        return getCountries(country.getName(), game, false);
+    }
+
+    /**
+     * @param name   of the asking country.
+     * @param game   the game.
+     * @param allies wether we want the allies or the enemies.
+     * @return the List of countries allies or enemies with.
+     */
+    private List<String> getCountries(String name, GameEntity game, boolean allies) {
+        List<String> countries = new ArrayList<>();
+
+        game.getWars().stream()
+                .flatMap(war -> war.getCountries().stream())
+                .filter(warCountry -> warCountry.getImplication() == WarImplicationEnum.FULL &&
+                        StringUtils.equals(warCountry.getCountry().getName(), name))
+                .forEach(warCountry -> warCountry.getWar().getCountries().stream()
+                        .filter(otherCountry -> otherCountry.getImplication() == WarImplicationEnum.FULL &&
+                                (otherCountry.isOffensive() == warCountry.isOffensive() && allies ||
+                                        otherCountry.isOffensive() != warCountry.isOffensive() && !allies))
+                        .forEach(otherCountry -> {
+                            if (!countries.contains(otherCountry.getCountry().getName())) {
+                                countries.add(otherCountry.getCountry().getName());
+                            }
+                        }));
+
+        return countries;
+    }
 }

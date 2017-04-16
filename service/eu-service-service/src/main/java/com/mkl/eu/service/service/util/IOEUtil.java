@@ -144,4 +144,18 @@ public interface IOEUtil {
      * @return the name of the country controlling the province.
      */
     String getController(AbstractProvinceEntity province, GameEntity game);
+
+    /**
+     * @param country the country.
+     * @param game    the game.
+     * @return the allies of the country (a country is considered allied to itself).
+     */
+    List<String> getAllies(PlayableCountryEntity country, GameEntity game);
+
+    /**
+     * @param country the country.
+     * @param game    the game.
+     * @return the enemies of the country.
+     */
+    List<String> getEnemies(PlayableCountryEntity country, GameEntity game);
 }
