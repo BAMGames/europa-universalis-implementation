@@ -158,18 +158,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                 .setParams(METHOD_MOVE_STACK, provinceTo));
 
-        AbstractProvinceEntity provinceStack = provinceDao.getProvinceByName(stack.getProvince());
+        AbstractProvinceEntity provinceFrom = provinceDao.getProvinceByName(stack.getProvince());
         boolean isNear = false;
-        if (provinceStack != null) {
-            isNear = provinceStack.getBorders().stream().filter(x -> province.getId().equals(x.getProvinceTo().getId())).findFirst().isPresent();
+        if (provinceFrom != null) {
+            isNear = provinceFrom.getBorders().stream().filter(x -> province.getId().equals(x.getProvinceTo().getId())).findFirst().isPresent();
         }
 
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(isNear)
-                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setCodeError(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR)
                 .setMsgFormat(MSG_NOT_NEIGHBOR)
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                .setParams(METHOD_MOVE_STACK, provinceTo, stack.getProvince()));
+                .setParams(METHOD_MOVE_STACK, stack.getProvince(), provinceTo));
 
         checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 

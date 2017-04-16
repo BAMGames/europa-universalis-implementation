@@ -232,7 +232,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             boardService.moveStack(request);
             Assert.fail("Should break because province is not close to former one");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR, e.getCode());
             Assert.assertEquals("moveStack.request.provinceTo", e.getParams()[0]);
         }
 

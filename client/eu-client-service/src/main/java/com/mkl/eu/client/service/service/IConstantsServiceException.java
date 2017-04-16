@@ -536,6 +536,22 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when trying to do an action on neighbor provinces
+     * while they aren't.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the source province.</li>
+     * <li>2: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String PROVINCES_NOT_NEIGHBOR = "exception.eu.board.provinces_not_neighbor";
+
+    /**
+     * <p>
      * Exception thrown when trying to end the move a non moving stack.
      * </p>
      * <p>
