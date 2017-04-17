@@ -74,6 +74,7 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffAttributeTypeEnum#PROVINCE_FROM</li>
      * <li>DiffAttributeTypeEnum#PROVINCE_TO</li>
+     * <li>DiffAttributeTypeEnum#MOVE_POINTS</li>
      * <li>DiffAttributeTypeEnum#MOVE_PHASE - optional attribute</li>
      * </ul>
      * </li>

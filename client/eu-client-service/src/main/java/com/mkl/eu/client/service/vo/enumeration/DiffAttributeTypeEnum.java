@@ -63,5 +63,7 @@ public enum DiffAttributeTypeEnum {
     /** Name of the naval technology of the country. */
     TECH_NAVAL,
     /** To use active field (for turn order, it will be the position of the new active turn orders). */
-    ACTIVE
+    ACTIVE,
+    /** Number of move points of a stack. */
+    MOVE_POINTS
 }

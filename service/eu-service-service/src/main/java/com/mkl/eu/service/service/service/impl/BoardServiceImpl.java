@@ -171,6 +171,33 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                 .setParams(METHOD_MOVE_STACK, stack.getProvince(), provinceTo));
 
+        List<String> allies = oeUtil.getAllies(country, game);
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        String controller = oeUtil.getController(province, game);
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(allies.contains(controller) || enemies.contains(controller))
+                .setCodeError(IConstantsServiceException.CANT_MOVE_PROVINCE)
+                .setMsgFormat("{1}: {0} This stack can''t move in province {2} because it is controlled by {3}.")
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_MOVE_STACK, provinceTo, controller));
+
+        int movePoints = oeUtil.getMovePoints(provinceFrom, province, allies.contains(controller));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(movePoints > -1)
+                .setCodeError(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR)
+                .setMsgFormat(MSG_NOT_NEIGHBOR)
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_MOVE_STACK, stack.getProvince(), provinceTo));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(stack.getMove() + movePoints <= 12)
+                .setCodeError(IConstantsServiceException.PROVINCE_TOO_FAR)
+                .setMsgFormat("{1}: {0} This action needs too much move points {2} ({3}/{4}).")
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_MOVE_STACK, movePoints, stack.getMove(), 12));
+
         checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
         DiffEntity diff = new DiffEntity();
@@ -189,6 +216,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffAttributes.setValue(provinceTo);
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
+        diffAttributes = new DiffAttributesEntity();
+        diffAttributes.setType(DiffAttributeTypeEnum.MOVE_POINTS);
+        diffAttributes.setValue(Integer.toString(stack.getMove() + movePoints));
+        diffAttributes.setDiff(diff);
+        diff.getAttributes().add(diffAttributes);
         if (firstMove) {
             diffAttributes = new DiffAttributesEntity();
             diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
@@ -205,6 +237,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffs.add(diff);
 
         stack.setProvince(provinceTo);
+        stack.setMove(stack.getMove() + movePoints);
         gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();

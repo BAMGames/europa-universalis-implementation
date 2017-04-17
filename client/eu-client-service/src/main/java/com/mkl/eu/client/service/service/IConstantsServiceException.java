@@ -536,6 +536,37 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when trying to move a stack in a neutral province.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the province.</li>
+     * <li>2: name of the controller of the province.</li>
+     * </ul>
+     * </p>
+     */
+    String CANT_MOVE_PROVINCE = "exception.eu.board.cant_move_province";
+
+    /**
+     * <p>
+     * Exception thrown when trying to move more than 12 MP.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: move points of the action.</li>
+     * <li>2: move points already used.</li>
+     * <li>3: move points limit.</li>
+     * </ul>
+     * </p>
+     */
+    String PROVINCE_TOO_FAR = "exception.eu.board.province_too_far";
+
+    /**
+     * <p>
      * Exception thrown when trying to do an action on neighbor provinces
      * while they aren't.
      * </p>

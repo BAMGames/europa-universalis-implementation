@@ -256,7 +256,10 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         // Stacks move phase reset
         game.getStacks().stream()
                 .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
-                .forEach(stack -> stack.setMovePhase(MovePhaseEnum.NOT_MOVED));
+                .forEach(stack -> {
+                    stack.setMove(0);
+                    stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                });
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());

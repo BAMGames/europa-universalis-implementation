@@ -172,6 +172,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         StackEntity stack = new StackEntity();
         stack.setMovePhase(MovePhaseEnum.MOVED);
+        stack.setMove(8);
         stack.setProvince("pecs");
         stack.setId(14L);
         stack.setCountry("angleterre");
@@ -239,6 +240,38 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         pecs.getBorders().add(new BorderEntity());
         pecs.getBorders().get(0).setProvinceFrom(pecs);
         pecs.getBorders().get(0).setProvinceTo(idf);
+        when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(1).getName());
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.CANT_MOVE_PROVINCE, e.getCode());
+            Assert.assertEquals("moveStack.request.provinceTo", e.getParams()[0]);
+        }
+
+        when(oeUtil.getAllies(game.getCountries().get(1), game)).thenReturn(Collections.singletonList(game.getCountries().get(1).getName()));
+        when(oeUtil.getMovePoints(pecs, idf, true)).thenReturn(-1);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because province is not close to former one");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR, e.getCode());
+            Assert.assertEquals("moveStack.request.provinceTo", e.getParams()[0]);
+        }
+
+        when(oeUtil.getMovePoints(pecs, idf, true)).thenReturn(6);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_TOO_FAR, e.getCode());
+            Assert.assertEquals("moveStack.request.provinceTo", e.getParams()[0]);
+        }
+
+        stack.setMove(6);
 
         try {
             boardService.moveStack(request);
@@ -298,6 +331,9 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
         when(oeUtil.isMobile(stack)).thenReturn(true);
+        when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(game.getCountries().get(0).getName()));
+        when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
+        when(oeUtil.getMovePoints(pecs, idf, false)).thenReturn(4);
 
         simulateDiff();
 
@@ -322,17 +358,19 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         if (firstMove) {
-            Assert.assertEquals(3, diffEntity.getAttributes().size());
+            Assert.assertEquals(4, diffEntity.getAttributes().size());
         } else {
-            Assert.assertEquals(2, diffEntity.getAttributes().size());
+            Assert.assertEquals(3, diffEntity.getAttributes().size());
         }
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(pecs.getName(), diffEntity.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(1).getType());
         Assert.assertEquals(idf.getName(), diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.MOVE_POINTS, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals("4", diffEntity.getAttributes().get(2).getValue());
         if (firstMove) {
-            Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(2).getType());
-            Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), diffEntity.getAttributes().get(2).getValue());
+            Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(3).getType());
+            Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), diffEntity.getAttributes().get(3).getValue());
         }
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());

@@ -838,6 +838,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             LOGGER.error("Missing province to in stack move event.");
         }
 
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_POINTS);
+        if (attribute != null) {
+            stack.setMove(Integer.parseInt(attribute.getValue()));
+        }
+
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
         if (attribute != null) {
             stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
@@ -870,7 +875,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
             // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.
             game.getStacks().stream()
                     .filter(stack1 -> stack1.getMovePhase() == MovePhaseEnum.MOVED)
-                    .forEach(stack1 -> stack1.setMovePhase(MovePhaseEnum.NOT_MOVED));
+                    .forEach(stack1 -> {
+                        stack1.setMove(0);
+                        stack1.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                    });
         }
     }
 
