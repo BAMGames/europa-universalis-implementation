@@ -551,6 +551,22 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when trying to move out from enemy forces while they are not pinned.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province.</li>
+     * <li>2: ally forces.</li>
+     * <li>3: enemy forces.</li>
+     * </ul>
+     * </p>
+     */
+    String ENEMY_FORCES_NOT_PINNED = "exception.eu.board.enemy_forces_not_pinned";
+
+    /**
+     * <p>
      * Exception thrown when trying to move more than 12 MP.
      * </p>
      * <p>

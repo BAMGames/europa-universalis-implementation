@@ -176,7 +176,15 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.setProvince("pecs");
         stack.setId(14L);
         stack.setCountry("angleterre");
+        stack.getCounters().add(new CounterEntity());
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        stack.getCounters().get(0).setCountry("france");
         game.getStacks().add(stack);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("pecs");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setCountry("angleterre");
 
         try {
             boardService.moveStack(request);
@@ -251,6 +259,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         when(oeUtil.getAllies(game.getCountries().get(1), game)).thenReturn(Collections.singletonList(game.getCountries().get(1).getName()));
+        when(oeUtil.getEnemies(game.getCountries().get(1), game)).thenReturn(Collections.singletonList(game.getCountries().get(0).getName()));
         when(oeUtil.getMovePoints(pecs, idf, true)).thenReturn(-1);
 
         try {
@@ -272,6 +281,23 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         stack.setMove(6);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is pinned by enemy");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ENEMY_FORCES_NOT_PINNED, e.getCode());
+            Assert.assertEquals("moveStack.request.idStack", e.getParams()[0]);
+        }
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(2).setProvince("pecs");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        game.getStacks().get(2).getCounters().get(0).setCountry("france");
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        game.getStacks().get(2).getCounters().get(1).setCountry("france");
 
         try {
             boardService.moveStack(request);

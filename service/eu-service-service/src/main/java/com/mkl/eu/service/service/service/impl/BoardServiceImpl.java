@@ -107,16 +107,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                 .setParams(METHOD_MOVE_STACK));
 
-        Optional<StackEntity> stackOpt = game.getStacks().stream().filter(x -> idStack.equals(x.getId())).findFirst();
+        StackEntity stack = game.getStacks()
+                .stream()
+                .filter(x -> idStack.equals(x.getId()))
+                .findFirst()
+                .orElse(null);
 
-        failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(stackOpt.isPresent())
+        failIfNull(new CheckForThrow<>()
+                .setTest(stack)
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_STACK, idStack));
-
-        StackEntity stack = stackOpt.get();
 
         boolean isMobile = oeUtil.isMobile(stack);
 
@@ -197,6 +199,26 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat("{1}: {0} This action needs too much move points {2} ({3}/{4}).")
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                 .setParams(METHOD_MOVE_STACK, movePoints, stack.getMove(), 12));
+
+        int allyForces = game.getStacks().stream()
+                .filter(s -> StringUtils.equals(s.getProvince(), stack.getProvince()) && !idStack.equals(s.getId()))
+                .flatMap(x -> x.getCounters().stream())
+                .filter(counter -> allies.contains(counter.getCountry()))
+                .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
+                .collect(Collectors.summingInt(value -> value));
+        int enemyForces = game.getStacks().stream()
+                .filter(s -> StringUtils.equals(s.getProvince(), stack.getProvince()))
+                .flatMap(x -> x.getCounters().stream())
+                .filter(counter -> enemies.contains(counter.getCountry()))
+                .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
+                .collect(Collectors.summingInt(value -> value));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(allyForces >= enemyForces)
+                .setCodeError(IConstantsServiceException.ENEMY_FORCES_NOT_PINNED)
+                .setMsgFormat("{1}: {0} The province {2} has too much enemy forces ({3}/{4}).")
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_MOVE_STACK, stack.getProvince(), allyForces, enemyForces));
 
         checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
