@@ -201,13 +201,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_MOVE_STACK, movePoints, stack.getMove(), 12));
 
         int allyForces = game.getStacks().stream()
-                .filter(s -> StringUtils.equals(s.getProvince(), stack.getProvince()) && !idStack.equals(s.getId()))
+                .filter(s -> !s.isBesieged() && StringUtils.equals(s.getProvince(), stack.getProvince()) && !idStack.equals(s.getId()))
                 .flatMap(x -> x.getCounters().stream())
                 .filter(counter -> allies.contains(counter.getCountry()))
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .collect(Collectors.summingInt(value -> value));
         int enemyForces = game.getStacks().stream()
-                .filter(s -> StringUtils.equals(s.getProvince(), stack.getProvince()))
+                .filter(s -> !s.isBesieged() && StringUtils.equals(s.getProvince(), stack.getProvince()))
                 .flatMap(x -> x.getCounters().stream())
                 .filter(counter -> enemies.contains(counter.getCountry()))
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))

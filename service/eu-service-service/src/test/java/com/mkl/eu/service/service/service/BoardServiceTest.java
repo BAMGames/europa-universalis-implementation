@@ -295,9 +295,22 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(0).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         game.getStacks().get(2).getCounters().get(0).setCountry("france");
-        game.getStacks().get(2).getCounters().add(new CounterEntity());
-        game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
-        game.getStacks().get(2).getCounters().get(1).setCountry("france");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(3).setProvince("pecs");
+        game.getStacks().get(3).setBesieged(true);
+        game.getStacks().get(3).getCounters().add(new CounterEntity());
+        game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        game.getStacks().get(3).getCounters().get(0).setCountry("france");
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is pinned by enemy");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ENEMY_FORCES_NOT_PINNED, e.getCode());
+            Assert.assertEquals("moveStack.request.idStack", e.getParams()[0]);
+        }
+
+        game.getStacks().get(3).setBesieged(false);
 
         try {
             boardService.moveStack(request);
