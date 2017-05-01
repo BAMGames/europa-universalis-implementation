@@ -130,14 +130,14 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_MOVE_STACK, idStack));
 
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(stack.getMovePhase() == MovePhaseEnum.MOVED)
+                .setTest(stack.getMovePhase() != null && stack.getMovePhase().isMoved())
                 .setCodeError(IConstantsServiceException.STACK_ALREADY_MOVED)
                 .setMsgFormat("{1}: {0} {2} Stack has already moved.")
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_STACK, idStack));
 
         boolean firstMove = false;
-        if (stack.getMovePhase() == MovePhaseEnum.NOT_MOVED || stack.getMovePhase() == null) {
+        if (stack.getMovePhase() != MovePhaseEnum.IS_MOVING) {
             List<StackEntity> stacks = stackDao.getMovingStacks(game.getId());
             List<Long> idsStacks = stacks.stream().map(StackEntity::getId).collect(Collectors.toList());
 
@@ -423,8 +423,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .findFirst()
                 .orElse(null);
 
-        failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(stack == null)
+        failIfNull(new CheckForThrow<>()
+                .setTest(stack)
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                 .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
@@ -439,7 +439,28 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         checkCanManipulateObject(stack.getCountry(), country, game, METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
 
-        stack.setMovePhase(MovePhaseEnum.MOVED);
+        MovePhaseEnum movePhase;
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(stack.getProvince());
+        String controller = oeUtil.getController(province, game);
+        int enemyForces = game.getStacks().stream()
+                .filter(s -> !s.isBesieged() && StringUtils.equals(s.getProvince(), stack.getProvince()))
+                .flatMap(x -> x.getCounters().stream())
+                .filter(counter -> enemies.contains(counter.getCountry()))
+                .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
+                .collect(Collectors.summingInt(value -> value));
+        if (enemyForces > 0) {
+            // If stack is in the same province as a non besieged enemy stack, then the stack is fighting.
+            movePhase = MovePhaseEnum.FIGHTING;
+        } else if (enemies.contains(controller)) {
+            // else if the stack is in an enemy province, then the stack is besieging.
+            movePhase = MovePhaseEnum.BESIEGING;
+        } else {
+            // otherwise, the stack has just moved.
+            movePhase = MovePhaseEnum.MOVED;
+        }
+
+        stack.setMovePhase(movePhase);
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
@@ -449,7 +470,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diff.setIdObject(idStack);
         DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
         diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
-        diffAttributes.setValue(MovePhaseEnum.MOVED.name());
+        diffAttributes.setValue(movePhase.name());
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 

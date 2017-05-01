@@ -490,7 +490,21 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testEndMoveStackSuccess() throws Exception {
+    public void testEndMoveStackSuccessMoved() throws Exception {
+        testEndMoveStackSuccess("angleterre", "venise", MovePhaseEnum.MOVED);
+    }
+
+    @Test
+    public void testEndMoveStackSuccessFighting() throws Exception {
+        testEndMoveStackSuccess("espagne", "espagne", MovePhaseEnum.FIGHTING);
+    }
+
+    @Test
+    public void testEndMoveStackSuccessBesieging() throws Exception {
+        testEndMoveStackSuccess("turquie", "turquie", MovePhaseEnum.BESIEGING);
+    }
+
+    private void testEndMoveStackSuccess(String enemy, String controller, MovePhaseEnum movePhase) throws Exception {
         Request<EndMoveStackRequest> request = new Request<>();
         request.setRequest(new EndMoveStackRequest());
         request.setAuthent(new AuthentInfo());
@@ -507,25 +521,29 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.setCountry("france");
         stack.setId(13L);
         game.getStacks().add(stack);
+        StackEntity otherStack = new StackEntity();
+        otherStack.setProvince("pecs");
+        otherStack.setCountry("espagne");
+        otherStack.setId(14L);
+        otherStack.getCounters().add(new CounterEntity());
+        otherStack.getCounters().get(0).setCountry("espagne");
+        otherStack.getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().add(otherStack);
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(26L);
         game.getCountries().get(0).setName("france");
 
         when(oeUtil.isMobile(stack)).thenReturn(true);
+        when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(enemy));
+        EuropeanProvinceEntity province = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName(stack.getProvince())).thenReturn(province);
+        when(oeUtil.getController(province, game)).thenReturn(controller);
 
         simulateDiff();
 
         DiffResponse response = boardService.endMoveStack(request);
 
         DiffEntity diffEntity = retrieveDiffCreated();
-
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, diffMapping);
-
-        inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
-        inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
-        inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
@@ -535,7 +553,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(1, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals(MovePhaseEnum.MOVED.name(), diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(movePhase.name(), diffEntity.getAttributes().get(0).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
