@@ -577,4 +577,26 @@ public final class OEUtilImpl implements IOEUtil {
 
         return countries;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getFortressLevel(AbstractProvinceEntity province, GameEntity game) {
+        int level = 0;
+        if (province instanceof EuropeanProvinceEntity) {
+            if (((EuropeanProvinceEntity) province).getFortress() != null) {
+                level = ((EuropeanProvinceEntity) province).getFortress();
+            }
+        }
+        List<StackEntity> stacks = getStacksOnProvince(game, province.getName());
+        String controller = getController(province, game);
+        CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()),
+                counter -> StringUtils.equals(controller, counter.getCountry()) && CounterUtil.isFortress(counter.getType()));
+        if (fortressCounter != null) {
+            level = CounterUtil.getFortressLevelFromType(fortressCounter.getType());
+        }
+
+        return level;
+    }
 }

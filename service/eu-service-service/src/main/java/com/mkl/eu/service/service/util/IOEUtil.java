@@ -158,4 +158,11 @@ public interface IOEUtil {
      * @return the enemies of the country.
      */
     List<String> getEnemies(PlayableCountryEntity country, GameEntity game);
+
+    /**
+     * @param province the province.
+     * @param game     the game.
+     * @return the level of the fortress of the province.
+     */
+    int getFortressLevel(AbstractProvinceEntity province, GameEntity game);
 }

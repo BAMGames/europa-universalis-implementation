@@ -1035,4 +1035,45 @@ public class OEUtilTest {
         Assert.assertEquals("espagne", enemies.get(0));
         Assert.assertEquals("portugal", enemies.get(1));
     }
+
+    @Test
+    public void testLevelFortress() {
+        EuropeanProvinceEntity provinceEu = new EuropeanProvinceEntity();
+        provinceEu.setName("idf");
+        GameEntity game = new GameEntity();
+
+        Assert.assertEquals(0, oeUtil.getFortressLevel(provinceEu, game));
+
+        provinceEu.setFortress(2);
+
+        Assert.assertEquals(2, oeUtil.getFortressLevel(provinceEu, game));
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("idf");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.FORTRESS_1);
+        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+
+        Assert.assertEquals(2, oeUtil.getFortressLevel(provinceEu, game));
+
+        provinceEu.setDefaultOwner("france");
+
+        Assert.assertEquals(1, oeUtil.getFortressLevel(provinceEu, game));
+
+        RotwProvinceEntity provinceRotw = new RotwProvinceEntity();
+
+        Assert.assertEquals(0, oeUtil.getFortressLevel(provinceRotw, game));
+
+        provinceRotw.setName("idf");
+
+        Assert.assertEquals(0, oeUtil.getFortressLevel(provinceRotw, game));
+
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(1).setProvince("idf");
+        game.getStacks().get(1).getCounters().add(new CounterEntity());
+        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+
+        Assert.assertEquals(1, oeUtil.getFortressLevel(provinceRotw, game));
+    }
 }
