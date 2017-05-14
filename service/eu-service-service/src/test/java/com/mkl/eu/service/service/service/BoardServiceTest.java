@@ -319,6 +319,39 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
             Assert.assertEquals("moveStack.idCountry", e.getParams()[0]);
         }
+
+        when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
+        when(oeUtil.getController(pecs, game)).thenReturn(game.getCountries().get(0).getName());
+        when(oeUtil.getFortressLevel(pecs, game)).thenReturn(4);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack can't break siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.CANT_BREAK_SIEGE, e.getCode());
+            Assert.assertEquals("moveStack.request.idStack", e.getParams()[0]);
+        }
+
+        when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(1).getName());
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("moveStack.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
+        when(oeUtil.getFortressLevel(pecs, game)).thenReturn(2);
+
+        try {
+            boardService.moveStack(request);
+            Assert.fail("Should break because stack is owned by user");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("moveStack.idCountry", e.getParams()[0]);
+        }
     }
 
     @Test

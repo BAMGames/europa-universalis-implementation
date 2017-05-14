@@ -220,6 +220,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_STACK, stack.getProvince(), allyForces, enemyForces));
 
+        String controllerFrom = oeUtil.getController(provinceFrom, game);
+        if (enemies.contains(controllerFrom) && !allies.contains(controller)) {
+            int fortress = oeUtil.getFortressLevel(provinceFrom, game);
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(allyForces >= fortress)
+                    .setCodeError(IConstantsServiceException.CANT_BREAK_SIEGE)
+                    .setMsgFormat("{1}: {0} The province {2} siege can''t be abandoned ({3}/{4}).")
+                    .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                    .setParams(METHOD_MOVE_STACK, stack.getProvince(), allyForces, fortress));
+        }
+
         checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
         DiffEntity diff = new DiffEntity();

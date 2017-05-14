@@ -567,6 +567,22 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when trying to move out from a siege and not going home.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province.</li>
+     * <li>2: ally forces.</li>
+     * <li>3: fortress level.</li>
+     * </ul>
+     * </p>
+     */
+    String CANT_BREAK_SIEGE = "exception.eu.board.cant_break_siege";
+
+    /**
+     * <p>
      * Exception thrown when trying to move more than 12 MP.
      * </p>
      * <p>
