@@ -133,6 +133,16 @@ public enum DiffTypeEnum {
      * Can be <code>null</code> in which case it means that all countries are invalidated.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#BATTLE in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#TURN to know the turn of the battles that are validated.</li>
+     * </ul>
+     * </li>
+     * <li>DiffTypeObjectEnum#SIEGE in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#TURN to know the turn of the sieges that are validated.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     INVALIDATE,

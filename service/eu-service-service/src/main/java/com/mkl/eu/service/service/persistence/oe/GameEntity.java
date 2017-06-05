@@ -10,6 +10,8 @@ import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
+import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -44,6 +46,10 @@ public class GameEntity implements IEntity, Serializable {
     private List<WarEntity> wars = new ArrayList<>();
     /** Orders of countries in phases. */
     private List<CountryOrderEntity> orders = new ArrayList<>();
+    /** Battles of the game. */
+    private List<BattleEntity> battles = new ArrayList<>();
+    /** Sieges of the game. */
+    private List<SiegeEntity> sieges = new ArrayList<>();
     /** Turn of the game. */
     private Integer turn;
     /** Status of the game. */
@@ -164,6 +170,11 @@ public class GameEntity implements IEntity, Serializable {
         return wars;
     }
 
+    /** @param wars the wars to set. */
+    public void setWars(List<WarEntity> wars) {
+        this.wars = wars;
+    }
+
     /** @return the orders. */
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<CountryOrderEntity> getOrders() {
@@ -175,9 +186,26 @@ public class GameEntity implements IEntity, Serializable {
         this.orders = orders;
     }
 
-    /** @param wars the wars to set. */
-    public void setWars(List<WarEntity> wars) {
-        this.wars = wars;
+    /** @return the battles. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<BattleEntity> getBattles() {
+        return battles;
+    }
+
+    /** @param battles the battles to set. */
+    public void setBattles(List<BattleEntity> battles) {
+        this.battles = battles;
+    }
+
+    /** @return the sieges. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<SiegeEntity> getSieges() {
+        return sieges;
+    }
+
+    /** @param sieges the sieges to set. */
+    public void setSieges(List<SiegeEntity> sieges) {
+        this.sieges = sieges;
     }
 
     /** @return the turn. */

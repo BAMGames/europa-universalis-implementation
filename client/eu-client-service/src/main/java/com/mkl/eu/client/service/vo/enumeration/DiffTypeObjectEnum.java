@@ -21,5 +21,9 @@ public enum DiffTypeObjectEnum {
     /** Country. */
     COUNTRY,
     /** Turn order. */
-    TURN_ORDER
+    TURN_ORDER,
+    /** Battle. */
+    BATTLE,
+    /** Siege. */
+    SIEGE
 }
