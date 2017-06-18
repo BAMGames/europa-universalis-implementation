@@ -589,6 +589,19 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_COUNTER));
 
+        int futureNbCounters = stack.getCounters().size() + 1;
+        int futureSize = stack.getCounters().stream()
+                .map(c -> CounterUtil.getSizeFromType(c.getType()))
+                .collect(Collectors.summingInt(value -> value));
+        futureSize += CounterUtil.getSizeFromType(counter.getType());
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(futureNbCounters <= 3 && futureSize <= 8)
+                .setCodeError(IConstantsServiceException.STACK_TOO_BIG)
+                .setMsgFormat("{1}: {0} The stack {2} is too big to add the counter (size: {3} / 3, force: {4} / 8}.")
+                .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_MOVE_COUNTER, stack.getId(), futureNbCounters, futureSize));
+
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());

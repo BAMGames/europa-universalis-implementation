@@ -821,10 +821,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack = new StackEntity();
         stack.setProvince("Pecs");
         stack.setId(9L);
-        CounterEntity counter = new CounterEntity();
-        counter.setId(13L);
-        counter.setOwner(stack);
-        counter.setCountry("genes");
+        CounterEntity counterToMove = new CounterEntity();
+        counterToMove.setId(13L);
+        counterToMove.setOwner(stack);
+        counterToMove.setCountry("genes");
+        counterToMove.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         game.getStacks().add(stack);
         PlayableCountryEntity country = new PlayableCountryEntity();
         country.setName("france");
@@ -837,6 +838,30 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         country.setId(27L);
         game.getCountries().add(country);
 
+        stack = new StackEntity();
+        stack.setProvince("Pecs");
+        stack.setId(10L);
+        game.getStacks().add(stack);
+        CounterEntity counter = new CounterEntity();
+        counter.setId(14L);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        counter.setCountry("genes");
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().add(stack);
+        counter = new CounterEntity();
+        counter.setId(14L);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        counter.setCountry("genes");
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter = new CounterEntity();
+        counter.setId(15L);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        counter.setCountry("genes");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+
         try {
             boardService.moveCounter(request);
             Assert.fail("Should break because counter does not exist");
@@ -845,7 +870,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("moveCounter.request.idCounter", e.getParams()[0]);
         }
 
-        when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
+        when(counterDao.getCounter(13L, 12L)).thenReturn(counterToMove);
 
         List<String> patrons = new ArrayList<>();
         patrons.add("france");
@@ -877,6 +902,35 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
             Assert.assertEquals("moveCounter.request.idStack", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdStack(10L);
+
+        try {
+            boardService.moveCounter(request);
+            Assert.fail("Should break because trying to move the counter in a too big stack");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_TOO_BIG, e.getCode());
+            Assert.assertEquals("moveCounter.request.idStack", e.getParams()[0]);
+        }
+
+        stack.getCounters().remove(2);
+        counterToMove.setType(CounterFaceTypeEnum.ARMY_PLUS);
+
+        try {
+            boardService.moveCounter(request);
+            Assert.fail("Should break because trying to move the counter in a too big stack");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_TOO_BIG, e.getCode());
+            Assert.assertEquals("moveCounter.request.idStack", e.getParams()[0]);
+        }
+
+        counterToMove.setType(CounterFaceTypeEnum.ARMY_MINUS);
+
+        try {
+            boardService.moveCounter(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should have worked.");
         }
     }
 

@@ -67,14 +67,13 @@ public interface IBoardService extends INameConstants {
 
     /**
      * Validate/Invalidate the military round for a country.
-     * If all active countries have their military round validated, go to next round.
+     * If all active countries have their military round validated, go to battle phase, siege phase or next round, given the board.
      *
-     * @param request info about whose country wants to validate/invalidate its administrative actions
+     * @param request info about whose country wants to validate/invalidate its military round.
      * @return the diffs.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
     DiffResponse validateMilitaryRound(@WebParam(name = PARAMETER_VALIDATE_MIL_ROUND) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
-
 }

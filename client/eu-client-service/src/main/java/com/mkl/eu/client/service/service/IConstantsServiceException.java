@@ -493,6 +493,22 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when trying to move a counter to a too big stack.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * <li>1: future number of counters of the stack.</li>
+     * <li>1: future size of the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_TOO_BIG = "exception.eu.board.stack_too_big";
+
+    /**
+     * <p>
      * Exception thrown when trying to move a non mobile stack.
      * </p>
      * <p>
