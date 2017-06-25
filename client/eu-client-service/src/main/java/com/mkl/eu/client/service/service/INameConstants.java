@@ -96,6 +96,11 @@ public interface INameConstants {
     String PARAMETER_COUNTER_FACE_TYPE = "counterFaceType";
     /** Name of the parameter investment. */
     String PARAMETER_INVESTMENT = "investment";
+    /** Name of the parameter chooseBattle. */
+    String PARAMETER_CHOOSE_BATTLE = "chooseBattle";
+
+
+
     /** Name of a response. */
     String RESPONSE = "response";
     /** Name of a response of type game. */
@@ -148,4 +153,6 @@ public interface INameConstants {
     String METHOD_REMOVE_ADM_ACT = "removeAdminAction";
     /** Name of the method validateAdminActions. */
     String METHOD_VALIDATE_ADM_ACT = "validateAdminActions";
+    /** Name of the method chooseBattle. */
+    String METHOD_CHOOSE_BATTLE = "chooseBattle";
 }
