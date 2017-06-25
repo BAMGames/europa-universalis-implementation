@@ -802,6 +802,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                         BattleEntity battle = new BattleEntity();
                         battle.setProvince(province);
                         battle.setTurn(game.getTurn());
+                        battle.setStatus(BattleStatusEnum.NEW);
                         battle.setGame(game);
 
                         game.getBattles().add(battle);

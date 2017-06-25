@@ -1470,8 +1470,12 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(2, game.getBattles().size());
             Assert.assertEquals(game.getTurn(), game.getBattles().get(0).getTurn());
             Assert.assertEquals("idf", game.getBattles().get(0).getProvince());
+            Assert.assertEquals(game.getTurn(), game.getBattles().get(0).getTurn());
+            Assert.assertEquals(BattleStatusEnum.NEW, game.getBattles().get(0).getStatus());
             Assert.assertEquals(game.getTurn(), game.getBattles().get(1).getTurn());
             Assert.assertEquals("pecs", game.getBattles().get(1).getProvince());
+            Assert.assertEquals(game.getTurn(), game.getBattles().get(1).getTurn());
+            Assert.assertEquals(BattleStatusEnum.NEW, game.getBattles().get(1).getStatus());
         } else if (siege) {
             Assert.assertEquals(2, diffEntities.size());
             Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
