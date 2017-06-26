@@ -223,13 +223,13 @@ public abstract class AbstractGameServiceTest {
             order.setActive(true);
             game.getOrders().add(order);
             order = new CountryOrderEntity();
-            order.setGameStatus(status);
+            order.setGameStatus(getOrderStatus(status));
             order.setCountry(new PlayableCountryEntity());
             order.getCountry().setId(request.getIdCountry() * 2);
             order.setActive(true);
             game.getOrders().add(order);
             order = new CountryOrderEntity();
-            order.setGameStatus(status);
+            order.setGameStatus(getOrderStatus(status));
             order.setCountry(new PlayableCountryEntity());
             order.getCountry().setId(request.getIdCountry());
             order.setActive(false);
@@ -255,6 +255,20 @@ public abstract class AbstractGameServiceTest {
             }
 
             game.setStatus(status);
+        }
+    }
+
+    private GameStatusEnum getOrderStatus(GameStatusEnum status) {
+        switch (status) {
+            case MILITARY_CAMPAIGN:
+            case MILITARY_SUPPLY:
+            case MILITARY_MOVE:
+            case MILITARY_BATTLES:
+            case MILITARY_SIEGES:
+            case MILITARY_NEUTRALS:
+                return GameStatusEnum.MILITARY_MOVE;
+            default:
+                return status;
         }
     }
 

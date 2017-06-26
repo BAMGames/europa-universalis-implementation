@@ -674,4 +674,22 @@ public interface IConstantsServiceException {
      * </p>
      */
     String STACK_CANT_CONTROL = "exception.eu.board.stack_already_controlled";
+
+    /**********************************************************************/
+    /**              MILITARY SERVICE EXCEPTION                           */
+    /**********************************************************************/
+
+    /**
+     * <p>
+     * Exception thrown when trying to begin a battle while another is in process.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province of the battle in process.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_IN_PROCESS = "exception.eu.military.battle_in_process";
 }
