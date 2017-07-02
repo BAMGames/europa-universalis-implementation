@@ -6,6 +6,8 @@ import com.mkl.eu.service.service.persistence.oe.IEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entity for a battle (land or naval).
@@ -23,6 +25,12 @@ public class BattleEntity implements IEntity, Serializable {
     private Integer turn;
     /** Status of the battle. */
     private BattleStatusEnum status;
+    /** Flag saying that the attacker has selected his forces. */
+    private Boolean attackerForces;
+    /** Flag saying that the defender has selected his forces. */
+    private Boolean defenderForces;
+    /** Counters involved in the battle. */
+    private Set<BattleCounterEntity> counters = new HashSet<>();
     /** Game in which the battle occurs. */
     private GameEntity game;
 
@@ -63,6 +71,8 @@ public class BattleEntity implements IEntity, Serializable {
     }
 
     /** @return the status. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS")
     public BattleStatusEnum getStatus() {
         return status;
     }
@@ -70,6 +80,39 @@ public class BattleEntity implements IEntity, Serializable {
     /** @param status the status to set. */
     public void setStatus(BattleStatusEnum status) {
         this.status = status;
+    }
+
+    /** @return the attackerForces. */
+    @Column(name = "ATTACKER_FORCES")
+    public Boolean isAttackerForces() {
+        return attackerForces;
+    }
+
+    /** @param attackerForces the attackerForces to set. */
+    public void setAttackerForces(Boolean attackerForces) {
+        this.attackerForces = attackerForces;
+    }
+
+    /** @return the defenderForces. */
+    @Column(name = "DEFENDER_FORCES")
+    public Boolean isDefenderForces() {
+        return defenderForces;
+    }
+
+    /** @param defenderForces the defenderForces to set. */
+    public void setDefenderForces(Boolean defenderForces) {
+        this.defenderForces = defenderForces;
+    }
+
+    /** @return the counters. */
+    @OneToMany(mappedBy = "id.battle", cascade = CascadeType.ALL)
+    public Set<BattleCounterEntity> getCounters() {
+        return counters;
+    }
+
+    /** @param counters the counters to set. */
+    public void setCounters(Set<BattleCounterEntity> counters) {
+        this.counters = counters;
     }
 
     /** @return the game. */

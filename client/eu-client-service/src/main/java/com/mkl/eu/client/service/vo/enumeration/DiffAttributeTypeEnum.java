@@ -65,5 +65,13 @@ public enum DiffAttributeTypeEnum {
     /** To use active field (for turn order, it will be the position of the new active turn orders). */
     ACTIVE,
     /** Number of move points of a stack. */
-    MOVE_POINTS
+    MOVE_POINTS,
+    /** To say if the attacker is ready. */
+    ATTACKER_READY,
+    /** To say if the defender is ready. */
+    DEFENDER_READY,
+    /** Counter to add as attacker. */
+    ATTACKER_COUNTER_ADD,
+    /** Counter to add as defender. */
+    DEFENDER_COUNTER_ADD
 }

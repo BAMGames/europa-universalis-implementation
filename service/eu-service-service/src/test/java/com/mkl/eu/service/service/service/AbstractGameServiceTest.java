@@ -15,6 +15,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -43,6 +44,9 @@ public abstract class AbstractGameServiceTest {
 
     @Mock
     protected DiffMapping diffMapping;
+
+    @Mock
+    protected SocketHandler socketHandler;
 
     /** Variable used to store something coming from a mock. */
     private List<DiffEntity> diffEntities;
