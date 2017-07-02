@@ -44,7 +44,6 @@ import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.service.ListEquals;
-import com.mkl.eu.service.service.socket.SocketHandler;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.impl.OEUtilImpl;
 import org.apache.commons.lang3.StringUtils;
@@ -115,9 +114,6 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private ChatMapping chatMapping;
-
-    @Mock
-    private SocketHandler socketHandler;
 
     @Mock
     private IOEUtil oeUtil;

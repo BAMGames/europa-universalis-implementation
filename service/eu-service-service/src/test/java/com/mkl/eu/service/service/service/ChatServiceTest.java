@@ -19,7 +19,6 @@ import com.mkl.eu.service.service.persistence.oe.chat.*;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.service.impl.ChatServiceImpl;
-import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,9 +54,6 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private ChatMapping chatMapping;
-
-    @Mock
-    private SocketHandler socketHandler;
 
     /** Variable used to store something coming from a mock. */
     private DiffEntity diffEntity;

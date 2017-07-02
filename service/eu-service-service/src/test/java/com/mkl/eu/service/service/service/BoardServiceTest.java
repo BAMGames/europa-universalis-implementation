@@ -29,7 +29,6 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
-import com.mkl.eu.service.service.socket.SocketHandler;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -83,9 +82,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private IOEUtil oeUtil;
-
-    @Mock
-    private SocketHandler socketHandler;
 
     @Test
     public void testMoveStackFailSimple() {
