@@ -7,6 +7,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IMilitaryService;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
+import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 public class MilitaryServiceImpl extends AbstractService implements IMilitaryService {
     @Autowired
     private IOEUtil oeUtil;
+
     /** {@inheritDoc} */
     @Override
     public DiffResponse chooseBattle(Request<ChooseBattleRequest> request) throws FunctionalException, TechnicalException {
@@ -190,6 +192,135 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         }
         battle.setStatus(battleStatus);
         diff.getAttributes().get(0).setValue(battleStatus.name());
+
+        createDiff(diff);
+
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        diffs.add(diff);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse selectForce(Request<SelectForceRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCE)
+                .setParams(METHOD_SELECT_FORCE));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SELECT_FORCE, PARAMETER_SELECT_FORCE);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_SELECT_FORCE, PARAMETER_SELECT_FORCE);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST)
+                .setParams(METHOD_SELECT_FORCE));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest().getIdCounter())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_SELECT_FORCE));
+
+        BattleEntity battle = game.getBattles().stream()
+                .filter(bat -> bat.getStatus() == BattleStatusEnum.SELECT_FORCES)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(battle)
+                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
+                .setName(PARAMETER_SELECT_FORCE)
+                .setParams(METHOD_SELECT_FORCE, BattleStatusEnum.SELECT_FORCES.name()));
+
+        boolean offensive = isCountryActive(game, request.getIdCountry());
+
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(game.getId());
+        diff.setVersionGame(game.getVersion());
+        diff.setType(DiffTypeEnum.MODIFY);
+        diff.setTypeObject(DiffTypeObjectEnum.BATTLE);
+        diff.setIdObject(battle.getId());
+        if (request.getRequest().isAdd()) {
+            List<String> allies = oeUtil.getAllies(country, game);
+
+            CounterEntity counter = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
+                            allies.contains(stack.getCountry()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(c -> CounterUtil.isArmy(c.getType()) &&
+                            c.getId().equals(request.getRequest().getIdCounter()))
+                    .findAny()
+                    .orElse(null);
+
+            failIfNull(new AbstractService.CheckForThrow<>()
+                    .setTest(counter)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                    .setParams(METHOD_SELECT_FORCE));
+
+            BattleCounterEntity comp = new BattleCounterEntity();
+            comp.setAttacker(offensive);
+            comp.setBattle(battle);
+            comp.setCounter(counter);
+            battle.getCounters().add(comp);
+
+            DiffAttributesEntity attribute = new DiffAttributesEntity();
+            if (offensive) {
+                attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD);
+            } else {
+                attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD);
+            }
+            attribute.setValue(counter.getId().toString());
+            attribute.setDiff(diff);
+            diff.getAttributes().add(attribute);
+        } else {
+            BattleCounterEntity battleCounter = battle.getCounters().stream()
+                    .filter(c -> c.getCounter().getId().equals(request.getRequest().getIdCounter()))
+                    .findAny()
+                    .orElse(null);
+
+            failIfNull(new AbstractService.CheckForThrow<>()
+                    .setTest(battleCounter)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                    .setParams(METHOD_SELECT_FORCE));
+
+            battle.getCounters().remove(battleCounter);
+
+            DiffAttributesEntity attribute = new DiffAttributesEntity();
+            if (offensive) {
+                attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_REMOVE);
+            } else {
+                attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_REMOVE);
+            }
+            attribute.setValue(battleCounter.getCounter().getId().toString());
+            attribute.setDiff(diff);
+            diff.getAttributes().add(attribute);
+        }
 
         createDiff(diff);
 

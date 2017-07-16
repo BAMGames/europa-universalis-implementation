@@ -73,5 +73,9 @@ public enum DiffAttributeTypeEnum {
     /** Counter to add as attacker. */
     ATTACKER_COUNTER_ADD,
     /** Counter to add as defender. */
-    DEFENDER_COUNTER_ADD
+    DEFENDER_COUNTER_ADD,
+    /** Counter to remove as attacker. */
+    ATTACKER_COUNTER_REMOVE,
+    /** Counter to remove as defender. */
+    DEFENDER_COUNTER_REMOVE
 }

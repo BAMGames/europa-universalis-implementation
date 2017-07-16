@@ -692,4 +692,18 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_IN_PROCESS = "exception.eu.military.battle_in_process";
+
+    /**
+     * <p>
+     * Exception thrown when trying to make an action that requires a battle in a special status.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: status of battle expected.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_STATUS_NONE = "exception.eu.military.battle_status_none";
 }

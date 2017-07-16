@@ -98,6 +98,8 @@ public interface INameConstants {
     String PARAMETER_INVESTMENT = "investment";
     /** Name of the parameter chooseBattle. */
     String PARAMETER_CHOOSE_BATTLE = "chooseBattle";
+    /** Name of the parameter selectForce. */
+    String PARAMETER_SELECT_FORCE = "selectForce";
 
 
 
@@ -155,4 +157,6 @@ public interface INameConstants {
     String METHOD_VALIDATE_ADM_ACT = "validateAdminActions";
     /** Name of the method chooseBattle. */
     String METHOD_CHOOSE_BATTLE = "chooseBattle";
+    /** Name of the method selectForce. */
+    String METHOD_SELECT_FORCE = "selectForce";
 }

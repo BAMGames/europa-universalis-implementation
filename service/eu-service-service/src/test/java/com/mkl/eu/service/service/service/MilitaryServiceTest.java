@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
+import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -12,6 +13,7 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.service.impl.MilitaryServiceImpl;
@@ -26,6 +28,7 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -223,5 +226,245 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         } else {
             Assert.assertEquals(BattleStatusEnum.SELECT_FORCES, game.getBattles().get(0).getStatus());
         }
+    }
+
+    @Test
+    public void testSelectForceFail() {
+        Pair<Request<SelectForceRequest>, GameEntity> pair = testCheckGame(militaryService::selectForce, "selectForce");
+        Request<SelectForceRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        game.getBattles().get(0).setProvince("pecs");
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        testCheckStatus(pair.getRight(), request, militaryService::selectForce, "selectForce", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because selectForce.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new SelectForceRequest());
+        request.setIdCountry(12L);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because idCounter is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCounter(6L);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because no battle is in right status");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("selectForce", e.getParams()[0]);
+        }
+
+        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because counter does not exist in the battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
+        }
+
+        BattleCounterEntity battleCounter = new BattleCounterEntity();
+        battleCounter.setCounter(new CounterEntity());
+        battleCounter.getCounter().setId(6L);
+        game.getBattles().get(0).getCounters().add(battleCounter);
+
+        try {
+            militaryService.selectForce(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should not break " + e.getMessage());
+        }
+
+        request.getRequest().setAdd(true);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because counter does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
+        }
+
+        Mockito.when(oeUtil.getAllies(null, game)).thenReturn(Collections.singletonList("france"));
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("pecs");
+        game.getStacks().get(0).setCountry("france");
+        game.getStacks().get(0).getCounters().add(new CounterEntity());
+        game.getStacks().get(0).getCounters().get(0).setId(6L);
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+
+        try {
+            militaryService.selectForce(request);
+        } catch (FunctionalException e) {
+            Assert.fail("Should not break " + e.getMessage());
+        }
+
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because counter is not an army");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
+        }
+
+        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(0).setCountry("pologne");
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because counter is not owned");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
+        }
+
+        game.getStacks().get(0).setCountry("france");
+        game.getStacks().get(0).setProvince("idf");
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because counter is not in the right province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testSelectForceAddAttacker() throws FunctionalException {
+        testSelectForceSuccess(true, true);
+    }
+
+    @Test
+    public void testSelectForceRemoveAttacker() throws FunctionalException {
+        testSelectForceSuccess(false, true);
+    }
+
+    @Test
+    public void testSelectForceAddDefender() throws FunctionalException {
+        testSelectForceSuccess(true, false);
+    }
+
+    @Test
+    public void testSelectForceRemoveDefender() throws FunctionalException {
+        testSelectForceSuccess(false, false);
+    }
+
+    private void testSelectForceSuccess(boolean add, boolean attacker) throws FunctionalException {
+        Pair<Request<SelectForceRequest>, GameEntity> pair = testCheckGame(militaryService::selectForce, "selectForce");
+        Request<SelectForceRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
+        game.getBattles().get(0).setProvince("pecs");
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("pecs");
+        game.getStacks().get(0).setCountry(country.getName());
+        CounterEntity counter = new CounterEntity();
+        counter.setId(6L);
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(0).getCounters().add(counter);
+
+        testCheckStatus(pair.getRight(), request, militaryService::selectForce, "selectForce", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
+        request.setRequest(new SelectForceRequest());
+        request.setIdCountry(12L);
+        request.getRequest().setIdCounter(6L);
+        request.getRequest().setAdd(add);
+
+        Mockito.when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
+
+        if (!add) {
+            BattleCounterEntity battleCounter = new BattleCounterEntity();
+            battleCounter.setCounter(new CounterEntity());
+            battleCounter.getCounter().setId(6L);
+            game.getBattles().get(0).getCounters().add(battleCounter);
+        }
+
+        if (attacker) {
+            CountryOrderEntity order = new CountryOrderEntity();
+            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+            order.setActive(true);
+            order.setCountry(country);
+            game.getOrders().add(order);
+        }
+
+        simulateDiff();
+
+        DiffResponse response = militaryService.selectForce(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
+
+        BattleEntity battle = game.getBattles().get(0);
+
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.BATTLE, diffEntity.getTypeObject());
+        Assert.assertEquals(game.getBattles().get(0).getId(), diffEntity.getIdObject());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(game.getId(), diffEntity.getIdGame());
+        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        DiffAttributeTypeEnum diffStatus;
+        if (attacker) {
+            if (add) {
+                diffStatus = DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD;
+
+                Assert.assertEquals(1, battle.getCounters().size());
+                BattleCounterEntity battleCounter = battle.getCounters().iterator().next();
+                Assert.assertEquals(battle, battleCounter.getBattle());
+                Assert.assertEquals(counter, battleCounter.getCounter());
+                Assert.assertEquals(true, battleCounter.isAttacker());
+            } else {
+                diffStatus = DiffAttributeTypeEnum.ATTACKER_COUNTER_REMOVE;
+
+                Assert.assertEquals(0, battle.getCounters().size());
+            }
+        } else {
+            if (add) {
+                diffStatus = DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD;
+
+                Assert.assertEquals(1, battle.getCounters().size());
+                BattleCounterEntity battleCounter = battle.getCounters().iterator().next();
+                Assert.assertEquals(battle, battleCounter.getBattle());
+                Assert.assertEquals(counter, battleCounter.getCounter());
+                Assert.assertEquals(false, battleCounter.isAttacker());
+            } else {
+                diffStatus = DiffAttributeTypeEnum.DEFENDER_COUNTER_REMOVE;
+
+                Assert.assertEquals(0, battle.getCounters().size());
+            }
+        }
+        Assert.assertEquals(diffStatus, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals("6", diffEntity.getAttributes().get(0).getValue());
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
+
+
     }
 }

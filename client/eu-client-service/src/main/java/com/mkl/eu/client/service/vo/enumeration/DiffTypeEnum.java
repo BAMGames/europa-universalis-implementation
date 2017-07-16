@@ -225,6 +225,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#DEFENDER_READY to know which if the defender has selected its forces.</li>
      * <li>DiffAttributeTypeEnum#ATTACKER_COUNTER_ADD the attacking counter added to this battle.</li>
      * <li>DiffAttributeTypeEnum#DEFENDER_COUNTER_ADD the defending counter added to this battle.</li>
+     * <li>DiffAttributeTypeEnum#ATTACKER_COUNTER_REMOVE the attacking counter removed to this battle.</li>
+     * <li>DiffAttributeTypeEnum#DEFENDER_COUNTER_REMOVE the defending counter removed to this battle.</li>
      * </ul>
      * </li>
      * </ul>

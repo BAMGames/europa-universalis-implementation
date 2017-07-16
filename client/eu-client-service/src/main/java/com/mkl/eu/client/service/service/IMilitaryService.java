@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
+import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -19,7 +20,7 @@ import javax.jws.WebService;
 public interface IMilitaryService extends INameConstants {
     /**
      * Choose a battle within the possible ones.
-     * If some side has too many forces, the selectForceForBattle service must be invoked followed by the validateForcesForBattle.
+     * If some side has too many forces, the selectForce service must be invoked followed by the validateForcesForBattle.
      * The defender can call withdrawBeforeBattle.
      * Then the first round is computed. If battle is not finished, each side can withdrawFromBattle
      * (in sea, the one with the wind can withdrawFromBattle during first round too).
@@ -33,4 +34,15 @@ public interface IMilitaryService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse chooseBattle(@WebParam(name = PARAMETER_CHOOSE_BATTLE) Request<ChooseBattleRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Select or deselect a force for the current battle.
+     *
+     * @param request info about the force to select/deselect.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse selectForce(@WebParam(name = PARAMETER_SELECT_FORCE) Request<SelectForceRequest> request) throws FunctionalException, TechnicalException;
 }

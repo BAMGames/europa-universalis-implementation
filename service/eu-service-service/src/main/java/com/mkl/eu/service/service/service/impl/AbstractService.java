@@ -209,6 +209,40 @@ public abstract class AbstractService implements INameConstants {
     }
 
     /**
+     * Check if the country is active.
+     *
+     * @param game      game to check.
+     * @param idCountry id of the country asking if it is active.
+     * @return <code>true</code> if the country is active.
+     */
+    protected boolean isCountryActive(GameEntity game, Long idCountry) {
+        boolean active;
+        switch (game.getStatus()) {
+            case ADMINISTRATIVE_ACTIONS_CHOICE:
+            case MILITARY_HIERARCHY:
+                active = true;
+                break;
+            case MILITARY_CAMPAIGN:
+            case MILITARY_SUPPLY:
+            case MILITARY_MOVE:
+            case MILITARY_BATTLES:
+            case MILITARY_SIEGES:
+            case MILITARY_NEUTRALS:
+                CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
+                        order -> order.isActive() &&
+                                order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                                order.getCountry().getId().equals(idCountry));
+                active = activeOrder != null;
+                break;
+            default:
+                active = false;
+                break;
+        }
+
+        return active;
+    }
+
+    /**
      * Check if game has the right status.
      *
      * @param game      game to check.
@@ -255,7 +289,7 @@ public abstract class AbstractService implements INameConstants {
      * @param param  name of the param holding the gameInfo. For logging purpose.
      * @throws FunctionalException
      */
-    private void checkSimpleStatus(GameEntity game, GameStatusEnum status, String method, String param) throws FunctionalException {
+    protected void checkSimpleStatus(GameEntity game, GameStatusEnum status, String method, String param) throws FunctionalException {
         failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(game.getStatus() == status)
                 .setCodeError(IConstantsServiceException.INVALID_STATUS)
