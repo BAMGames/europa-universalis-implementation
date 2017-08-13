@@ -256,6 +256,15 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         boolean offensive = isCountryActive(game, request.getIdCountry());
 
+        Boolean validated = offensive ? battle.isAttackerForces() : battle.isDefenderForces();
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(validated)
+                .setCodeError(IConstantsServiceException.BATTLE_SELECT_VALIDATED)
+                .setMsgFormat("{1}: {0} Forces cannot be added or removed to the battle because it has already been validated.")
+                .setName(PARAMETER_SELECT_FORCE)
+                .setParams(METHOD_SELECT_FORCE, offensive));
+
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
         diff.setVersionGame(game.getVersion());

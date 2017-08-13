@@ -323,8 +323,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .findFirst()
                 .orElse(null);
 
-        failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(stack == null)
+        failIfNull(new CheckForThrow<>()
+                .setTest(stack)
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_ID_STACK)

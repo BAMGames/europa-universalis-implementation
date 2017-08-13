@@ -706,4 +706,18 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_STATUS_NONE = "exception.eu.military.battle_status_none";
+
+    /**
+     * <p>
+     * Exception thrown when trying to make select/deselect a counter in a battle while forces are validated.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: a flag that is true if it is the phasing player, false if it is not.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_SELECT_VALIDATED = "exception.eu.military.battle_select_validated";
 }

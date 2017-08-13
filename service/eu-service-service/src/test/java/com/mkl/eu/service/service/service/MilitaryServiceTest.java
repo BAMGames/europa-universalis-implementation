@@ -347,6 +347,17 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
             Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
         }
+
+        game.getStacks().get(0).setProvince("pecs");
+        game.getBattles().get(0).setDefenderForces(true);
+
+        try {
+            militaryService.selectForce(request);
+            Assert.fail("Should break because the attacker already validated its forces");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_SELECT_VALIDATED, e.getCode());
+            Assert.assertEquals("selectForce", e.getParams()[0]);
+        }
     }
 
     @Test

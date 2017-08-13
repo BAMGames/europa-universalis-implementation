@@ -151,7 +151,7 @@ public abstract class AbstractService implements INameConstants {
      * @throws FunctionalException the exception.
      */
     protected void failIfTrue(CheckForThrow<Boolean> check) throws FunctionalException {
-        if (check.getTest() == null || check.getTest()) {
+        if (check.getTest() != null && check.getTest()) {
             fail(check);
         }
     }
