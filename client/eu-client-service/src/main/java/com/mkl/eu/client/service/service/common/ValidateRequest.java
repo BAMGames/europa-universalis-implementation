@@ -1,12 +1,12 @@
 package com.mkl.eu.client.service.service.common;
 
 /**
- * Sub request for validateAdminActions service.
+ * Sub request for validation services.
  *
  * @author MKL.
  */
 public class ValidateRequest {
-    /** Flag saying that the country is validating or invalidating its administrative actions. */
+    /** Flag saying if the action is being validated or invalidating. */
     private boolean validate;
 
     /**

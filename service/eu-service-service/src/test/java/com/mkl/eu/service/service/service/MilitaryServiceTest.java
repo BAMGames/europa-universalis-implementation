@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -475,7 +476,162 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+    }
 
+    @Test
+    public void testValidateForcesFail() {
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::validateForces, "validateForces");
+        Request<ValidateRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        game.getBattles().get(0).setDefenderForces(true);
+        game.getBattles().get(0).setProvince("pecs");
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        testCheckStatus(pair.getRight(), request, militaryService::validateForces, "validateForces", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
 
+        try {
+            militaryService.validateForces(request);
+            Assert.fail("Should break because validateForces.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateForces.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ValidateRequest());
+        request.setIdCountry(12L);
+
+        try {
+            militaryService.validateForces(request);
+            Assert.fail("Should break because no battle is in right status");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("validateForces", e.getParams()[0]);
+        }
+
+        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
+
+        try {
+            militaryService.validateForces(request);
+            Assert.fail("Should break because invalidate is impossible if no other counter exists");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_INVALIDATE_NO_FORCE, e.getCode());
+            Assert.assertEquals("validateForces.request.validate", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testValidateForcesValidatePhasingSuccess() throws FunctionalException {
+        testValidateForcesSuccess(true, true, false);
+    }
+
+    @Test
+    public void testValidateForcesInvalidatePhasingSuccess() throws FunctionalException {
+        testValidateForcesSuccess(true, false, true);
+    }
+
+    @Test
+    public void testValidateForcesValidateNonPhasingSuccess() throws FunctionalException {
+        testValidateForcesSuccess(false, true, false);
+    }
+
+    @Test
+    public void testValidateForcesInvalidateNonPhasingSuccess() throws FunctionalException {
+        testValidateForcesSuccess(false, false, true);
+    }
+
+    @Test
+    public void testValidateForcesValidatePhasingNothing() throws FunctionalException {
+        testValidateForcesSuccess(true, true, true);
+    }
+
+    @Test
+    public void testValidateForcesInvalidatePhasingNothing() throws FunctionalException {
+        testValidateForcesSuccess(true, false, false);
+    }
+
+    @Test
+    public void testValidateForcesValidateNonPhasingNothing() throws FunctionalException {
+        testValidateForcesSuccess(false, true, true);
+    }
+
+    @Test
+    public void testValidateForcesInvalidateNonPhasingNothing() throws FunctionalException {
+        testValidateForcesSuccess(false, false, false);
+    }
+
+    private void testValidateForcesSuccess(boolean phasing, boolean validate, boolean before) throws FunctionalException {
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::validateForces, "validateForces");
+        Request<ValidateRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
+        game.getBattles().get(0).setDefenderForces(before);
+        game.getBattles().get(0).setAttackerForces(before);
+        game.getBattles().get(0).setProvince("pecs");
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        testCheckStatus(pair.getRight(), request, militaryService::validateForces, "validateForces", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(12L);
+        request.setRequest(new ValidateRequest());
+        request.getRequest().setValidate(validate);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("pecs");
+        game.getStacks().get(0).setCountry(country.getName());
+        CounterEntity counter = new CounterEntity();
+        counter.setId(6L);
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(0).getCounters().add(counter);
+
+        Mockito.when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
+
+        if (phasing) {
+            CountryOrderEntity order = new CountryOrderEntity();
+            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+            order.setActive(true);
+            order.setCountry(country);
+            game.getOrders().add(order);
+        }
+
+        simulateDiff();
+
+        DiffResponse response = militaryService.validateForces(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
+
+        BattleEntity battle = game.getBattles().get(0);
+        if (validate != before) {
+            Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
+            Assert.assertEquals(DiffTypeObjectEnum.BATTLE, diffEntity.getTypeObject());
+            Assert.assertEquals(game.getBattles().get(0).getId(), diffEntity.getIdObject());
+            Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+            Assert.assertEquals(game.getId(), diffEntity.getIdGame());
+            Assert.assertEquals(1, diffEntity.getAttributes().size());
+            DiffAttributeTypeEnum diffStatus;
+            if (phasing) {
+                diffStatus = DiffAttributeTypeEnum.ATTACKER_READY;
+
+                Assert.assertEquals(validate, battle.isAttackerForces());
+            } else {
+                diffStatus = DiffAttributeTypeEnum.DEFENDER_READY;
+
+                Assert.assertEquals(validate, battle.isDefenderForces());
+            }
+            Assert.assertEquals(diffStatus, diffEntity.getAttributes().get(0).getType());
+            Assert.assertEquals(Boolean.toString(validate), diffEntity.getAttributes().get(0).getValue());
+        } else {
+            Assert.assertNull(diffEntity);
+        }
+
+        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
+        Assert.assertEquals(getDiffAfter(), response.getDiffs());
     }
 }

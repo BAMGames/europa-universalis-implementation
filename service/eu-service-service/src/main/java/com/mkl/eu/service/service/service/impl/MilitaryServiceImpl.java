@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IMilitaryService;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
@@ -20,6 +21,7 @@ import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -254,16 +256,16 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .setName(PARAMETER_SELECT_FORCE)
                 .setParams(METHOD_SELECT_FORCE, BattleStatusEnum.SELECT_FORCES.name()));
 
-        boolean offensive = isCountryActive(game, request.getIdCountry());
+        boolean phasing = isCountryActive(game, request.getIdCountry());
 
-        Boolean validated = offensive ? battle.isAttackerForces() : battle.isDefenderForces();
+        Boolean validated = phasing ? battle.isAttackerForces() : battle.isDefenderForces();
 
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(validated)
                 .setCodeError(IConstantsServiceException.BATTLE_SELECT_VALIDATED)
                 .setMsgFormat("{1}: {0} Forces cannot be added or removed to the battle because it has already been validated.")
                 .setName(PARAMETER_SELECT_FORCE)
-                .setParams(METHOD_SELECT_FORCE, offensive));
+                .setParams(METHOD_SELECT_FORCE, phasing));
 
         DiffEntity diff = new DiffEntity();
         diff.setIdGame(game.getId());
@@ -291,13 +293,13 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     .setParams(METHOD_SELECT_FORCE));
 
             BattleCounterEntity comp = new BattleCounterEntity();
-            comp.setAttacker(offensive);
+            comp.setAttacker(phasing);
             comp.setBattle(battle);
             comp.setCounter(counter);
             battle.getCounters().add(comp);
 
             DiffAttributesEntity attribute = new DiffAttributesEntity();
-            if (offensive) {
+            if (phasing) {
                 attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD);
             } else {
                 attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD);
@@ -321,7 +323,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             battle.getCounters().remove(battleCounter);
 
             DiffAttributesEntity attribute = new DiffAttributesEntity();
-            if (offensive) {
+            if (phasing) {
                 attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_REMOVE);
             } else {
                 attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_REMOVE);
@@ -335,6 +337,106 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         diffs.add(diff);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
+    }
+
+    @Override
+    public DiffResponse validateForces(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_FORCES)
+                .setParams(METHOD_VALIDATE_FORCES));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_VALIDATE_FORCES, PARAMETER_VALIDATE_FORCES);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_VALIDATE_FORCES, PARAMETER_VALIDATE_FORCES);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST)
+                .setParams(METHOD_VALIDATE_FORCES));
+
+        BattleEntity battle = game.getBattles().stream()
+                .filter(bat -> bat.getStatus() == BattleStatusEnum.SELECT_FORCES)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(battle)
+                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
+                .setName(PARAMETER_VALIDATE_FORCES)
+                .setParams(METHOD_VALIDATE_FORCES, BattleStatusEnum.SELECT_FORCES.name()));
+
+        boolean phasing = isCountryActive(game, request.getIdCountry());
+
+        Boolean oldValidation = phasing ? battle.isAttackerForces() : battle.isDefenderForces();
+
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+
+        if (request.getRequest().isValidate() != BooleanUtils.toBoolean(oldValidation)) {
+            if (!request.getRequest().isValidate()) {
+                List<String> allies = oeUtil.getAllies(country, game);
+
+                List<Long> alliedCounters = battle.getCounters().stream()
+                        .filter(bc -> bc.isAttacker() == phasing)
+                        .map(bc -> bc.getCounter().getId())
+                        .collect(Collectors.toList());
+                List<CounterEntity> remainingCounters = game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
+                                allies.contains(stack.getCountry()))
+                        .flatMap(stack -> stack.getCounters().stream())
+                        .filter(counter -> CounterUtil.isArmy(counter.getType()) &&
+                                !alliedCounters.contains(counter.getId()))
+                        .collect(Collectors.toList());
+
+                failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                        .setTest(remainingCounters.size() == 0)
+                        .setCodeError(IConstantsServiceException.BATTLE_INVALIDATE_NO_FORCE)
+                        .setMsgFormat("{1}: {0} Impossible to invalidate forces in this battle because there is no other forces to select (phasing player: {2}).")
+                        .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                        .setParams(METHOD_VALIDATE_FORCES, phasing));
+            }
+
+            DiffEntity diff = new DiffEntity();
+            diff.setIdGame(game.getId());
+            diff.setVersionGame(game.getVersion());
+            diff.setType(DiffTypeEnum.MODIFY);
+            diff.setTypeObject(DiffTypeObjectEnum.BATTLE);
+            diff.setIdObject(battle.getId());
+            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
+            diffAttributes.setValue(Boolean.toString(request.getRequest().isValidate()));
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+
+            if (phasing) {
+                diffAttributes.setType(DiffAttributeTypeEnum.ATTACKER_READY);
+                battle.setAttackerForces(request.getRequest().isValidate());
+            } else {
+                diffAttributes.setType(DiffAttributeTypeEnum.DEFENDER_READY);
+                battle.setDefenderForces(request.getRequest().isValidate());
+            }
+
+            diffs.add(diff);
+        }
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));

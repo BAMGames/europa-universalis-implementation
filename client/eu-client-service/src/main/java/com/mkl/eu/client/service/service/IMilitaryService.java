@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -45,4 +46,15 @@ public interface IMilitaryService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse selectForce(@WebParam(name = PARAMETER_SELECT_FORCE) Request<SelectForceRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Validate the forces for the current battle.
+     *
+     * @param request info about the forces to validate/invalidate.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse validateForces(@WebParam(name = PARAMETER_SELECT_FORCE) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
 }

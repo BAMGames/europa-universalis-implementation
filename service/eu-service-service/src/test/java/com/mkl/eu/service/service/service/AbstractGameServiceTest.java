@@ -111,7 +111,7 @@ public abstract class AbstractGameServiceTest {
     }
 
     protected DiffEntity retrieveDiffCreated() {
-        return diffEntities.get(0);
+        return !diffEntities.isEmpty() ? diffEntities.get(0) : null;
     }
 
     protected List<Diff> getDiffAfter() {

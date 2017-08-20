@@ -16,6 +16,8 @@ public interface INameConstants {
     String PARAMETER_CHAT = "chat";
     /** Name of the parameter username. */
     String PARAMETER_USERNAME = "username";
+    /** Name of the parameter validate. */
+    String PARAMETER_VALIDATE = "validate";
     /** Name of the parameter findGames. */
     String PARAMETER_FIND_GAMES = "findGames";
     /** Name of the parameter loadGame. */
@@ -100,6 +102,8 @@ public interface INameConstants {
     String PARAMETER_CHOOSE_BATTLE = "chooseBattle";
     /** Name of the parameter selectForce. */
     String PARAMETER_SELECT_FORCE = "selectForce";
+    /** Name of the parameter validateForces. */
+    String PARAMETER_VALIDATE_FORCES = "validateForces";
 
 
 
@@ -159,4 +163,6 @@ public interface INameConstants {
     String METHOD_CHOOSE_BATTLE = "chooseBattle";
     /** Name of the method selectForce. */
     String METHOD_SELECT_FORCE = "selectForce";
+    /** Name of the method validateForces. */
+    String METHOD_VALIDATE_FORCES = "validateForces";
 }
