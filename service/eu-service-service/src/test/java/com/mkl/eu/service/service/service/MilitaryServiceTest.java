@@ -483,6 +483,10 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::validateForces, "validateForces");
         Request<ValidateRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         game.getBattles().get(0).setDefenderForces(true);
@@ -519,6 +523,40 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because invalidate is impossible if no other counter exists");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_INVALIDATE_NO_FORCE, e.getCode());
+            Assert.assertEquals("validateForces.request.validate", e.getParams()[0]);
+        }
+
+        request.getRequest().setValidate(true);
+        game.getBattles().get(0).setDefenderForces(false);
+        game.getStacks().add(new StackEntity());
+        game.getStacks().get(0).setProvince("pecs");
+        game.getStacks().get(0).setCountry(country.getName());
+        CounterEntity counter = new CounterEntity();
+        counter.setId(6L);
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(0).getCounters().add(counter);
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setCounter(counter);
+        game.getBattles().get(0).getCounters().add(bc);
+        counter = new CounterEntity();
+        counter.setId(7L);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().add(counter);
+        bc = new BattleCounterEntity();
+        bc.setCounter(counter);
+        game.getBattles().get(0).getCounters().add(bc);
+        counter = new CounterEntity();
+        counter.setId(8L);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().add(counter);
+
+        Mockito.when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
+
+        try {
+            militaryService.validateForces(request);
+            Assert.fail("Should break because validate is impossible if other counter could be selected");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_VALIDATE_OTHER_FORCE, e.getCode());
             Assert.assertEquals("validateForces.request.validate", e.getParams()[0]);
         }
     }
@@ -588,6 +626,22 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(0).setCountry(country.getName());
         CounterEntity counter = new CounterEntity();
         counter.setId(6L);
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        game.getStacks().get(0).getCounters().add(counter);
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setAttacker(phasing);
+        bc.setCounter(counter);
+        game.getBattles().get(0).getCounters().add(bc);
+        counter = new CounterEntity();
+        counter.setId(7L);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(0).getCounters().add(counter);
+        bc = new BattleCounterEntity();
+        bc.setAttacker(phasing);
+        bc.setCounter(counter);
+        game.getBattles().get(0).getCounters().add(bc);
+        counter = new CounterEntity();
+        counter.setId(8L);
         counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
         game.getStacks().get(0).getCounters().add(counter);
 

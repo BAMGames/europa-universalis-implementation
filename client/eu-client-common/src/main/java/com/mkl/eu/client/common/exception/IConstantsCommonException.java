@@ -93,7 +93,9 @@ public interface IConstantsCommonException {
      * <p>
      * Parameters:
      * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
      * <li>1: name of invalid parameter.</li>
+     * <li>2: value of invalid parameter.</li>
      * </ul>
      * </p>
      */

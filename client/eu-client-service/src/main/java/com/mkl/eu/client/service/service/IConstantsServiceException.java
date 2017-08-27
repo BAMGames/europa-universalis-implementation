@@ -734,4 +734,18 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_INVALIDATE_NO_FORCE = "exception.eu.military.battle_invalidate_no_force";
+
+    /**
+     * <p>
+     * Exception thrown when validating forces in a battle that could have other forces to select.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: a flag that is true if it is the phasing player, false if it is not.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_VALIDATE_OTHER_FORCE = "exception.eu.military.battle_validate_other_force";
 }

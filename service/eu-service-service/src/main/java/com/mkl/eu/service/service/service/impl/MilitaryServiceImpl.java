@@ -290,7 +290,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                     .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                     .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
-                    .setParams(METHOD_SELECT_FORCE));
+                    .setParams(METHOD_SELECT_FORCE, request.getRequest().getIdCounter()));
 
             BattleCounterEntity comp = new BattleCounterEntity();
             comp.setAttacker(phasing);
@@ -414,6 +414,35 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                         .setMsgFormat("{1}: {0} Impossible to invalidate forces in this battle because there is no other forces to select (phasing player: {2}).")
                         .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
                         .setParams(METHOD_VALIDATE_FORCES, phasing));
+            } else {
+                List<Long> alliedCounters = battle.getCounters().stream()
+                        .filter(bc -> bc.isAttacker() == phasing)
+                        .map(bc -> bc.getCounter().getId())
+                        .collect(Collectors.toList());
+                Integer armySize = battle.getCounters().stream()
+                        .map(bc -> CounterUtil.getSizeFromType(bc.getCounter().getType()))
+                        .reduce(Integer::sum)
+                        .orElse(0);
+
+                if (alliedCounters.size() < 3 && armySize < 8) {
+                    List<String> allies = oeUtil.getAllies(country, game);
+                    Integer remainingMinSize = game.getStacks().stream()
+                            .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
+                                    allies.contains(stack.getCountry()))
+                            .flatMap(stack -> stack.getCounters().stream())
+                            .filter(counter -> CounterUtil.isArmy(counter.getType()) &&
+                                    !alliedCounters.contains(counter.getId()))
+                            .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
+                            .min(Integer::compare)
+                            .orElse(0);
+
+                    failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                            .setTest(remainingMinSize > 0 && remainingMinSize <= 8 - armySize)
+                            .setCodeError(IConstantsServiceException.BATTLE_VALIDATE_OTHER_FORCE)
+                            .setMsgFormat("{1}: {0} Impossible to validate forces in this battle because there are other forces to select (phasing player: {2}).")
+                            .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                            .setParams(METHOD_VALIDATE_FORCES, phasing));
+                }
             }
 
             DiffEntity diff = new DiffEntity();
