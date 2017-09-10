@@ -3,10 +3,9 @@ package com.mkl.eu.service.service.util.impl;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
-import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
-import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.Referential;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -598,5 +598,36 @@ public final class OEUtilImpl implements IOEUtil {
         }
 
         return level;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTechnology(String country, boolean land, Referential referential, GameEntity game) {
+        String technology = game.getCountries().stream()
+                .filter(c -> StringUtils.equals(country, c.getName()))
+                .map(c -> land ? c.getLandTech() : c.getNavalTech())
+                .findAny()
+                .orElse(null);
+
+        if (technology == null) {
+            CultureEnum culture = referential.getCountries().stream()
+                    .filter(c -> StringUtils.equals(country, c.getName()))
+                    .map(CountryReferential::getCulture)
+                    .findAny()
+                    .orElse(null);
+
+            Map<CultureEnum, String> techs;
+            if (land) {
+                techs = game.getMinorLandTechnologies();
+            } else {
+                techs = game.getMinorNavalTechnologies();
+            }
+
+            technology = techs.get(culture);
+        }
+
+        return technology;
     }
 }

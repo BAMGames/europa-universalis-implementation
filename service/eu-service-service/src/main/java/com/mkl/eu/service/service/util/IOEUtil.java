@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.util;
 
 import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
+import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -165,4 +166,13 @@ public interface IOEUtil {
      * @return the level of the fortress of the province.
      */
     int getFortressLevel(AbstractProvinceEntity province, GameEntity game);
+
+    /**
+     * @param country     the country.
+     * @param land        <code>true</code> if we want the land tech, naval tech otherwise.
+     * @param referential the referential.
+     * @param game        the game.
+     * @return the technology of the country.
+     */
+    String getTechnology(String country, boolean land, Referential referential, GameEntity game);
 }

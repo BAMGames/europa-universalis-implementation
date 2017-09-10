@@ -4,8 +4,11 @@ import com.excilys.ebi.spring.dbunit.config.DBOperation;
 import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.Referential;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -1075,5 +1078,60 @@ public class OEUtilTest {
         game.getStacks().get(1).getCounters().get(0).setCountry("france");
 
         Assert.assertEquals(1, oeUtil.getFortressLevel(provinceRotw, game));
+    }
+
+    @Test
+    public void testGetTechnology() {
+        Referential referential = new Referential();
+        GameEntity game = new GameEntity();
+
+        Assert.assertEquals(null, oeUtil.getTechnology("france", true, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("france", false, referential, game));
+
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setLandTech(Tech.MANOEUVRE);
+        game.getCountries().get(0).setNavalTech(Tech.SEVENTY_FOUR);
+
+        Assert.assertEquals(Tech.MANOEUVRE, oeUtil.getTechnology("france", true, referential, game));
+        Assert.assertEquals(Tech.SEVENTY_FOUR, oeUtil.getTechnology("france", false, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("angleterre", true, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("angleterre", false, referential, game));
+
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().get(1).setLandTech(Tech.ARQUEBUS);
+        game.getCountries().get(1).setNavalTech(Tech.NAE_GALEON);
+
+        Assert.assertEquals(Tech.ARQUEBUS, oeUtil.getTechnology("angleterre", true, referential, game));
+        Assert.assertEquals(Tech.NAE_GALEON, oeUtil.getTechnology("angleterre", false, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("genoa", true, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("genoa", false, referential, game));
+
+        CountryReferential genoa = new CountryReferential();
+        genoa.setName("genoa");
+        genoa.setCulture(CultureEnum.LATIN);
+        referential.getCountries().add(genoa);
+
+        Assert.assertEquals(null, oeUtil.getTechnology("genoa", true, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("genoa", false, referential, game));
+
+        game.getMinorLandTechnologies().put(CultureEnum.LATIN, Tech.MUSKET);
+        game.getMinorNavalTechnologies().put(CultureEnum.LATIN, Tech.BATTERY);
+
+        Assert.assertEquals(Tech.MUSKET, oeUtil.getTechnology("genoa", true, referential, game));
+        Assert.assertEquals(Tech.BATTERY, oeUtil.getTechnology("genoa", false, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("tunisia", true, referential, game));
+        Assert.assertEquals(null, oeUtil.getTechnology("tunisia", false, referential, game));
+
+        CountryReferential tunisia = new CountryReferential();
+        tunisia.setName("tunisia");
+        tunisia.setCulture(CultureEnum.ISLAM);
+        referential.getCountries().add(tunisia);
+        game.getMinorLandTechnologies().put(CultureEnum.ISLAM, Tech.BAROQUE);
+        game.getMinorNavalTechnologies().put(CultureEnum.ISLAM, Tech.VESSEL);
+
+        Assert.assertEquals(Tech.BAROQUE, oeUtil.getTechnology("tunisia", true, referential, game));
+        Assert.assertEquals(Tech.VESSEL, oeUtil.getTechnology("tunisia", false, referential, game));
     }
 }
