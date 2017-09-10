@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe;
 
+import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -16,7 +17,9 @@ import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Entity for a Game.
@@ -54,8 +57,10 @@ public class GameEntity implements IEntity, Serializable {
     private Integer turn;
     /** Status of the game. */
     private GameStatusEnum status;
-    /** Version of the game (technical field). */
-    private long version;
+    /** Land technologies of minor countries. */
+    private Map<CultureEnum, String> minorLandTechnologies = new HashMap<>();
+    /** Naval technologies of minor countries. */
+    private Map<CultureEnum, String> minorNavalTechnologies = new HashMap<>();
     /** Country owning the mediterranean commercial center. */
     private String medCommCenterOwner;
     /** Country owning the grand orient commercial center. */
@@ -66,6 +71,8 @@ public class GameEntity implements IEntity, Serializable {
     private String indianCommCenterOwner;
     /** Province where Saint-Petersburg has been build (<code>null</code> if not build yet or in process). */
     private String stPeterProvince;
+    /** Version of the game (technical field). */
+    private long version;
     /**
      * Seed stored for global roll dice (and all roll dice until seeds are stored in PlayableCountry).
      * Should NEVER be accessed by the client.
@@ -231,15 +238,36 @@ public class GameEntity implements IEntity, Serializable {
         this.status = status;
     }
 
-    /** @return the version. */
-    @Version
-    public long getVersion() {
-        return version;
+    /** @return the minorTechnologies. */
+    @ElementCollection
+    @CollectionTable(name = "MINOR_TECH",
+            joinColumns = @JoinColumn(name = "ID_GAME"))
+    @MapKeyColumn(name = "CULTURE")
+    @MapKeyEnumerated(EnumType.STRING)
+    @Column(name = "T_LAND_TECH")
+    public Map<CultureEnum, String> getMinorLandTechnologies() {
+        return minorLandTechnologies;
     }
 
-    /** @param version the version to set. */
-    public void setVersion(long version) {
-        this.version = version;
+    /** @param minorTechnologies the minorTechnologies to set. */
+    public void setMinorLandTechnologies(Map<CultureEnum, String> minorTechnologies) {
+        this.minorLandTechnologies = minorTechnologies;
+    }
+
+    /** @return the minorNavalTechnologies. */
+    @ElementCollection
+    @CollectionTable(name = "MINOR_TECH",
+            joinColumns = @JoinColumn(name = "ID_GAME"))
+    @MapKeyColumn(name = "CULTURE")
+    @MapKeyEnumerated(EnumType.STRING)
+    @Column(name = "T_NAVAL_TECH")
+    public Map<CultureEnum, String> getMinorNavalTechnologies() {
+        return minorNavalTechnologies;
+    }
+
+    /** @param minorNavalTechnologies the minorNavalTechnologies to set. */
+    public void setMinorNavalTechnologies(Map<CultureEnum, String> minorNavalTechnologies) {
+        this.minorNavalTechnologies = minorNavalTechnologies;
     }
 
     /** @return the medCommCenterOwner. */
@@ -295,6 +323,17 @@ public class GameEntity implements IEntity, Serializable {
     /** @param stPeterProvince the stPeterProvince to set. */
     public void setStPeterProvince(String stPeterProvince) {
         this.stPeterProvince = stPeterProvince;
+    }
+
+    /** @return the version. */
+    @Version
+    public long getVersion() {
+        return version;
+    }
+
+    /** @param version the version to set. */
+    public void setVersion(long version) {
+        this.version = version;
     }
 
     /** @return the seed. */
