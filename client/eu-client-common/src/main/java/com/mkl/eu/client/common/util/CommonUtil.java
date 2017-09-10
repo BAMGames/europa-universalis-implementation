@@ -126,6 +126,24 @@ public final class CommonUtil {
     }
 
     /**
+     * Add a value to a specific key in a Map of K->Integer.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param add the value to add.
+     * @param <K> the class of the key.
+     */
+    public static <K> void add(Map<K, Integer> map, K key, Integer add) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) + add);
+            } else {
+                map.put(key, add);
+            }
+        }
+    }
+
+    /**
      * Decrement a Map of K->Integer for a given key.
      * If the value is 0, removes the key.
      * If the key doesn't exist, does nothing.

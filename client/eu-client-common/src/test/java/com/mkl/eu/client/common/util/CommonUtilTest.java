@@ -137,5 +137,22 @@ public class CommonUtilTest {
         Assert.assertEquals(3, map.get("three").intValue());
         Assert.assertEquals(5, map.get("four").intValue());
         Assert.assertEquals(1, map.get("five").intValue());
+
+        map = new HashMap<>();
+        CommonUtil.add(map, "one", 5);
+
+        Assert.assertEquals(1, map.size());
+        Assert.assertEquals(5, map.get("one").intValue());
+
+        CommonUtil.add(map, "one", 3);
+
+        Assert.assertEquals(1, map.size());
+        Assert.assertEquals(8, map.get("one").intValue());
+
+        CommonUtil.add(map, "two", 2);
+
+        Assert.assertEquals(2, map.size());
+        Assert.assertEquals(8, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
     }
 }
