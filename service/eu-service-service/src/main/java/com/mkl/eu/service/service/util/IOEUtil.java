@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
@@ -175,4 +176,14 @@ public interface IOEUtil {
      * @return the technology of the country.
      */
     String getTechnology(String country, boolean land, Referential referential, GameEntity game);
+
+    /**
+     * @param counters    stack whom we want the technology.
+     * @param land        <code>true</code> if we want the land tech, naval tech otherwise.
+     * @param referential the referential.
+     * @param tables      the tables.
+     * @param game        the game.
+     * @return the technology of a List of counters.
+     */
+    String getTechnology(List<CounterEntity> counters, boolean land, Referential referential, Tables tables, GameEntity game);
 }

@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -22,10 +23,7 @@ import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -629,5 +627,37 @@ public final class OEUtilImpl implements IOEUtil {
         }
 
         return technology;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTechnology(List<CounterEntity> counters, boolean land, Referential referential, Tables tables, GameEntity game) {
+        Map<Tech, Integer> technoBySize = new TreeMap<>(Comparator.<Tech>reverseOrder());
+
+        int totalSize = 0;
+        for (CounterEntity counter : counters) {
+            String tech = getTechnology(counter.getCountry(), land, referential, game);
+            Tech technology = tables.getTechs().stream()
+                    .filter(t -> StringUtils.equals(tech, t.getName()))
+                    .findAny()
+                    .orElse(null);
+            int size = CounterUtil.getSizeFromType(counter.getType());
+            CommonUtil.add(technoBySize, technology, size);
+            totalSize += size;
+        }
+
+        int partialSize = 0;
+        String tech = null;
+        for (Tech technology : technoBySize.keySet()) {
+            tech = technology.getName();
+            partialSize += technoBySize.get(technology);
+            if (partialSize > totalSize / 2) {
+                break;
+            }
+        }
+
+        return tech;
     }
 }

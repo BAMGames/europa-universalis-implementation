@@ -1088,20 +1088,22 @@ public class OEUtilTest {
         Assert.assertEquals(null, oeUtil.getTechnology("france", true, referential, game));
         Assert.assertEquals(null, oeUtil.getTechnology("france", false, referential, game));
 
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setName("france");
-        game.getCountries().get(0).setLandTech(Tech.MANOEUVRE);
-        game.getCountries().get(0).setNavalTech(Tech.SEVENTY_FOUR);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        france.setLandTech(Tech.MANOEUVRE);
+        france.setNavalTech(Tech.SEVENTY_FOUR);
+        game.getCountries().add(france);
 
         Assert.assertEquals(Tech.MANOEUVRE, oeUtil.getTechnology("france", true, referential, game));
         Assert.assertEquals(Tech.SEVENTY_FOUR, oeUtil.getTechnology("france", false, referential, game));
         Assert.assertEquals(null, oeUtil.getTechnology("angleterre", true, referential, game));
         Assert.assertEquals(null, oeUtil.getTechnology("angleterre", false, referential, game));
 
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(1).setName("angleterre");
-        game.getCountries().get(1).setLandTech(Tech.ARQUEBUS);
-        game.getCountries().get(1).setNavalTech(Tech.NAE_GALEON);
+        PlayableCountryEntity angleterre = new PlayableCountryEntity();
+        angleterre.setName("angleterre");
+        angleterre.setLandTech(Tech.ARQUEBUS);
+        angleterre.setNavalTech(Tech.NAE_GALEON);
+        game.getCountries().add(angleterre);
 
         Assert.assertEquals(Tech.ARQUEBUS, oeUtil.getTechnology("angleterre", true, referential, game));
         Assert.assertEquals(Tech.NAE_GALEON, oeUtil.getTechnology("angleterre", false, referential, game));
@@ -1133,5 +1135,92 @@ public class OEUtilTest {
 
         Assert.assertEquals(Tech.BAROQUE, oeUtil.getTechnology("tunisia", true, referential, game));
         Assert.assertEquals(Tech.VESSEL, oeUtil.getTechnology("tunisia", false, referential, game));
+    }
+
+    @Test
+    public void testTechnologyStack() {
+        GameEntity game = new GameEntity();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        france.setLandTech(Tech.ARQUEBUS);
+        france.setNavalTech(Tech.GALLEON_FLUYT);
+        game.getCountries().add(france);
+
+        PlayableCountryEntity angleterre = new PlayableCountryEntity();
+        angleterre.setName("angleterre");
+        angleterre.setLandTech(Tech.RENAISSANCE);
+        angleterre.setNavalTech(Tech.NAE_GALEON);
+        game.getCountries().add(angleterre);
+
+        Referential referential = new Referential();
+        CountryReferential genoa = new CountryReferential();
+        genoa.setName("genoa");
+        genoa.setCulture(CultureEnum.LATIN);
+        referential.getCountries().add(genoa);
+        game.getMinorLandTechnologies().put(CultureEnum.LATIN, Tech.MEDIEVAL);
+        game.getMinorNavalTechnologies().put(CultureEnum.LATIN, Tech.CARRACK);
+
+        Tables tables = new Tables();
+        Tech medieval = new Tech();
+        medieval.setName(Tech.MEDIEVAL);
+        medieval.setBeginTurn(0);
+        tables.getTechs().add(medieval);
+        Tech renaissance = new Tech();
+        renaissance.setName(Tech.RENAISSANCE);
+        renaissance.setBeginTurn(7);
+        tables.getTechs().add(renaissance);
+        Tech arquebus = new Tech();
+        arquebus.setName(Tech.ARQUEBUS);
+        arquebus.setBeginTurn(15);
+        tables.getTechs().add(arquebus);
+        Tech carrack = new Tech();
+        carrack.setName(Tech.CARRACK);
+        carrack.setBeginTurn(0);
+        tables.getTechs().add(carrack);
+        Tech nae = new Tech();
+        nae.setName(Tech.NAE_GALEON);
+        nae.setBeginTurn(12);
+        tables.getTechs().add(nae);
+        Tech galleon = new Tech();
+        galleon.setName(Tech.GALLEON_FLUYT);
+        galleon.setBeginTurn(14);
+        tables.getTechs().add(galleon);
+
+        List<CounterEntity> counters = new ArrayList<>();
+
+        Assert.assertEquals(null, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(null, oeUtil.getTechnology(counters, false, referential, tables, game));
+
+        CounterEntity counter = new CounterEntity();
+        counter.setCountry("france");
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counters.add(counter);
+
+        Assert.assertEquals(Tech.ARQUEBUS, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(Tech.GALLEON_FLUYT, oeUtil.getTechnology(counters, false, referential, tables, game));
+
+        counter = new CounterEntity();
+        counter.setCountry("angleterre");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        counters.add(counter);
+
+        Assert.assertEquals(Tech.ARQUEBUS, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(Tech.GALLEON_FLUYT, oeUtil.getTechnology(counters, false, referential, tables, game));
+
+        counter = new CounterEntity();
+        counter.setCountry("genoa");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        counters.add(counter);
+
+        Assert.assertEquals(Tech.RENAISSANCE, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(Tech.NAE_GALEON, oeUtil.getTechnology(counters, false, referential, tables, game));
+
+        counter = new CounterEntity();
+        counter.setCountry("genoa");
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counters.add(counter);
+
+        Assert.assertEquals(Tech.MEDIEVAL, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(Tech.CARRACK, oeUtil.getTechnology(counters, false, referential, tables, game));
     }
 }
