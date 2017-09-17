@@ -44,7 +44,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the technologyFor. */
-    @Column("TECH_FOR")
+    @Column(name = "TECH_FOR")
     public String getTechnologyFor() {
         return technologyFor;
     }
@@ -55,7 +55,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the technologyAgainst. */
-    @Column("TECH_AGAINST")
+    @Column(name = "TECH_AGAINST")
     public String getTechnologyAgainst() {
         return technologyAgainst;
     }
@@ -66,7 +66,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the land. */
-    @Column("LAND")
+    @Column(name = "LAND")
     public boolean isLand() {
         return land;
     }
@@ -77,7 +77,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the columnFire. */
-    @Column("COLUMN_FIRE")
+    @Column(name = "COLUMN_FIRE")
     public String getColumnFire() {
         return columnFire;
     }
@@ -88,7 +88,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the columnShock. */
-    @Column("COLUMN_SHOCK")
+    @Column(name = "COLUMN_SHOCK")
     public String getColumnShock() {
         return columnShock;
     }
@@ -99,7 +99,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the moral. */
-    @Column("MORAL")
+    @Column(name = "MORAL")
     public int getMoral() {
         return moral;
     }
@@ -110,7 +110,7 @@ public class BattleTechTableEntity implements IEntity, Serializable {
     }
 
     /** @return the moralBonusVeteran. */
-    @Column("MORAL_BONUS_VETERAN")
+    @Column(name = "MORAL_BONUS_VETERAN")
     public boolean isMoralBonusVeteran() {
         return moralBonusVeteran;
     }
