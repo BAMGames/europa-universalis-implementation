@@ -22,6 +22,8 @@ public class Tech extends EuObject implements Comparable<Tech> {
     public static final String MANOEUVRE = "MANOEUVRE";
     /** Name of the lace war technology. */
     public static final String LACE_WAR = "LACE_WAR";
+    /** Name of the galley technology. */
+    public static final String GALLEY = "GALLEY";
     /** Name of the carrack technology. */
     public static final String CARRACK = "CARRACK";
     /** Name of the nae galeon technology. */
