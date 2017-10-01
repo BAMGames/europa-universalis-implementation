@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 /**
- * Entity for the battle technology table.
+ * Entity for the combat result table.
  *
  * @author MKL.
  */
