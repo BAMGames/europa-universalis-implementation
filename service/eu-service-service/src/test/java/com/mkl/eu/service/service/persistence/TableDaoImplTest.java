@@ -5,10 +5,7 @@ import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.ITablesService;
-import com.mkl.eu.client.service.vo.enumeration.ForceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.LimitTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.ResultEnum;
-import com.mkl.eu.client.service.vo.enumeration.UnitActionEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
 import org.apache.commons.lang3.StringUtils;
@@ -126,5 +123,91 @@ public class TableDaoImplTest {
         Assert.assertEquals(3, tablesDao.getTradeIncome(1100, 3, true));
         Assert.assertEquals(3, tablesDao.getTradeIncome(9999, 3, true));
         Assert.assertEquals(5, tablesDao.getTradeIncome(9999, 5, true));
+    }
+
+    @Test
+    public void testBattleTech() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(113, tables.getBattleTechs().size());
+
+        BattleTech arqRen = tables.getBattleTechs().stream()
+                .filter(bt -> StringUtils.equals(bt.getTechnologyFor(), Tech.ARQUEBUS) &&
+                        StringUtils.equals(bt.getTechnologyAgainst(), Tech.RENAISSANCE))
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(arqRen);
+        Assert.assertEquals(true, arqRen.isLand());
+        Assert.assertEquals("C", arqRen.getColumnFire());
+        Assert.assertEquals("A", arqRen.getColumnShock());
+        Assert.assertEquals(2, arqRen.getMoral());
+        Assert.assertEquals(true, arqRen.isMoralBonusVeteran());
+
+        BattleTech car74 = tables.getBattleTechs().stream()
+                .filter(bt -> StringUtils.equals(bt.getTechnologyFor(), Tech.CARRACK) &&
+                        StringUtils.equals(bt.getTechnologyAgainst(), Tech.SEVENTY_FOUR))
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(car74);
+        Assert.assertEquals(false, car74.isLand());
+        Assert.assertEquals(null, car74.getColumnFire());
+        Assert.assertEquals("E", car74.getColumnShock());
+        Assert.assertEquals(1, car74.getMoral());
+        Assert.assertEquals(false, car74.isMoralBonusVeteran());
+    }
+
+    @Test
+    public void testCombatResult() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(60, tables.getCombatResults().size());
+
+        CombatResult a5 = tables.getCombatResults().stream()
+                .filter(cr -> StringUtils.equals("A", cr.getColumn()) && cr.getDice() == 5)
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(a5);
+        Assert.assertEquals(0, a5.getRoundLoss().intValue());
+        Assert.assertEquals(2, a5.getThirdLoss().intValue());
+        Assert.assertEquals(0, a5.getMoraleLoss().intValue());
+
+        CombatResult d12 = tables.getCombatResults().stream()
+                .filter(cr -> StringUtils.equals("D", cr.getColumn()) && cr.getDice() == 12)
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(d12);
+        Assert.assertEquals(2, d12.getRoundLoss().intValue());
+        Assert.assertEquals(0, d12.getThirdLoss().intValue());
+        Assert.assertEquals(2, d12.getMoraleLoss().intValue());
+    }
+
+    @Test
+    public void testArmyClasse() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(63, tables.getArmyClasses().size());
+
+        ArmyClasse russieI = tables.getArmyClasses().stream()
+                .filter(ac -> StringUtils.equals(Period.PERIOD_I, ac.getPeriod()) && ac.getArmyClass() == ArmyClassEnum.I)
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(russieI);
+        Assert.assertEquals(7, russieI.getSize().intValue());
+
+        ArmyClasse fraV = tables.getArmyClasses().stream()
+                .filter(ac -> StringUtils.equals(Period.PERIOD_V, ac.getPeriod()) && ac.getArmyClass() == ArmyClassEnum.IV)
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(fraV);
+        Assert.assertEquals(3, fraV.getSize().intValue());
     }
 }

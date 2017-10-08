@@ -2,7 +2,9 @@ package com.mkl.eu.service.service.mapping.tables;
 
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
+import com.mkl.eu.service.service.mapping.WithLossMapping;
 import com.mkl.eu.service.service.persistence.oe.tables.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 @Component
 public class TablesMapping extends AbstractMapping {
+    @Autowired
+    private WithLossMapping withLossMapping;
 
     /**
      * Fill the trade income tables.
@@ -280,6 +284,115 @@ public class TablesMapping extends AbstractMapping {
         target.setDie(source.getDie());
         target.setColumn(source.getColumn());
         target.setResult(source.getResult());
+
+        return target;
+    }
+
+    /**
+     * Fill the battle tech tables.
+     *
+     * @param sources List of battle tech entity.
+     * @param tables  the target tables.
+     */
+    public void fillBattleTechTables(List<BattleTechEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (BattleTechEntity source : sources) {
+                tables.getBattleTechs().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public BattleTech oeToVo(BattleTechEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        BattleTech target = new BattleTech();
+
+        target.setId(source.getId());
+        target.setTechnologyFor(source.getTechnologyFor());
+        target.setTechnologyAgainst(source.getTechnologyAgainst());
+        target.setLand(source.isLand());
+        target.setColumnFire(source.getColumnFire());
+        target.setColumnShock(source.getColumnShock());
+        target.setMoral(source.getMoral());
+        target.setMoralBonusVeteran(source.isMoralBonusVeteran());
+
+        return target;
+    }
+
+    /**
+     * Fill the combat result tables.
+     *
+     * @param sources List of combat result entity.
+     * @param tables  the target tables.
+     */
+    public void fillCombatResultTables(List<CombatResultEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (CombatResultEntity source : sources) {
+                tables.getCombatResults().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public CombatResult oeToVo(CombatResultEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        CombatResult target = new CombatResult();
+
+        withLossMapping.oeToVo(source, target);
+        target.setId(source.getId());
+        target.setColumn(source.getColumn());
+        target.setDice(source.getDice());
+
+        return target;
+    }
+
+    /**
+     * Fill the army classe tables.
+     *
+     * @param sources List of army class entity.
+     * @param tables  the target tables.
+     */
+    public void fillArmyClasseTables(List<ArmyClasseEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (ArmyClasseEntity source : sources) {
+                tables.getArmyClasses().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public ArmyClasse oeToVo(ArmyClasseEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        ArmyClasse target = new ArmyClasse();
+
+        target.setId(source.getId());
+        target.setArmyClass(source.getArmyClass());
+        target.setPeriod(source.getPeriod());
+        target.setSize(source.getSize());
 
         return target;
     }

@@ -1,15 +1,11 @@
-package com.mkl.eu.service.service.persistence.oe;
-
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
+package com.mkl.eu.client.service.vo;
 
 /**
- * Abstract for entity that has the notion of losses.
+ * Abstract for VO that has the notion of losses.
  *
  * @author MKL.
  */
-@MappedSuperclass
-public class AbstractWithLossEntity {
+public class AbstractWithLoss extends EuObject {
     /** Number of round loss. */
     private Integer roundLoss;
     /** Number of third loss (between 0 and 2). */
@@ -18,7 +14,6 @@ public class AbstractWithLossEntity {
     private Integer moraleLoss;
 
     /** @return the roundLoss. */
-    @Column(name = "ROUND_LOSS")
     public Integer getRoundLoss() {
         return roundLoss;
     }
@@ -29,7 +24,6 @@ public class AbstractWithLossEntity {
     }
 
     /** @return the thirdLoss. */
-    @Column(name = "THIRD_LOSS")
     public Integer getThirdLoss() {
         return thirdLoss;
     }
@@ -40,7 +34,6 @@ public class AbstractWithLossEntity {
     }
 
     /** @return the moraleLoss. */
-    @Column(name = "MORALE_LOSS")
     public Integer getMoraleLoss() {
         return moraleLoss;
     }

@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "T_BATTLE_TECH")
-public class BattleTechTableEntity implements IEntity, Serializable {
+public class BattleTechEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
     /** Technology of the friendly stack. */

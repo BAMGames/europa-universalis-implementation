@@ -50,4 +50,19 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the results tables.
      */
     List<ResultEntity> getResults();
+
+    /**
+     * @return the battle tech tables.
+     */
+    List<BattleTechEntity> getBattleTechs();
+
+    /**
+     * @return the combat result tables.
+     */
+    List<CombatResultEntity> getCombatResults();
+
+    /**
+     * @return the army class tables.
+     */
+    List<ArmyClasseEntity> getArmyClasses();
 }

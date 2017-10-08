@@ -93,6 +93,12 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
         tablesMapping.fillLimitsTables(limits, objectsCreated, TABLES);
         List<ResultEntity> results = tablesDao.getResults();
         tablesMapping.fillResultsTables(results, TABLES);
+        List<BattleTechEntity> battleTechs = tablesDao.getBattleTechs();
+        tablesMapping.fillBattleTechTables(battleTechs, TABLES);
+        List<CombatResultEntity> combatResults = tablesDao.getCombatResults();
+        tablesMapping.fillCombatResultTables(combatResults, TABLES);
+        List<ArmyClasseEntity> armyClasses = tablesDao.getArmyClasses();
+        tablesMapping.fillArmyClasseTables(armyClasses, TABLES);
     }
 
     /**

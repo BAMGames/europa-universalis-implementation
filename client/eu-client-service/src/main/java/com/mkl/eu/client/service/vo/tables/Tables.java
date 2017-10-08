@@ -27,6 +27,12 @@ public class Tables {
     private List<Limit> limits = new ArrayList<>();
     /** Results of actions. */
     private List<Result> results = new ArrayList<>();
+    /** Techs in battle. */
+    private List<BattleTech> battleTechs = new ArrayList<>();
+    /** Results of combats. */
+    private List<CombatResult> combatResults = new ArrayList<>();
+    /** Size of army classes. */
+    private List<ArmyClasse> armyClasses = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -106,5 +112,35 @@ public class Tables {
     /** @param results the results to set. */
     public void setResults(List<Result> results) {
         this.results = results;
+    }
+
+    /** @return the battleTechs. */
+    public List<BattleTech> getBattleTechs() {
+        return battleTechs;
+    }
+
+    /** @param battleTechs the battleTechs to set. */
+    public void setBattleTechs(List<BattleTech> battleTechs) {
+        this.battleTechs = battleTechs;
+    }
+
+    /** @return the combatResults. */
+    public List<CombatResult> getCombatResults() {
+        return combatResults;
+    }
+
+    /** @param combatResults the combatResults to set. */
+    public void setCombatResults(List<CombatResult> combatResults) {
+        this.combatResults = combatResults;
+    }
+
+    /** @return the armyClasses. */
+    public List<ArmyClasse> getArmyClasses() {
+        return armyClasses;
+    }
+
+    /** @param armyClasses the armyClasses to set. */
+    public void setArmyClasses(List<ArmyClasse> armyClasses) {
+        this.armyClasses = armyClasses;
     }
 }

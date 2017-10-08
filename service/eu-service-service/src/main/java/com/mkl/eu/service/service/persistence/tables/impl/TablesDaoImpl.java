@@ -92,4 +92,31 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
         //noinspection unchecked
         return criteria.list();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<BattleTechEntity> getBattleTechs() {
+        Criteria criteria = getSession().createCriteria(BattleTechEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<CombatResultEntity> getCombatResults() {
+        Criteria criteria = getSession().createCriteria(CombatResultEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ArmyClasseEntity> getArmyClasses() {
+        Criteria criteria = getSession().createCriteria(ArmyClasseEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
 }
