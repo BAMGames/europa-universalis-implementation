@@ -25,10 +25,10 @@ public class BattleEntity implements IEntity, Serializable {
     private Integer turn;
     /** Status of the battle. */
     private BattleStatusEnum status;
-    /** Flag saying that the attacker has selected his forces. */
-    private Boolean attackerForces;
-    /** Flag saying that the defender has selected his forces. */
-    private Boolean defenderForces;
+    /** Flag saying that the phasing players have selected their forces. */
+    private Boolean phasingForces;
+    /** Flag saying that the non phasing players have selected their forces. */
+    private Boolean nonPhasingForces;
     /** Counters involved in the battle. */
     private Set<BattleCounterEntity> counters = new HashSet<>();
     /** Game in which the battle occurs. */
@@ -82,26 +82,26 @@ public class BattleEntity implements IEntity, Serializable {
         this.status = status;
     }
 
-    /** @return the attackerForces. */
-    @Column(name = "ATTACKER_FORCES")
-    public Boolean isAttackerForces() {
-        return attackerForces;
+    /** @return the phasingForces. */
+    @Column(name = "PHASING_FORCES")
+    public Boolean isPhasingForces() {
+        return phasingForces;
     }
 
-    /** @param attackerForces the attackerForces to set. */
-    public void setAttackerForces(Boolean attackerForces) {
-        this.attackerForces = attackerForces;
+    /** @param phasingForces the phasingForces to set. */
+    public void setPhasingForces(Boolean phasingForces) {
+        this.phasingForces = phasingForces;
     }
 
-    /** @return the defenderForces. */
-    @Column(name = "DEFENDER_FORCES")
-    public Boolean isDefenderForces() {
-        return defenderForces;
+    /** @return the nonPhasingForces. */
+    @Column(name = "NON_PHASING_FORCES")
+    public Boolean isNonPhasingForces() {
+        return nonPhasingForces;
     }
 
-    /** @param defenderForces the defenderForces to set. */
-    public void setDefenderForces(Boolean defenderForces) {
-        this.defenderForces = defenderForces;
+    /** @param nonPhasingForces the nonPhasingForces to set. */
+    public void setNonPhasingForces(Boolean nonPhasingForces) {
+        this.nonPhasingForces = nonPhasingForces;
     }
 
     /** @return the counters. */

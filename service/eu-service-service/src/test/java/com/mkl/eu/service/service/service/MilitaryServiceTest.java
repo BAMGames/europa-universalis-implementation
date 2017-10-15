@@ -218,12 +218,12 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                     .filter(c -> c.getCounter().getId().equals(1L))
                     .findAny()
                     .orElse(null);
-            Assert.assertEquals(true, counterFra.isAttacker());
+            Assert.assertEquals(true, counterFra.isPhasing());
             BattleCounterEntity counterEsp = game.getBattles().get(0).getCounters().stream()
                     .filter(c -> c.getCounter().getId().equals(5L))
                     .findAny()
                     .orElse(null);
-            Assert.assertEquals(false, counterEsp.isAttacker());
+            Assert.assertEquals(false, counterEsp.isPhasing());
         } else {
             Assert.assertEquals(BattleStatusEnum.SELECT_FORCES, game.getBattles().get(0).getStatus());
         }
@@ -350,7 +350,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         }
 
         game.getStacks().get(0).setProvince("pecs");
-        game.getBattles().get(0).setDefenderForces(true);
+        game.getBattles().get(0).setNonPhasingForces(true);
 
         try {
             militaryService.selectForce(request);
@@ -450,7 +450,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 BattleCounterEntity battleCounter = battle.getCounters().iterator().next();
                 Assert.assertEquals(battle, battleCounter.getBattle());
                 Assert.assertEquals(counter, battleCounter.getCounter());
-                Assert.assertEquals(true, battleCounter.isAttacker());
+                Assert.assertEquals(true, battleCounter.isPhasing());
             } else {
                 diffStatus = DiffAttributeTypeEnum.ATTACKER_COUNTER_REMOVE;
 
@@ -464,7 +464,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 BattleCounterEntity battleCounter = battle.getCounters().iterator().next();
                 Assert.assertEquals(battle, battleCounter.getBattle());
                 Assert.assertEquals(counter, battleCounter.getCounter());
-                Assert.assertEquals(false, battleCounter.isAttacker());
+                Assert.assertEquals(false, battleCounter.isPhasing());
             } else {
                 diffStatus = DiffAttributeTypeEnum.DEFENDER_COUNTER_REMOVE;
 
@@ -489,7 +489,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(country);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
-        game.getBattles().get(0).setDefenderForces(true);
+        game.getBattles().get(0).setNonPhasingForces(true);
         game.getBattles().get(0).setProvince("pecs");
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -527,7 +527,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         }
 
         request.getRequest().setValidate(true);
-        game.getBattles().get(0).setDefenderForces(false);
+        game.getBattles().get(0).setNonPhasingForces(false);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setProvince("pecs");
         game.getStacks().get(0).setCountry(country.getName());
@@ -611,8 +611,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(country);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
-        game.getBattles().get(0).setDefenderForces(before);
-        game.getBattles().get(0).setAttackerForces(before);
+        game.getBattles().get(0).setNonPhasingForces(before);
+        game.getBattles().get(0).setPhasingForces(before);
         game.getBattles().get(0).setProvince("pecs");
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -629,7 +629,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
         game.getStacks().get(0).getCounters().add(counter);
         BattleCounterEntity bc = new BattleCounterEntity();
-        bc.setAttacker(phasing);
+        bc.setPhasing(phasing);
         bc.setCounter(counter);
         game.getBattles().get(0).getCounters().add(bc);
         counter = new CounterEntity();
@@ -637,7 +637,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
         game.getStacks().get(0).getCounters().add(counter);
         bc = new BattleCounterEntity();
-        bc.setAttacker(phasing);
+        bc.setPhasing(phasing);
         bc.setCounter(counter);
         game.getBattles().get(0).getCounters().add(bc);
         counter = new CounterEntity();
@@ -673,11 +673,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             if (phasing) {
                 diffStatus = DiffAttributeTypeEnum.ATTACKER_READY;
 
-                Assert.assertEquals(validate, battle.isAttackerForces());
+                Assert.assertEquals(validate, battle.isPhasingForces());
             } else {
                 diffStatus = DiffAttributeTypeEnum.DEFENDER_READY;
 
-                Assert.assertEquals(validate, battle.isDefenderForces());
+                Assert.assertEquals(validate, battle.isNonPhasingForces());
             }
             Assert.assertEquals(diffStatus, diffEntity.getAttributes().get(0).getType());
             Assert.assertEquals(Boolean.toString(validate), diffEntity.getAttributes().get(0).getValue());

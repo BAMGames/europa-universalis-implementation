@@ -146,10 +146,10 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             diffAttributes.setValue(Boolean.TRUE.toString());
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
-            battle.setAttackerForces(true);
+            battle.setPhasingForces(true);
             attackerCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
-                comp.setAttacker(true);
+                comp.setPhasing(true);
                 comp.setBattle(battle);
                 comp.setCounter(counter);
                 battle.getCounters().add(comp);
@@ -172,7 +172,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             diffAttributes.setValue(Boolean.TRUE.toString());
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
-            battle.setDefenderForces(true);
+            battle.setNonPhasingForces(true);
             defenderCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setBattle(battle);
@@ -188,8 +188,8 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         }
 
         BattleStatusEnum battleStatus = BattleStatusEnum.SELECT_FORCES;
-        if (battle.isAttackerForces() != null && battle.isAttackerForces() &&
-                battle.isDefenderForces() != null && battle.isDefenderForces()) {
+        if (battle.isPhasingForces() != null && battle.isPhasingForces() &&
+                battle.isNonPhasingForces() != null && battle.isNonPhasingForces()) {
             battleStatus = BattleStatusEnum.WITHDRAW_BEFORE_BATTLE;
         }
         battle.setStatus(battleStatus);
@@ -258,7 +258,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         boolean phasing = isCountryActive(game, request.getIdCountry());
 
-        Boolean validated = phasing ? battle.isAttackerForces() : battle.isDefenderForces();
+        Boolean validated = phasing ? battle.isPhasingForces() : battle.isNonPhasingForces();
 
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(validated)
@@ -293,7 +293,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     .setParams(METHOD_SELECT_FORCE, request.getRequest().getIdCounter()));
 
             BattleCounterEntity comp = new BattleCounterEntity();
-            comp.setAttacker(phasing);
+            comp.setPhasing(phasing);
             comp.setBattle(battle);
             comp.setCounter(counter);
             battle.getCounters().add(comp);
@@ -388,7 +388,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         boolean phasing = isCountryActive(game, request.getIdCountry());
 
-        Boolean oldValidation = phasing ? battle.isAttackerForces() : battle.isDefenderForces();
+        Boolean oldValidation = phasing ? battle.isPhasingForces() : battle.isNonPhasingForces();
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
 
@@ -397,7 +397,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 List<String> allies = oeUtil.getAllies(country, game);
 
                 List<Long> alliedCounters = battle.getCounters().stream()
-                        .filter(bc -> bc.isAttacker() == phasing)
+                        .filter(bc -> bc.isPhasing() == phasing)
                         .map(bc -> bc.getCounter().getId())
                         .collect(Collectors.toList());
                 List<CounterEntity> remainingCounters = game.getStacks().stream()
@@ -416,7 +416,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                         .setParams(METHOD_VALIDATE_FORCES, phasing));
             } else {
                 List<Long> alliedCounters = battle.getCounters().stream()
-                        .filter(bc -> bc.isAttacker() == phasing)
+                        .filter(bc -> bc.isPhasing() == phasing)
                         .map(bc -> bc.getCounter().getId())
                         .collect(Collectors.toList());
                 Integer armySize = battle.getCounters().stream()
@@ -458,10 +458,10 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
             if (phasing) {
                 diffAttributes.setType(DiffAttributeTypeEnum.ATTACKER_READY);
-                battle.setAttackerForces(request.getRequest().isValidate());
+                battle.setPhasingForces(request.getRequest().isValidate());
             } else {
                 diffAttributes.setType(DiffAttributeTypeEnum.DEFENDER_READY);
-                battle.setDefenderForces(request.getRequest().isValidate());
+                battle.setNonPhasingForces(request.getRequest().isValidate());
             }
 
             diffs.add(diff);

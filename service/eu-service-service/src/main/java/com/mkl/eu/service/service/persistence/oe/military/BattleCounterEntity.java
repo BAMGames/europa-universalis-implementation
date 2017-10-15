@@ -18,8 +18,8 @@ import javax.persistence.*;
 public class BattleCounterEntity {
     /** Composite id. */
     private BattleCounterId id = new BattleCounterId();
-    /** Flag <code>true</code> when the counter is in the attacker side. */
-    private boolean attacker;
+    /** Flag <code>true</code> when the counter is in the phasing side. */
+    private boolean phasing;
 
     /** @return the id. */
     @EmbeddedId
@@ -54,14 +54,14 @@ public class BattleCounterEntity {
         id.setCounter(counter);
     }
 
-    /** @return the attacker. */
-    @Column(name = "ATTACKER")
-    public boolean isAttacker() {
-        return attacker;
+    /** @return the phasing. */
+    @Column(name = "PHASING")
+    public boolean isPhasing() {
+        return phasing;
     }
 
-    /** @param attacker the attacker to set. */
-    public void setAttacker(boolean attacker) {
-        this.attacker = attacker;
+    /** @param phasing the phasing to set. */
+    public void setPhasing(boolean phasing) {
+        this.phasing = phasing;
     }
 }
