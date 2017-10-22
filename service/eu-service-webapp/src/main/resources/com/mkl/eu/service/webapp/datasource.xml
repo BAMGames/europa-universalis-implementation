@@ -11,9 +11,12 @@
     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"
           p:dataSource-ref="dataSource"
           p:configLocation="classpath:/com/mkl/eu/service/webapp/hibernate.cfg.xml"
+          p:namingStrategy-ref="componentNamingStrategy"
           p:packagesToScan="com.mkl.eu.**.oe"
           depends-on="flywayService">
     </bean>
+
+    <bean id="componentNamingStrategy" class="org.hibernate.cfg.DefaultComponentSafeNamingStrategy"/>
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" p:dataSource-ref="dataSource"/>
 

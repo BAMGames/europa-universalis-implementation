@@ -25,10 +25,10 @@ public class BattleEntity implements IEntity, Serializable {
     private Integer turn;
     /** Status of the battle. */
     private BattleStatusEnum status;
-    /** Flag saying that the phasing players have selected their forces. */
-    private Boolean phasingForces;
-    /** Flag saying that the non phasing players have selected their forces. */
-    private Boolean nonPhasingForces;
+    /** Phasing side. */
+    private BattleSideEntity phasing = new BattleSideEntity();
+    /** Non phasing side. */
+    private BattleSideEntity nonPhasing = new BattleSideEntity();
     /** Counters involved in the battle. */
     private Set<BattleCounterEntity> counters = new HashSet<>();
     /** Game in which the battle occurs. */
@@ -82,26 +82,26 @@ public class BattleEntity implements IEntity, Serializable {
         this.status = status;
     }
 
-    /** @return the phasingForces. */
-    @Column(name = "PHASING_FORCES")
-    public Boolean isPhasingForces() {
-        return phasingForces;
+    /** @return the phasingSide. */
+    @Embedded
+    public BattleSideEntity getPhasing() {
+        return phasing;
     }
 
-    /** @param phasingForces the phasingForces to set. */
-    public void setPhasingForces(Boolean phasingForces) {
-        this.phasingForces = phasingForces;
+    /** @param phasingSide the phasingSide to set. */
+    public void setPhasing(BattleSideEntity phasingSide) {
+        this.phasing = phasingSide;
     }
 
-    /** @return the nonPhasingForces. */
-    @Column(name = "NON_PHASING_FORCES")
-    public Boolean isNonPhasingForces() {
-        return nonPhasingForces;
+    /** @return the nonPhasingSide. */
+    @Embedded
+    public BattleSideEntity getNonPhasing() {
+        return nonPhasing;
     }
 
-    /** @param nonPhasingForces the nonPhasingForces to set. */
-    public void setNonPhasingForces(Boolean nonPhasingForces) {
-        this.nonPhasingForces = nonPhasingForces;
+    /** @param nonPhasingSide the nonPhasingSide to set. */
+    public void setNonPhasing(BattleSideEntity nonPhasingSide) {
+        this.nonPhasing = nonPhasingSide;
     }
 
     /** @return the counters. */

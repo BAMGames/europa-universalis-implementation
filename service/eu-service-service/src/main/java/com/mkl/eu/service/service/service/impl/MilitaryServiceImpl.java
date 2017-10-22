@@ -146,7 +146,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             diffAttributes.setValue(Boolean.TRUE.toString());
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
-            battle.setPhasingForces(true);
+            battle.getPhasing().setForces(true);
             attackerCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setPhasing(true);
@@ -172,7 +172,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             diffAttributes.setValue(Boolean.TRUE.toString());
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
-            battle.setNonPhasingForces(true);
+            battle.getNonPhasing().setForces(true);
             defenderCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setBattle(battle);
@@ -188,8 +188,8 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         }
 
         BattleStatusEnum battleStatus = BattleStatusEnum.SELECT_FORCES;
-        if (battle.isPhasingForces() != null && battle.isPhasingForces() &&
-                battle.isNonPhasingForces() != null && battle.isNonPhasingForces()) {
+        if (battle.getPhasing().isForces() != null && battle.getPhasing().isForces() &&
+                battle.getNonPhasing().isForces() != null && battle.getNonPhasing().isForces()) {
             battleStatus = BattleStatusEnum.WITHDRAW_BEFORE_BATTLE;
         }
         battle.setStatus(battleStatus);
@@ -258,7 +258,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         boolean phasing = isCountryActive(game, request.getIdCountry());
 
-        Boolean validated = phasing ? battle.isPhasingForces() : battle.isNonPhasingForces();
+        Boolean validated = phasing ? battle.getPhasing().isForces() : battle.getNonPhasing().isForces();
 
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(validated)
@@ -388,7 +388,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         boolean phasing = isCountryActive(game, request.getIdCountry());
 
-        Boolean oldValidation = phasing ? battle.isPhasingForces() : battle.isNonPhasingForces();
+        Boolean oldValidation = phasing ? battle.getPhasing().isForces() : battle.getNonPhasing().isForces();
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
 
@@ -458,10 +458,10 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
             if (phasing) {
                 diffAttributes.setType(DiffAttributeTypeEnum.ATTACKER_READY);
-                battle.setPhasingForces(request.getRequest().isValidate());
+                battle.getPhasing().setForces(request.getRequest().isValidate());
             } else {
                 diffAttributes.setType(DiffAttributeTypeEnum.DEFENDER_READY);
-                battle.setNonPhasingForces(request.getRequest().isValidate());
+                battle.getNonPhasing().setForces(request.getRequest().isValidate());
             }
 
             diffs.add(diff);

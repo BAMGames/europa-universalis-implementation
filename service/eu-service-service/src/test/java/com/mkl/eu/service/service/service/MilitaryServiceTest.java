@@ -350,7 +350,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         }
 
         game.getStacks().get(0).setProvince("pecs");
-        game.getBattles().get(0).setNonPhasingForces(true);
+        game.getBattles().get(0).getNonPhasing().setForces(true);
 
         try {
             militaryService.selectForce(request);
@@ -489,7 +489,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(country);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
-        game.getBattles().get(0).setNonPhasingForces(true);
+        game.getBattles().get(0).getNonPhasing().setForces(true);
         game.getBattles().get(0).setProvince("pecs");
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -527,7 +527,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         }
 
         request.getRequest().setValidate(true);
-        game.getBattles().get(0).setNonPhasingForces(false);
+        game.getBattles().get(0).getNonPhasing().setForces(false);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setProvince("pecs");
         game.getStacks().get(0).setCountry(country.getName());
@@ -611,8 +611,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(country);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
-        game.getBattles().get(0).setNonPhasingForces(before);
-        game.getBattles().get(0).setPhasingForces(before);
+        game.getBattles().get(0).getNonPhasing().setForces(before);
+        game.getBattles().get(0).getPhasing().setForces(before);
         game.getBattles().get(0).setProvince("pecs");
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -673,11 +673,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             if (phasing) {
                 diffStatus = DiffAttributeTypeEnum.ATTACKER_READY;
 
-                Assert.assertEquals(validate, battle.isPhasingForces());
+                Assert.assertEquals(validate, battle.getPhasing().isForces());
             } else {
                 diffStatus = DiffAttributeTypeEnum.DEFENDER_READY;
 
-                Assert.assertEquals(validate, battle.isNonPhasingForces());
+                Assert.assertEquals(validate, battle.getNonPhasing().isForces());
             }
             Assert.assertEquals(diffStatus, diffEntity.getAttributes().get(0).getType());
             Assert.assertEquals(Boolean.toString(validate), diffEntity.getAttributes().get(0).getValue());
