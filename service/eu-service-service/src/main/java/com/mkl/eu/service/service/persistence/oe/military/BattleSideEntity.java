@@ -13,6 +13,10 @@ public class BattleSideEntity {
     private Boolean forces;
     /** Technology of the side. */
     private String tech;
+    /** First day modifiers. */
+    private BattleModifierEntity firstDay = new BattleModifierEntity();
+    /** Second day modifiers. */
+    private BattleModifierEntity secondDay = new BattleModifierEntity();
 
     /** @return the forces. */
     public Boolean isForces() {
@@ -32,5 +36,25 @@ public class BattleSideEntity {
     /** @param tech the tech to set. */
     public void setTech(String tech) {
         this.tech = tech;
+    }
+
+    /** @return the firstDay. */
+    public BattleModifierEntity getFirstDay() {
+        return firstDay;
+    }
+
+    /** @param firstDay the firstDay to set. */
+    public void setFirstDay(BattleModifierEntity firstDay) {
+        this.firstDay = firstDay;
+    }
+
+    /** @return the secondDay. */
+    public BattleModifierEntity getSecondDay() {
+        return secondDay;
+    }
+
+    /** @param secondDay the secondDay to set. */
+    public void setSecondDay(BattleModifierEntity secondDay) {
+        this.secondDay = secondDay;
     }
 }
