@@ -5,6 +5,7 @@ import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.ITablesService;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.persistence.tables.ITablesDao;
@@ -209,5 +210,37 @@ public class TableDaoImplTest {
 
         Assert.assertNotNull(fraV);
         Assert.assertEquals(3, fraV.getSize().intValue());
+    }
+
+    @Test
+    public void testArmyArtillery() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(133, tables.getArmyArtilleries().size());
+
+        ArmyArtillery russieI = tables.getArmyArtilleries().stream()
+                .filter(ac -> StringUtils.equals(Period.PERIOD_I, ac.getPeriod()) && StringUtils.equals(PlayableCountry.RUSSIA, ac.getCountry()))
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(russieI);
+        Assert.assertEquals(1, russieI.getArtillery().intValue());
+
+        ArmyArtillery fraV = tables.getArmyArtilleries().stream()
+                .filter(ac -> StringUtils.equals(Period.PERIOD_V, ac.getPeriod()) && StringUtils.equals(PlayableCountry.FRANCE, ac.getCountry()))
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(fraV);
+        Assert.assertEquals(5, fraV.getArtillery().intValue());
+
+        ArmyArtillery IIMIII = tables.getArmyArtilleries().stream()
+                .filter(ac -> StringUtils.equals(Period.PERIOD_III, ac.getPeriod()) && ac.getArmyClass() == ArmyClassEnum.IIM)
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(IIMIII);
+        Assert.assertEquals(3, IIMIII.getArtillery().intValue());
     }
 }

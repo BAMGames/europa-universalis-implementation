@@ -33,6 +33,8 @@ public class Tables {
     private List<CombatResult> combatResults = new ArrayList<>();
     /** Size of army classes. */
     private List<ArmyClasse> armyClasses = new ArrayList<>();
+    /** Artillery of armies. */
+    private List<ArmyArtillery> armyArtilleries = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -142,5 +144,15 @@ public class Tables {
     /** @param armyClasses the armyClasses to set. */
     public void setArmyClasses(List<ArmyClasse> armyClasses) {
         this.armyClasses = armyClasses;
+    }
+
+    /** @return the armyArtilleries. */
+    public List<ArmyArtillery> getArmyArtilleries() {
+        return armyArtilleries;
+    }
+
+    /** @param armyArtilleries the armyArtilleries to set. */
+    public void setArmyArtilleries(List<ArmyArtillery> armyArtilleries) {
+        this.armyArtilleries = armyArtilleries;
     }
 }
