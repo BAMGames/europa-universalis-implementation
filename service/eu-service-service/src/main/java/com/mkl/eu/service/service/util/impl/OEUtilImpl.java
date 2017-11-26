@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
+import com.mkl.eu.client.service.vo.tables.ArmyArtillery;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
@@ -659,5 +660,79 @@ public final class OEUtilImpl implements IOEUtil {
         }
 
         return tech;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getArtilleryBonus(List<CounterEntity> counters, Referential referential, Tables tables, GameEntity game) {
+        Period period = CommonUtil.findFirst(tables.getPeriods(), per -> per.getBegin() <= game.getTurn() && per.getEnd() >= game.getTurn());
+        List<Integer> artilleries = counters.stream()
+                .map(counter -> getNumberArtillery(counter, period, referential, tables))
+                .collect(Collectors.toList());
+
+        Integer max = artilleries.stream()
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(null);
+
+        if (max == null) {
+            return 0;
+        }
+
+        artilleries.remove(max);
+        int remain = artilleries.stream()
+                .max(Comparator.<Integer>naturalOrder())
+                .map(art -> art >= 2 ? 2 : art == 1 ? 1 : 0)
+                .orElse(0);
+
+        return max + remain;
+    }
+
+    /**
+     * @param counter     the counter.
+     * @param period      the period.
+     * @param referential the referential.
+     * @param tables      the tables.
+     * @return the number of artillery for the given counter at the given period.
+     */
+    private Integer getNumberArtillery(CounterEntity counter, Period period, Referential referential, Tables tables) {
+        int artillery = 0;
+        int factor = 0;
+
+        if (counter.getType() == CounterFaceTypeEnum.ARMY_PLUS || counter.getType() == CounterFaceTypeEnum.ARMY_TIMAR_PLUS) {
+            factor = 1;
+        } else if (counter.getType() == CounterFaceTypeEnum.ARMY_MINUS || counter.getType() == CounterFaceTypeEnum.ARMY_TIMAR_MINUS) {
+            factor = 2;
+        }
+
+        if (factor != 0) {
+
+            artillery = tables.getArmyArtilleries().stream()
+                    .filter(art -> StringUtils.equals(period.getName(), art.getPeriod()) &&
+                            StringUtils.equals(counter.getCountry(), art.getCountry()))
+                    .map(ArmyArtillery::getArtillery)
+                    .findAny()
+                    .orElse(0);
+
+            if (artillery == 0) {
+                ArmyClassEnum armyClass = referential.getCountries().stream()
+                        .filter(c -> StringUtils.equals(counter.getCountry(), c.getName()))
+                        .map(CountryReferential::getArmyClass)
+                        .findAny()
+                        .orElse(null);
+
+                artillery = tables.getArmyArtilleries().stream()
+                        .filter(art -> StringUtils.equals(period.getName(), art.getPeriod()) &&
+                                armyClass == art.getArmyClass())
+                        .map(ArmyArtillery::getArtillery)
+                        .findAny()
+                        .orElse(0);
+            }
+
+            artillery = artillery / factor;
+        }
+
+        return artillery;
     }
 }

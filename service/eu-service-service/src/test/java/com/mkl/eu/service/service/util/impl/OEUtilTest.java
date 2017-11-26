@@ -6,6 +6,7 @@ import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecut
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
+import com.mkl.eu.client.service.vo.tables.ArmyArtillery;
 import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
@@ -36,6 +37,7 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -531,6 +533,13 @@ public class OEUtilTest {
     private CounterEntity createCounter(CounterFaceTypeEnum face) {
         CounterEntity counter = new CounterEntity();
         counter.setType(face);
+        return counter;
+    }
+
+    private CounterEntity createCounter(CounterFaceTypeEnum face, String country) {
+        CounterEntity counter = new CounterEntity();
+        counter.setType(face);
+        counter.setCountry(country);
         return counter;
     }
 
@@ -1222,5 +1231,154 @@ public class OEUtilTest {
 
         Assert.assertEquals(Tech.MEDIEVAL, oeUtil.getTechnology(counters, true, referential, tables, game));
         Assert.assertEquals(Tech.CARRACK, oeUtil.getTechnology(counters, false, referential, tables, game));
+    }
+
+    @Test
+    public void testArtilleryBonus() {
+        Referential referential = new Referential();
+        CountryReferential france = new CountryReferential();
+        france.setName("france");
+        france.setArmyClass(ArmyClassEnum.IV);
+        referential.getCountries().add(france);
+        CountryReferential turquie = new CountryReferential();
+        turquie.setName("turquie");
+        turquie.setArmyClass(ArmyClassEnum.IM);
+        referential.getCountries().add(turquie);
+        CountryReferential genoa = new CountryReferential();
+        genoa.setName("genoa");
+        genoa.setArmyClass(ArmyClassEnum.IV);
+        referential.getCountries().add(genoa);
+
+        Tables tables = new Tables();
+        ArmyArtillery franceI = new ArmyArtillery();
+        franceI.setCountry("france");
+        franceI.setPeriod("I");
+        franceI.setArtillery(4);
+        tables.getArmyArtilleries().add(franceI);
+        ArmyArtillery turquieI = new ArmyArtillery();
+        turquieI.setCountry("turquie");
+        turquieI.setPeriod("I");
+        turquieI.setArtillery(3);
+        tables.getArmyArtilleries().add(turquieI);
+        ArmyArtillery genoaI = new ArmyArtillery();
+        genoaI.setArmyClass(ArmyClassEnum.IV);
+        genoaI.setPeriod("I");
+        genoaI.setArtillery(1);
+        tables.getArmyArtilleries().add(genoaI);
+        ArmyArtillery franceIV = new ArmyArtillery();
+        franceIV.setCountry("france");
+        franceIV.setPeriod("IV");
+        franceIV.setArtillery(6);
+        tables.getArmyArtilleries().add(franceIV);
+        ArmyArtillery turquieIV = new ArmyArtillery();
+        turquieIV.setCountry("turquie");
+        turquieIV.setPeriod("IV");
+        turquieIV.setArtillery(5);
+        tables.getArmyArtilleries().add(turquieIV);
+        ArmyArtillery genoaIV = new ArmyArtillery();
+        genoaIV.setArmyClass(ArmyClassEnum.IV);
+        genoaIV.setPeriod("IV");
+        genoaIV.setArtillery(4);
+        tables.getArmyArtilleries().add(genoaIV);
+
+        Period periodI = new Period();
+        periodI.setName("I");
+        periodI.setBegin(1);
+        periodI.setEnd(6);
+        tables.getPeriods().add(periodI);
+        Period periodIV = new Period();
+        periodIV.setName("IV");
+        periodIV.setBegin(25);
+        periodIV.setEnd(36);
+        tables.getPeriods().add(periodIV);
+
+        GameEntity game = new GameEntity();
+        game.setTurn(30);
+
+        List<CounterEntity> counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, "france"));
+
+        Assert.assertEquals(0, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"));
+
+        Assert.assertEquals(6, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france"));
+
+        Assert.assertEquals(3, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "turquie"));
+
+        Assert.assertEquals(5, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_MINUS, "turquie"));
+
+        Assert.assertEquals(2, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "genoa"));
+
+        Assert.assertEquals(4, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_MINUS, "genoa"));
+
+        Assert.assertEquals(2, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        game.setTurn(3);
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"));
+
+        Assert.assertEquals(4, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france"));
+
+        Assert.assertEquals(2, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "turquie"));
+
+        Assert.assertEquals(3, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_MINUS, "turquie"));
+
+        Assert.assertEquals(1, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "genoa"));
+
+        Assert.assertEquals(1, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Collections.singletonList(createCounter(CounterFaceTypeEnum.ARMY_MINUS, "genoa"));
+
+        Assert.assertEquals(0, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Arrays.asList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"),
+                createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"));
+
+        Assert.assertEquals(6, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Arrays.asList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"),
+                createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france"));
+
+        Assert.assertEquals(6, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Arrays.asList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"),
+                createCounter(CounterFaceTypeEnum.ARMY_MINUS, "turquie"));
+
+        Assert.assertEquals(5, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Arrays.asList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"),
+                createCounter(CounterFaceTypeEnum.ARMY_MINUS, "genoa"));
+
+        Assert.assertEquals(4, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Arrays.asList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "france"),
+                createCounter(CounterFaceTypeEnum.ARMY_MINUS, "genoa"),
+                createCounter(CounterFaceTypeEnum.ARMY_MINUS, "turquie"));
+
+        Assert.assertEquals(5, oeUtil.getArtilleryBonus(counters, referential, tables, game));
+
+        counters = Arrays.asList(createCounter(CounterFaceTypeEnum.ARMY_PLUS, "genoa"),
+                createCounter(CounterFaceTypeEnum.ARMY_PLUS, "genoa"),
+                createCounter(CounterFaceTypeEnum.ARMY_PLUS, "genoa"));
+
+        Assert.assertEquals(2, oeUtil.getArtilleryBonus(counters, referential, tables, game));
     }
 }

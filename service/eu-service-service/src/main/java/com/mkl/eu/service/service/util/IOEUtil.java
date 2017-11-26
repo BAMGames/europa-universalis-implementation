@@ -186,4 +186,13 @@ public interface IOEUtil {
      * @return the technology of a List of counters.
      */
     String getTechnology(List<CounterEntity> counters, boolean land, Referential referential, Tables tables, GameEntity game);
+
+    /**
+     * @param counters    stack whom we want the artillery bonus.
+     * @param referential the referential.
+     * @param tables      the tables.
+     * @param game        the game.
+     * @return the artillery bonus of a List of counters for siege and artillery fire modifier.
+     */
+    int getArtilleryBonus(List<CounterEntity> counters, Referential referential, Tables tables, GameEntity game);
 }
