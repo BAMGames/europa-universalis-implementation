@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.util.impl;
 import com.excilys.ebi.spring.dbunit.config.DBOperation;
 import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
@@ -23,6 +24,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.util.ArmyInfo;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -54,9 +56,10 @@ import java.util.List;
         RollbackTransactionalDataSetTestExecutionListener.class
 })
 @ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
-                                   "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
+        "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
 @DataSet(value = {"/com/mkl/eu/service/service/persistence/provinces.xml"}, columnSensing = true, tearDownOperation = DBOperation.DELETE_ALL)
 public class OEUtilTest {
+    private static int count = 0;
     @Autowired
     private IProvinceDao provinceDao;
 
@@ -1381,4 +1384,145 @@ public class OEUtilTest {
 
         Assert.assertEquals(2, oeUtil.getArtilleryBonus(counters, referential, tables, game));
     }
+
+    @Test
+    public void testCavalryBonus() {
+        Tables tables = new Tables();
+        Period periodI = new Period();
+        periodI.setName("I");
+        periodI.setBegin(1);
+        periodI.setEnd(6);
+        tables.getPeriods().add(periodI);
+        Period periodII = new Period();
+        periodII.setName("II");
+        periodII.setBegin(7);
+        periodII.setEnd(14);
+        tables.getPeriods().add(periodII);
+        Period periodIII = new Period();
+        periodIII.setName("III");
+        periodIII.setBegin(15);
+        periodIII.setEnd(25);
+        tables.getPeriods().add(periodIII);
+        Period periodIV = new Period();
+        periodIV.setName("IV");
+        periodIV.setBegin(26);
+        periodIV.setEnd(34);
+        tables.getPeriods().add(periodIV);
+        Period periodV = new Period();
+        periodV.setName("V");
+        periodV.setBegin(35);
+        periodV.setEnd(42);
+        tables.getPeriods().add(periodV);
+        Period periodVI = new Period();
+        periodVI.setName("VI");
+        periodVI.setBegin(43);
+        periodVI.setEnd(52);
+        tables.getPeriods().add(periodVI);
+        Period periodVII = new Period();
+        periodVII.setName("VII");
+        periodVII.setBegin(53);
+        periodVII.setEnd(62);
+        tables.getPeriods().add(periodVII);
+
+        checkTerrains(Collections.emptyList(), Collections.emptyList(), periodI.getBegin(), tables);
+
+        checkTerrains(Collections.singletonList(createDetachment(ArmyClassEnum.IV)), Collections.emptyList(), periodI.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IV)), Collections.singletonList(TerrainEnum.PLAIN), periodIII.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IV)), Collections.singletonList(TerrainEnum.PLAIN), 20, tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IV)), Collections.singletonList(TerrainEnum.PLAIN), periodV.getEnd(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IV)), Collections.emptyList(), periodVI.getBegin(), tables);
+
+        checkTerrains(Collections.singletonList(createDetachment(ArmyClassEnum.IIIM)), Collections.emptyList(), periodI.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIIM)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DENSE_FOREST), periodIV.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIIM)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DENSE_FOREST), 40, tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIIM)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DENSE_FOREST), periodV.getEnd(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIIM)), Collections.emptyList(), periodVI.getBegin(), tables);
+
+        checkTerrains(Collections.singletonList(createDetachment(PlayableCountry.SWEDEN)), Collections.emptyList(), periodI.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(PlayableCountry.SWEDEN)), Collections.singletonList(TerrainEnum.DENSE_FOREST), periodIII.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(PlayableCountry.SWEDEN)), Collections.singletonList(TerrainEnum.DENSE_FOREST), 20, tables);
+        checkTerrains(Collections.singletonList(createArmy(PlayableCountry.SWEDEN)), Collections.singletonList(TerrainEnum.DENSE_FOREST), periodVI.getEnd(), tables);
+        checkTerrains(Collections.singletonList(createArmy(PlayableCountry.SWEDEN)), Collections.emptyList(), periodVII.getBegin(), tables);
+
+        checkTerrains(Collections.singletonList(createDetachment(ArmyClassEnum.IIM)), Collections.emptyList(), periodI.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIM)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.SPARSE_FOREST), periodI.getBegin(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIM)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.SPARSE_FOREST), 20, tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIM)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.SPARSE_FOREST), periodIV.getEnd(), tables);
+        checkTerrains(Collections.singletonList(createArmy(ArmyClassEnum.IIM)), Collections.emptyList(), periodV.getBegin(), tables);
+
+        checkTerrains(Collections.singletonList(createDetachment(PlayableCountry.TURKEY)), Collections.emptyList(), 1, tables);
+        checkTerrains(Collections.singletonList(createArmy(PlayableCountry.TURKEY)), Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT), 100, tables);
+
+        List<ArmyInfo> allArmies = Arrays.asList(createArmy(ArmyClassEnum.IV), createArmy(ArmyClassEnum.IIIM), createArmy(PlayableCountry.SWEDEN),
+                createArmy(ArmyClassEnum.IIM), createArmy(PlayableCountry.TURKEY));
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST), periodI.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST), periodI.getEnd(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST), periodII.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST), periodII.getEnd(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST, TerrainEnum.DENSE_FOREST), periodIII.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST, TerrainEnum.DENSE_FOREST), periodIII.getEnd(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST, TerrainEnum.DENSE_FOREST), periodIV.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.SPARSE_FOREST, TerrainEnum.DENSE_FOREST), periodIV.getEnd(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.DENSE_FOREST), periodV.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.DENSE_FOREST), periodV.getEnd(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.DENSE_FOREST), periodVI.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.DENSE_FOREST), periodVI.getEnd(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT), periodVII.getBegin(), tables);
+        checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT), periodVII.getEnd(), tables);
+    }
+
+    private void checkTerrains(List<ArmyInfo> armies, List<TerrainEnum> terrains, int turn, Tables tables) {
+        GameEntity game = new GameEntity();
+        game.setTurn(turn);
+        for (TerrainEnum terrain : TerrainEnum.values()) {
+            Assert.assertEquals("Expected " + (terrains.contains(terrain) ? "" : "no ") + "bonus for terrain " + terrain + " but it was not the case.",
+                    terrains.contains(terrain), oeUtil.getCavalryBonus(armies, terrain, tables, game));
+        }
+    }
+
+    private ArmyInfo createArmy(String country) {
+        ArmyInfo army = new ArmyInfo();
+        army.setType(getArmyType());
+        army.setCountry(country);
+        return army;
+    }
+
+    private ArmyInfo createArmy(ArmyClassEnum armyClass) {
+        ArmyInfo army = new ArmyInfo();
+        army.setType(getArmyType());
+        army.setArmyClass(armyClass);
+        return army;
+    }
+
+    private ArmyInfo createDetachment(String country) {
+        ArmyInfo army = new ArmyInfo();
+        army.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        army.setCountry(country);
+        return army;
+    }
+
+    private ArmyInfo createDetachment(ArmyClassEnum armyClass) {
+        ArmyInfo army = new ArmyInfo();
+        army.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        army.setArmyClass(armyClass);
+        return army;
+    }
+
+    private CounterFaceTypeEnum getArmyType() {
+        CounterFaceTypeEnum type;
+        if (count % 4 == 0) {
+            type = CounterFaceTypeEnum.ARMY_MINUS;
+        } else if (count % 4 == 1) {
+            type = CounterFaceTypeEnum.ARMY_TIMAR_MINUS;
+        } else if (count % 4 == 2) {
+            type = CounterFaceTypeEnum.ARMY_PLUS;
+        } else {
+            type = CounterFaceTypeEnum.ARMY_TIMAR_PLUS;
+        }
+        count++;
+
+        return type;
+    }
+
+
 }

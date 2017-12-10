@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.util;
 
+import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
@@ -195,4 +196,28 @@ public interface IOEUtil {
      * @return the artillery bonus of a List of counters for siege and artillery fire modifier.
      */
     int getArtilleryBonus(List<CounterEntity> counters, Referential referential, Tables tables, GameEntity game);
+
+    /**
+     * @param counters    stack whom we want additional information.
+     * @param referential the referential.
+     * @return a List of ArmyInfo that holds additional information over the counters.
+     */
+    List<ArmyInfo> getArmyInfo(List<CounterEntity> counters, Referential referential);
+
+    /**
+     * @param counters stack whom we want the artillery bonus.
+     * @param tables   the tables.
+     * @param game     the game.
+     * @return the artillery bonus of a List of counters for siege and artillery fire modifier.
+     */
+    int getArtilleryBonus(List<ArmyInfo> counters, Tables tables, GameEntity game);
+
+    /**
+     * @param counters stack whom we want the artillery bonus.
+     * @param terrain  the terrain where the battle occurs.
+     * @param tables   the tables.
+     * @param game     the game.
+     * @return <code>true</code> if the stack has a cavalry bonus in this terrain and turn.
+     */
+    boolean getCavalryBonus(List<ArmyInfo> counters, TerrainEnum terrain, Tables tables, GameEntity game);
 }

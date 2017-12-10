@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.util.impl;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
@@ -19,6 +20,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
@@ -667,9 +669,38 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public int getArtilleryBonus(List<CounterEntity> counters, Referential referential, Tables tables, GameEntity game) {
+        return getArtilleryBonus(getArmyInfo(counters, referential), tables, game);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ArmyInfo> getArmyInfo(List<CounterEntity> counters, Referential referential) {
+        return counters.stream()
+                .map(counter -> {
+                    ArmyInfo army = new ArmyInfo();
+                    army.setType(counter.getType());
+                    army.setCountry(counter.getCountry());
+                    ArmyClassEnum armyClass = referential.getCountries().stream()
+                            .filter(c -> StringUtils.equals(counter.getCountry(), c.getName()))
+                            .map(CountryReferential::getArmyClass)
+                            .findAny()
+                            .orElse(null);
+                    army.setArmyClass(armyClass);
+                    return army;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getArtilleryBonus(List<ArmyInfo> counters, Tables tables, GameEntity game) {
         Period period = CommonUtil.findFirst(tables.getPeriods(), per -> per.getBegin() <= game.getTurn() && per.getEnd() >= game.getTurn());
         List<Integer> artilleries = counters.stream()
-                .map(counter -> getNumberArtillery(counter, period, referential, tables))
+                .map(counter -> getNumberArtillery(counter, period, tables))
                 .collect(Collectors.toList());
 
         Integer max = artilleries.stream()
@@ -690,41 +721,33 @@ public final class OEUtilImpl implements IOEUtil {
     }
 
     /**
-     * @param counter     the counter.
-     * @param period      the period.
-     * @param referential the referential.
-     * @param tables      the tables.
+     * @param army   the counter.
+     * @param period the period.
+     * @param tables the tables.
      * @return the number of artillery for the given counter at the given period.
      */
-    private Integer getNumberArtillery(CounterEntity counter, Period period, Referential referential, Tables tables) {
+    private Integer getNumberArtillery(ArmyInfo army, Period period, Tables tables) {
         int artillery = 0;
         int factor = 0;
 
-        if (counter.getType() == CounterFaceTypeEnum.ARMY_PLUS || counter.getType() == CounterFaceTypeEnum.ARMY_TIMAR_PLUS) {
+        if (army.getType() == CounterFaceTypeEnum.ARMY_PLUS || army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_PLUS) {
             factor = 1;
-        } else if (counter.getType() == CounterFaceTypeEnum.ARMY_MINUS || counter.getType() == CounterFaceTypeEnum.ARMY_TIMAR_MINUS) {
+        } else if (army.getType() == CounterFaceTypeEnum.ARMY_MINUS || army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_MINUS) {
             factor = 2;
         }
 
         if (factor != 0) {
-
             artillery = tables.getArmyArtilleries().stream()
                     .filter(art -> StringUtils.equals(period.getName(), art.getPeriod()) &&
-                            StringUtils.equals(counter.getCountry(), art.getCountry()))
+                            StringUtils.equals(army.getCountry(), art.getCountry()))
                     .map(ArmyArtillery::getArtillery)
                     .findAny()
                     .orElse(0);
 
             if (artillery == 0) {
-                ArmyClassEnum armyClass = referential.getCountries().stream()
-                        .filter(c -> StringUtils.equals(counter.getCountry(), c.getName()))
-                        .map(CountryReferential::getArmyClass)
-                        .findAny()
-                        .orElse(null);
-
                 artillery = tables.getArmyArtilleries().stream()
                         .filter(art -> StringUtils.equals(period.getName(), art.getPeriod()) &&
-                                armyClass == art.getArmyClass())
+                                army.getArmyClass() == art.getArmyClass())
                         .map(ArmyArtillery::getArtillery)
                         .findAny()
                         .orElse(0);
@@ -734,5 +757,94 @@ public final class OEUtilImpl implements IOEUtil {
         }
 
         return artillery;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getCavalryBonus(List<ArmyInfo> armies, TerrainEnum terrain, Tables tables, GameEntity game) {
+        boolean bonus = false;
+
+        Period PI = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_I, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PIII = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_III, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PIV = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_IV, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PV = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_V, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PVI = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_VI, period.getName()))
+                .findAny()
+                .orElse(null);
+
+        switch (terrain) {
+            case PLAIN:
+                bonus = between(game.getTurn(), PIII, PV) && armies.stream().anyMatch(army -> hasCavalry(army, ArmyClassEnum.IV));
+                bonus |= between(game.getTurn(), PIV, PV) && armies.stream().anyMatch(army -> hasCavalry(army, ArmyClassEnum.IIIM));
+                bonus |= between(game.getTurn(), PI, PIV) && armies.stream().anyMatch(army -> hasCavalry(army, ArmyClassEnum.IIM));
+                bonus |= armies.stream().anyMatch(army -> hasCavalry(army, PlayableCountry.TURKEY));
+                break;
+            case DENSE_FOREST:
+                bonus = between(game.getTurn(), PIV, PV) && armies.stream().anyMatch(army -> hasCavalry(army, ArmyClassEnum.IIIM));
+                bonus |= between(game.getTurn(), PIII, PVI) && armies.stream().anyMatch(army -> hasCavalry(army, PlayableCountry.SWEDEN));
+                break;
+            case SPARSE_FOREST:
+                bonus = between(game.getTurn(), PI, PIV) && armies.stream().anyMatch(army -> hasCavalry(army, ArmyClassEnum.IIM));
+                break;
+            case DESERT:
+                bonus = armies.stream().anyMatch(army -> hasCavalry(army, PlayableCountry.TURKEY));
+                break;
+        }
+
+        return bonus;
+    }
+
+    /**
+     * @param turn of the game.
+     * @param min  period.
+     * @param max  period.
+     * @return <code>true</code> if the turn is between the two periods.
+     */
+    private boolean between(int turn, Period min, Period max) {
+        return turn >= min.getBegin() && turn <= max.getEnd();
+    }
+
+    /**
+     * @param army    the army.
+     * @param country the country.
+     * @return <code>true</code> if the army has the right type and country.
+     */
+    private boolean hasCavalry(ArmyInfo army, String country) {
+        return isArmy(army) && StringUtils.equals(country, army.getCountry());
+    }
+
+    /**
+     * @param army      the army.
+     * @param armyClass the class.
+     * @return <code>true</code> if the army has the right type and class.
+     */
+    private boolean hasCavalry(ArmyInfo army, ArmyClassEnum armyClass) {
+        return isArmy(army) && armyClass == army.getArmyClass();
+    }
+
+    /**
+     * @param army the army.
+     * @return <code>true</code> if the army has the right type.
+     */
+    private boolean isArmy(ArmyInfo army) {
+        return army.getType() == CounterFaceTypeEnum.ARMY_MINUS ||
+                army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_MINUS ||
+                army.getType() == CounterFaceTypeEnum.ARMY_PLUS ||
+                army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_PLUS;
     }
 }
