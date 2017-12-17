@@ -19,7 +19,10 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +41,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class MilitaryServiceImpl extends AbstractService implements IMilitaryService {
+    /** Province DAO. */
+    @Autowired
+    private IProvinceDao provinceDao;
     @Autowired
     private IOEUtil oeUtil;
 
@@ -474,5 +480,86 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         response.setMessages(getMessagesSince(request));
 
         return response;
+    }
+
+    private void fillBattleModifiers(BattleEntity battle, boolean phasing) {
+        List<CounterEntity> countersPhasing = battle.getCounters().stream()
+                .filter(BattleCounterEntity::isPhasing)
+                .map(BattleCounterEntity::getCounter)
+                .collect(Collectors.toList());
+        List<CounterEntity> countersNotPhasing = battle.getCounters().stream()
+                .filter(bc -> !bc.isPhasing())
+                .map(BattleCounterEntity::getCounter)
+                .collect(Collectors.toList());
+
+        battle.getPhasing().setSize(countersPhasing.stream()
+                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getType()))));
+        battle.getNonPhasing().setSize(countersNotPhasing.stream()
+                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getType()))));
+
+        String techPhasing = oeUtil.getTechnology(countersPhasing,
+                true, getReferential(), getTables(), battle.getGame());
+        battle.getPhasing().setTech(techPhasing);
+
+        String techNotPhasing = oeUtil.getTechnology(countersNotPhasing,
+                true, getReferential(), getTables(), battle.getGame());
+        battle.getNonPhasing().setTech(techNotPhasing);
+
+        // Second day, everyone -1
+        battle.getPhasing().getSecondDay().add(-1, -1, 0);
+        battle.getNonPhasing().getSecondDay().add(-1, -1, 0);
+
+        // TODO tercios
+
+        // TODO foraging
+
+        // Terrain
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
+        switch (province.getTerrain()) {
+            case DENSE_FOREST:
+            case SPARSE_FOREST:
+            case DESERT:
+            case SWAMP:
+                battle.getPhasing().getFirstDay().add(-1, -1, -1);
+                battle.getNonPhasing().getFirstDay().add(-1, -1, -1);
+                battle.getPhasing().getSecondDay().add(-1, -1, -1);
+                battle.getNonPhasing().getSecondDay().add(-1, -1, -1);
+                break;
+            case MOUNTAIN:
+                battle.getPhasing().getFirstDay().add(-1, -1, -1);
+                battle.getNonPhasing().getFirstDay().add(0, 0, -1);
+                battle.getPhasing().getSecondDay().add(-1, -1, -1);
+                battle.getNonPhasing().getSecondDay().add(0, 0, -1);
+                break;
+            case PLAIN:
+            default:
+                break;
+        }
+
+        // TODO river/straits
+
+        List<ArmyInfo> armyPhasing = oeUtil.getArmyInfo(countersPhasing, getReferential());
+        List<ArmyInfo> armyNotPhasing = oeUtil.getArmyInfo(countersNotPhasing, getReferential());
+        int bonusArtilleryPhasing = oeUtil.getArtilleryBonus(armyPhasing, getTables(), battle.getGame());
+        int bonusArtilleryNotPhasing = oeUtil.getArtilleryBonus(armyNotPhasing, getTables(), battle.getGame());
+        if (bonusArtilleryPhasing >= 6) {
+            battle.getPhasing().getFirstDay().add(1, 0, 0);
+            battle.getPhasing().getSecondDay().add(1, 0, 0);
+        }
+        if (bonusArtilleryNotPhasing >= 6) {
+            battle.getNonPhasing().getFirstDay().add(1, 0, 0);
+            battle.getNonPhasing().getSecondDay().add(1, 0, 0);
+        }
+
+        if (battle.getPhasing().getSize() >= battle.getNonPhasing().getSize() + 3 ||
+                oeUtil.getCavalryBonus(armyPhasing, province.getTerrain(), getTables(), battle.getGame())) {
+            battle.getPhasing().getFirstDay().add(0, 1, 0);
+            battle.getPhasing().getSecondDay().add(0, 1, 0);
+        }
+        if (battle.getNonPhasing().getSize() >= battle.getPhasing().getSize() + 3 ||
+                oeUtil.getCavalryBonus(armyNotPhasing, province.getTerrain(), getTables(), battle.getGame())) {
+            battle.getNonPhasing().getFirstDay().add(0, 1, 0);
+            battle.getNonPhasing().getSecondDay().add(0, 1, 0);
+        }
     }
 }

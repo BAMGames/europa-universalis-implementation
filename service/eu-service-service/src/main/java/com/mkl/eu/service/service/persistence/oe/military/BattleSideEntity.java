@@ -11,6 +11,8 @@ import javax.persistence.Embeddable;
 public class BattleSideEntity {
     /** Flag saying that the side has selected its forces. */
     private Boolean forces;
+    /** Size of the side. */
+    private Integer size;
     /** Technology of the side. */
     private String tech;
     /** First day modifiers. */
@@ -26,6 +28,16 @@ public class BattleSideEntity {
     /** @param forces the forces to set. */
     public void setForces(Boolean forces) {
         this.forces = forces;
+    }
+
+    /** @return the size. */
+    public Integer getSize() {
+        return size;
+    }
+
+    /** @param size the size to set. */
+    public void setSize(Integer size) {
+        this.size = size;
     }
 
     /** @return the tech. */
