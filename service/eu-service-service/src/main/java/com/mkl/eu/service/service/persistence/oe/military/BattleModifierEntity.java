@@ -33,6 +33,19 @@ public class BattleModifierEntity {
     }
 
     /**
+     * Clear all the modifiers.
+     *
+     * @return the current instance.
+     */
+    public BattleModifierEntity clear() {
+        this.fire = 0;
+        this.shock = 0;
+        this.pursuit = 0;
+
+        return this;
+    }
+
+    /**
      * Add another battle modifier to the current one.
      *
      * @param fire    modifier.
@@ -46,6 +59,56 @@ public class BattleModifierEntity {
         this.pursuit += pursuit;
 
         return this;
+    }
+
+    /**
+     * Add fire modifier to the current one.
+     *
+     * @param fire modifier.
+     * @return the current instance.
+     */
+    public BattleModifierEntity addFire(int fire) {
+        return add(fire, 0, 0);
+    }
+
+    /**
+     * Add shock modifier to the current one.
+     *
+     * @param shock modifier.
+     * @return the current instance.
+     */
+    public BattleModifierEntity addShock(int shock) {
+        return add(0, shock, 0);
+    }
+
+    /**
+     * Add pursuit modifier to the current one.
+     *
+     * @param pursuit modifier.
+     * @return the current instance.
+     */
+    public BattleModifierEntity addPursuit(int pursuit) {
+        return add(0, 0, pursuit);
+    }
+
+    /**
+     * Add the same value to all modifiers (fire, shock, pursuit).
+     *
+     * @param all value of the modifier.
+     * @return the current isntance.
+     */
+    public BattleModifierEntity addAll(int all) {
+        return add(all, all, all);
+    }
+
+    /**
+     * Add the same value to fire and shock modifiers.
+     *
+     * @param fireShock value of the modifier.
+     * @return the current instance.
+     */
+    public BattleModifierEntity addFireAndShock(int fireShock) {
+        return add(fireShock, fireShock, 0);
     }
 
     /** @return the fire. */

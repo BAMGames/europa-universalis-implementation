@@ -1,4 +1,4 @@
-package com.mkl.eu.service.service.service;
+package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
@@ -7,8 +7,10 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -17,7 +19,10 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
-import com.mkl.eu.service.service.service.impl.MilitaryServiceImpl;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.AbstractGameServiceTest;
+import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -25,12 +30,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test of MilitaryService.
@@ -44,6 +50,9 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private IOEUtil oeUtil;
+
+    @Mock
+    private IProvinceDao provinceDao;
 
     @Test
     public void testChooseBattleFail() {
@@ -176,8 +185,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             allies.add("turquie");
             enemies.add("angleterre");
         }
-        Mockito.when(oeUtil.getAllies(game.getCountries().get(0), game)).thenReturn(allies);
-        Mockito.when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(enemies);
+        when(oeUtil.getAllies(game.getCountries().get(0), game)).thenReturn(allies);
+        when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(enemies);
 
         simulateDiff();
 
@@ -303,7 +312,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForce.request.idCounter", e.getParams()[0]);
         }
 
-        Mockito.when(oeUtil.getAllies(null, game)).thenReturn(Collections.singletonList("france"));
+        when(oeUtil.getAllies(null, game)).thenReturn(Collections.singletonList("france"));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setProvince("pecs");
         game.getStacks().get(0).setCountry("france");
@@ -410,7 +419,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setIdCounter(6L);
         request.getRequest().setAdd(add);
 
-        Mockito.when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
+        when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
 
         if (!add) {
             BattleCounterEntity battleCounter = new BattleCounterEntity();
@@ -550,7 +559,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
         game.getStacks().get(0).getCounters().add(counter);
 
-        Mockito.when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
+        when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
 
         try {
             militaryService.validateForces(request);
@@ -645,7 +654,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
         game.getStacks().get(0).getCounters().add(counter);
 
-        Mockito.when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
+        when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
 
         if (phasing) {
             CountryOrderEntity order = new CountryOrderEntity();
@@ -687,5 +696,238 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+    }
+
+    @Test
+    public void testFillBattleModifiers() {
+        BattleEntity battle = new BattleEntity();
+
+        BattleCounterEntity battleCounter = new BattleCounterEntity();
+        battleCounter.setPhasing(true);
+        CounterEntity phasingCounter = new CounterEntity();
+        phasingCounter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        phasingCounter.setCountry(PlayableCountry.FRANCE);
+        battleCounter.setCounter(phasingCounter);
+        battle.getCounters().add(battleCounter);
+        battleCounter = new BattleCounterEntity();
+        battleCounter.setPhasing(false);
+        CounterEntity nonPhasingCounter = new CounterEntity();
+        nonPhasingCounter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        nonPhasingCounter.setCountry(PlayableCountry.SPAIN);
+        battleCounter.setCounter(nonPhasingCounter);
+        battle.getCounters().add(battleCounter);
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setTerrain(TerrainEnum.PLAIN);
+        EuropeanProvinceEntity morbihan = new EuropeanProvinceEntity();
+        morbihan.setTerrain(TerrainEnum.DENSE_FOREST);
+        EuropeanProvinceEntity lyonnais = new EuropeanProvinceEntity();
+        lyonnais.setTerrain(TerrainEnum.SPARSE_FOREST);
+        EuropeanProvinceEntity limoges = new EuropeanProvinceEntity();
+        limoges.setTerrain(TerrainEnum.DESERT);
+        EuropeanProvinceEntity neva = new EuropeanProvinceEntity();
+        neva.setTerrain(TerrainEnum.SWAMP);
+        EuropeanProvinceEntity tyrol = new EuropeanProvinceEntity();
+        tyrol.setTerrain(TerrainEnum.MOUNTAIN);
+
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(provinceDao.getProvinceByName("morbihan")).thenReturn(morbihan);
+        when(provinceDao.getProvinceByName("lyonnais")).thenReturn(lyonnais);
+        when(provinceDao.getProvinceByName("limoges")).thenReturn(limoges);
+        when(provinceDao.getProvinceByName("neva")).thenReturn(neva);
+        when(provinceDao.getProvinceByName("tyrol")).thenReturn(tyrol);
+
+        when(oeUtil.getTechnology(Collections.singletonList(phasingCounter), true, militaryService.getReferential(), militaryService.getTables(), battle.getGame()))
+                .thenReturn(Tech.ARQUEBUS);
+        when(oeUtil.getTechnology(Collections.singletonList(nonPhasingCounter), true, militaryService.getReferential(), militaryService.getTables(), battle.getGame()))
+                .thenReturn(Tech.RENAISSANCE);
+        List<ArmyInfo> armyPhasing = new ArrayList<>();
+        armyPhasing.add(new ArmyInfo());
+        armyPhasing.get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        armyPhasing.get(0).setCountry(PlayableCountry.FRANCE);
+        armyPhasing.get(0).setArmyClass(ArmyClassEnum.IVM);
+        List<ArmyInfo> armyNonPhasing = new ArrayList<>();
+        armyNonPhasing.add(new ArmyInfo());
+        armyNonPhasing.get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        armyNonPhasing.get(0).setCountry(PlayableCountry.SPAIN);
+        armyNonPhasing.get(0).setArmyClass(ArmyClassEnum.IV);
+        when(oeUtil.getArmyInfo(Collections.singletonList(phasingCounter), militaryService.getReferential())).thenReturn(armyPhasing);
+        when(oeUtil.getArmyInfo(Collections.singletonList(nonPhasingCounter), militaryService.getReferential())).thenReturn(armyNonPhasing);
+
+        battle.setProvince("idf");
+        checkModifiers(battle, Modifiers.init(0));
+        Assert.assertEquals(Tech.ARQUEBUS, battle.getPhasing().getTech());
+        Assert.assertEquals(Tech.RENAISSANCE, battle.getNonPhasing().getTech());
+
+        battle.setProvince("morbihan");
+        checkModifiers(battle, Modifiers.init(-1));
+
+        battle.setProvince("lyonnais");
+        checkModifiers(battle, Modifiers.init(-1));
+
+        battle.setProvince("limoges");
+        checkModifiers(battle, Modifiers.init(-1));
+
+        battle.setProvince("neva");
+        checkModifiers(battle, Modifiers.init(-1));
+
+        battle.setProvince("tyrol");
+        checkModifiers(battle, Modifiers.init(-1)
+                .addFireNonPhasingFirstDay(1)
+                .addShockNonPhasingFirstDay(1)
+                .addFireNonPhasingSecondDay(1)
+                .addShockNonPhasingSecondDay(1));
+
+        when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(6);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(5);
+
+        battle.setProvince("idf");
+        checkModifiers(battle, Modifiers.init(0)
+                .addFirePhasingFirstDay(1)
+                .addFirePhasingSecondDay(1));
+
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(7);
+        checkModifiers(battle, Modifiers.init(0)
+                .addFirePhasingFirstDay(1)
+                .addFirePhasingSecondDay(1)
+                .addFireNonPhasingFirstDay(1)
+                .addFireNonPhasingSecondDay(1));
+
+
+        when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(0);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(1);
+        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(true);
+        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(false);
+        checkModifiers(battle, Modifiers.init(0)
+                .addShockPhasingFirstDay(1)
+                .addShockPhasingSecondDay(1));
+
+        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(false);
+        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(true);
+        checkModifiers(battle, Modifiers.init(0)
+                .addShockNonPhasingFirstDay(1)
+                .addShockNonPhasingSecondDay(1));
+
+        nonPhasingCounter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        checkModifiers(battle, Modifiers.init(0)
+                .addShockPhasingFirstDay(1)
+                .addShockPhasingSecondDay(1)
+                .addShockNonPhasingFirstDay(1)
+                .addShockNonPhasingSecondDay(1));
+
+        battle.setProvince("lyonnais");
+        when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(10);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(1);
+        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.SPARSE_FOREST, militaryService.getTables(), battle.getGame())).thenReturn(true);
+        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.SPARSE_FOREST, militaryService.getTables(), battle.getGame())).thenReturn(false);
+        checkModifiers(battle, Modifiers.init(-1)
+                .addFirePhasingFirstDay(1)
+                .addFirePhasingSecondDay(1)
+                .addShockPhasingFirstDay(1)
+                .addShockPhasingSecondDay(1));
+    }
+
+    private void checkModifiers(BattleEntity battle, Modifiers modifiers) {
+        militaryService.fillBattleModifiers(battle);
+
+        Assert.assertEquals(modifiers.firePF, battle.getPhasing().getFirstDay().getFire());
+        Assert.assertEquals(modifiers.shockPF, battle.getPhasing().getFirstDay().getShock());
+        Assert.assertEquals(modifiers.pursuitPF, battle.getPhasing().getFirstDay().getPursuit());
+        Assert.assertEquals(modifiers.firePS, battle.getPhasing().getSecondDay().getFire());
+        Assert.assertEquals(modifiers.shockPS, battle.getPhasing().getSecondDay().getShock());
+        Assert.assertEquals(modifiers.pursuitPS, battle.getPhasing().getSecondDay().getPursuit());
+
+        Assert.assertEquals(modifiers.fireNPF, battle.getNonPhasing().getFirstDay().getFire());
+        Assert.assertEquals(modifiers.shockNPF, battle.getNonPhasing().getFirstDay().getShock());
+        Assert.assertEquals(modifiers.pursuitNPF, battle.getNonPhasing().getFirstDay().getPursuit());
+        Assert.assertEquals(modifiers.fireNPS, battle.getNonPhasing().getSecondDay().getFire());
+        Assert.assertEquals(modifiers.shockNPS, battle.getNonPhasing().getSecondDay().getShock());
+        Assert.assertEquals(modifiers.pursuitNPS, battle.getNonPhasing().getSecondDay().getPursuit());
+    }
+
+    private static class Modifiers {
+        /** Modifiers Phasing First day. */
+        private int firePF;
+        private int shockPF;
+        private int pursuitPF;
+        /** Modifiers Phasing Second day. */
+        private int firePS;
+        private int shockPS;
+        private int pursuitPS;
+        /** Modifiers Non Phasing First day. */
+        private int fireNPF;
+        private int shockNPF;
+        private int pursuitNPF;
+        /** Modifiers Non Phasing Second day. */
+        private int fireNPS;
+        private int shockNPS;
+        private int pursuitNPS;
+
+        static Modifiers init(int init) {
+            Modifiers modifiers = new Modifiers();
+
+            modifiers.firePF = init;
+            modifiers.shockPF = init;
+            modifiers.pursuitPF = init;
+            modifiers.firePS = init - 1;
+            modifiers.shockPS = init - 1;
+            modifiers.pursuitPS = init;
+            modifiers.fireNPF = init;
+            modifiers.shockNPF = init;
+            modifiers.pursuitNPF = init;
+            modifiers.fireNPS = init - 1;
+            modifiers.shockNPS = init - 1;
+            modifiers.pursuitNPS = init;
+
+            return modifiers;
+        }
+
+        Modifiers addFirePhasingFirstDay(int firePF) {
+            this.firePF += firePF;
+
+            return this;
+        }
+
+        Modifiers addShockPhasingFirstDay(int shockPF) {
+            this.shockPF += shockPF;
+
+            return this;
+        }
+
+        Modifiers addFirePhasingSecondDay(int firePS) {
+            this.firePS += firePS;
+
+            return this;
+        }
+
+        Modifiers addShockPhasingSecondDay(int shockPS) {
+            this.shockPS += shockPS;
+
+            return this;
+        }
+
+        Modifiers addFireNonPhasingFirstDay(int fireNPF) {
+            this.fireNPF += fireNPF;
+
+            return this;
+        }
+
+        Modifiers addShockNonPhasingFirstDay(int shockNPF) {
+            this.shockNPF += shockNPF;
+
+            return this;
+        }
+
+        Modifiers addFireNonPhasingSecondDay(int fireNPS) {
+            this.fireNPS += fireNPS;
+
+            return this;
+        }
+
+        Modifiers addShockNonPhasingSecondDay(int shockNPS) {
+            this.shockNPS += shockNPS;
+
+            return this;
+        }
     }
 }

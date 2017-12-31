@@ -482,7 +482,12 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         return response;
     }
 
-    private void fillBattleModifiers(BattleEntity battle, boolean phasing) {
+    protected void fillBattleModifiers(BattleEntity battle) {
+        battle.getPhasing().getFirstDay().clear();
+        battle.getPhasing().getSecondDay().clear();
+        battle.getNonPhasing().getFirstDay().clear();
+        battle.getNonPhasing().getSecondDay().clear();
+
         List<CounterEntity> countersPhasing = battle.getCounters().stream()
                 .filter(BattleCounterEntity::isPhasing)
                 .map(BattleCounterEntity::getCounter)
@@ -506,8 +511,8 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         battle.getNonPhasing().setTech(techNotPhasing);
 
         // Second day, everyone -1
-        battle.getPhasing().getSecondDay().add(-1, -1, 0);
-        battle.getNonPhasing().getSecondDay().add(-1, -1, 0);
+        battle.getPhasing().getSecondDay().addFireAndShock(-1);
+        battle.getNonPhasing().getSecondDay().addFireAndShock(-1);
 
         // TODO tercios
 
@@ -520,16 +525,16 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             case SPARSE_FOREST:
             case DESERT:
             case SWAMP:
-                battle.getPhasing().getFirstDay().add(-1, -1, -1);
-                battle.getNonPhasing().getFirstDay().add(-1, -1, -1);
-                battle.getPhasing().getSecondDay().add(-1, -1, -1);
-                battle.getNonPhasing().getSecondDay().add(-1, -1, -1);
+                battle.getPhasing().getFirstDay().addAll(-1);
+                battle.getNonPhasing().getFirstDay().addAll(-1);
+                battle.getPhasing().getSecondDay().addAll(-1);
+                battle.getNonPhasing().getSecondDay().addAll(-1);
                 break;
             case MOUNTAIN:
-                battle.getPhasing().getFirstDay().add(-1, -1, -1);
-                battle.getNonPhasing().getFirstDay().add(0, 0, -1);
-                battle.getPhasing().getSecondDay().add(-1, -1, -1);
-                battle.getNonPhasing().getSecondDay().add(0, 0, -1);
+                battle.getPhasing().getFirstDay().addAll(-1);
+                battle.getNonPhasing().getFirstDay().addPursuit(-1);
+                battle.getPhasing().getSecondDay().addAll(-1);
+                battle.getNonPhasing().getSecondDay().addPursuit(-1);
                 break;
             case PLAIN:
             default:
@@ -543,23 +548,23 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         int bonusArtilleryPhasing = oeUtil.getArtilleryBonus(armyPhasing, getTables(), battle.getGame());
         int bonusArtilleryNotPhasing = oeUtil.getArtilleryBonus(armyNotPhasing, getTables(), battle.getGame());
         if (bonusArtilleryPhasing >= 6) {
-            battle.getPhasing().getFirstDay().add(1, 0, 0);
-            battle.getPhasing().getSecondDay().add(1, 0, 0);
+            battle.getPhasing().getFirstDay().addFire(1);
+            battle.getPhasing().getSecondDay().addFire(1);
         }
         if (bonusArtilleryNotPhasing >= 6) {
-            battle.getNonPhasing().getFirstDay().add(1, 0, 0);
-            battle.getNonPhasing().getSecondDay().add(1, 0, 0);
+            battle.getNonPhasing().getFirstDay().addFire(1);
+            battle.getNonPhasing().getSecondDay().addFire(1);
         }
 
         if (battle.getPhasing().getSize() >= battle.getNonPhasing().getSize() + 3 ||
                 oeUtil.getCavalryBonus(armyPhasing, province.getTerrain(), getTables(), battle.getGame())) {
-            battle.getPhasing().getFirstDay().add(0, 1, 0);
-            battle.getPhasing().getSecondDay().add(0, 1, 0);
+            battle.getPhasing().getFirstDay().addShock(1);
+            battle.getPhasing().getSecondDay().addShock(1);
         }
         if (battle.getNonPhasing().getSize() >= battle.getPhasing().getSize() + 3 ||
                 oeUtil.getCavalryBonus(armyNotPhasing, province.getTerrain(), getTables(), battle.getGame())) {
-            battle.getNonPhasing().getFirstDay().add(0, 1, 0);
-            battle.getNonPhasing().getSecondDay().add(0, 1, 0);
+            battle.getNonPhasing().getFirstDay().addShock(1);
+            battle.getNonPhasing().getSecondDay().addShock(1);
         }
     }
 }
