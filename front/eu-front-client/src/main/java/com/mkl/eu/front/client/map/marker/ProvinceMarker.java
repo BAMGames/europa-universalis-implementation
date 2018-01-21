@@ -163,7 +163,9 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
 
                 pg.pushStyle();
                 boolean borderColored = false;
-                if (stacks.get(i).getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
+                if (stacks.get(i).getStack().getMovePhase() == null) {
+
+                } else if (stacks.get(i).getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
                     pg.stroke(0, 255, 0);
                     borderColored = true;
 
