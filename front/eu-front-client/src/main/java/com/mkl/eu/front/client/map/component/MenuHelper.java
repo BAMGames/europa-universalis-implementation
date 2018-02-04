@@ -6,9 +6,12 @@ import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.board.CounterForCreation;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.CountryTypeEnum;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListenerContainer;
@@ -26,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +64,8 @@ public final class MenuHelper {
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage(province.getId(), null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
+        menu.addAllMenuItems(createAdminMenu(province, gameAdminService, container));
+
         ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.province.neighbors", null, container.getGlobalConfiguration().getLocale()));
         for (final BorderMarker border : province.getNeighbours()) {
             StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
@@ -68,9 +75,6 @@ public final class MenuHelper {
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A+", event -> createStack(CounterFaceTypeEnum.ARMY_PLUS, province, container.getGameConfig(), gameAdminService, container)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add A-", event -> createStack(CounterFaceTypeEnum.ARMY_MINUS, province, container.getGameConfig(), gameAdminService, container)));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem("Add D", event -> createStack(CounterFaceTypeEnum.LAND_DETACHMENT, province, container.getGameConfig(), gameAdminService, container)));
         ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
         ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
         subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
@@ -89,6 +93,58 @@ public final class MenuHelper {
         return menu;
     }
 
+    private static List<ContextualMenuItem> createAdminMenu(IMapMarker province, IGameAdminService gameAdminService, IMenuContainer container) {
+        List<ContextualMenuItem> menus = new ArrayList<>();
+        ContextualMenu admin = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.admin", null, container.getGlobalConfiguration().getLocale()));
+        Map<CountryTypeEnum, ContextualMenu> countryMenus = new HashMap<>();
+        for (CountryReferential country : container.getGlobalConfiguration().getReferential().getCountries()) {
+            ContextualMenu countryTypeMenu = countryMenus.get(country.getType());
+            if (countryTypeMenu == null) {
+                countryTypeMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage(country.getType().name(), null, container.getGlobalConfiguration().getLocale()));
+                admin.addMenuItem(countryTypeMenu);
+                countryMenus.put(country.getType(), countryTypeMenu);
+            }
+            ContextualMenu countryMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage(country.getName(), null, container.getGlobalConfiguration().getLocale()));
+            countryTypeMenu.addMenuItem(countryMenu);
+            ContextualMenu landMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Land army", null, container.getGlobalConfiguration().getLocale()));
+            countryMenu.addMenuItem(landMenu);
+            ContextualMenu navalMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Naval army", null, container.getGlobalConfiguration().getLocale()));
+            countryMenu.addMenuItem(navalMenu);
+            ContextualMenu ecoMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Economic", null, container.getGlobalConfiguration().getLocale()));
+            countryMenu.addMenuItem(ecoMenu);
+            ContextualMenu warMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("War", null, container.getGlobalConfiguration().getLocale()));
+            countryMenu.addMenuItem(warMenu);
+            ContextualMenu diploMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Diplomacy", null, container.getGlobalConfiguration().getLocale()));
+            countryMenu.addMenuItem(diploMenu);
+            ContextualMenu trashMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Others", null, container.getGlobalConfiguration().getLocale()));
+            countryMenu.addMenuItem(trashMenu);
+
+            for (CounterFaceTypeEnum counter : CounterFaceTypeEnum.values()) {
+                ContextualMenu menu;
+
+                if (CounterUtil.isLandArmy(counter)) {
+                    menu = landMenu;
+                } else if (CounterUtil.isNavalArmy(counter)) {
+                    menu = navalMenu;
+                } else if (CounterUtil.isManufacture(counter) || CounterUtil.isTradingFleet(counter)) {
+                    menu = ecoMenu;
+                } else if (counter == CounterFaceTypeEnum.OWN || counter == CounterFaceTypeEnum.CONTROL) {
+                    menu = warMenu;
+                } else if (counter == CounterFaceTypeEnum.DIPLOMACY || counter == CounterFaceTypeEnum.DIPLOMACY_WAR) {
+                    menu = diploMenu;
+                } else {
+                    menu = trashMenu;
+                }
+
+                menu.addMenuItem(ContextualMenuItem.createMenuItem(counter.toString(), event -> createStack(counter, country.getName(), province, container.getGameConfig(), gameAdminService, container)));
+            }
+        }
+
+        menus.add(admin);
+        menus.add(ContextualMenuItem.createMenuSeparator());
+        return menus;
+    }
+
     /**
      * Creates a French stack of one counter on the province.
      *
@@ -98,10 +154,10 @@ public final class MenuHelper {
      * @param gameAdminService service for game administration.
      * @param container        container to call back when services are called.
      */
-    private static void createStack(CounterFaceTypeEnum type, IMapMarker province, GameConfiguration gameConfig,
+    private static void createStack(CounterFaceTypeEnum type, String country, IMapMarker province, GameConfiguration gameConfig,
                                     IGameAdminService gameAdminService, IDiffListenerContainer container) {
         CounterForCreation counter = new CounterForCreation();
-        counter.setCountry("france");
+        counter.setCountry(country);
         counter.setType(type);
         Long idGame = gameConfig.getIdGame();
         try {
