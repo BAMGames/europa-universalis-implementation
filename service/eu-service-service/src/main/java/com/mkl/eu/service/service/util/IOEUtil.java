@@ -220,4 +220,14 @@ public interface IOEUtil {
      * @return <code>true</code> if the stack has a cavalry bonus in this terrain and turn.
      */
     boolean getCavalryBonus(List<ArmyInfo> counters, TerrainEnum terrain, Tables tables, GameEntity game);
+
+    /**
+     * @param province   to retreat.
+     * @param inFortress to know if the stack will hide in fortress.
+     * @param stackSize  size of the stack in case of hiding in the fortress.
+     * @param country    doing the retreat.
+     * @param game       the game.
+     * @return <code>true</code> if the country can retreat in the province.
+     */
+    boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, int stackSize, PlayableCountryEntity country, GameEntity game);
 }

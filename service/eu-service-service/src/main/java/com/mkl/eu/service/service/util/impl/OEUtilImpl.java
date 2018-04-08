@@ -847,4 +847,28 @@ public final class OEUtilImpl implements IOEUtil {
                 army.getType() == CounterFaceTypeEnum.ARMY_PLUS ||
                 army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_PLUS;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, int stackSize, PlayableCountryEntity country, GameEntity game) {
+        String controller = getController(province, game);
+        List<String> allies = getAllies(country, game);
+        boolean canRetreat = allies.contains(controller);
+
+        if (canRetreat) {
+            List<String> enemies = getEnemies(country, game);
+            List<StackEntity> stacks = getStacksOnProvince(game, province.getName());
+            if (inFortress) {
+                int fortressLevel = getFortressLevel(province, game);
+                canRetreat = stackSize <= fortressLevel;
+            } else {
+                canRetreat = !stacks.stream()
+                        .anyMatch(s -> !s.isBesieged() && enemies.contains(s.getCountry()) && isMobile(s));
+            }
+        }
+
+        return canRetreat;
+    }
 }

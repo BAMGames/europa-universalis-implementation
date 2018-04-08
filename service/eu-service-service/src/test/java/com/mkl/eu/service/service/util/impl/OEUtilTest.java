@@ -1524,5 +1524,69 @@ public class OEUtilTest {
         return type;
     }
 
+    @Test
+    public void testCanRetreat() {
+        GameEntity game = new GameEntity();
+        EuropeanProvinceEntity province = new EuropeanProvinceEntity();
+        province.setName("idf");
+        province.setFortress(3);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity espagne = new PlayableCountryEntity();
+        espagne.setName("espagne");
+        game.getCountries().add(espagne);
 
+        Assert.assertFalse(oeUtil.canRetreat(province, false, 2, france, game));
+
+        WarEntity war = new WarEntity();
+        war.setType(WarTypeEnum.CLASSIC_WAR);
+        CountryInWarEntity countryWar = new CountryInWarEntity();
+        countryWar.setWar(war);
+        countryWar.setOffensive(true);
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName(france.getName());
+        war.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setWar(war);
+        countryWar.setOffensive(false);
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName(espagne.getName());
+        war.getCountries().add(countryWar);
+        game.getWars().add(war);
+
+        province.setDefaultOwner("suisse");
+
+        Assert.assertFalse(oeUtil.canRetreat(province, false, 2, france, game));
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince(province.getName());
+        stack.setCountry(espagne.getName());
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.OWN, espagne.getName()));
+        game.getStacks().add(stack);
+
+        Assert.assertFalse(oeUtil.canRetreat(province, false, 2, france, game));
+
+        stack = new StackEntity();
+        stack.setProvince(province.getName());
+        stack.setCountry(france.getName());
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.CONTROL, france.getName()));
+        game.getStacks().add(stack);
+
+        Assert.assertTrue(oeUtil.canRetreat(province, false, 2, france, game));
+
+        stack = new StackEntity();
+        stack.setProvince(province.getName());
+        stack.setCountry(espagne.getName());
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS, espagne.getName()));
+        game.getStacks().add(stack);
+
+        Assert.assertFalse(oeUtil.canRetreat(province, false, 2, france, game));
+
+        Assert.assertTrue(oeUtil.canRetreat(province, true, 2, france, game));
+
+        Assert.assertFalse(oeUtil.canRetreat(province, true, 4, france, game));
+    }
 }
