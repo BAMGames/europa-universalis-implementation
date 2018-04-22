@@ -155,4 +155,111 @@ public class CommonUtilTest {
         Assert.assertEquals(8, map.get("one").intValue());
         Assert.assertEquals(2, map.get("two").intValue());
     }
+
+    @Test
+    public void testAddSubtractOneLong() {
+        Map<String, Long> map = new HashMap<>();
+
+        CommonUtil.addOneLong(null, null);
+        CommonUtil.addOneLong(null, "one");
+
+        map.put("one", 1l);
+        map.put("two", 2l);
+        map.put("three", 3l);
+        map.put("four", 4l);
+
+        CommonUtil.addOneLong(map, "one");
+
+        Assert.assertEquals(4, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(4, map.get("four").intValue());
+
+        CommonUtil.addOneLong(map, "four");
+
+        Assert.assertEquals(4, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(5, map.get("four").intValue());
+
+        CommonUtil.addOneLong(map, "five");
+
+        Assert.assertEquals(5, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(5, map.get("four").intValue());
+        Assert.assertEquals(1, map.get("five").intValue());
+
+        CommonUtil.addOneLong(map, null);
+
+        Assert.assertEquals(6, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(5, map.get("four").intValue());
+        Assert.assertEquals(1, map.get("five").intValue());
+        Assert.assertEquals(1, map.get(null).intValue());
+
+        CommonUtil.subtractOneLong(null, null);
+        CommonUtil.subtractOneLong(null, "one");
+        CommonUtil.subtractOneLong(map, null);
+
+        Assert.assertEquals(5, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(5, map.get("four").intValue());
+        Assert.assertEquals(1, map.get("five").intValue());
+
+        CommonUtil.subtractOneLong(map, "two");
+
+        Assert.assertEquals(5, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(1, map.get("two").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(5, map.get("four").intValue());
+        Assert.assertEquals(1, map.get("five").intValue());
+
+        CommonUtil.subtractOneLong(map, "two");
+
+        Assert.assertEquals(4, map.size());
+        Assert.assertEquals(2, map.get("one").intValue());
+        Assert.assertEquals(3, map.get("three").intValue());
+        Assert.assertEquals(5, map.get("four").intValue());
+        Assert.assertEquals(1, map.get("five").intValue());
+
+        map = new HashMap<>();
+        CommonUtil.addLong(map, "one", 5l);
+
+        Assert.assertEquals(1, map.size());
+        Assert.assertEquals(5, map.get("one").intValue());
+
+        CommonUtil.addLong(map, "one", 3l);
+
+        Assert.assertEquals(1, map.size());
+        Assert.assertEquals(8, map.get("one").intValue());
+
+        CommonUtil.addLong(map, "two", 2l);
+
+        Assert.assertEquals(2, map.size());
+        Assert.assertEquals(8, map.get("one").intValue());
+        Assert.assertEquals(2, map.get("two").intValue());
+    }
+
+    public void testIntegers() {
+        Assert.assertEquals(0, CommonUtil.toInt(null));
+        Assert.assertEquals(1, CommonUtil.toInt(new Integer("1")));
+        Assert.assertEquals(1, CommonUtil.toInt(1));
+
+        Assert.assertEquals(0, CommonUtil.subtract(null));
+        Assert.assertEquals(0, CommonUtil.subtract(null, 3));
+        Assert.assertEquals(0, CommonUtil.subtract(null, 3, null));
+        Assert.assertEquals(0, CommonUtil.subtract(null, 3, null, 4));
+        Assert.assertEquals(2, CommonUtil.subtract(5, 3));
+        Assert.assertEquals(2, CommonUtil.subtract(5, 3, null));
+        Assert.assertEquals(0, CommonUtil.subtract(null, 3, null, 4));
+    }
 }

@@ -739,4 +739,14 @@ public class CounterUtilTest {
         Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_TRANSPORT));
         Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
     }
+
+    @Test
+    public void testExploration() {
+        Assert.assertEquals(false, CounterUtil.isExploration(null));
+        Assert.assertEquals(false, CounterUtil.isExploration(CounterFaceTypeEnum.FORTRESS_1));
+
+        Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+    }
 }

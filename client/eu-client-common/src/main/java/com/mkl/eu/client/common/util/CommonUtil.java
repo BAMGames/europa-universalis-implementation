@@ -162,4 +162,98 @@ public final class CommonUtil {
             }
         }
     }
+
+    /**
+     * Increment a Map of K->Long for a given key.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param <K> the class of the key.
+     */
+    public static <K> void addOneLong(Map<K, Long> map, K key) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) + 1);
+            } else {
+                map.put(key, 1l);
+            }
+        }
+    }
+
+    /**
+     * Add a value to a specific key in a Map of K->Long.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param add the value to add.
+     * @param <K> the class of the key.
+     */
+    public static <K> void addLong(Map<K, Long> map, K key, Long add) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) + add);
+            } else {
+                map.put(key, add);
+            }
+        }
+    }
+
+    /**
+     * Decrement a Map of K->Long for a given key.
+     * If the value is 0, removes the key.
+     * If the key doesn't exist, does nothing.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param <K> the class of the key.
+     */
+    public static <K> void subtractOneLong(Map<K, Long> map, K key) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) - 1);
+                if (map.get(key) == 0) {
+                    map.remove(key);
+                }
+            }
+        }
+    }
+
+    /**
+     * Subtract the values to the origin. Result cannot be negative (will return <code>0</code>).
+     *
+     * @param origin beginning value.
+     * @param values to subtract.
+     * @return the subtraction.
+     */
+    public static int subtract(Integer origin, Integer... values) {
+        int returnValue = toInt(origin);
+
+        if (values != null) {
+            for (Integer value : values) {
+                returnValue -= toInt(value);
+            }
+        }
+
+        if (returnValue < 0) {
+            returnValue = 0;
+        }
+
+        return returnValue;
+    }
+
+    /**
+     * Transform an Integer to an int (<code>null</code> will be transformed to <code>0</code>).
+     *
+     * @param i the Integer.
+     * @return the int.
+     */
+    public static int toInt(Integer i) {
+        int returnValue = 0;
+
+        if (i != null) {
+            returnValue = i;
+        }
+
+        return returnValue;
+    }
 }

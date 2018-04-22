@@ -531,6 +531,8 @@ public class MaintenanceUtilTest {
 
         Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(50, null, 12, null));
 
+        Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(50, null, 12, 2));
+
         Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(0, 5, 12, null));
 
         Assert.assertEquals(12, MaintenanceUtil.getPurchasePrice(0, 5, 12, 1));
@@ -550,6 +552,9 @@ public class MaintenanceUtilTest {
         Assert.assertEquals(47, MaintenanceUtil.getPurchasePrice(1, 2, 23, 4));
 
         Assert.assertEquals(45, MaintenanceUtil.getPurchasePrice(1, 2, 22, 4));
+
+        // Will never happen functionally but wanted to test the trampoline pattern
+        Assert.assertEquals(5020, MaintenanceUtil.getPurchasePrice(20, 1, 1, 5000));
     }
 
     @Test

@@ -9,9 +9,13 @@ import com.mkl.eu.client.service.vo.tables.Tech;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 /**
  * Utility to compute maintenance.
@@ -44,79 +48,369 @@ public final class MaintenanceUtil {
      * @return the total maintenance fee.
      */
     public static int computeUnitMaintenance(Map<CounterFaceTypeEnum, Long> forces, List<? extends IBasicForce> basicForces, List<? extends IUnit> units) {
-        int total = 0;
+        if (forces == null || units == null) {
+            return 0;
+        }
 
-        if (forces != null && units != null) {
-            Map<CounterFaceTypeEnum, Long> forcesLeft = new HashMap<>(forces);
+        Map<CounterFaceTypeEnum, Long> forcesLeft = new HashMap<>(forces);
 
 
-            Map<String, Double> maintenance = new HashMap<>();
-            if (basicForces != null) {
-                for (IBasicForce basicForce : basicForces) {
-                    String type = getTypeFromForce(basicForce.getType());
-                    Double number = basicForce.getNumber() * CounterUtil.getSizeFromForce(basicForce.getType());
-                    if (!maintenance.containsKey(type)) {
-                        maintenance.put(type, number);
-                    } else {
-                        maintenance.put(type, maintenance.get(type) + number);
-                    }
-                }
-            }
+        Map<String, Double> maintenance = maintenanceFromBasicForces(basicForces);
 
-            // It is too complicated to test where the joker would be the most profitable
-            // So we just use them in naval, and if some of them are not used, they are
-            // then used in land and finally in special units.
+        // It is too complicated to test where the joker would be the most profitable
+        // So we just use them in naval, and if some of them are not used, they are
+        // then used in land and finally in special units.
 
-            Double joker = maintenance.get(JOKER);
+        Double joker = maintenance.get(JOKER);
 
-            Double remain = SubtractMaintenanceForces(CommonUtil.add(maintenance.get(NAVAL), joker),
-                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.FLEET_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.FLEET_PLUS)),
-                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.FLEET_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.FLEET_MINUS)),
-                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterFaceTypeEnum.NAVAL_GALLEY, CounterFaceTypeEnum.NAVAL_TRANSPORT}, 1, getPrice(units, CounterFaceTypeEnum.NAVAL_DETACHMENT)),
-                                      new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION}, 0.5, null),
-                                      forcesLeft);
+        Double remain = SubtractMaintenanceForces(CommonUtil.add(maintenance.get(NAVAL), joker),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.FLEET_PLUS).setSize(4).setPrice(getPrice(units, CounterFaceTypeEnum.FLEET_PLUS)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.FLEET_MINUS).setSize(2).setPrice(getPrice(units, CounterFaceTypeEnum.FLEET_MINUS)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.NAVAL_DETACHMENT).addFace(CounterFaceTypeEnum.NAVAL_GALLEY).addFace(CounterFaceTypeEnum.NAVAL_TRANSPORT)
+                        .setSize(1).setPrice(getPrice(units, CounterFaceTypeEnum.NAVAL_DETACHMENT)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION).setSize(0.5),
+                forcesLeft);
 
-            joker = CommonUtil.min(joker, remain);
+        joker = CommonUtil.min(joker, remain);
 
-            remain = SubtractMaintenanceForces(CommonUtil.add(maintenance.get(LAND), joker),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.ARMY_PLUS)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.ARMY_MINUS)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.LAND_DETACHMENT}, 1, getPrice(units, CounterFaceTypeEnum.LAND_DETACHMENT)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION}, 0.5, null),
-                    forcesLeft);
+        remain = SubtractMaintenanceForces(CommonUtil.add(maintenance.get(LAND), joker),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.ARMY_PLUS).setSize(4).setPrice(getPrice(units, CounterFaceTypeEnum.ARMY_PLUS)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.ARMY_MINUS).setSize(2).setPrice(getPrice(units, CounterFaceTypeEnum.ARMY_MINUS)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.LAND_DETACHMENT).setSize(1).setPrice(getPrice(units, CounterFaceTypeEnum.LAND_DETACHMENT)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION).setSize(0.5),
+                forcesLeft);
 
-            joker = CommonUtil.min(joker, remain);
+        joker = CommonUtil.min(joker, remain);
 
-            SubtractMaintenanceForces(CommonUtil.add(maintenance.get(TIMAR), joker),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_TIMAR_PLUS}, 4, getPrice(units, CounterFaceTypeEnum.ARMY_PLUS)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.ARMY_TIMAR_MINUS}, 2, getPrice(units, CounterFaceTypeEnum.ARMY_MINUS)),
-                    new MaintenanceInfo(new CounterFaceTypeEnum[]{CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR}, 1, getPrice(units, CounterFaceTypeEnum.LAND_DETACHMENT)),
-                    new MaintenanceInfo(null, 0.5, null),
-                    forcesLeft);
+        SubtractMaintenanceForces(CommonUtil.add(maintenance.get(TIMAR), joker),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.ARMY_TIMAR_PLUS).setSize(4).setPrice(getPrice(units, CounterFaceTypeEnum.ARMY_PLUS)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.ARMY_TIMAR_MINUS).setSize(2).setPrice(getPrice(units, CounterFaceTypeEnum.ARMY_MINUS)),
+                new MaintenanceInfo().addFace(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR).setSize(1).setPrice(getPrice(units, CounterFaceTypeEnum.LAND_DETACHMENT)),
+                new MaintenanceInfo().setSize(0.5),
+                forcesLeft);
 
-            for (CounterFaceTypeEnum face : forcesLeft.keySet()) {
-                Long number = forcesLeft.get(face);
-                if (number != null) {
-                    IUnit unit = CommonUtil.findFirst(units, iUnit -> iUnit.getType() == getForceFromFace(face));
-                    if (unit != null && unit.getPrice() != null) {
-                        total += unit.getPrice() * number;
-                    } else if (face == CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION ||
-                            face == CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK) {
-                        unit = CommonUtil.findFirst(units, iUnit -> iUnit.getType() == ForceTypeEnum.LD);
-                        if (unit != null && unit.getPrice() != null) {
-                            total += ((unit.getPrice() + 1) / 2) * number;
-                        }
-                    } else if (face == CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION) {
-                        unit = CommonUtil.findFirst(units, iUnit -> iUnit.getType() == ForceTypeEnum.ND);
-                        if (unit != null && unit.getPrice() != null) {
-                            total += ((unit.getPrice() + 1) / 2) * number;
-                        }
-                    }
+        return forcesLeft.entrySet().stream()
+                .map(entry -> {
+                    CounterFaceTypeEnum face = entry.getKey();
+                    Long number = Optional.ofNullable(entry.getValue()).orElse(0l);
+                    Integer price = Optional.ofNullable(getPrice(units, face)).orElse(0);
+
+                    return price * number;
+                })
+                .collect(Collectors.summingInt(Long::intValue));
+    }
+
+    /**
+     * @param basicForces the basic forces.
+     * @return a Map of maintenance for each type of unit given the basic forces.
+     */
+    private static Map<String, Double> maintenanceFromBasicForces(List<? extends IBasicForce> basicForces) {
+        Map<String, Double> maintenance = new HashMap<>();
+        if (basicForces != null) {
+            for (IBasicForce basicForce : basicForces) {
+                String type = getTypeFromForce(basicForce.getType());
+                Double number = basicForce.getNumber() * CounterUtil.getSizeFromForce(basicForce.getType());
+                if (!maintenance.containsKey(type)) {
+                    maintenance.put(type, number);
+                } else {
+                    maintenance.put(type, maintenance.get(type) + number);
                 }
             }
         }
+        return maintenance;
+    }
 
-        return total;
+    /**
+     * Returns the maintenance price of a face.
+     *
+     * @param units List of maintenance costs.
+     * @param face  the face.
+     * @return the maintenance price of a face.
+     */
+    private static <T extends IUnit> Integer getPrice(List<T> units, CounterFaceTypeEnum face) {
+        Function<IUnit, Integer> getPrice = unit -> CounterUtil.isExploration(face) ? (unit.getPrice() + 1) / 2 : unit.getPrice();
+        Predicate<T> isOfRightType = iUnit -> iUnit.getType() == getForceFromFace(face);
+        return units.stream()
+                .filter(isOfRightType)
+                .map(getPrice)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Subtract from the forces a type of maintenance given its faces that stand for 4, 2, 1 and a half D.
+     * For Example, the LAND type would have a faceForFour of ARMY_PLUS, a faceForTwo of ARMY_MINUS,
+     * a faceForOne of LAND_DETACHMENT and a faceForHalf of LAND_DETACHMENT_EXPLORATION.
+     *
+     * @param nbUnit      number of unit in D to subtract.
+     * @param infoForFour the info on faces that stands for a unit of size 4.
+     * @param infoForTwo  the info on faces that stands for a unit of size 2.
+     * @param infoForOne  the info on faces that stands for a unit of size 1.
+     * @param infoForHalf the info on faces that stands for a unit of size 1/2.
+     * @param forces      to manage.
+     */
+    private static Double SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Long> forces) {
+        if (nbUnit != null) {
+            // The aim is to select the most profitable way of using the basic force (nbUnit) by
+            // selecting the most expensive units.
+            int disc42 = CommonUtil.subtract(infoForFour.getPrice(), infoForTwo.getPrice());
+            int disc22 = CommonUtil.toInt(infoForTwo.getPrice());
+            int disc41 = CommonUtil.subtract(infoForFour.getPrice(), infoForTwo.getPrice(), infoForOne.getPrice());
+            int disc21 = CommonUtil.subtract(infoForTwo.getPrice(), infoForOne.getPrice());
+            int disc11 = CommonUtil.toInt(infoForOne.getPrice());
+            // The rules force to use basic force for complete counter if possible. So we first
+            // use the basic force for the larger units (size 4).
+            nbUnit = subtractMaintenanceForce(nbUnit, infoForFour, forces);
+            // After that, only 0, 1, 2 or 3 can remain in dbUnit or there are no
+            // large force (size 4) left in the forces
+            if (nbUnit >= 2 && nbUnit < 4 && disc42 > disc22) {
+                // If using 2 of basic force to partially maintain a large force (size 4)
+                // is more profitable than maintaining a medium force (size 2)
+                // then we remove a large force from the remaining forces but we add
+                // a medium force (size 2).
+                // If nbUnit is more than 4, then there are no more large force left.
+                if (subtractMaintenanceForce(infoForFour, forces)) {
+                    CommonUtil.addOneLong(forces, infoForTwo.getFaces().iterator().next());
+                    nbUnit -= infoForTwo.getSize();
+                }
+            } else if (nbUnit == 1 && disc41 > disc11 && disc41 > disc21) {
+                // If using 1 of basic force to partially maintain a large force (size 4)
+                // is more profitable than partially maintaining a medium force (size 2)
+                // or maintaining a small force (size 1)
+                // then we remove a large force from the remaining forces but
+                // we had a medium force (size 2) and a small force (size 1).
+                // If nbUnit is different than 1, we must first try to maintain
+                // fully a counter.
+                if (subtractMaintenanceForce(infoForFour, forces)) {
+                    CommonUtil.addOneLong(forces, infoForTwo.getFaces().iterator().next());
+                    CommonUtil.addOneLong(forces, infoForOne.getFaces().iterator().next());
+                    nbUnit -= infoForOne.getSize();
+                }
+            }
+            // The rules force to use basic force for complete counter if possible.
+            // So we now use basic force for medium units (size 2).
+            // Now, either nbUnit is 0 or 1, either there are no medium force (size 2)
+            // left in the forces.
+            nbUnit = subtractMaintenanceForce(nbUnit, infoForTwo, forces);
+            if (nbUnit >= 2 && disc42 > 2 * disc11) {
+                // If using 2 of basic force to partially maintain a large force (size 4)
+                // is more profitable than maintaining 2 small forces (size 1)
+                // then we remove a large force from the remaining forces but we add
+                // a medium force (size 2).
+                // We can do that because if nbUnit is more than 2, then there are
+                // no medium force (size 2) left in the forces.
+                if (subtractMaintenanceForce(infoForFour, forces)) {
+                    CommonUtil.addOneLong(forces, infoForTwo.getFaces().iterator().next());
+                    nbUnit -= infoForTwo.getSize();
+                }
+            }
+            // If using 1 of basic force to partially maintain a medium force (size 2)
+            // is more profitable than maintaining a small force (size 1)
+            // then we remove a medium force from the remaining forces but
+            // we had a small force.
+            // If nbUnit is more than 2, then there are no more medium force left.
+            if (nbUnit == 1 && disc21 > disc11) {
+                if (subtractMaintenanceForce(infoForTwo, forces)) {
+                    CommonUtil.addOneLong(forces, infoForOne.getFaces().iterator().next());
+                    nbUnit -= infoForOne.getSize();
+                }
+            }
+            // The rules force to use basic force for complete counter if possible.
+            // So we now use basic force for small units (size 1).
+            // Now, either nbUnit is 0, either there are no small force (size 1)
+            // left in the forces
+            nbUnit = subtractMaintenanceForce(nbUnit, infoForOne, forces);
+            // If it was profitable to maintain small units (size 1), then it is
+            // to maintain tiny units (size 1/2) since they have the same cost-effectiveness.
+            nbUnit = subtractMaintenanceForce(nbUnit, infoForHalf, forces);
+            if (nbUnit > 0 && !forces.isEmpty()) {
+                // if there are still large or medium forces in the remaining forces
+                // then we search the most profitable path.
+                if (disc41 > disc21) {
+                    // In the case where there are still medium and large forces left,
+                    // we test the most profitable between the two. We test for one force
+                    // because there can't be 2 basic forces and medium force left.
+                    if (subtractMaintenanceForce(infoForFour, forces)) {
+                        nbUnit -= infoForFour.getSize();
+                    } else if (subtractMaintenanceForce(infoForTwo, forces)) {
+                        nbUnit -= infoForTwo.getSize();
+                    }
+                } else {
+                    // If it was less profitable, we take the opposite path.
+                    if (subtractMaintenanceForce(infoForTwo, forces)) {
+                        nbUnit -= infoForTwo.getSize();
+                    } else if (subtractMaintenanceForce(infoForFour, forces)) {
+                        nbUnit -= infoForFour.getSize();
+                    }
+                }
+            }
+            if (nbUnit < 0) {
+                // If there was not enough basic forces to fully maintain
+                // the last unit, then we create equivalent of the remaining forces
+                // to pay for maintenance.
+                if (nbUnit <= -2) {
+                    CommonUtil.addOneLong(forces, infoForTwo.getFaces().iterator().next());
+                    nbUnit += 2;
+                }
+                if (nbUnit <= -1) {
+                    CommonUtil.addOneLong(forces, infoForOne.getFaces().iterator().next());
+                    nbUnit += 1;
+                }
+                if (nbUnit == -0.5) {
+                    CommonUtil.addOneLong(forces, infoForHalf.getFaces().iterator().next());
+                    nbUnit += 0.5;
+                }
+            }
+        } else {
+            nbUnit = 0d;
+        }
+
+        return nbUnit;
+    }
+
+    /**
+     * Subtract from the forces a particular face given a number of unit and its size.
+     *
+     * @param nbUnit number given in D.
+     * @param info   Information containing the faces to subtract from the forces, the size of the face and the price of the face.
+     * @param forces to manage.
+     * @return the remaining number of D in the maintenance.
+     */
+    private static Double subtractMaintenanceForce(Double nbUnit, MaintenanceInfo info, Map<CounterFaceTypeEnum, Long> forces) {
+        Predicate<CounterFaceTypeEnum> isFaceInForces = face -> forces.containsKey(face)
+                && forces.get(face) != null
+                && forces.get(face) > 0;
+        Function<CounterFaceTypeEnum, Stream<? extends CounterFaceTypeEnum>> multiplyFacesWithForces = face -> LongStream.range(0, forces.get(face))
+                .mapToObj(i -> face);
+        long maxUnit = (long) (nbUnit / info.getSize());
+        Function<CounterFaceTypeEnum, CounterFaceTypeEnum> subtractFromForcesAndReturnFace = face -> {
+            CommonUtil.subtractOneLong(forces, face);
+            return face;
+        };
+
+        long number = info.getFaces().stream()
+                .filter(isFaceInForces)
+                .flatMap(multiplyFacesWithForces)
+                .limit(maxUnit)
+                .map(subtractFromForcesAndReturnFace)
+                .count();
+
+        return nbUnit - number * info.getSize();
+    }
+
+    /**
+     * Subtract from the forces a particular face given a number of unit and its size.
+     *
+     * @param info   Information containing the faces to subtract from the forces, the size of the face and the price of the face.
+     * @param forces to manage.
+     * @return <code>true</code> if a force was removed.
+     */
+    private static boolean subtractMaintenanceForce(MaintenanceInfo info, Map<CounterFaceTypeEnum, Long> forces) {
+        Function<CounterFaceTypeEnum, Boolean> subtractFromForcesAndReturnTrue = face -> {
+            CommonUtil.subtractOneLong(forces, face);
+            return true;
+        };
+        return info.getFaces().stream()
+                .filter(forces::containsKey)
+                .findAny()
+                .map(subtractFromForcesAndReturnTrue)
+                .orElse(false);
+    }
+
+    /**
+     * Returns the real purchase price for a land army given the size of the already planned land purchase,
+     * the limit purchase, the normal price and the size of the unit being purchased.
+     *
+     * @param alreadyPurchasedSize size in LD of the already planned land purchase.
+     * @param maxPurchaseSize      size in LD of the limit the country can purchase land units at normal cost.
+     * @param price                normal cost of the unit being purchased.
+     * @param size                 size of the unit being purchased.
+     * @return the real purchase price.
+     */
+    public static int getPurchasePrice(Integer alreadyPurchasedSize, Integer maxPurchaseSize, Integer price, Integer size) {
+        alreadyPurchasedSize = Optional.ofNullable(alreadyPurchasedSize).orElse(0);
+        size = Optional.ofNullable(size).orElse(1);
+        maxPurchaseSize = Optional.ofNullable(maxPurchaseSize).orElse(alreadyPurchasedSize + size);
+
+        return getInternalPurchasePrice(alreadyPurchasedSize, maxPurchaseSize, price, size, 0).invoke();
+    }
+
+    /**
+     * Uses the trampoline pattern.
+     *
+     * @param alreadyPurchasedSize size in LD of the already planned land purchase.
+     * @param maxPurchaseSize      size in LD of the limit the country can purchase land units at normal cost.
+     * @param price                normal cost of the unit being purchased.
+     * @param size                 size of the unit being purchased.
+     * @param acc                  recursively accumulated price.
+     * @return the real purchase price.
+     */
+    private static TailCall<Integer> getInternalPurchasePrice(Integer alreadyPurchasedSize, Integer maxPurchaseSize, Integer price, Integer size, Integer acc) {
+        if (price == null) {
+            return TailCall.done(acc);
+        }
+        int factor = 1 + alreadyPurchasedSize / maxPurchaseSize;
+        int nbLdInFactor = maxPurchaseSize - alreadyPurchasedSize % maxPurchaseSize;
+
+        if (nbLdInFactor >= size) {
+            return TailCall.done(price * factor + acc);
+        } else {
+            int fractionPrice = price * nbLdInFactor / size;
+            int remainingPrice = price - fractionPrice;
+            return () -> getInternalPurchasePrice(alreadyPurchasedSize + nbLdInFactor, maxPurchaseSize, remainingPrice, size - nbLdInFactor, acc + fractionPrice * factor);
+        }
+    }
+
+    /**
+     * Compute the maintenance given the fortresses, whether they are in ROTW or not, and given the owner technology and the game turn.
+     *
+     * @param fortresses      the fortresses grouped by level and location (<code>true</code> if in ROTW) to maintain.
+     * @param techs           List of all the land technologies.
+     * @param ownerTechnology the land technology of the owner of the fortresses.
+     * @param gameTurn        the turn of the game.
+     * @return the total maintenance fee.
+     */
+    public static int computeFortressesMaintenance(Map<Pair<Integer, Boolean>, Integer> fortresses, List<Tech> techs, Tech ownerTechnology, Integer gameTurn) {
+        if (fortresses == null) {
+            return 0;
+        }
+        Supplier<Boolean> hasNotGoodTechForLevel3Fortress = () -> {
+            boolean goodTech = false;
+            if (techs != null) {
+                Tech targetTech = CommonUtil.findFirst(techs, tech -> StringUtils.equals(tech.getName(), Tech.ARQUEBUS));
+                goodTech = targetTech != null && ownerTechnology != null && ownerTechnology.getBeginTurn() >= targetTech.getBeginTurn();
+            }
+            return !goodTech;
+        };
+        Supplier<Boolean> isGameNotReadyForLevel4Fortress = () -> gameTurn == null || gameTurn < 40;
+
+        return fortresses.keySet().stream()
+                .map(key -> {
+                    Function<Integer, Integer> positiveOrZero = i -> i < 0 ? 0 : i;
+                    Integer level = Optional.ofNullable(key.getLeft()).map(positiveOrZero).orElse(0);
+                    boolean rotw = Optional.ofNullable(key.getRight()).orElse(false);
+                    Integer number = Optional.ofNullable(fortresses.get(key)).map(positiveOrZero).orElse(0);
+                    return getFortressCost(level, rotw, number, hasNotGoodTechForLevel3Fortress, isGameNotReadyForLevel4Fortress);
+                })
+                .collect(Collectors.summingInt(value -> value));
+    }
+
+    /**
+     * @param level                   of the fortresses.
+     * @param rotw                    flag saying if the fortresses are in the rotw.
+     * @param number                  of fortresses.
+     * @param level3FortressExpensive method that says if level 3 fortresses are expensive.
+     * @param level4FortressExpensive method that says if level 4 fortresses are expensive.
+     * @return the cost of a set of fortresses which share some behaviors.
+     */
+    private static Integer getFortressCost(Integer level, boolean rotw, Integer number, Supplier<Boolean> level3FortressExpensive, Supplier<Boolean> level4FortressExpensive) {
+        int cost = rotw ? Math.max(1, 2 * level) : level;
+
+        if (level == 3 && level3FortressExpensive.get() || level == 4 && level4FortressExpensive.get()) {
+            cost *= 2;
+        }
+
+        return cost * number;
     }
 
     /**
@@ -167,307 +461,6 @@ public final class MaintenanceUtil {
     }
 
     /**
-     * Returns the real purchase price for a land army given the size of the already planned land purchase,
-     * the limit purchase, the normal price and the size of the unit being purchased.
-     *
-     * @param alreadyPurchasedSize size in LD of the already planned land purchase.
-     * @param maxPurchaseSize      size in LD of the limit the country can purchase land units at normal cost.
-     * @param price                normal cost of the unit being purchased.
-     * @param size                 size of the unit being purchased.
-     * @return the real purchase price.
-     */
-    public static int getPurchasePrice(Integer alreadyPurchasedSize, Integer maxPurchaseSize, Integer price, Integer size) {
-        int purchasePrice = 0;
-
-        if (price != null) {
-            if (alreadyPurchasedSize == null) {
-                alreadyPurchasedSize = 0;
-            }
-            if (size == null) {
-                size = 1;
-            }
-            if (maxPurchaseSize == null) {
-                return price;
-            }
-            int factor = 1 + alreadyPurchasedSize / maxPurchaseSize;
-            int nbLdInFactor = maxPurchaseSize - alreadyPurchasedSize % maxPurchaseSize;
-
-            if (nbLdInFactor >= size) {
-                purchasePrice = price * factor;
-            } else {
-                int fractionPrice = price * nbLdInFactor / size;
-                int remainingPrice = price - fractionPrice;
-                purchasePrice = fractionPrice * factor + getPurchasePrice(alreadyPurchasedSize + nbLdInFactor, maxPurchaseSize, remainingPrice, size - nbLdInFactor);
-            }
-        }
-
-        return purchasePrice;
-    }
-
-    /**
-     * Returns the maintenance price of a face.
-     *
-     * @param units List of maintenance costs.
-     * @param face  the face.
-     * @return the maintenance price of a face.
-     */
-    private static Integer getPrice(List<? extends IUnit> units, CounterFaceTypeEnum face) {
-        Integer price = null;
-
-        IUnit unit = CommonUtil.findFirst(units, iUnit -> iUnit.getType() == getForceFromFace(face));
-
-        if (unit != null) {
-            price = unit.getPrice();
-        }
-
-        return price;
-    }
-
-    /**
-     * Subtract from the forces a type of maintenance given its faces that stand for 4, 2, 1 and a half D.
-     * For Example, the LAND type would have a faceForFour of ARMY_PLUS, a faceForTwo of ARMY_MINUS,
-     * a faceForOne of LAND_DETACHMENT and a faceForHalf of LAND_DETACHMENT_EXPLORATION.
-     *
-     * @param nbUnit      number of unit in D to subtract.
-     * @param infoForFour the info on faces that stands for a unit of size 4.
-     * @param infoForTwo  the info on faces that stands for a unit of size 2.
-     * @param infoForOne  the info on faces that stands for a unit of size 1.
-     * @param infoForHalf the info on faces that stands for a unit of size 1/2.
-     * @param forces      to manage.
-     */
-    private static Double SubtractMaintenanceForces(Double nbUnit, MaintenanceInfo infoForFour, MaintenanceInfo infoForTwo, MaintenanceInfo infoForOne, MaintenanceInfo infoForHalf, Map<CounterFaceTypeEnum, Long> forces) {
-        if (nbUnit != null) {
-            // The aim is to select the most profitable way of using the basic force (nbUnit) by
-            // selecting the most expensive units.
-            int disc42 = subtract(infoForFour.getPrice(), infoForTwo.getPrice());
-            int disc22 = toInt(infoForTwo.getPrice());
-            int disc41 = subtract(infoForFour.getPrice(), infoForTwo.getPrice(), infoForOne.getPrice());
-            int disc21 = subtract(infoForTwo.getPrice(), infoForOne.getPrice());
-            int disc11 = toInt(infoForOne.getPrice());
-            // The rules force to use basic force for complete counter if possible. So we first
-            // use the basic force for the larger units (size 4).
-            nbUnit = subtractMaintenanceForce(nbUnit, infoForFour, forces);
-            // After that, only 0, 1, 2 or 3 can remain in dbUnit or there are no
-            // large force (size 4) left in the forces
-            if (nbUnit >= 2 && nbUnit < 4 && disc42 > disc22) {
-                // If using 2 of basic force to partially maintain a large force (size 4)
-                // is more profitable than maintaining a medium force (size 2)
-                // then we remove a large force from the remaining forces but we add
-                // a medium force (size 2).
-                // If nbUnit is more than 4, then there are no more large force left.
-                if (subtractMaintenanceForce(infoForFour, forces)) {
-                    addOne(forces, infoForTwo.getFaces()[0]);
-                    nbUnit -= infoForTwo.getSize();
-                }
-            } else if (nbUnit == 1 && disc41 > disc11 && disc41 > disc21) {
-                // If using 1 of basic force to partially maintain a large force (size 4)
-                // is more profitable than partially maintaining a medium force (size 2)
-                // or maintaining a small force (size 1)
-                // then we remove a large force from the remaining forces but
-                // we had a medium force (size 2) and a small force (size 1).
-                // If nbUnit is different than 1, we must first try to maintain
-                // fully a counter.
-                if (subtractMaintenanceForce(infoForFour, forces)) {
-                    addOne(forces, infoForTwo.getFaces()[0]);
-                    addOne(forces, infoForOne.getFaces()[0]);
-                    nbUnit -= infoForOne.getSize();
-                }
-            }
-            // The rules force to use basic force for complete counter if possible.
-            // So we now use basic force for medium units (size 2).
-            // Now, either nbUnit is 0 or 1, either there are no medium force (size 2)
-            // left in the forces.
-            nbUnit = subtractMaintenanceForce(nbUnit, infoForTwo, forces);
-            if (nbUnit >= 2 && disc42 > 2 * disc11) {
-                // If using 2 of basic force to partially maintain a large force (size 4)
-                // is more profitable than maintaining 2 small forces (size 1)
-                // then we remove a large force from the remaining forces but we add
-                // a medium force (size 2).
-                // We can do that because if nbUnit is more than 2, then there are
-                // no medium force (size 2) left in the forces.
-                if (subtractMaintenanceForce(infoForFour, forces)) {
-                    addOne(forces, infoForTwo.getFaces()[0]);
-                    nbUnit -= infoForTwo.getSize();
-                }
-            }
-            // If using 1 of basic force to partially maintain a medium force (size 2)
-            // is more profitable than maintaining a small force (size 1)
-            // then we remove a medium force from the remaining forces but
-            // we had a small force.
-            // If nbUnit is more than 2, then there are no more medium force left.
-            if (nbUnit == 1 && disc21 > disc11) {
-                if (subtractMaintenanceForce(infoForTwo, forces)) {
-                    addOne(forces, infoForOne.getFaces()[0]);
-                    nbUnit -= infoForOne.getSize();
-                }
-            }
-            // The rules force to use basic force for complete counter if possible.
-            // So we now use basic force for small units (size 1).
-            // Now, either nbUnit is 0, either there are no small force (size 1)
-            // left in the forces
-            nbUnit = subtractMaintenanceForce(nbUnit, infoForOne, forces);
-            // If it was profitable to maintain small units (size 1), then it is
-            // to maintain tiny units (size 1/2) since they have the same cost-effectiveness.
-            nbUnit = subtractMaintenanceForce(nbUnit, infoForHalf, forces);
-            if (nbUnit > 0 && !forces.isEmpty()) {
-                // if there are still large or medium forces in the remaining forces
-                // then we search the most profitable path.
-                if (disc41 > disc21) {
-                    // In the case where there are still medium and large forces left,
-                    // we test the most profitable between the two. We test for one force
-                    // because there can't be 2 basic forces and medium force left.
-                    if (subtractMaintenanceForce(infoForFour, forces)) {
-                        nbUnit -= infoForFour.getSize();
-                    } else if (subtractMaintenanceForce(infoForTwo, forces)) {
-                        nbUnit -= infoForTwo.getSize();
-                    }
-                } else {
-                    // If it was less profitable, we take the opposite path.
-                    if (subtractMaintenanceForce(infoForTwo, forces)) {
-                        nbUnit -= infoForTwo.getSize();
-                    } else if (subtractMaintenanceForce(infoForFour, forces)) {
-                        nbUnit -= infoForFour.getSize();
-                    }
-                }
-            }
-            if (nbUnit < 0) {
-                // If there was not enough basic forces to fully maintain
-                // the last unit, then we create equivalent of the remaining forces
-                // to pay for maintenance.
-                if (nbUnit <= -2) {
-                    addOne(forces, infoForTwo.getFaces()[0]);
-                    nbUnit +=2;
-                }
-                if (nbUnit <= -1) {
-                    addOne(forces, infoForOne.getFaces()[0]);
-                    nbUnit +=1;
-                }
-                if (nbUnit == -0.5) {
-                    addOne(forces, infoForHalf.getFaces()[0]);
-                    nbUnit +=0.5;
-                }
-            }
-        } else {
-            nbUnit = 0d;
-        }
-
-        return nbUnit;
-    }
-
-    /**
-     * Transform an Integer to an int (<code>null</code> will be transformed to <code>0</code>).
-     *
-     * @param i the Integer.
-     * @return the int.
-     */
-    private static int toInt(Integer i) {
-        int returnValue = 0;
-
-        if (i != null) {
-            returnValue = i;
-        }
-
-        return returnValue;
-    }
-
-    /**
-     * Subtract the values to the origin. Result cannot be negative (will return <code>0</code>).
-     *
-     * @param origin beginning value.
-     * @param values to subtract.
-     * @return the subtraction.
-     */
-    private static int subtract(Integer origin, Integer... values) {
-        int returnValue = toInt(origin);
-
-        if (values != null) {
-            for (Integer value : values) {
-                returnValue -= toInt(value);
-            }
-        }
-
-        if (returnValue < 0) {
-            returnValue = 0;
-        }
-
-        return returnValue;
-    }
-
-    /**
-     * Increment a Map of K->Integer for a given key.
-     *
-     * @param map the map.
-     * @param key the key.
-     * @param <K> the class of the key.
-     */
-    private static <K> void addOne(Map<K, Long> map, K key) {
-        if (map != null) {
-            if (map.get(key) != null) {
-                map.put(key, map.get(key) + 1);
-            } else {
-                map.put(key, 1l);
-            }
-        }
-    }
-
-    /**
-     * Subtract from the forces a particular face given a number of unit and its size.
-     *
-     * @param nbUnit number given in D.
-     * @param info   Information containing the faces to subtract from the forces, the size of the face and the price of the face.
-     * @param forces to manage.
-     * @return the remaining number of D in the maintenance.
-     */
-    private static Double subtractMaintenanceForce(Double nbUnit, MaintenanceInfo info, Map<CounterFaceTypeEnum, Long> forces) {
-        if (info != null && info.getFaces() != null) {
-            for (CounterFaceTypeEnum face : info.getFaces()) {
-                if (nbUnit >= info.getSize()
-                        && forces.containsKey(face)
-                        && forces.get(face) != null
-                        && forces.get(face) > 0) {
-                    int number = (int) Math.min(nbUnit / info.getSize(), forces.get(face));
-                    nbUnit -= info.getSize() * number;
-                    if (forces.get(face) > number) {
-                        forces.put(face, forces.get(face) - number);
-                    } else {
-                        forces.remove(face);
-                    }
-                }
-            }
-        }
-
-        return nbUnit;
-    }
-
-    /**
-     * Subtract from the forces a particular face given a number of unit and its size.
-     *
-     * @param info   Information containing the faces to subtract from the forces, the size of the face and the price of the face.
-     * @param forces to manage.
-     * @return the remaining number of D in the maintenance.
-     */
-    private static boolean subtractMaintenanceForce(MaintenanceInfo info, Map<CounterFaceTypeEnum, Long> forces) {
-        boolean result = false;
-
-        if (info != null && info.getFaces() != null) {
-            for (CounterFaceTypeEnum face : info.getFaces()) {
-                if (forces.containsKey(face)
-                        && forces.get(face) != null
-                        && forces.get(face) > 0) {
-                    result = true;
-                    if (forces.get(face) > 1) {
-                        forces.put(face, forces.get(face) - 1);
-                    } else {
-                        forces.remove(face);
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * Transform a face to a force enum.
      *
      * @param face to transform in force.
@@ -489,6 +482,8 @@ public final class MaintenanceUtil {
                 case LAND_DETACHMENT:
                 case LAND_DETACHMENT_KOZAK:
                 case LAND_DETACHMENT_TIMAR:
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
                     force = ForceTypeEnum.LD;
                     break;
                 case FLEET_MINUS:
@@ -500,6 +495,7 @@ public final class MaintenanceUtil {
                 case NAVAL_DETACHMENT:
                 case NAVAL_GALLEY:
                 case NAVAL_TRANSPORT:
+                case NAVAL_DETACHMENT_EXPLORATION:
                     force = ForceTypeEnum.ND;
                     break;
                 default:
@@ -547,60 +543,9 @@ public final class MaintenanceUtil {
         return type;
     }
 
-    /**
-     * Compute the maintenance given the fortresses, whether they are in ROTW or not, and given the owner technology and the game turn.
-     *
-     * @param fortresses      the fortresses grouped by level and location (<code>true</code> if in ROTW) to maintain.
-     * @param techs           List of all the land technologies.
-     * @param ownerTechnology the land technology of the owner of the fortresses.
-     * @param gameTurn        the turn of the game.
-     * @return the total maintenance fee.
-     */
-    public static int computeFortressesMaintenance(Map<Pair<Integer, Boolean>, Integer> fortresses, List<Tech> techs, Tech ownerTechnology, Integer gameTurn) {
-        int total = 0;
-
-        if (fortresses != null) {
-            for (Pair<Integer, Boolean> key : fortresses.keySet()) {
-                Integer number = fortresses.get(key);
-                if (number != null && number > 0) {
-                    Integer level = key.getLeft();
-                    if (level != null && level >= 0) {
-                        int cost = level;
-                        if (key.getRight() != null && key.getRight()) {
-                            if (level == 0) {
-                                cost = 1;
-                            } else {
-                                cost *= 2;
-                            }
-                        }
-
-                        if (level == 3) {
-                            boolean goodTech = false;
-                            if (techs != null) {
-                                Tech targetTech = CommonUtil.findFirst(techs, tech -> StringUtils.equals(tech.getName(), Tech.ARQUEBUS));
-                                goodTech = targetTech != null && ownerTechnology != null && ownerTechnology.getBeginTurn() >= targetTech.getBeginTurn();
-                            }
-                            if (!goodTech) {
-                                cost *= 2;
-                            }
-                        }
-
-                        if (level == 4 && (gameTurn == null || gameTurn < 40)) {
-                            cost *= 2;
-                        }
-
-                        total += cost * number;
-                    }
-                }
-            }
-        }
-
-        return total;
-    }
-
     private static class MaintenanceInfo {
         /** The faces corresponding to this type. */
-        private CounterFaceTypeEnum[] faces;
+        private List<CounterFaceTypeEnum> faces = new ArrayList<>();
         /** The size of this type. */
         private double size;
         /** The maintenance price of this type. */
@@ -608,19 +553,30 @@ public final class MaintenanceUtil {
 
         /**
          * Constructor.
-         *
-         * @param faces the faces to set.
-         * @param size  the size to set.
-         * @param price the price to set.
          */
-        public MaintenanceInfo(CounterFaceTypeEnum[] faces, double size, Integer price) {
-            this.faces = faces;
+        public MaintenanceInfo() {
+        }
+
+        /** @param face the face to add. */
+        public MaintenanceInfo addFace(CounterFaceTypeEnum face) {
+            this.faces.add(face);
+            return this;
+        }
+
+        /** @param size the size to set. */
+        public MaintenanceInfo setSize(double size) {
             this.size = size;
+            return this;
+        }
+
+        /** @param price the price to set. */
+        public MaintenanceInfo setPrice(Integer price) {
             this.price = price;
+            return this;
         }
 
         /** @return the faces. */
-        public CounterFaceTypeEnum[] getFaces() {
+        public List<CounterFaceTypeEnum> getFaces() {
             return faces;
         }
 

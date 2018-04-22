@@ -1094,4 +1094,25 @@ public final class CounterUtil {
     public static boolean isMobile(CounterFaceTypeEnum face) {
         return isArmy(face);
     }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is exploration, <code>false</code> otherwise.
+     */
+    public static boolean isExploration(CounterFaceTypeEnum face) {
+        boolean explo = false;
+
+        if (face != null) {
+            switch (face) {
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                    explo = true;
+                    break;
+                default:
+            }
+        }
+
+        return explo;
+    }
 }
