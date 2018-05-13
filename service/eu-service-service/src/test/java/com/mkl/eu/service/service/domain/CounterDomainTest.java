@@ -4,7 +4,6 @@ import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -44,9 +43,6 @@ public class CounterDomainTest {
     @Mock
     private IProvinceDao provinceDao;
 
-    @Mock
-    private IDiffDao diffDao;
-
     @Test
     public void testCreateCounter() throws Exception {
         GameEntity game = new GameEntity();
@@ -64,9 +60,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game);
 
-        InOrder inOrder = inOrder(stackDao, diffDao);
+        InOrder inOrder = inOrder(stackDao);
         inOrder.verify(stackDao).create(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -115,9 +110,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.TRADING_POST_MINUS, "france", "rAzteca~C", 3, game);
 
-        InOrder inOrder = inOrder(stackDao, diffDao);
+        InOrder inOrder = inOrder(stackDao);
         inOrder.verify(stackDao).create(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -165,9 +159,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.TRADING_FLEET_MINUS, "france", "ZPFrance", 1, game);
 
-        InOrder inOrder = inOrder(stackDao, diffDao);
+        InOrder inOrder = inOrder(stackDao);
         inOrder.verify(stackDao).create(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -219,9 +212,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.createCounter(CounterFaceTypeEnum.TRADING_FLEET_MINUS, "france", "ZPFrance", 1, game);
 
-        InOrder inOrder = inOrder(stackDao, diffDao);
+        InOrder inOrder = inOrder(stackDao);
         inOrder.verify(stackDao).create(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -291,9 +283,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.removeCounter(idCounter, game);
 
-        InOrder inOrder = inOrder(counterDao, diffDao);
+        InOrder inOrder = inOrder(counterDao);
         inOrder.verify(counterDao).delete(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -350,9 +341,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.removeCounter(200L, game);
 
-        InOrder inOrder = inOrder(counterDao, diffDao);
+        InOrder inOrder = inOrder(counterDao);
         inOrder.verify(counterDao).delete(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -382,9 +372,6 @@ public class CounterDomainTest {
 
         diff = counterDomain.switchCounter(100L, CounterFaceTypeEnum.ARMY_PLUS, null, game);
 
-        InOrder inOrder = inOrder(diffDao);
-        inOrder.verify(diffDao).create(anyObject());
-
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
@@ -404,9 +391,6 @@ public class CounterDomainTest {
         GameEntity game = createSwitchCounterGame();
 
         DiffEntity diff = counterDomain.switchCounter(300L, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game);
-
-        InOrder inOrder = inOrder(diffDao);
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -430,9 +414,6 @@ public class CounterDomainTest {
         GameEntity game = createSwitchCounterGame();
 
         DiffEntity diff = counterDomain.switchCounter(301L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game);
-
-        InOrder inOrder = inOrder(diffDao);
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -462,9 +443,8 @@ public class CounterDomainTest {
 
         DiffEntity diff = counterDomain.switchCounter(400L, CounterFaceTypeEnum.TRADING_POST_PLUS, 6, game);
 
-        InOrder inOrder = inOrder(diffDao, provinceDao);
+        InOrder inOrder = inOrder(provinceDao);
         inOrder.verify(provinceDao).getProvinceByName("rAzteca~C");
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -490,9 +470,6 @@ public class CounterDomainTest {
         GameEntity game = createSwitchCounterGame();
 
         DiffEntity diff = counterDomain.switchCounter(401L, CounterFaceTypeEnum.COLONY_MINUS, 1, game);
-
-        InOrder inOrder = inOrder(diffDao);
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -601,9 +578,6 @@ public class CounterDomainTest {
 
         diff = counterDomain.changeVeteransCounter(101L, 2, game);
 
-        InOrder inOrder = inOrder(diffDao);
-        inOrder.verify(diffDao).create(anyObject());
-
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
@@ -646,9 +620,8 @@ public class CounterDomainTest {
 
         diff = counterDomain.moveSpecialCounter(CounterFaceTypeEnum.STABILITY, "france", "B_2", game);
 
-        InOrder inOrder = inOrder(stackDao, diffDao);
+        InOrder inOrder = inOrder(stackDao);
         inOrder.verify(stackDao).create(anyObject());
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -704,9 +677,6 @@ public class CounterDomainTest {
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
 
         DiffEntity diff = counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TECH_LAND_LATIN, null, "B_2", game);
-
-        InOrder inOrder = inOrder(diffDao);
-        inOrder.verify(diffDao).create(anyObject());
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());

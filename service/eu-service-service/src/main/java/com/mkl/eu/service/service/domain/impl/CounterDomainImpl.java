@@ -9,7 +9,6 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -42,9 +41,6 @@ public class CounterDomainImpl implements ICounterDomain {
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
-    /** Diff DAO. */
-    @Autowired
-    private IDiffDao diffDao;
 
     /** {@inheritDoc} */
     @Override
@@ -113,8 +109,6 @@ public class CounterDomainImpl implements ICounterDomain {
             diff.getAttributes().add(diffAttributes);
         }
 
-        diffDao.create(diff);
-
         return new ImmutablePair<>(diff, counterEntity);
     }
 
@@ -165,8 +159,6 @@ public class CounterDomainImpl implements ICounterDomain {
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
         }
-
-        diffDao.create(diff);
 
         return diff;
     }
@@ -221,8 +213,6 @@ public class CounterDomainImpl implements ICounterDomain {
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
         }
-
-        diffDao.create(diff);
 
         return new ImmutablePair<>(diff, counter);
     }
@@ -303,8 +293,6 @@ public class CounterDomainImpl implements ICounterDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
-        diffDao.create(diff);
-
         return diff;
     }
 
@@ -369,8 +357,6 @@ public class CounterDomainImpl implements ICounterDomain {
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
         }
-
-        diffDao.create(diff);
 
         StackEntity oldStack = counter.getOwner();
         counter.setOwner(stack);

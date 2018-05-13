@@ -446,7 +446,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diff.getAttributes().add(diffAttributes);
             }
 
-            diffDao.create(diff);
+            createDiff(diff);
 
             diffs.add(diff);
         }
@@ -1752,7 +1752,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
-        diffDao.create(diff);
+        createDiff(diff);
 
         diffs.add(diff);
 
@@ -1794,7 +1794,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_VALIDATE_ADM_ACT, request.getAuthent().getUsername(), country.getUsername()));
 
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        List<DiffEntity> newDiffs = new ArrayList<>();
 
         if (country.isReady() != request.getRequest().isValidate()) {
             country.setReady(request.getRequest().isValidate());
@@ -1825,15 +1825,15 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 // automatic refit of tfis
 
                 for (PlayableCountryEntity countryAct : countries) {
-                    diffs.addAll(computeAdministrativeActions(countryAct, game, newTfis, newEstablishments));
+                    newDiffs.addAll(computeAdministrativeActions(countryAct, game, newTfis, newEstablishments));
                     countryAct.setReady(false);
                 }
 
                 // automatic tf refill (before competitions)
-                diffs.addAll(computeAutomaticTfCompetitions(game, newTfis));
-                diffs.addAll(computeAutomaticEstablishmentCompetitions(game, newEstablishments));
+                newDiffs.addAll(computeAutomaticTfCompetitions(game, newTfis));
+                newDiffs.addAll(computeAutomaticEstablishmentCompetitions(game, newEstablishments));
                 // exotic resources concurrencies
-                diffs.addAll(computeAutomaticTechnologyAdvances(game));
+                newDiffs.addAll(computeAutomaticTechnologyAdvances(game));
 
                 DiffEntity diff = new DiffEntity();
                 diff.setIdGame(game.getId());
@@ -1845,8 +1845,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes.setValue(Integer.toString(game.getTurn()));
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
-                diffDao.create(diff);
-                diffs.add(diff);
+                newDiffs.add(diff);
 
                 diff = new DiffEntity();
                 diff.setIdGame(game.getId());
@@ -1858,18 +1857,16 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes.setValue(Integer.toString(game.getTurn()));
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
-                diffDao.create(diff);
-                diffs.add(diff);
+                newDiffs.add(diff);
 
                 diff = new DiffEntity();
                 diff.setIdGame(game.getId());
                 diff.setVersionGame(game.getVersion());
                 diff.setType(DiffTypeEnum.INVALIDATE);
                 diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-                diffDao.create(diff);
-                diffs.add(diff);
+                newDiffs.add(diff);
 
-                diffs.addAll(statusWorkflowDomain.computeEndAdministrativeActions(game));
+                newDiffs.addAll(statusWorkflowDomain.computeEndAdministrativeActions(game));
             } else {
                 DiffEntity diff = new DiffEntity();
                 diff.setIdGame(game.getId());
@@ -1886,9 +1883,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 diffAttributes.setValue(country.getId().toString());
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
-                diffs.add(diff);
+                newDiffs.add(diff);
             }
         }
+
+        createDiffs(newDiffs);
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        diffs.addAll(newDiffs);
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));
@@ -2256,8 +2257,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 }
             }
 
-            diffDao.create(diff);
-
             return diff;
         } else {
             return null;
@@ -2421,8 +2420,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     diffAttributes.setValue(nextTechName);
                     diffAttributes.setDiff(diff);
                     diff.getAttributes().add(diffAttributes);
-
-                    diffDao.create(diff);
 
                     diffs.add(diff);
 

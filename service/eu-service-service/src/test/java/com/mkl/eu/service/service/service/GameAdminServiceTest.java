@@ -21,6 +21,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEn
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.GameAdminServiceImpl;
+import com.mkl.eu.service.service.socket.SocketHandler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,6 +70,9 @@ public class GameAdminServiceTest {
 
     @Mock
     private DiffMapping diffMapping;
+
+    @Mock
+    private SocketHandler socketHandler;
 
     @Test
     public void testCreateCounterFailSimple() {
@@ -134,7 +138,7 @@ public class GameAdminServiceTest {
             Assert.fail("Should break because game does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("idGame", e.getParams()[0]);
+            Assert.assertEquals("none.game.idGame", e.getParams()[0]);
         }
 
         GameEntity game = new GameEntity();
@@ -147,7 +151,7 @@ public class GameAdminServiceTest {
             Assert.fail("Should break because versions does not match");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("versionGame", e.getParams()[0]);
+            Assert.assertEquals("none.game.versionGame", e.getParams()[0]);
         }
     }
 
@@ -223,6 +227,7 @@ public class GameAdminServiceTest {
         diffAfter.add(new Diff());
 
         when(diffMapping.oesToVos(anyObject())).thenReturn(diffAfter);
+        when(counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "FRA", province, null, game)).thenReturn(createDiff(idGame, versionGame));
 
         DiffResponse response = gameAdminService.createCounter(idGame, versionGame, counter, province);
 
@@ -275,7 +280,7 @@ public class GameAdminServiceTest {
             Assert.fail("Should break because game does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("idGame", e.getParams()[0]);
+            Assert.assertEquals("none.game.idGame", e.getParams()[0]);
         }
 
         GameEntity game = new GameEntity();
@@ -288,7 +293,7 @@ public class GameAdminServiceTest {
             Assert.fail("Should break because versions does not match");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("versionGame", e.getParams()[0]);
+            Assert.assertEquals("none.game.versionGame", e.getParams()[0]);
         }
 
         game.setVersion(5L);
@@ -323,7 +328,7 @@ public class GameAdminServiceTest {
 
         when(gameDao.lock(12L)).thenReturn(game);
 
-        when(counterDomain.removeCounter(25L, game)).thenReturn(new DiffEntity());
+        when(counterDomain.removeCounter(25L, game)).thenReturn(createDiff(idGame, versionGame));
 
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
@@ -349,5 +354,12 @@ public class GameAdminServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(diffAfter, response.getDiffs());
+    }
+
+    private DiffEntity createDiff(Long idGame, Long versionGame) {
+        DiffEntity diff = new DiffEntity();
+        diff.setIdGame(idGame);
+        diff.setVersionGame(versionGame);
+        return diff;
     }
 }

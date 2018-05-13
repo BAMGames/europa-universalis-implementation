@@ -31,10 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Abstract service, parent of services who want some utility methods.
@@ -76,7 +74,7 @@ public abstract class AbstractService implements INameConstants {
     protected IGameDao gameDao;
     /** Diff DAO. */
     @Autowired
-    protected IDiffDao diffDao;
+    private IDiffDao diffDao;
     /** Chat DAO. */
     @Autowired
     protected IChatDao chatDao;
@@ -306,21 +304,44 @@ public abstract class AbstractService implements INameConstants {
     protected void createDiff(DiffEntity diff) {
         diffDao.create(diff);
 
-        push(diff);
+        push(Collections.singletonList(diff));
     }
 
     /**
-     * Push a diff to all clients listening to this game.
+     * Creates and push some diffs.
      *
-     * @param diffEntity to push.
+     * @param diffs to create and push.
      */
-    protected void push(DiffEntity diffEntity) {
-        DiffResponse response = new DiffResponse();
-        Diff diff = diffMapping.oeToVo(diffEntity);
-        response.getDiffs().add(diff);
-        response.setVersionGame(diffEntity.getVersionGame());
+    protected void createDiffs(List<DiffEntity> diffs) {
+        diffs.stream()
+                .forEach(diffDao::create);
 
-        socketHandler.push(diffEntity.getIdGame(), response, null);
+        push(diffs);
+    }
+
+    /**
+     * Push some diffs to all clients listening to this game.
+     *
+     * @param diffEntities to push.
+     */
+    protected void push(List<DiffEntity> diffEntities) {
+        Long versionGame = diffEntities.stream()
+                .map(DiffEntity::getVersionGame)
+                .findAny()
+                .orElse(null);
+        Long idGame = diffEntities.stream()
+                .map(DiffEntity::getIdGame)
+                .findAny()
+                .orElse(null);
+
+        DiffResponse response = new DiffResponse();
+        List<Diff> diffs = diffEntities.stream()
+                .map(diffMapping::oeToVo)
+                .collect(Collectors.toList());
+        response.getDiffs().addAll(diffs);
+        response.setVersionGame(versionGame);
+
+        socketHandler.push(idGame, response, null);
     }
 
     /**

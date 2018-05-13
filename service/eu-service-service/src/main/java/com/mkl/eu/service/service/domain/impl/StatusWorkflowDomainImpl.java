@@ -4,7 +4,7 @@ import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
+import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
@@ -33,9 +33,9 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     /** OeUtil. */
     @Autowired
     private IOEUtil oeUtil;
-    /** Diff DAO. */
+    /** Game DAO only for flush purpose because Hibernate poorly handles non technical ids. */
     @Autowired
-    private IDiffDao diffDao;
+    private IGameDao gameDao;
 
     /** {@inheritDoc} */
     @Override
@@ -130,7 +130,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
          * And since the PK is often the same, it will fail.
          * We need to flush so that the old values are deleted before.
          */
-        diffDao.flush();
+        this.gameDao.flush();
 
         /**
          * And the alliances are transformed into CountryOrder.
@@ -162,8 +162,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
         diffs.add(diff);
-
-        diffDao.create(diff);
 
         diffs.addAll(nextRound(game, true));
 
@@ -272,7 +270,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
-        diffDao.create(diff);
         diffs.add(diff);
 
         // Invalidate (set ready to false) to all orders
@@ -291,7 +288,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
-        diffDao.create(diff);
         diffs.add(diff);
 
         // set the order of position 0 active
@@ -319,7 +315,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffAttributes.setDiff(diff);
         diff.getAttributes().add(diffAttributes);
 
-        diffDao.create(diff);
         diffs.add(diff);
 
         return diffs;

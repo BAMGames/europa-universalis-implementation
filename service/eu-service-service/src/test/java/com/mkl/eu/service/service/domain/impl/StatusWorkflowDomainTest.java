@@ -2,7 +2,7 @@ package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
-import com.mkl.eu.service.service.persistence.diff.IDiffDao;
+import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -41,7 +41,7 @@ public class StatusWorkflowDomainTest {
     private IOEUtil oeUtil;
 
     @Mock
-    private IDiffDao diffDao;
+    private IGameDao gameDao;
 
     @Test
     public void testComputeEndMinorLogisticsNoCountries() throws Exception {

@@ -1434,10 +1434,8 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         simulateDiff();
 
         List<DiffEntity> diffsNextRound = new ArrayList<>();
-        diffsNextRound.add(new DiffEntity());
-        diffsNextRound.get(0).setId(666L);
-        diffsNextRound.add(new DiffEntity());
-        diffsNextRound.get(1).setId(667L);
+        diffsNextRound.add(createDiff(666L, game.getId(), game.getVersion()));
+        diffsNextRound.add(createDiff(667L, game.getId(), game.getVersion()));
         when(statusWorkflowDomain.nextRound(game)).thenReturn(diffsNextRound);
 
         boardService.validateMilitaryRound(request);
@@ -1500,5 +1498,13 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(diffsNextRound.size(), diffEntities.size());
             Assert.assertEquals(diffsNextRound, diffEntities);
         }
+    }
+
+    private DiffEntity createDiff(Long id, Long idGame, Long versionGame) {
+        DiffEntity diff = new DiffEntity();
+        diff.setId(id);
+        diff.setIdGame(idGame);
+        diff.setVersionGame(versionGame);
+        return diff;
     }
 }

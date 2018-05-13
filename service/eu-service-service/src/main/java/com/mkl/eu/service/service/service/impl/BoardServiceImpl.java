@@ -764,7 +764,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .orElse(null);
 
 
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        List<DiffEntity> newDiffs = new ArrayList<>();
 
         if (order != null && order.isReady() != request.getRequest().isValidate()) {
             order.setReady(request.getRequest().isValidate());
@@ -796,7 +796,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     diffAttributes.setValue(GameStatusEnum.MILITARY_BATTLES.name());
                     diffAttributes.setDiff(diff);
                     diff.getAttributes().add(diffAttributes);
-                    diffs.add(diff);
+                    newDiffs.add(diff);
 
                     for (String province : provincesAtWar) {
                         BattleEntity battle = new BattleEntity();
@@ -818,10 +818,10 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     diffAttributes.setValue(game.getTurn().toString());
                     diffAttributes.setDiff(diff);
                     diff.getAttributes().add(diffAttributes);
-                    diffs.add(diff);
+                    newDiffs.add(diff);
                 } else {
                     // No -> next round
-                    diffs.addAll(endMilitaryPhase(game, order.getPosition()));
+                    newDiffs.addAll(endMilitaryPhase(game, order.getPosition()));
                 }
             } else {
                 DiffEntity diff = new DiffEntity();
@@ -845,10 +845,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
 
-                diffDao.create(diff);
-                diffs.add(diff);
+                newDiffs.add(diff);
             }
         }
+
+        createDiffs(newDiffs);
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        diffs.addAll(newDiffs);
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));
@@ -894,7 +897,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
 
-            diffDao.create(diff);
             diffs.add(diff);
 
             game.getOrders().stream()
@@ -917,7 +919,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
 
-            diffDao.create(diff);
             diffs.add(diff);
         } else {
             // Yes it is, are there some sieges ?
