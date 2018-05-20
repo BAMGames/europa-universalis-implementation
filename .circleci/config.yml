@@ -2,6 +2,6 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/oraclejdk8
+      - image: circleci/openjdk:8-jdk
     steps:
         - checkout
