@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
-        - checkout
-        - run:
-          name: test
-          command: mvn cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:report -DrepoToken=$COVERALL_TOKEN
+      - checkout
+      - run:
+        name: test
+        command: mvn cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:report -DrepoToken=$COVERALL_TOKEN
