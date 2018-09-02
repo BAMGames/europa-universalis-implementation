@@ -60,6 +60,12 @@ public class BattleCounterEntity {
         return phasing;
     }
 
+    /** @return the not phasing. */
+    @Transient
+    public boolean isNotPhasing() {
+        return !phasing;
+    }
+
     /** @param phasing the phasing to set. */
     public void setPhasing(boolean phasing) {
         this.phasing = phasing;

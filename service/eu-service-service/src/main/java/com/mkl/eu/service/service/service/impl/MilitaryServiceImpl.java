@@ -9,6 +9,7 @@ import com.mkl.eu.client.service.service.IMilitaryService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
+import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -480,6 +481,83 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         response.setMessages(getMessagesSince(request));
 
         return response;
+    }
+
+    @Override
+    public DiffResponse withdrawBeforeBattle(Request<WithdrawBeforeBattleRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_WITHDRAW_BEFORE_BATTLE, PARAMETER_WITHDRAW_BEFORE_BATTLE);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_WITHDRAW_BEFORE_BATTLE, PARAMETER_WITHDRAW_BEFORE_BATTLE);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+
+        BattleEntity battle = game.getBattles().stream()
+                .filter(bat -> bat.getStatus() == BattleStatusEnum.WITHDRAW_BEFORE_BATTLE)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(battle)
+                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name()));
+
+        String provinceTo = request.getRequest().getProvinceTo();
+
+        failIfEmpty(new AbstractService.CheckForThrow<String>()
+                .setTest(provinceTo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
+
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
+
+        failIfNull(new CheckForThrow<>()
+                .setTest(province)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
+
+        AbstractProvinceEntity provinceFrom = provinceDao.getProvinceByName(battle.getProvince());
+        boolean isNear = false;
+        if (provinceFrom != null) {
+            isNear = provinceFrom.getBorders().stream()
+                    .anyMatch(x -> province.getId().equals(x.getProvinceTo().getId()));
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(isNear)
+                .setCodeError(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR)
+                .setMsgFormat(MSG_NOT_NEIGHBOR)
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, battle.getProvince(), provinceTo));
+
+        int stackSize = battle.getCounters().stream()
+                .filter(BattleCounterEntity::isNotPhasing)
+                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType())));
+        boolean canRetreat = oeUtil.canRetreat(province, province == provinceFrom, stackSize, country, game);
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(canRetreat)
+                .setCodeError(IConstantsServiceException.BATTLE_CANT_WITHDRAW)
+                .setMsgFormat("{1}: {0} {2} is not a valid province to withdraw.")
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
+
+        return null;
     }
 
     protected void fillBattleModifiers(BattleEntity battle) {

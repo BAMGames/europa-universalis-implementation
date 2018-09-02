@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
+import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -56,5 +57,16 @@ public interface IMilitaryService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse validateForces(@WebParam(name = PARAMETER_SELECT_FORCE) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+    DiffResponse validateForces(@WebParam(name = PARAMETER_VALIDATE_FORCES) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Withdraw the current battle for the non phasing forces.
+     *
+     * @param request info about province where to withdraw.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse withdrawBeforeBattle(@WebParam(name = PARAMETER_WITHDRAW_BEFORE_BATTLE) Request<WithdrawBeforeBattleRequest> request) throws FunctionalException, TechnicalException;
 }

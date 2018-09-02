@@ -104,6 +104,8 @@ public interface INameConstants {
     String PARAMETER_SELECT_FORCE = "selectForce";
     /** Name of the parameter validateForces. */
     String PARAMETER_VALIDATE_FORCES = "validateForces";
+    /** Name of the parameter selectForce. */
+    String PARAMETER_WITHDRAW_BEFORE_BATTLE = "withdrawBeforeBattle";
 
 
 
@@ -165,4 +167,6 @@ public interface INameConstants {
     String METHOD_SELECT_FORCE = "selectForce";
     /** Name of the method validateForces. */
     String METHOD_VALIDATE_FORCES = "validateForces";
+    /** Name of the method withdrawBeforeBattle. */
+    String METHOD_WITHDRAW_BEFORE_BATTLE = "withdrawBeforeBattle";
 }

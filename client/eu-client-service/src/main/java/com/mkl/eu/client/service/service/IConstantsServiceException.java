@@ -748,4 +748,18 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_VALIDATE_OTHER_FORCE = "exception.eu.military.battle_validate_other_force";
+
+    /**
+     * <p>
+     * Exception thrown when trying to withdraw into a province that is not eligible.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>2: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_CANT_WITHDRAW = "exception.eu.board.battle_cant_withdraw";
 }
