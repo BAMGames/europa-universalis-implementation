@@ -15,6 +15,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
@@ -620,8 +621,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(country);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
-        game.getBattles().get(0).getNonPhasing().setForces(before);
-        game.getBattles().get(0).getPhasing().setForces(before);
+        game.getBattles().get(0).getNonPhasing().setForces(phasing || before);
+        game.getBattles().get(0).getPhasing().setForces(!phasing || before);
         game.getBattles().get(0).setProvince("pecs");
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -677,7 +678,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(game.getBattles().get(0).getId(), diffEntity.getIdObject());
             Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
             Assert.assertEquals(game.getId(), diffEntity.getIdGame());
-            Assert.assertEquals(1, diffEntity.getAttributes().size());
+            Assert.assertTrue(diffEntity.getAttributes().size() >= 1);
             DiffAttributeTypeEnum diffStatus;
             if (phasing) {
                 diffStatus = DiffAttributeTypeEnum.ATTACKER_READY;
@@ -690,6 +691,19 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             }
             Assert.assertEquals(diffStatus, diffEntity.getAttributes().get(0).getType());
             Assert.assertEquals(Boolean.toString(validate), diffEntity.getAttributes().get(0).getValue());
+
+            DiffAttributesEntity statusChanged = diffEntity.getAttributes().stream()
+                    .filter(attribute -> attribute.getType() == DiffAttributeTypeEnum.STATUS)
+                    .findAny()
+                    .orElse(null);
+            if (battle.getPhasing().isForces() && battle.getNonPhasing().isForces()) {
+                Assert.assertNotNull(statusChanged);
+                Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), statusChanged.getValue());
+                Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE, battle.getStatus());
+            } else {
+                Assert.assertNull(statusChanged);
+                Assert.assertEquals(BattleStatusEnum.SELECT_FORCES, battle.getStatus());
+            }
         } else {
             Assert.assertNull(diffEntity);
         }

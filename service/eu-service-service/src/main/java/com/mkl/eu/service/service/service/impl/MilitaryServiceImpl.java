@@ -471,6 +471,16 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 battle.getNonPhasing().setForces(request.getRequest().isValidate());
             }
 
+            // If both side are ready, then go to next phase
+            if (battle.getPhasing().isForces() && battle.getNonPhasing().isForces()) {
+                battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+                diffAttributes = new DiffAttributesEntity();
+                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
+                diffAttributes.setValue(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name());
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+            }
+
             diffs.add(diff);
         }
 
@@ -556,6 +566,16 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .setMsgFormat("{1}: {0} {2} is not a valid province to withdraw.")
                 .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                 .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
+
+        int die = oeUtil.rollDie(game, country);
+
+        // TODO leader diff manoeuvre if positive
+        if (die >= 8) {
+            // TODO is it really RETREAT ?
+            battle.setStatus(BattleStatusEnum.RETREAT);
+        } else {
+            // TODO compute first day
+        }
 
         return null;
     }
