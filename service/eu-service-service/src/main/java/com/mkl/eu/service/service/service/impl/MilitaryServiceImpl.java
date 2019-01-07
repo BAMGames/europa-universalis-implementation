@@ -24,6 +24,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.ArmyInfo;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -115,16 +116,8 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .findAny()
                 .orElse(null);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.BATTLE);
-        diff.setIdObject(battle.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, (String) null));
 
         List<String> allies = oeUtil.getAllies(country, game);
         List<String> enemies = oeUtil.getEnemies(country, game);
@@ -148,9 +141,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .reduce(Integer::sum)
                 .orElse(0);
         if (attackerCounters.size() <= 3 && attackerSize <= 8) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.ATTACKER_READY);
-            diffAttributes.setValue(Boolean.TRUE.toString());
+            DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ATTACKER_READY, true);
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
             battle.getPhasing().setForces(true);
@@ -161,9 +152,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 comp.setCounter(counter);
                 battle.getCounters().add(comp);
 
-                DiffAttributesEntity attribute = new DiffAttributesEntity();
-                attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD);
-                attribute.setValue(counter.getId().toString());
+                DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD, counter.getId());
                 attribute.setDiff(diff);
                 diff.getAttributes().add(attribute);
             });
@@ -174,9 +163,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .reduce(Integer::sum)
                 .orElse(0);
         if (defenderCounters.size() <= 3 && defenderSize <= 8) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.DEFENDER_READY);
-            diffAttributes.setValue(Boolean.TRUE.toString());
+            DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.DEFENDER_READY, true);
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
             battle.getNonPhasing().setForces(true);
@@ -186,9 +173,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 comp.setCounter(counter);
                 battle.getCounters().add(comp);
 
-                DiffAttributesEntity attribute = new DiffAttributesEntity();
-                attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD);
-                attribute.setValue(counter.getId().toString());
+                DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD, counter.getId());
                 attribute.setDiff(diff);
                 diff.getAttributes().add(attribute);
             });
@@ -274,12 +259,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .setName(PARAMETER_SELECT_FORCE)
                 .setParams(METHOD_SELECT_FORCE, phasing));
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.BATTLE);
-        diff.setIdObject(battle.getId());
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId());
         if (request.getRequest().isAdd()) {
             List<String> allies = oeUtil.getAllies(country, game);
 
@@ -305,13 +285,8 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             comp.setCounter(counter);
             battle.getCounters().add(comp);
 
-            DiffAttributesEntity attribute = new DiffAttributesEntity();
-            if (phasing) {
-                attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD);
-            } else {
-                attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD);
-            }
-            attribute.setValue(counter.getId().toString());
+            DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.ATTACKER_COUNTER_ADD : DiffAttributeTypeEnum.DEFENDER_COUNTER_ADD,
+                    counter.getId());
             attribute.setDiff(diff);
             diff.getAttributes().add(attribute);
         } else {
@@ -329,13 +304,8 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
             battle.getCounters().remove(battleCounter);
 
-            DiffAttributesEntity attribute = new DiffAttributesEntity();
-            if (phasing) {
-                attribute.setType(DiffAttributeTypeEnum.ATTACKER_COUNTER_REMOVE);
-            } else {
-                attribute.setType(DiffAttributeTypeEnum.DEFENDER_COUNTER_REMOVE);
-            }
-            attribute.setValue(battleCounter.getCounter().getId().toString());
+            DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.ATTACKER_COUNTER_REMOVE : DiffAttributeTypeEnum.DEFENDER_COUNTER_REMOVE,
+                    battleCounter.getCounter().getId());
             attribute.setDiff(diff);
             diff.getAttributes().add(attribute);
         }
@@ -452,34 +422,20 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 }
             }
 
-            DiffEntity diff = new DiffEntity();
-            diff.setIdGame(game.getId());
-            diff.setVersionGame(game.getVersion());
-            diff.setType(DiffTypeEnum.MODIFY);
-            diff.setTypeObject(DiffTypeObjectEnum.BATTLE);
-            diff.setIdObject(battle.getId());
-            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setValue(Boolean.toString(request.getRequest().isValidate()));
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-
             if (phasing) {
-                diffAttributes.setType(DiffAttributeTypeEnum.ATTACKER_READY);
                 battle.getPhasing().setForces(request.getRequest().isValidate());
             } else {
-                diffAttributes.setType(DiffAttributeTypeEnum.DEFENDER_READY);
                 battle.getNonPhasing().setForces(request.getRequest().isValidate());
             }
 
-            // If both side are ready, then go to next phase
             if (battle.getPhasing().isForces() && battle.getNonPhasing().isForces()) {
                 battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-                diffAttributes.setValue(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
             }
+
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                    DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.ATTACKER_READY : DiffAttributeTypeEnum.DEFENDER_READY, request.getRequest().isValidate()),
+                    // If both side are ready, then go to next phase
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.WITHDRAW_BEFORE_BATTLE, battle.getPhasing().isForces() && battle.getNonPhasing().isForces()));
 
             diffs.add(diff);
         }

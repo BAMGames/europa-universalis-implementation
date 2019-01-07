@@ -17,9 +17,9 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.*;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.util.DiffUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,22 +84,9 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
 
         chatDao.create(room);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.ADD);
-        diff.setTypeObject(DiffTypeObjectEnum.ROOM);
-        diff.setIdObject(room.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.NAME);
-        diffAttributes.setValue(name);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
-        diffAttributes.setValue(owner.getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.ROOM, room.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NAME, name),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, owner.getId()));
         createDiff(diff);
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
@@ -306,22 +293,9 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         List<DiffEntity> diffs = gameDiffs.getDiffs();
 
         if (change) {
-            DiffEntity diff = new DiffEntity();
-            diff.setIdGame(game.getId());
-            diff.setVersionGame(game.getVersion());
-            diff.setType(DiffTypeEnum.LINK);
-            diff.setTypeObject(DiffTypeObjectEnum.ROOM);
-            diff.setIdObject(room.getId());
-            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
-            diffAttributes.setValue(target.getId().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.INVITE);
-            diffAttributes.setValue(Boolean.toString(request.getRequest().isInvite()));
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.LINK, DiffTypeObjectEnum.ROOM, room.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, target.getId()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.INVITE, request.getRequest().isInvite()));
             createDiff(diff);
 
             diffs.add(diff);

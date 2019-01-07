@@ -12,13 +12,13 @@ import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
-import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.util.DiffUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -75,39 +75,12 @@ public class CounterDomainImpl implements ICounterDomain {
 
         level = computeLevel(counterEntity, province, level, game);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.ADD);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(counterEntity.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(province);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.TYPE);
-        diffAttributes.setValue(type.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.COUNTRY);
-        diffAttributes.setValue(country);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STACK);
-        diffAttributes.setValue(stack.getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        if (level != null) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.LEVEL);
-            diffAttributes.setValue(level.toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        }
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, counterEntity.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, country),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, stack.getId().toString()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEVEL, level, level != null));
 
         return new ImmutablePair<>(diff, counterEntity);
     }
@@ -140,25 +113,9 @@ public class CounterDomainImpl implements ICounterDomain {
             game.getStacks().remove(stack);
         }
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.REMOVE);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(idCounter);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(stack.getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-
-        if (stack.getCounters().isEmpty()) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
-            diffAttributes.setValue(stack.getId().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        }
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, idCounter,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, stack.getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, stack.getId(), stack.getCounters().isEmpty()));
 
         return diff;
     }
@@ -190,29 +147,10 @@ public class CounterDomainImpl implements ICounterDomain {
 
         level = computeLevel(counter, province, level, game);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(idCounter);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.TYPE);
-        diffAttributes.setValue(type.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(province);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        if (level != null) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.LEVEL);
-            diffAttributes.setValue(level.toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        }
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, idCounter,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEVEL, level, level != null));
 
         return new ImmutablePair<>(diff, counter);
     }
@@ -276,24 +214,9 @@ public class CounterDomainImpl implements ICounterDomain {
 
         counter.setVeterans(veterans);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(idCounter);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.VETERANS);
-        diffAttributes.setValue(veterans.toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-        diffAttributes.setValue(counter.getOwner().getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-
-        return diff;
+        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, idCounter,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.VETERANS, veterans.toString()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, counter.getOwner().getProvince()));
     }
 
     /** {@inheritDoc} */
@@ -324,39 +247,12 @@ public class CounterDomainImpl implements ICounterDomain {
             game.getStacks().add(stack);
         }
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MOVE);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(counter.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STACK_FROM);
-        diffAttributes.setValue(counter.getOwner().getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STACK_TO);
-        diffAttributes.setValue(stack.getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_FROM);
-        diffAttributes.setValue(counter.getOwner().getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_TO);
-        diffAttributes.setValue(stack.getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        if (counter.getOwner().getCounters().size() == 1) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
-            diffAttributes.setValue(counter.getOwner().getId().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        }
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_FROM, counter.getOwner().getId().toString()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_TO, stack.getId().toString()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, counter.getOwner().getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, stack.getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, counter.getOwner().getId(), counter.getOwner().getCounters().size() == 1));
 
         StackEntity oldStack = counter.getOwner();
         counter.setOwner(stack);

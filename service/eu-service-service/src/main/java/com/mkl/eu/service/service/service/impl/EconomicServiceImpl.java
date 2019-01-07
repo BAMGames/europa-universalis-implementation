@@ -46,6 +46,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -167,16 +168,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .filter(country -> StringUtils.isNotEmpty(country.getUsername()))
                 .forEach(country -> computeEconomicalSheet(country, game.getId(), game.getTurn(), tradeCenters));
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.INVALIDATE);
-        diff.setTypeObject(DiffTypeObjectEnum.ECO_SHEET);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.TURN);
-        diffAttributes.setValue(Integer.toString(game.getTurn()));
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
 
         createDiff(diff);
         List<Diff> diffs = new ArrayList<>();
@@ -382,69 +375,16 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             admAct.setType(request.getRequest().getType());
             adminActionDao.create(admAct);
 
-            DiffEntity diff = new DiffEntity();
-            diff.setIdGame(game.getId());
-            diff.setVersionGame(game.getVersion());
-            diff.setType(DiffTypeEnum.ADD);
-            diff.setTypeObject(DiffTypeObjectEnum.ADM_ACT);
-            diff.setIdObject(admAct.getId());
-            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
-            diffAttributes.setValue(admAct.getCountry().getId().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.TURN);
-            diffAttributes.setValue(admAct.getTurn().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.TYPE);
-            diffAttributes.setValue(admAct.getType().name());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-            if (admAct.getCost() != null) {
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.COST);
-                diffAttributes.setValue(admAct.getCost().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-            if (admAct.getIdObject() != null) {
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.ID_OBJECT);
-                diffAttributes.setValue(admAct.getIdObject().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-            if (admAct.getProvince() != null) {
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE);
-                diffAttributes.setValue(admAct.getProvince());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-            if (admAct.getCounterFaceType() != null) {
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.COUNTER_FACE_TYPE);
-                diffAttributes.setValue(admAct.getCounterFaceType().name());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-            if (admAct.getColumn() != null) {
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.COLUMN);
-                diffAttributes.setValue(admAct.getColumn().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
-            if (admAct.getBonus() != null) {
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.BONUS);
-                diffAttributes.setValue(admAct.getBonus().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-            }
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.ADM_ACT, admAct.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, admAct.getCountry().getId()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, admAct.getTurn()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, admAct.getType()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COST, admAct.getCost(), admAct.getCost() != null),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_OBJECT, admAct.getIdObject(), admAct.getIdObject() != null),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, admAct.getProvince(), admAct.getProvince() != null),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, admAct.getCounterFaceType(), admAct.getCounterFaceType() != null),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COLUMN, admAct.getColumn(), admAct.getColumn() != null),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BONUS, admAct.getBonus(), admAct.getBonus() != null));
 
             createDiff(diff);
 
@@ -1735,22 +1675,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.REMOVE);
-        diff.setTypeObject(DiffTypeObjectEnum.ADM_ACT);
-        diff.setIdObject(action.getId());
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
-        diffAttributes.setValue(action.getCountry().getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.TYPE);
-        diffAttributes.setValue(action.getType().name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.ADM_ACT, action.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, action.getCountry().getId()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, action.getType()));
 
         createDiff(diff);
 
@@ -1835,54 +1762,21 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 // exotic resources concurrencies
                 newDiffs.addAll(computeAutomaticTechnologyAdvances(game));
 
-                DiffEntity diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.INVALIDATE);
-                diff.setTypeObject(DiffTypeObjectEnum.ECO_SHEET);
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.TURN);
-                diffAttributes.setValue(Integer.toString(game.getTurn()));
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
+                DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
                 newDiffs.add(diff);
 
-                diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.VALIDATE);
-                diff.setTypeObject(DiffTypeObjectEnum.ADM_ACT);
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.TURN);
-                diffAttributes.setValue(Integer.toString(game.getTurn()));
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
+                diff = DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.ADM_ACT,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
                 newDiffs.add(diff);
 
-                diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.INVALIDATE);
-                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
+                diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.STATUS);
                 newDiffs.add(diff);
 
                 newDiffs.addAll(statusWorkflowDomain.computeEndAdministrativeActions(game));
             } else {
-                DiffEntity diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                if (request.getRequest().isValidate()) {
-                    diff.setType(DiffTypeEnum.VALIDATE);
-                } else {
-                    diff.setType(DiffTypeEnum.INVALIDATE);
-                }
-                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-                diff.setIdObject(country.getId());
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
-                diffAttributes.setValue(country.getId().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
+                DiffEntity diff = DiffUtil.createDiff(game, request.getRequest().isValidate() ? DiffTypeEnum.VALIDATE : DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.STATUS, country.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
                 newDiffs.add(diff);
             }
         }
@@ -2214,18 +2108,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     private DiffEntity executeFtiDti(AdministrativeActionEntity action, GameEntity game, PlayableCountryEntity country, Map<String, Integer> costs) {
         addInMap(costs, COST_ACTION, action.getCost());
         if (rollDie(action, game, country)) {
-            DiffEntity diff = new DiffEntity();
-            diff.setIdGame(game.getId());
-            diff.setVersionGame(game.getVersion());
-            diff.setType(DiffTypeEnum.MODIFY);
-            diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
-            diff.setIdObject(country.getId());
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTRY, country.getId());
             if (action.getType() == AdminActionTypeEnum.DTI) {
                 country.setDti(country.getDti() + 1);
 
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.DTI);
-                diffAttributes.setValue(Integer.toString(country.getDti()));
+                DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.DTI, country.getDti());
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
             } else {
@@ -2240,18 +2127,14 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 if (country.getFti() < maxi.get(LimitTypeEnum.MAX_FTI)) {
                     country.setFti(country.getFti() + 1);
 
-                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                    diffAttributes.setType(DiffAttributeTypeEnum.FTI);
-                    diffAttributes.setValue(Integer.toString(country.getFti()));
+                    DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.FTI, country.getFti());
                     diffAttributes.setDiff(diff);
                     diff.getAttributes().add(diffAttributes);
                 }
                 if ((maxi.get(LimitTypeEnum.MAX_FTI_ROTW) != null && country.getFtiRotw() < maxi.get(LimitTypeEnum.MAX_FTI_ROTW)) || country.getFtiRotw() < country.getFti()) {
                     country.setFtiRotw(country.getFtiRotw() + 1);
 
-                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                    diffAttributes.setType(DiffAttributeTypeEnum.FTI_ROTW);
-                    diffAttributes.setValue(Integer.toString(country.getFtiRotw()));
+                    DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.FTI_ROTW, country.getFtiRotw());
                     diffAttributes.setDiff(diff);
                     diff.getAttributes().add(diffAttributes);
                 }
@@ -2405,21 +2288,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                         country.setNavalTech(nextTechName);
                     }
 
-                    DiffEntity diff = new DiffEntity();
-                    diff.setIdGame(game.getId());
-                    diff.setVersionGame(game.getVersion());
-                    diff.setType(DiffTypeEnum.MODIFY);
-                    diff.setTypeObject(DiffTypeObjectEnum.COUNTRY);
-                    diff.setIdObject(country.getId());
-                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                    if (land) {
-                        diffAttributes.setType(DiffAttributeTypeEnum.TECH_LAND);
-                    } else {
-                        diffAttributes.setType(DiffAttributeTypeEnum.TECH_NAVAL);
-                    }
-                    diffAttributes.setValue(nextTechName);
-                    diffAttributes.setDiff(diff);
-                    diff.getAttributes().add(diffAttributes);
+                    DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTRY, country.getId(),
+                            DiffUtil.createDiffAttributes(land ? DiffAttributeTypeEnum.TECH_LAND : DiffAttributeTypeEnum.TECH_NAVAL, nextTechName));
 
                     diffs.add(diff);
 

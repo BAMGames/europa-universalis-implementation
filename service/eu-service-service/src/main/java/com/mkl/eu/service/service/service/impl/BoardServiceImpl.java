@@ -22,7 +22,6 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
@@ -30,6 +29,7 @@ import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,36 +233,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MOVE);
-        diff.setTypeObject(DiffTypeObjectEnum.STACK);
-        diff.setIdObject(idStack);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_FROM);
-        diffAttributes.setValue(stack.getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_TO);
-        diffAttributes.setValue(provinceTo);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.MOVE_POINTS);
-        diffAttributes.setValue(Integer.toString(stack.getMove() + movePoints));
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        if (firstMove) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
-            diffAttributes.setValue(MovePhaseEnum.IS_MOVING.name());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-
-            stack.setMovePhase(MovePhaseEnum.IS_MOVING);
-        }
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, idStack,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, stack.getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_POINTS, stack.getMove() + movePoints),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.IS_MOVING, firstMove));
 
         createDiff(diff);
 
@@ -365,17 +340,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         stack.setCountry(newController);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.STACK);
-        diff.setIdObject(idStack);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.COUNTRY);
-        diffAttributes.setValue(newController);
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newController));
 
         createDiff(diff);
 
@@ -473,17 +439,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         stack.setMovePhase(movePhase);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.STACK);
-        diff.setIdObject(idStack);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
-        diffAttributes.setValue(movePhase.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase));
 
         createDiff(diff);
 
@@ -602,39 +559,12 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_COUNTER, stack.getId(), futureNbCounters, futureSize));
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MOVE);
-        diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-        diff.setIdObject(idCounter);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STACK_FROM);
-        diffAttributes.setValue(counter.getOwner().getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STACK_TO);
-        diffAttributes.setValue(stack.getId().toString());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_FROM);
-        diffAttributes.setValue(counter.getOwner().getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.PROVINCE_TO);
-        diffAttributes.setValue(stack.getProvince());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        if (counter.getOwner().getCounters().size() == 1) {
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.STACK_DEL);
-            diffAttributes.setValue(counter.getOwner().getId().toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
-        }
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, idCounter,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_FROM, counter.getOwner().getId()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_TO, stack.getId()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, counter.getOwner().getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, stack.getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, counter.getOwner().getId(), counter.getOwner().getCounters().size() == 1));
 
         createDiff(diff);
 
@@ -786,16 +716,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     // Yes -> battle phase !
                     game.setStatus(GameStatusEnum.MILITARY_BATTLES);
 
-                    DiffEntity diff = new DiffEntity();
-                    diff.setIdGame(game.getId());
-                    diff.setVersionGame(game.getVersion());
-                    diff.setType(DiffTypeEnum.MODIFY);
-                    diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-                    DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                    diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-                    diffAttributes.setValue(GameStatusEnum.MILITARY_BATTLES.name());
-                    diffAttributes.setDiff(diff);
-                    diff.getAttributes().add(diffAttributes);
+                    DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_BATTLES));
                     newDiffs.add(diff);
 
                     for (String province : provincesAtWar) {
@@ -808,42 +730,21 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                         game.getBattles().add(battle);
                     }
 
-                    diff = new DiffEntity();
-                    diff.setIdGame(game.getId());
-                    diff.setVersionGame(game.getVersion());
-                    diff.setType(DiffTypeEnum.INVALIDATE);
-                    diff.setTypeObject(DiffTypeObjectEnum.BATTLE);
-                    diffAttributes = new DiffAttributesEntity();
-                    diffAttributes.setType(DiffAttributeTypeEnum.TURN);
-                    diffAttributes.setValue(game.getTurn().toString());
-                    diffAttributes.setDiff(diff);
-                    diff.getAttributes().add(diffAttributes);
+                    diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
                     newDiffs.add(diff);
                 } else {
                     // No -> next round
                     newDiffs.addAll(endMilitaryPhase(game, order.getPosition()));
                 }
             } else {
-                DiffEntity diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
+                DiffTypeEnum type = DiffTypeEnum.INVALIDATE;
                 if (request.getRequest().isValidate()) {
-                    diff.setType(DiffTypeEnum.VALIDATE);
-                } else {
-                    diff.setType(DiffTypeEnum.INVALIDATE);
+                    type = DiffTypeEnum.VALIDATE;
                 }
-                diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
-                diff.setIdObject(null);
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-                diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.ID_COUNTRY);
-                diffAttributes.setValue(country.getId().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
+                DiffEntity diff = DiffUtil.createDiff(game, type, DiffTypeObjectEnum.TURN_ORDER,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
 
                 newDiffs.add(diff);
             }
@@ -876,7 +777,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                         o.getPosition() > currentOrderIndex)
                 .map(CountryOrderEntity::getPosition)
-                .min(Comparator.<Integer>naturalOrder())
+                .min(Comparator.naturalOrder())
                 .orElse(null);
 
         if (next != null) {
@@ -885,17 +786,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
                     .forEach(o -> o.setReady(false));
 
-            DiffEntity diff = new DiffEntity();
-            diff.setIdGame(game.getId());
-            diff.setVersionGame(game.getVersion());
-            diff.setType(DiffTypeEnum.INVALIDATE);
-            diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
-            diff.setIdObject(null);
-            DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-            diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.TURN_ORDER,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
 
             diffs.add(diff);
 
@@ -907,17 +799,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                             o.getPosition() == next)
                     .forEach(o -> o.setActive(true));
 
-            diff = new DiffEntity();
-            diff.setIdGame(game.getId());
-            diff.setVersionGame(game.getVersion());
-            diff.setType(DiffTypeEnum.MODIFY);
-            diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
-            diff.setIdObject(null);
-            diffAttributes = new DiffAttributesEntity();
-            diffAttributes.setType(DiffAttributeTypeEnum.ACTIVE);
-            diffAttributes.setValue(next.toString());
-            diffAttributes.setDiff(diff);
-            diff.getAttributes().add(diffAttributes);
+            diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, next));
 
             diffs.add(diff);
         } else {
@@ -931,16 +814,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 // Yes -> siege phase !
                 game.setStatus(GameStatusEnum.MILITARY_SIEGES);
 
-                DiffEntity diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.MODIFY);
-                diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-                DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-                diffAttributes.setValue(GameStatusEnum.MILITARY_SIEGES.name());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
+                DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES));
                 diffs.add(diff);
 
 
@@ -953,16 +828,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     game.getSieges().add(siege);
                 }
 
-                diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.INVALIDATE);
-                diff.setTypeObject(DiffTypeObjectEnum.SIEGE);
-                diffAttributes = new DiffAttributesEntity();
-                diffAttributes.setType(DiffAttributeTypeEnum.TURN);
-                diffAttributes.setValue(game.getTurn().toString());
-                diffAttributes.setDiff(diff);
-                diff.getAttributes().add(diffAttributes);
+                diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.SIEGE,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
                 diffs.add(diff);
             } else {
                 // No -> next round !

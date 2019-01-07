@@ -7,10 +7,10 @@ import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,17 +150,9 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.STATUS);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-        // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
         diffs.add(diff);
 
         diffs.addAll(nextRound(game, true));
@@ -259,16 +251,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
                 });
 
-        DiffEntity diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.STACK);
-        DiffAttributesEntity diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.MOVE_PHASE);
-        diffAttributes.setValue(MovePhaseEnum.NOT_MOVED.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED));
 
         diffs.add(diff);
 
@@ -276,17 +260,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
                 .forEach(o -> o.setReady(false));
-        diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.INVALIDATE);
-        diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
-        diff.setIdObject(null);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.TURN_ORDER,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
 
         diffs.add(diff);
 
@@ -298,22 +273,9 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                         o.getPosition() == 0)
                 .forEach(o -> o.setActive(true));
-        diff = new DiffEntity();
-        diff.setIdGame(game.getId());
-        diff.setVersionGame(game.getVersion());
-        diff.setType(DiffTypeEnum.MODIFY);
-        diff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
-        diff.setIdObject(null);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.ACTIVE);
-        diffAttributes.setValue("0");
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
-        diffAttributes = new DiffAttributesEntity();
-        diffAttributes.setType(DiffAttributeTypeEnum.STATUS);
-        diffAttributes.setValue(GameStatusEnum.MILITARY_MOVE.name());
-        diffAttributes.setDiff(diff);
-        diff.getAttributes().add(diffAttributes);
+        diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, "0"),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
 
         diffs.add(diff);
 
