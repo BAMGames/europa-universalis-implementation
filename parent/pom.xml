@@ -15,12 +15,12 @@
 
         <jogl.version>2.3.2</jogl.version>
         <org.slf4j-version>1.7.7</org.slf4j-version>
-        <spring.version>4.1.7.RELEASE</spring.version>
-        <spring-security.version>3.2.0.RELEASE</spring-security.version>
+        <spring.version>5.1.0.RELEASE</spring.version>
+        <spring-security.version>5.1.2.RELEASE</spring-security.version>
         <spring.batch.version>2.1.9.RELEASE</spring.batch.version>
         <spring.batch.admin.version>1.2.1.RELEASE</spring.batch.admin.version>
         <tiles.version>3.0.1</tiles.version>
-        <jackson.version>2.3.2</jackson.version>
+        <jackson.version>2.9.8</jackson.version>
         <hibernate.version>4.3.10.Final</hibernate.version>
         <maven-surfire-plugin.version>2.13</maven-surfire-plugin.version>
         <maven-failsafe-plugin.version>2.13</maven-failsafe-plugin.version>
@@ -623,12 +623,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-compress</artifactId>
-                <version>1.9</version>
-            </dependency>
-
-            <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.5</version>
@@ -736,12 +730,6 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>4.3.1.Final</version>
-            </dependency>
-            <!-- File Upload -->
-            <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <version>1.2.2</version>
             </dependency>
 
             <!-- Javatuples -->
