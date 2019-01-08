@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -468,6 +469,13 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .findFirst()
                 .orElse(null);
 
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
+
         BattleEntity battle = game.getBattles().stream()
                 .filter(bat -> bat.getStatus() == BattleStatusEnum.WITHDRAW_BEFORE_BATTLE)
                 .findAny()
@@ -501,7 +509,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         boolean isNear = false;
         if (provinceFrom != null) {
             isNear = provinceFrom.getBorders().stream()
-                    .anyMatch(x -> province.getId().equals(x.getProvinceTo().getId()));
+                    .anyMatch(x -> Objects.equals(province.getId(), x.getProvinceTo().getId()));
         }
 
         failIfFalse(new CheckForThrow<Boolean>()

@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
+import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -20,6 +21,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
@@ -942,6 +944,102 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             this.shockNPS += shockNPS;
 
             return this;
+        }
+    }
+
+    @Test
+    public void testWithdrawBeforeBattleFail() {
+        Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(militaryService::withdrawBeforeBattle, "withdrawBeforeBattle");
+        Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
+        game.getBattles().get(0).setProvince("idf");
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        testCheckStatus(pair.getRight(), request, militaryService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because withdrawBeforeBattle.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new WithdrawBeforeBattleRequest());
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because battle is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle", e.getParams()[0]);
+        }
+
+        game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvinceTo("");
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because province is empty");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvinceTo("toto");
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvinceTo("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(new EuropeanProvinceEntity());
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because province is not next to battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvinceTo("orleans");
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because cannot retreat in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_WITHDRAW, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request.provinceTo", e.getParams()[0]);
         }
     }
 }
