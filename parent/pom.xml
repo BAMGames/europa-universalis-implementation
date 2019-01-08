@@ -72,12 +72,8 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <argLine>${maven-surefire-plugin.arguments}</argLine>
-                        <useSystemClassLoader>false</useSystemClassLoader>
-                    </configuration>
                 </plugin>
-    
+
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
