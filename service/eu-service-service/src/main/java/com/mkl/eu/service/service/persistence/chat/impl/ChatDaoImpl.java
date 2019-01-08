@@ -117,7 +117,7 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
     @Override
     public void createMessage(MessageGlobalEntity message) {
         try {
-            getSession().persist(message);
+            getSession().save(message);
         } catch (HibernateException e) {
             LOG.error("Error during create :" + e.getMessage());
             throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, message.getId());
@@ -174,7 +174,7 @@ public class ChatDaoImpl extends GenericDaoImpl<RoomEntity, Long> implements ICh
     @Override
     public void createPresent(PresentEntity present) {
         try {
-            getSession().persist(present);
+            getSession().save(present);
         } catch (HibernateException e) {
             LOG.error("Error during create :" + e.getMessage());
             throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, present.getId());

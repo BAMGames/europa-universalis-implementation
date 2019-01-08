@@ -21,12 +21,12 @@
         <spring.batch.admin.version>1.2.1.RELEASE</spring.batch.admin.version>
         <tiles.version>3.0.1</tiles.version>
         <jackson.version>2.9.8</jackson.version>
-        <hibernate.version>4.3.10.Final</hibernate.version>
+        <hibernate.version>5.4.0.Final</hibernate.version>
         <maven-surfire-plugin.version>2.13</maven-surfire-plugin.version>
         <maven-failsafe-plugin.version>2.13</maven-failsafe-plugin.version>
         <aspectj.version>1.7.1</aspectj.version>
         <mockito.version>1.9.5</mockito.version>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.12</junit.version>
         <unitils.version>3.3</unitils.version>
         <ehcache.version>2.6.3</ehcache.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -77,17 +77,17 @@
                         <useSystemClassLoader>false</useSystemClassLoader>
                     </configuration>
                 </plugin>
-
-                <plugin>
-                    <groupId>de.juplo</groupId>
-                    <artifactId>hibernate4-maven-plugin</artifactId>
-                    <version>1.0.3</version>
-                </plugin>
     
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
-                    <version>4.1.0</version>
+                    <version>4.3.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.2</version>
                 </plugin>
                 
                 <plugin>
@@ -338,7 +338,8 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
-                <version>${spring.version}</version>
+                <!--com.excilys.ebi.spring-dbunit is not compatible with spring 5-->
+                <version>4.3.21.RELEASE</version>
                 <scope>test</scope>
             </dependency>
 
@@ -551,19 +552,19 @@
             <dependency>
                 <groupId>org.jadira.usertype</groupId>
                 <artifactId>usertype.extended</artifactId>
-                <version>3.2.0.GA</version>
+                <version>5.0.0.GA</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jadira.usertype</groupId>
                 <artifactId>usertype.core</artifactId>
-                <version>3.2.0.GA</version>
+                <version>6.0.1.GA</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jadira.usertype</groupId>
                 <artifactId>usertype.spi</artifactId>
-                <version>3.2.0.GA</version>
+                <version>6.0.1.GA</version>
             </dependency>
 
             <dependency>
@@ -577,12 +578,6 @@
                 <artifactId>cglib</artifactId>
                 <version>2.2.2</version>
                 <scope>runtime</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <version>3.1.0.GA</version>
             </dependency>
 
             <dependency>
