@@ -73,7 +73,7 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <argLine>${surefireArgLine} ${maven-surefire-plugin.arguments}</argLine>
+                        <argLine>${surefireArgLine}</argLine>
                         <useSystemClassLoader>false</useSystemClassLoader>
                     </configuration>
                 </plugin>
