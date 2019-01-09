@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.tables;
 
 import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,7 +24,8 @@ public class CombatResultEntity extends AbstractWithLossEntity implements IEntit
 
     /** @return the id. */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     @Column(name = "ID")
     public Long getId() {
         return id;

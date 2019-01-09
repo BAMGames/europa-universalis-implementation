@@ -8,22 +8,22 @@
 
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"
           p:dataSource-ref="dataSource"
           p:configLocation="classpath:/com/mkl/eu/service/webapp/hibernate.cfg.xml"
-          p:namingStrategy-ref="componentNamingStrategy"
+          p:implicitNamingStrategy-ref="componentNamingStrategy"
           p:packagesToScan="com.mkl.eu.**.oe"
           depends-on="flywayService">
     </bean>
 
-    <bean id="componentNamingStrategy" class="org.hibernate.cfg.DefaultComponentSafeNamingStrategy"/>
+    <bean id="componentNamingStrategy" class="org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl"/>
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" p:dataSource-ref="dataSource"/>
 
     <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean"
           p:jndiName="${app.jdbc.jndiName}"/>
 
-    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"
+    <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager"
           p:sessionFactory-ref="sessionFactory"/>
 
 </beans>

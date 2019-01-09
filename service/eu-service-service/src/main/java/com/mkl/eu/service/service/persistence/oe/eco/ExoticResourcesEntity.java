@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.eco;
 
 import com.mkl.eu.client.service.vo.enumeration.ExoticResourcesEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -25,7 +26,8 @@ public class ExoticResourcesEntity implements IEntity, Serializable {
 
     /** @return the id. */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     @Column(name = "ID")
     public Long getId() {
         return id;

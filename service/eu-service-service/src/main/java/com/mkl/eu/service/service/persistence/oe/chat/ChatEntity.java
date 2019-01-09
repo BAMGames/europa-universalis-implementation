@@ -4,6 +4,7 @@ import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -32,7 +33,8 @@ public class ChatEntity implements IEntity, Serializable {
 
     /** @return the id. */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     @Column(name = "ID")
     public Long getId() {
         return id;
