@@ -762,4 +762,17 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_CANT_WITHDRAW = "exception.eu.board.battle_cant_withdraw";
+
+    /**
+     * <p>
+     * Exception thrown when a phasing player is trying to withdraw before battle.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW = "exception.eu.board.battle_only_non_phasing_can_withdraw";
 }

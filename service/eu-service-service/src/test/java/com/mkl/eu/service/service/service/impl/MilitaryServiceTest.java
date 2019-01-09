@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -829,7 +830,9 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 .addShockPhasingFirstDay(1)
                 .addShockPhasingSecondDay(1)
                 .addShockNonPhasingFirstDay(1)
-                .addShockNonPhasingSecondDay(1));
+                .addShockNonPhasingSecondDay(1)
+                .addFireNonPhasingFirstDay(-1)
+                .addFireNonPhasingSecondDay(-1));
 
         battle.setProvince("lyonnais");
         when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(10);
@@ -839,8 +842,10 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         checkModifiers(battle, Modifiers.init(-1)
                 .addFirePhasingFirstDay(1)
                 .addFirePhasingSecondDay(1)
-                .addShockPhasingFirstDay(1)
-                .addShockPhasingSecondDay(1));
+                .addShockPhasingFirstDay(2)
+                .addShockPhasingSecondDay(2)
+                .addFireNonPhasingFirstDay(-1)
+                .addFireNonPhasingSecondDay(-1));
     }
 
     private void checkModifiers(BattleEntity battle, Modifiers modifiers) {
@@ -958,6 +963,12 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.getCountry().setId(26L);
+        game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setId(1L);
         idf.setName("idf");
@@ -974,6 +985,16 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         try {
             militaryService.withdrawBeforeBattle(request);
+            Assert.fail("Should break because withdrawBeforeBattle.idCountry is the phasing player");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW, e.getCode());
+            Assert.assertEquals("withdrawBeforeBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        request.setIdCountry(27L);
+
+        try {
+            militaryService.withdrawBeforeBattle(request);
             Assert.fail("Should break because withdrawBeforeBattle.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -981,6 +1002,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         }
 
         request.setRequest(new WithdrawBeforeBattleRequest());
+        request.getRequest().setWithdraw(true);
 
         try {
             militaryService.withdrawBeforeBattle(request);
@@ -1041,5 +1063,67 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_WITHDRAW, e.getCode());
             Assert.assertEquals("withdrawBeforeBattle.request.provinceTo", e.getParams()[0]);
         }
+    }
+
+    @Test
+    public void testWithdrawBeforeBattleSuccess() throws FunctionalException {
+        Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(militaryService::withdrawBeforeBattle, "withdrawBeforeBattle");
+        Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        game.getBattles().get(0).setProvince("idf");
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(27L);
+        game.getCountries().add(country);
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.getCountry().setId(26L);
+        game.getOrders().add(order);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
+        when(oeUtil.canRetreat(any(), anyBoolean(), anyInt(), any(), any())).thenReturn(true);
+        testCheckStatus(pair.getRight(), request, militaryService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(27L);
+        request.setRequest(new WithdrawBeforeBattleRequest());
+        request.getRequest().setWithdraw(true);
+        request.getRequest().setProvinceTo("orleans");
+        BattleEntity battle = game.getBattles().get(0);
+
+        when(oeUtil.rollDie(game, country)).thenReturn(5);
+
+        militaryService.withdrawBeforeBattle(request);
+
+        Assert.assertTrue(battle.getEnd() != BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+
+        battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        request.getRequest().setProvinceTo("idf");
+
+        militaryService.withdrawBeforeBattle(request);
+
+        Assert.assertTrue(battle.getEnd() == BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+
+        battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        request.getRequest().setProvinceTo("orleans");
+        when(oeUtil.rollDie(game, country)).thenReturn(8);
+
+        militaryService.withdrawBeforeBattle(request);
+
+        Assert.assertTrue(battle.getEnd() == BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
     }
 }

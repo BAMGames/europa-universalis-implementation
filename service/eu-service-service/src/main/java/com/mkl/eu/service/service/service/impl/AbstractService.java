@@ -251,23 +251,16 @@ public abstract class AbstractService implements INameConstants {
      * @throws FunctionalException functional exception.
      */
     protected void checkGameStatus(GameEntity game, GameStatusEnum status, Long idCountry, String method, String param) throws FunctionalException {
+        checkSimpleStatus(game, status, method, param);
         switch (status) {
-            case ADMINISTRATIVE_ACTIONS_CHOICE:
-            case MILITARY_HIERARCHY:
-                checkSimpleStatus(game, status, method, param);
-                break;
             case MILITARY_CAMPAIGN:
             case MILITARY_SUPPLY:
             case MILITARY_MOVE:
             case MILITARY_BATTLES:
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
-                CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
-                        order -> order.isActive() &&
-                                order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                                order.getCountry().getId().equals(idCountry));
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                        .setTest(game.getStatus() == status && activeOrder != null)
+                        .setTest(isPhasingPlayer(game, idCountry))
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)
                         .setMsgFormat(MSG_INVALID_STATUS)
                         .setName(param, PARAMETER_REQUEST)
@@ -276,6 +269,18 @@ public abstract class AbstractService implements INameConstants {
             default:
                 break;
         }
+    }
+
+    /**
+     * @param game      the game.
+     * @param idCountry the country.
+     * @return <code>true</code> if the country is the phasing side during a military round, <code>false</code> otherwise.
+     */
+    protected boolean isPhasingPlayer(GameEntity game, Long idCountry) {
+        return game.getOrders().stream()
+                .anyMatch(order -> order.isActive() &&
+                        order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        order.getCountry().getId().equals(idCountry));
     }
 
     /**

@@ -469,6 +469,13 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .findFirst()
                 .orElse(null);
 
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(isPhasingPlayer(game, request.getIdCountry()))
+                .setCodeError(IConstantsServiceException.BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW)
+                .setMsgFormat("{1}: {0} only non phasing player can withdraw before battle.")
+                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
+
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
                 .setCodeError(IConstantsCommonException.NULL_PARAMETER)
@@ -488,59 +495,67 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE)
                 .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name()));
 
-        String provinceTo = request.getRequest().getProvinceTo();
+        if (request.getRequest().isWithdraw()) {
+            String provinceTo = request.getRequest().getProvinceTo();
 
-        failIfEmpty(new AbstractService.CheckForThrow<String>()
-                .setTest(provinceTo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
+            failIfEmpty(new AbstractService.CheckForThrow<String>()
+                    .setTest(provinceTo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                    .setMsgFormat(MSG_MISSING_PARAMETER)
+                    .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
 
-        AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
+            AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
 
-        failIfNull(new CheckForThrow<>()
-                .setTest(province)
-                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
-                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
+            failIfNull(new CheckForThrow<>()
+                    .setTest(province)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
 
-        AbstractProvinceEntity provinceFrom = provinceDao.getProvinceByName(battle.getProvince());
-        boolean isNear = false;
-        if (provinceFrom != null) {
-            isNear = provinceFrom.getBorders().stream()
-                    .anyMatch(x -> Objects.equals(province.getId(), x.getProvinceTo().getId()));
+            AbstractProvinceEntity provinceFrom = provinceDao.getProvinceByName(battle.getProvince());
+            boolean isNear = StringUtils.equals(provinceTo, battle.getProvince());
+            if (!isNear && provinceFrom != null) {
+                isNear = provinceFrom.getBorders().stream()
+                        .anyMatch(x -> Objects.equals(province.getId(), x.getProvinceTo().getId()));
+            }
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(isNear)
+                    .setCodeError(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR)
+                    .setMsgFormat(MSG_NOT_NEIGHBOR)
+                    .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, battle.getProvince(), provinceTo));
+
+            int stackSize = battle.getCounters().stream()
+                    .filter(BattleCounterEntity::isNotPhasing)
+                    .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType())));
+            boolean canRetreat = oeUtil.canRetreat(province, province == provinceFrom, stackSize, country, game);
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(canRetreat)
+                    .setCodeError(IConstantsServiceException.BATTLE_CANT_WITHDRAW)
+                    .setMsgFormat("{1}: {0} {2} is not a valid province to withdraw.")
+                    .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
+
+            boolean success = StringUtils.equals(battle.getProvince(), provinceTo);
+            if (!success) {
+                int die = oeUtil.rollDie(game, country);
+
+                // TODO leader diff manoeuvre if positive
+                if (die >= 8) {
+                    success = true;
+                }
+            }
+
+            if (success) {
+                battle.setEnd(BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+                // TODO compute RETREAT
+            }
         }
 
-        failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(isNear)
-                .setCodeError(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR)
-                .setMsgFormat(MSG_NOT_NEIGHBOR)
-                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, battle.getProvince(), provinceTo));
-
-        int stackSize = battle.getCounters().stream()
-                .filter(BattleCounterEntity::isNotPhasing)
-                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType())));
-        boolean canRetreat = oeUtil.canRetreat(province, province == provinceFrom, stackSize, country, game);
-
-        failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(canRetreat)
-                .setCodeError(IConstantsServiceException.BATTLE_CANT_WITHDRAW)
-                .setMsgFormat("{1}: {0} {2} is not a valid province to withdraw.")
-                .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                .setParams(METHOD_WITHDRAW_BEFORE_BATTLE, provinceTo));
-
-        int die = oeUtil.rollDie(game, country);
-
-        // TODO leader diff manoeuvre if positive
-        if (die >= 8) {
-            // TODO is it really RETREAT ?
-            battle.setStatus(BattleStatusEnum.RETREAT);
-        } else {
-            // TODO compute first day
-        }
-
+        // TODO COMPUTE First day
         return null;
     }
 
@@ -580,7 +595,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         // TODO foraging
 
-        // Terrain
+        // Terrain modifiers
         AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
         switch (province.getTerrain()) {
             case DENSE_FOREST:
@@ -605,8 +620,22 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         // TODO river/straits
 
+        // No army counter -> -1 to fire
+        if (!countersPhasing.stream()
+                .anyMatch(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2)) {
+            battle.getPhasing().getFirstDay().addFire(-1);
+            battle.getPhasing().getSecondDay().addFire(-1);
+        }
+        if (!countersNotPhasing.stream()
+                .anyMatch(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2)) {
+            battle.getNonPhasing().getFirstDay().addFire(-1);
+            battle.getNonPhasing().getSecondDay().addFire(-1);
+        }
+
         List<ArmyInfo> armyPhasing = oeUtil.getArmyInfo(countersPhasing, getReferential());
         List<ArmyInfo> armyNotPhasing = oeUtil.getArmyInfo(countersNotPhasing, getReferential());
+
+        // 6 artilleries -> +1 to fire
         int bonusArtilleryPhasing = oeUtil.getArtilleryBonus(armyPhasing, getTables(), battle.getGame());
         int bonusArtilleryNotPhasing = oeUtil.getArtilleryBonus(armyNotPhasing, getTables(), battle.getGame());
         if (bonusArtilleryPhasing >= 6) {
@@ -618,15 +647,26 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             battle.getNonPhasing().getSecondDay().addFire(1);
         }
 
-        if (battle.getPhasing().getSize() >= battle.getNonPhasing().getSize() + 3 ||
-                oeUtil.getCavalryBonus(armyPhasing, province.getTerrain(), getTables(), battle.getGame())) {
+        // army bigger by at least 3 regiments -> +1 to shock
+        if (battle.getPhasing().getSize() >= battle.getNonPhasing().getSize() + 3) {
             battle.getPhasing().getFirstDay().addShock(1);
             battle.getPhasing().getSecondDay().addShock(1);
         }
-        if (battle.getNonPhasing().getSize() >= battle.getPhasing().getSize() + 3 ||
-                oeUtil.getCavalryBonus(armyNotPhasing, province.getTerrain(), getTables(), battle.getGame())) {
+        if (battle.getNonPhasing().getSize() >= battle.getPhasing().getSize() + 3) {
             battle.getNonPhasing().getFirstDay().addShock(1);
             battle.getNonPhasing().getSecondDay().addShock(1);
         }
+
+        // structural cavalry modifier -> +1 to shock
+        if (oeUtil.getCavalryBonus(armyPhasing, province.getTerrain(), getTables(), battle.getGame())) {
+            battle.getPhasing().getFirstDay().addShock(1);
+            battle.getPhasing().getSecondDay().addShock(1);
+        }
+        if (oeUtil.getCavalryBonus(armyNotPhasing, province.getTerrain(), getTables(), battle.getGame())) {
+            battle.getNonPhasing().getFirstDay().addShock(1);
+            battle.getNonPhasing().getSecondDay().addShock(1);
+        }
+
+        // TODO TUR Sipahi for pursuit
     }
 }

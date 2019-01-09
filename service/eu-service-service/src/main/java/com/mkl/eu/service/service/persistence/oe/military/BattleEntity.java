@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.military;
 
+import com.mkl.eu.client.service.vo.enumeration.BattleEndEnum;
 import com.mkl.eu.client.service.vo.enumeration.BattleStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
@@ -26,6 +27,8 @@ public class BattleEntity implements IEntity, Serializable {
     private Integer turn;
     /** Status of the battle. */
     private BattleStatusEnum status;
+    /** Cause of battle end. */
+    private BattleEndEnum end;
     /** Phasing side. */
     private BattleSideEntity phasing = new BattleSideEntity();
     /** Non phasing side. */
@@ -82,6 +85,18 @@ public class BattleEntity implements IEntity, Serializable {
     /** @param status the status to set. */
     public void setStatus(BattleStatusEnum status) {
         this.status = status;
+    }
+
+    /** @return the end. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "END")
+    public BattleEndEnum getEnd() {
+        return end;
+    }
+
+    /** @param end the end to set. */
+    public void setEnd(BattleEndEnum end) {
+        this.end = end;
     }
 
     /** @return the phasingSide. */
