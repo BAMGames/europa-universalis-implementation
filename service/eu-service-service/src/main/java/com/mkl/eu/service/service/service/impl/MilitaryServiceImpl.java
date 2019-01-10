@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -555,11 +556,25 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             }
         }
 
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        // TODO replacement leader if needed
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        attributes.addAll(fillBattleModifiers(battle));
         // TODO COMPUTE First day
-        return null;
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        diffs.add(diff);
+
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(game.getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
     }
 
-    protected void fillBattleModifiers(BattleEntity battle) {
+    protected List<DiffAttributesEntity> fillBattleModifiers(BattleEntity battle) {
         battle.getPhasing().getFirstDay().clear();
         battle.getPhasing().getSecondDay().clear();
         battle.getNonPhasing().getFirstDay().clear();
@@ -668,5 +683,27 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         }
 
         // TODO TUR Sipahi for pursuit
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, battle.getPhasing().getSize()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_TECH, battle.getPhasing().getTech()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE_MOD, battle.getPhasing().getFirstDay().getFire()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK_MOD, battle.getPhasing().getFirstDay().getShock()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_PURSUIT_MOD, battle.getPhasing().getFirstDay().getPursuit()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD, battle.getPhasing().getSecondDay().getFire()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD, battle.getPhasing().getSecondDay().getShock()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_PURSUIT_MOD, battle.getPhasing().getSecondDay().getPursuit()));
+
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE, battle.getNonPhasing().getSize()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_TECH, battle.getNonPhasing().getTech()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD, battle.getNonPhasing().getFirstDay().getFire()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, battle.getNonPhasing().getFirstDay().getShock()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_PURSUIT_MOD, battle.getNonPhasing().getFirstDay().getPursuit()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD, battle.getNonPhasing().getSecondDay().getFire()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD, battle.getNonPhasing().getSecondDay().getShock()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_PURSUIT_MOD, battle.getNonPhasing().getSecondDay().getPursuit()));
+
+        return attributes;
     }
 }

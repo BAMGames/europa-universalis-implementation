@@ -1088,9 +1088,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setId(1L);
         idf.setName("idf");
+        idf.setTerrain(TerrainEnum.PLAIN);
         EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
         orleans.setId(2L);
         orleans.setName("orleans");
+        orleans.setTerrain(TerrainEnum.PLAIN);
         BorderEntity border = new BorderEntity();
         border.setProvinceFrom(idf);
         border.setProvinceTo(orleans);

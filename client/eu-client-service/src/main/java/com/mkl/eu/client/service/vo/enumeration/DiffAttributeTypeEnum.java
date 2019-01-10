@@ -77,5 +77,39 @@ public enum DiffAttributeTypeEnum {
     /** Counter to remove as attacker. */
     ATTACKER_COUNTER_REMOVE,
     /** Counter to remove as defender. */
-    DEFENDER_COUNTER_REMOVE
+    DEFENDER_COUNTER_REMOVE,
+    /** Size of phasing forces in a battle. */
+    BATTLE_PHASING_SIZE,
+    /** Tech of phasing forces in a battle. */
+    BATTLE_PHASING_TECH,
+    /** Fire modifier of phasing forces in the first day of a battle. */
+    BATTLE_PHASING_FIRST_DAY_FIRE_MOD,
+    /** Shock modifier of phasing forces in the first day of a battle. */
+    BATTLE_PHASING_FIRST_DAY_SHOCK_MOD,
+    /** Pursuit modifier of phasing forces in the first day of a battle. */
+    BATTLE_PHASING_FIRST_DAY_PURSUIT_MOD,
+    /** Fire modifier of phasing forces in the second day of a battle. */
+    BATTLE_PHASING_SECOND_DAY_FIRE_MOD,
+    /** Shock modifier of phasing forces in the second day of a battle. */
+    BATTLE_PHASING_SECOND_DAY_SHOCK_MOD,
+    /** Pursuit modifier of phasing forces in the second day of a battle. */
+    BATTLE_PHASING_SECOND_DAY_PURSUIT_MOD,
+    /** Size of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_SIZE,
+    /** Tech of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_TECH,
+    /** Fire modifier of non phasing forces in the first day of a battle. */
+    BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD,
+    /** Shock modifier of non phasing forces in the first day of a battle. */
+    BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD,
+    /** Pursuit modifier of non phasing forces in the first day of a battle. */
+    BATTLE_NON_PHASING_FIRST_DAY_PURSUIT_MOD,
+    /** Fire modifier of non phasing forces in the second day of a battle. */
+    BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD,
+    /** Shock modifier of non phasing forces in the second day of a battle. */
+    BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD,
+    /** Pursuit modifier of non phasing forces in the second day of a battle. */
+    BATTLE_NON_PHASING_SECOND_DAY_PURSUIT_MOD
+
+
 }

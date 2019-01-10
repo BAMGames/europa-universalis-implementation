@@ -227,6 +227,22 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#DEFENDER_COUNTER_ADD the defending counter added to this battle.</li>
      * <li>DiffAttributeTypeEnum#ATTACKER_COUNTER_REMOVE the attacking counter removed to this battle.</li>
      * <li>DiffAttributeTypeEnum#DEFENDER_COUNTER_REMOVE the defending counter removed to this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_FIRE_MOD the fire modifier of the phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_SHOCK_MOD the shock modifier of the phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_PURSUIT_MOD the pursuit modifier of the phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_FIRE_MOD the fire modifier of the phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK_MOD the shock modifier of the phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_PURSUIT_MOD the pursuit modifier of the phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD the fire modifier of the non phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD the shock modifier of the non phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_PURSUIT_MOD the pursuit modifier of the non phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD the fire modifier of the non phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD the shock modifier of the non phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_PURSUIT_MOD the pursuit modifier of the non phasing forces in the second day of this battle.</li>
      * </ul>
      * </li>
      * </ul>
