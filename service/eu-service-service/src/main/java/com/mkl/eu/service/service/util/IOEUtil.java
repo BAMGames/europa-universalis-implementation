@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -230,4 +231,25 @@ public interface IOEUtil {
      * @return <code>true</code> if the country can retreat in the province.
      */
     boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, int stackSize, PlayableCountryEntity country, GameEntity game);
+
+    /**
+     * @param counters the stack of counters.
+     * @return <code>true</code> if the stack is veteran.
+     */
+    boolean isStackVeteran(List<CounterEntity> counters);
+
+    /**
+     * @param losses   initial losses.
+     * @param sizeDiff size differential between the stacks.
+     * @return the loss after size computation.
+     */
+    AbstractWithLossEntity lossModificationSize(AbstractWithLossEntity losses, Integer sizeDiff);
+
+    /**
+     * @param counters of the stack.
+     * @param tables   the tables.
+     * @param game     the game.
+     * @return the size of the stack for size comparison rules.
+     */
+    Integer getArmySize(List<ArmyInfo> counters, Tables tables, GameEntity game);
 }

@@ -3,14 +3,14 @@ package com.mkl.eu.service.service.util.impl;
 import com.excilys.ebi.spring.dbunit.config.DBOperation;
 import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
-import com.mkl.eu.client.service.vo.tables.ArmyArtillery;
-import com.mkl.eu.client.service.vo.tables.Period;
-import com.mkl.eu.client.service.vo.tables.Tables;
-import com.mkl.eu.client.service.vo.tables.Tech;
+import com.mkl.eu.client.service.vo.tables.*;
+import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -23,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.CombatResultEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -1494,6 +1495,13 @@ public class OEUtilTest {
         return army;
     }
 
+    private ArmyInfo createArmyPlus(ArmyClassEnum armyClass) {
+        ArmyInfo army = new ArmyInfo();
+        army.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        army.setArmyClass(armyClass);
+        return army;
+    }
+
     private ArmyInfo createDetachment(String country) {
         ArmyInfo army = new ArmyInfo();
         army.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
@@ -1588,5 +1596,1199 @@ public class OEUtilTest {
         Assert.assertTrue(oeUtil.canRetreat(province, true, 2, france, game));
 
         Assert.assertFalse(oeUtil.canRetreat(province, true, 4, france, game));
+    }
+
+    @Test
+    public void testVeteran() {
+        List<CounterEntity> counters = new ArrayList<>();
+        Assert.assertFalse(oeUtil.isStackVeteran(counters));
+
+        CounterEntity army = new CounterEntity();
+        army.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counters.add(army);
+
+        Assert.assertFalse(oeUtil.isStackVeteran(counters));
+
+        army.setVeterans(4);
+
+        Assert.assertTrue(oeUtil.isStackVeteran(counters));
+
+        army.setVeterans(2);
+
+        Assert.assertFalse(oeUtil.isStackVeteran(counters));
+
+        army.setVeterans(3);
+
+        Assert.assertTrue(oeUtil.isStackVeteran(counters));
+
+        CounterEntity detachment1 = new CounterEntity();
+        detachment1.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        counters.add(detachment1);
+
+        Assert.assertTrue(oeUtil.isStackVeteran(counters));
+
+        CounterEntity detachment2 = new CounterEntity();
+        detachment2.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+        counters.add(detachment2);
+
+        Assert.assertFalse(oeUtil.isStackVeteran(counters));
+
+        detachment1.setVeterans(1);
+
+        Assert.assertTrue(oeUtil.isStackVeteran(counters));
+    }
+
+    @Test
+    public void testLossModificationSizeFail() {
+        try {
+            oeUtil.lossModificationSize(null, -3);
+            Assert.fail("Size diff of -3 does not exist.");
+        } catch (TechnicalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("lossModificationSize", e.getParams()[0]);
+            Assert.assertEquals("sizeDiff", e.getParams()[1]);
+            Assert.assertEquals(-3, e.getParams()[2]);
+        }
+
+        try {
+            oeUtil.lossModificationSize(null, 4);
+            Assert.fail("Size diff of -3 does not exist.");
+        } catch (TechnicalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("lossModificationSize", e.getParams()[0]);
+            Assert.assertEquals("sizeDiff", e.getParams()[1]);
+            Assert.assertEquals(4, e.getParams()[2]);
+        }
+    }
+
+    @Test
+    public void testLossModificationSizeMinusTwo() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(-2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+    }
+
+    @Test
+    public void testLossModificationSizeMinusOne() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(-1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+    }
+
+    @Test
+    public void testLossModificationSizeZero() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(0)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+    }
+
+    public void testLossModificationSizeOneInitial() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(2).toEntity());
+    }
+
+    @Test
+    public void testLossModificationSizeOne() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(1)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).toEntity());
+    }
+
+    @Test
+    public void testLossModificationSizeTwo() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(9).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(2)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(9).third(1).toEntity());
+    }
+
+    public void testLossModificationSizeThreeAlternative() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(9).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(9).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(10).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(10).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(11).third(1).toEntity());
+    }
+
+    @Test
+    public void testLossModificationSizeThree() {
+        LossModBuilder.create()
+                .losses(LossBuilder.create().toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(1).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(2).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(1).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(3).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(4).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(2).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(5).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(3).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(6).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(7).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(4).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(8).third(2).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(9).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(5).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(10).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(10).third(1).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(1).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(11).toEntity());
+
+        LossModBuilder.create()
+                .losses(LossBuilder.create().round(6).third(2).toEntity())
+                .size(3)
+                .when(oeUtil)
+                .thenExpect(LossBuilder.create().round(11).third(2).toEntity());
+    }
+
+    private static class LossModBuilder {
+        AbstractWithLossEntity losses;
+        Integer size;
+        AbstractWithLossEntity result;
+
+        static LossModBuilder create() {
+            return new LossModBuilder();
+        }
+
+        LossModBuilder losses(AbstractWithLossEntity losses) {
+            this.losses = losses;
+            return this;
+        }
+
+        LossModBuilder size(Integer size) {
+            this.size = size;
+            return this;
+        }
+
+        LossModBuilder when(OEUtilImpl oeUtil) {
+            result = oeUtil.lossModificationSize(losses, size);
+            return this;
+        }
+
+        LossModBuilder thenExpect(AbstractWithLossEntity expected) {
+            Assert.assertEquals("The round losses is incorrect for losses " + losses + " and size diff " + size, zeroIfNull(expected.getRoundLoss()), zeroIfNull(result.getRoundLoss()));
+            Assert.assertEquals("The third losses is incorrect for losses " + losses + " and size diff " + size, zeroIfNull(expected.getThirdLoss()), zeroIfNull(result.getThirdLoss()));
+            return this;
+        }
+    }
+
+    private static Integer zeroIfNull(Integer input) {
+        return input == null ? 0 : input;
+    }
+
+    private static class LossBuilder {
+        Integer round;
+        Integer third;
+
+        static LossBuilder create() {
+            return new LossBuilder();
+        }
+
+        LossBuilder round(Integer round) {
+            this.round = round;
+            return this;
+        }
+
+        LossBuilder third(Integer third) {
+            this.third = third;
+            return this;
+        }
+
+        AbstractWithLossEntity toEntity() {
+            AbstractWithLossEntity entity = new CombatResultEntity();
+            entity.setRoundLoss(round);
+            entity.setThirdLoss(third);
+            return entity;
+        }
+    }
+
+    @Test
+    public void testGetArmySize() {
+        GameEntity game = new GameEntity();
+        game.setTurn(35);
+        Period period = new Period();
+        period.setName(Period.PERIOD_V);
+        period.setBegin(0);
+        period.setEnd(666);
+        Tables tables = new Tables();
+        tables.getPeriods().add(period);
+        tables.getArmyClasses().add(createArmyClasse(ArmyClassEnum.A, 7));
+        tables.getArmyClasses().add(createArmyClasse(ArmyClassEnum.I, 4));
+        tables.getArmyClasses().add(createArmyClasse(ArmyClassEnum.IV, 3));
+        tables.getArmyClasses().add(createArmyClasse(ArmyClassEnum.IIIM, 2));
+        tables.getArmyClasses().add(createArmyClasse(ArmyClassEnum.III, 0));
+
+        Assert.assertEquals(7, oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game).intValue());
+        Assert.assertEquals(4, oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.I), createDetachment(ArmyClassEnum.I)), tables, game).intValue());
+        Assert.assertEquals(3, oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IV), createDetachment(ArmyClassEnum.IV)), tables, game).intValue());
+        Assert.assertEquals(2, oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IIIM), createDetachment(ArmyClassEnum.IIIM)), tables, game).intValue());
+        Assert.assertEquals(0, oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.III), createDetachment(ArmyClassEnum.III)), tables, game).intValue());
+
+        Assert.assertEquals(3, oeUtil.getArmySize(Arrays.asList(createArmyPlus(ArmyClassEnum.I), createArmyPlus(ArmyClassEnum.IIIM)), tables, game).intValue());
+        Assert.assertEquals(1, oeUtil.getArmySize(Arrays.asList(createDetachment(ArmyClassEnum.A), createArmyPlus(ArmyClassEnum.III)), tables, game).intValue());
+        Assert.assertEquals(5, oeUtil.getArmySize(Arrays.asList(createArmyPlus(ArmyClassEnum.A), createDetachment(ArmyClassEnum.III)), tables, game).intValue());
+
+        Assert.assertEquals(1, oeUtil.getArmySize(Arrays.asList(createDetachment(ArmyClassEnum.A), createDetachment(ArmyClassEnum.I),
+                createArmyPlus(ArmyClassEnum.III)), tables, game).intValue());
+        Assert.assertEquals(2, oeUtil.getArmySize(Arrays.asList(createDetachment(ArmyClassEnum.A), createDetachment(ArmyClassEnum.I),
+                createDetachment(ArmyClassEnum.IV), createArmyPlus(ArmyClassEnum.III)), tables, game).intValue());
+    }
+
+    private static ArmyClasse createArmyClasse(ArmyClassEnum armyClass, int size) {
+        ArmyClasse armyClasse = new ArmyClasse();
+        armyClasse.setPeriod(Period.PERIOD_V);
+        armyClasse.setArmyClass(armyClass);
+        armyClasse.setSize(size);
+        return armyClasse;
     }
 }

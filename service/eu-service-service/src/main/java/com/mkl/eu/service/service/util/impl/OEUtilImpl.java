@@ -1,5 +1,7 @@
 package com.mkl.eu.service.service.util.impl;
 
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
@@ -7,10 +9,8 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
-import com.mkl.eu.client.service.vo.tables.ArmyArtillery;
-import com.mkl.eu.client.service.vo.tables.Period;
-import com.mkl.eu.client.service.vo.tables.Tables;
-import com.mkl.eu.client.service.vo.tables.Tech;
+import com.mkl.eu.client.service.vo.tables.*;
+import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -20,6 +20,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.tables.CombatResultEntity;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
@@ -27,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -870,5 +872,93 @@ public final class OEUtilImpl implements IOEUtil {
         }
 
         return canRetreat;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isStackVeteran(List<CounterEntity> counters) {
+        Integer veterans = counters.stream()
+                .filter(counter -> counter.getVeterans() != null)
+                .collect(Collectors.summingInt(CounterEntity::getVeterans));
+        Integer total = counters.stream()
+                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getType())));
+
+        // TODO pasha always conscript
+
+        return veterans > total / 2;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AbstractWithLossEntity lossModificationSize(AbstractWithLossEntity losses, Integer sizeDiff) {
+        int third;
+        AbstractWithLossEntity result;
+        switch (sizeDiff) {
+            case -1:
+            case 0:
+                return losses;
+            case 1:
+            case 2:
+            case 3:
+                third = 0;
+                if (losses.getRoundLoss() != null) {
+                    third += 3 * losses.getRoundLoss();
+                }
+                if (losses.getThirdLoss() != null) {
+                    third += losses.getThirdLoss();
+                }
+
+                third += (Math.pow(2, sizeDiff - 1) * (third) / 6) + sizeDiff / 2 * ((third % 3) + 1) / 2 + 1 - (third < 3 ? 1 : 0);
+
+                result = new CombatResultEntity();
+                result.setRoundLoss(third / 3);
+                result.setThirdLoss(third % 3);
+                return result;
+            case -2:
+                third = 0;
+                if (losses.getRoundLoss() != null) {
+                    third += 3 * losses.getRoundLoss();
+                }
+                if (losses.getThirdLoss() != null) {
+                    third += losses.getThirdLoss();
+                }
+
+                third -= third / 6 + ((third % 3) == 2 ? 1 : 0) + 1 - (third < 3 ? 1 : 0);
+
+                result = new CombatResultEntity();
+                result.setRoundLoss(third / 3);
+                result.setThirdLoss(third % 3);
+                return result;
+            default:
+                throw new TechnicalException(IConstantsCommonException.INVALID_PARAMETER, "size diff " + sizeDiff + " does not exits.", null, "lossModificationSize", "sizeDiff", sizeDiff);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Integer getArmySize(List<ArmyInfo> counters, Tables tables, GameEntity game) {
+        Period period = CommonUtil.findFirst(tables.getPeriods(), per -> per.getBegin() <= game.getTurn() && per.getEnd() >= game.getTurn());
+        ToIntFunction<ArmyInfo> sizeOfCounter = counter -> {
+            ArmyClasse armyClasse = tables.getArmyClasses().stream()
+                    .filter(ac -> counter.getArmyClass() == ac.getArmyClass() &&
+                            StringUtils.equals(period.getName(), ac.getPeriod()))
+                    .findAny()
+                    .orElseThrow(null);
+            return CounterUtil.getSizeFromType(counter.getType()) * armyClasse.getSize();
+        };
+
+        int size = counters.stream()
+                .collect(Collectors.summingInt(sizeOfCounter));
+
+        int nbCounters = counters.stream()
+                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getType())));
+
+        return size / nbCounters;
     }
 }
