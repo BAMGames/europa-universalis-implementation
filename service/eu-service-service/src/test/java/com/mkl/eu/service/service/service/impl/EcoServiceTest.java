@@ -5102,7 +5102,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenReturn(diffOther);
 
         DiffEntity diffVeteran = new DiffEntity();
-        when(counterDomain.changeVeteransCounter(101L, 0, game)).thenReturn(diffVeteran);
+        when(counterDomain.changeVeteransCounter(101L, 0d, game)).thenReturn(diffVeteran);
 
         DiffEntity diffLowerFortress = new DiffEntity();
         when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.FORTRESS_1, null, game)).thenReturn(diffLowerFortress);

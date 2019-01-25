@@ -75,7 +75,7 @@ public interface ICounterDomain {
      * @param game      the game.
      * @return the diffs related to the switch of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
      */
-    DiffEntity changeVeteransCounter(Long idCounter, Integer veterans, GameEntity game);
+    DiffEntity changeVeteransCounter(Long idCounter, Double veterans, GameEntity game);
 
     /**
      * Moves a special counter. Type and country (can be <code>null</code> in case of neutral counters) should

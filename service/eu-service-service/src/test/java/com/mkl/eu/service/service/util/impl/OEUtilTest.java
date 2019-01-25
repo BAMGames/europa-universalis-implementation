@@ -44,6 +44,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
+
 /**
  * Unit tests for OEUtil.
  *
@@ -1229,8 +1232,24 @@ public class OEUtilTest {
         Assert.assertEquals(Tech.NAE_GALEON, oeUtil.getTechnology(counters, false, referential, tables, game));
 
         counter = new CounterEntity();
+        counter.setCountry("france");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        counters.add(counter);
+
+        Assert.assertEquals(Tech.ARQUEBUS, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(Tech.GALLEON_FLUYT, oeUtil.getTechnology(counters, false, referential, tables, game));
+
+        counter = new CounterEntity();
         counter.setCountry("genoa");
         counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counters.add(counter);
+
+        Assert.assertEquals(Tech.RENAISSANCE, oeUtil.getTechnology(counters, true, referential, tables, game));
+        Assert.assertEquals(Tech.NAE_GALEON, oeUtil.getTechnology(counters, false, referential, tables, game));
+
+        counter = new CounterEntity();
+        counter.setCountry("genoa");
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
         counters.add(counter);
 
         Assert.assertEquals(Tech.MEDIEVAL, oeUtil.getTechnology(counters, true, referential, tables, game));
@@ -1609,15 +1628,15 @@ public class OEUtilTest {
 
         Assert.assertFalse(oeUtil.isStackVeteran(counters));
 
-        army.setVeterans(4);
+        army.setVeterans(4d);
 
         Assert.assertTrue(oeUtil.isStackVeteran(counters));
 
-        army.setVeterans(2);
+        army.setVeterans(2d);
 
         Assert.assertFalse(oeUtil.isStackVeteran(counters));
 
-        army.setVeterans(3);
+        army.setVeterans(3d);
 
         Assert.assertTrue(oeUtil.isStackVeteran(counters));
 
@@ -1633,7 +1652,18 @@ public class OEUtilTest {
 
         Assert.assertFalse(oeUtil.isStackVeteran(counters));
 
-        detachment1.setVeterans(1);
+        detachment1.setVeterans(1d);
+
+        Assert.assertTrue(oeUtil.isStackVeteran(counters));
+
+        detachment1.setVeterans(null);
+
+        Assert.assertFalse(oeUtil.isStackVeteran(counters));
+
+        CounterEntity explo = new CounterEntity();
+        explo.setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        explo.setVeterans(THIRD);
+        counters.add(explo);
 
         Assert.assertTrue(oeUtil.isStackVeteran(counters));
     }
@@ -2782,6 +2812,32 @@ public class OEUtilTest {
                 createArmyPlus(ArmyClassEnum.III)), tables, game).intValue());
         Assert.assertEquals(2, oeUtil.getArmySize(Arrays.asList(createDetachment(ArmyClassEnum.A), createDetachment(ArmyClassEnum.I),
                 createDetachment(ArmyClassEnum.IV), createArmyPlus(ArmyClassEnum.III)), tables, game).intValue());
+
+        // 7 vs 4 => +1 / -1
+        Assert.assertEquals(1, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.I), createDetachment(ArmyClassEnum.I)), tables, game)), EPSILON);
+        Assert.assertEquals(-1, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.I), createDetachment(ArmyClassEnum.I)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game)), EPSILON);
+        // 7 vs 2 => +2 / -2
+        Assert.assertEquals(2, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IIIM), createDetachment(ArmyClassEnum.IIIM)), tables, game)), EPSILON);
+        Assert.assertEquals(-2, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IIIM), createDetachment(ArmyClassEnum.IIIM)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game)), EPSILON);
+        // 7 vs 0 => +2 / -2
+        Assert.assertEquals(2, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.III), createDetachment(ArmyClassEnum.III)), tables, game)), EPSILON);
+        Assert.assertEquals(-2, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.III), createDetachment(ArmyClassEnum.III)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game)), EPSILON);
+        // 3 vs 2 => 0 / 0
+        Assert.assertEquals(0, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IV), createDetachment(ArmyClassEnum.IV)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IIIM), createDetachment(ArmyClassEnum.IIIM)), tables, game)), EPSILON);
+        Assert.assertEquals(0, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IIIM), createDetachment(ArmyClassEnum.IIIM)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.IV), createDetachment(ArmyClassEnum.IV)), tables, game)), EPSILON);
+        //7 vs 2.5 => +1 / -1
+        Assert.assertEquals(1, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createDetachment(ArmyClassEnum.IV), createDetachment(ArmyClassEnum.IIIM)), tables, game)), EPSILON);
+        Assert.assertEquals(-1, oeUtil.getSizeDiff(oeUtil.getArmySize(Arrays.asList(createDetachment(ArmyClassEnum.IV), createDetachment(ArmyClassEnum.IIIM)), tables, game),
+                oeUtil.getArmySize(Arrays.asList(createArmy(ArmyClassEnum.A), createDetachment(ArmyClassEnum.A)), tables, game)), EPSILON);
     }
 
     private static ArmyClasse createArmyClasse(ArmyClassEnum armyClass, int size) {
@@ -2790,5 +2846,51 @@ public class OEUtilTest {
         armyClasse.setArmyClass(armyClass);
         armyClasse.setSize(size);
         return armyClasse;
+    }
+
+    @Test
+    public void testLossesMitigation() {
+        Assert.assertEquals(9, oeUtil.lossesMitigation(THIRD, true, null).getTotalThird());
+        Assert.assertEquals(7, oeUtil.lossesMitigation(2 * THIRD, true, null).getTotalThird());
+        Assert.assertEquals(6, oeUtil.lossesMitigation(1d, true, null).getTotalThird());
+        Assert.assertEquals(5, oeUtil.lossesMitigation(1 + THIRD, true, null).getTotalThird());
+        Assert.assertEquals(5, oeUtil.lossesMitigation(1.33333333, true, null).getTotalThird());
+        Assert.assertEquals(5, oeUtil.lossesMitigation(1 + 2 * THIRD, true, null).getTotalThird());
+        Assert.assertEquals(4, oeUtil.lossesMitigation(2d, true, null).getTotalThird());
+        Assert.assertEquals(4, oeUtil.lossesMitigation(2 + THIRD, true, null).getTotalThird());
+        Assert.assertEquals(4, oeUtil.lossesMitigation(2 + 2 * THIRD, true, null).getTotalThird());
+        Assert.assertEquals(3, oeUtil.lossesMitigation(3d, true, null).getTotalThird());
+        Assert.assertEquals(3, oeUtil.lossesMitigation(3 + THIRD, true, null).getTotalThird());
+        Assert.assertEquals(3, oeUtil.lossesMitigation(3 + 2 * THIRD, true, null).getTotalThird());
+        Assert.assertEquals(2, oeUtil.lossesMitigation(4d, true, null).getTotalThird());
+        Assert.assertEquals(2, oeUtil.lossesMitigation(4 + THIRD, true, null).getTotalThird());
+        Assert.assertEquals(2, oeUtil.lossesMitigation(5d, true, null).getTotalThird());
+        Assert.assertEquals(2, oeUtil.lossesMitigation(5 + 2 * THIRD, true, null).getTotalThird());
+        Assert.assertEquals(1, oeUtil.lossesMitigation(6d, true, null).getTotalThird());
+        Assert.assertEquals(1, oeUtil.lossesMitigation(6 + 2 * THIRD, true, null).getTotalThird());
+        Assert.assertEquals(1, oeUtil.lossesMitigation(7d, true, null).getTotalThird());
+        Assert.assertEquals(1, oeUtil.lossesMitigation(7 + THIRD, true, null).getTotalThird());
+        Assert.assertEquals(1, oeUtil.lossesMitigation(7d, true, () -> 2).getTotalThird());
+        Assert.assertEquals(1, oeUtil.lossesMitigation(7 + THIRD, true, () -> 10).getTotalThird());
+        Assert.assertEquals(0, oeUtil.lossesMitigation(7d, true, () -> 1).getTotalThird());
+        Assert.assertEquals(0, oeUtil.lossesMitigation(7 + THIRD, true, () -> 9).getTotalThird());
+        Assert.assertEquals(0, oeUtil.lossesMitigation(8d, true, null).getTotalThird());
+    }
+
+    @Test
+    public void testRetreat() {
+        Assert.assertEquals(0, oeUtil.retreat(-1).getTotalThird());
+        Assert.assertEquals(0, oeUtil.retreat(0).getTotalThird());
+        Assert.assertEquals(0, oeUtil.retreat(1).getTotalThird());
+        Assert.assertEquals(0, oeUtil.retreat(2).getTotalThird());
+        Assert.assertEquals(1, oeUtil.retreat(3).getTotalThird());
+        Assert.assertEquals(1, oeUtil.retreat(4).getTotalThird());
+        Assert.assertEquals(2, oeUtil.retreat(5).getTotalThird());
+        Assert.assertEquals(2, oeUtil.retreat(6).getTotalThird());
+        Assert.assertEquals(3, oeUtil.retreat(7).getTotalThird());
+        Assert.assertEquals(3, oeUtil.retreat(8).getTotalThird());
+        Assert.assertEquals(3, oeUtil.retreat(9).getTotalThird());
+        Assert.assertEquals(3, oeUtil.retreat(10).getTotalThird());
+        Assert.assertEquals(3, oeUtil.retreat(11).getTotalThird());
     }
 }

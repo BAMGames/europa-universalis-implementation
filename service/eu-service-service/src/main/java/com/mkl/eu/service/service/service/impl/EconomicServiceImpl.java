@@ -655,20 +655,20 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      */
     private Integer computeUnitPurchase(GameEntity game, PlayableCountryEntity country, CounterFaceTypeEnum faceType) throws FunctionalException {
         boolean land = CounterUtil.isLandArmy(faceType);
-        Integer plannedSize;
+        Double plannedSize;
         final LimitTypeEnum limitType;
 
         List<AdministrativeActionEntity> actions = adminActionDao.findPlannedAdminActions(country.getId(), game.getTurn(),
                 null, AdminActionTypeEnum.PU);
         if (land) {
-            plannedSize = actions.stream().filter(action -> CounterUtil.isLandArmy(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
+            plannedSize = actions.stream().filter(action -> CounterUtil.isLandArmy(action.getCounterFaceType())).collect(Collectors.summingDouble(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
             limitType = LimitTypeEnum.PURCHASE_LAND_TROOPS;
         } else {
-            plannedSize = actions.stream().filter(action -> CounterUtil.isNavalArmy(action.getCounterFaceType())).collect(Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
+            plannedSize = actions.stream().filter(action -> CounterUtil.isNavalArmy(action.getCounterFaceType())).collect(Collectors.summingDouble(action -> CounterUtil.getSizeFromType(action.getCounterFaceType())));
             limitType = LimitTypeEnum.PURCHASE_NAVAL_TROOPS;
         }
 
-        Integer size = CounterUtil.getSizeFromType(faceType);
+        Double size = CounterUtil.getSizeFromType(faceType);
         Integer maxPurchase = getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getType() == limitType &&
@@ -690,7 +690,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         Integer cost = null;
         if (unitCost != null) {
-            cost = MaintenanceUtil.getPurchasePrice(plannedSize, maxPurchase, unitCost.getPrice(), size);
+            cost = MaintenanceUtil.getPurchasePrice(plannedSize.intValue(), maxPurchase, unitCost.getPrice(), size.intValue());
         }
         return cost;
     }
@@ -1970,7 +1970,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return a List of Diff related to the action.
      */
     private DiffEntity executeLowMaintenance(AdministrativeActionEntity action, GameEntity game) {
-        return counterDomain.changeVeteransCounter(action.getIdObject(), 0, game);
+        return counterDomain.changeVeteransCounter(action.getIdObject(), 0d, game);
     }
 
     /**

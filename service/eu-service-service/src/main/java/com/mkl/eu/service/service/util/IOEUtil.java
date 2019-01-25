@@ -12,6 +12,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Utility for OE class.
@@ -83,6 +84,14 @@ public interface IOEUtil {
      * @return <code>true</code> if the province can be settled, <code>false</code> otherwise.
      */
     boolean canSettle(AbstractProvinceEntity province, List<String> discoveries, List<String> sources, List<String> friendlies);
+
+    /**
+     * Rolls a die for a non identified country in the given game.
+     *
+     * @param game    the game.
+     * @return the result of a die 10.
+     */
+    int rollDie(GameEntity game);
 
     /**
      * Rolls a die for a country in the given game. The country can ben <code>null</code> for general die roll.
@@ -230,7 +239,7 @@ public interface IOEUtil {
      * @param game       the game.
      * @return <code>true</code> if the country can retreat in the province.
      */
-    boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, int stackSize, PlayableCountryEntity country, GameEntity game);
+    boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, double stackSize, PlayableCountryEntity country, GameEntity game);
 
     /**
      * @param counters the stack of counters.
@@ -251,5 +260,26 @@ public interface IOEUtil {
      * @param game     the game.
      * @return the size of the stack for size comparison rules.
      */
-    Integer getArmySize(List<ArmyInfo> counters, Tables tables, GameEntity game);
+    Double getArmySize(List<ArmyInfo> counters, Tables tables, GameEntity game);
+
+    /**
+     * @param sizeFor     size of the current stack.
+     * @param sizeAgainst size of the opposing stack.
+     * @return the size diff that the current stacks has over the opposing one.
+     */
+    Integer getSizeDiff(Double sizeFor, Double sizeAgainst);
+
+    /**
+     * @param size    of the stack.
+     * @param land    if it is a land battle.
+     * @param rollDie for special case. If <code>null</code> then worst case happens.
+     * @return the losses mitigation of the stack at the end of the battle because of its small size.
+     */
+    AbstractWithLossEntity lossesMitigation(Double size, boolean land, Supplier<Integer> rollDie);
+
+    /**
+     * @param modifiedRollDie the modified die roll. Can be lower than <code>0</code>.
+     * @return the losses of the retreat.
+     */
+    AbstractWithLossEntity retreat(Integer modifiedRollDie);
 }

@@ -650,9 +650,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                         admAct.getType() == AdminActionTypeEnum.PU)
                 .collect(Collectors.toList());
 
-        Map<Boolean, Integer> currentPurchase = actions.stream()
+        Map<Boolean, Double> currentPurchase = actions.stream()
                 .filter(a -> !CounterUtil.isFortress(a.getCounterFaceType()))
-                .collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingInt(action -> CounterUtil.getSizeFromType(action.getCounterFaceType()))));
+                .collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingDouble(action -> CounterUtil.getSizeFromType(action.getCounterFaceType()))));
         Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getPeriod().getBegin() <= game.getTurn() &&

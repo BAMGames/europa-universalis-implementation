@@ -20,16 +20,20 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.tables.CombatResultEntity;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.ToIntFunction;
+import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
+
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
 
 /**
  * Utility for OE class.
@@ -183,6 +187,14 @@ public final class OEUtilImpl implements IOEUtil {
     @Override
     public boolean canSettle(AbstractProvinceEntity province, List<String> discoveries, List<String> sources, List<String> friendlies) {
         return settleDistance(province, discoveries, sources, friendlies, 0) != -1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int rollDie(GameEntity game) {
+        return rollDie(game, (PlayableCountryEntity) null);
     }
 
     /**
@@ -639,26 +651,26 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public String getTechnology(List<CounterEntity> counters, boolean land, Referential referential, Tables tables, GameEntity game) {
-        Map<Tech, Integer> technoBySize = new TreeMap<>(Comparator.<Tech>reverseOrder());
+        Map<Tech, Double> technoBySize = new TreeMap<>(Comparator.<Tech>reverseOrder());
 
-        int totalSize = 0;
+        BigDecimal totalSize = new BigDecimal("0");
         for (CounterEntity counter : counters) {
             String tech = getTechnology(counter.getCountry(), land, referential, game);
             Tech technology = tables.getTechs().stream()
                     .filter(t -> StringUtils.equals(tech, t.getName()))
                     .findAny()
                     .orElse(null);
-            int size = CounterUtil.getSizeFromType(counter.getType());
+            double size = CounterUtil.getSizeFromType(counter.getType());
             CommonUtil.add(technoBySize, technology, size);
-            totalSize += size;
+            totalSize = totalSize.add(new BigDecimal(size));
         }
 
-        int partialSize = 0;
+        BigDecimal partialSize = new BigDecimal("0");
         String tech = null;
         for (Tech technology : technoBySize.keySet()) {
             tech = technology.getName();
-            partialSize += technoBySize.get(technology);
-            if (partialSize > totalSize / 2) {
+            partialSize = partialSize.add(new BigDecimal(technoBySize.get(technology)));
+            if (partialSize.subtract(totalSize.divide(new BigDecimal("2"), 3, BigDecimal.ROUND_CEILING)).doubleValue() > 0) {
                 break;
             }
         }
@@ -854,7 +866,7 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, int stackSize, PlayableCountryEntity country, GameEntity game) {
+    public boolean canRetreat(AbstractProvinceEntity province, boolean inFortress, double stackSize, PlayableCountryEntity country, GameEntity game) {
         String controller = getController(province, game);
         List<String> allies = getAllies(country, game);
         boolean canRetreat = allies.contains(controller);
@@ -879,11 +891,11 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public boolean isStackVeteran(List<CounterEntity> counters) {
-        Integer veterans = counters.stream()
+        Double veterans = counters.stream()
                 .filter(counter -> counter.getVeterans() != null)
-                .collect(Collectors.summingInt(CounterEntity::getVeterans));
-        Integer total = counters.stream()
-                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getType())));
+                .collect(Collectors.summingDouble(CounterEntity::getVeterans));
+        Double total = counters.stream()
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
 
         // TODO pasha always conscript
 
@@ -896,7 +908,6 @@ public final class OEUtilImpl implements IOEUtil {
     @Override
     public AbstractWithLossEntity lossModificationSize(AbstractWithLossEntity losses, Integer sizeDiff) {
         int third;
-        AbstractWithLossEntity result;
         switch (sizeDiff) {
             case -1:
             case 0:
@@ -904,35 +915,17 @@ public final class OEUtilImpl implements IOEUtil {
             case 1:
             case 2:
             case 3:
-                third = 0;
-                if (losses.getRoundLoss() != null) {
-                    third += 3 * losses.getRoundLoss();
-                }
-                if (losses.getThirdLoss() != null) {
-                    third += losses.getThirdLoss();
-                }
+                third = losses.getTotalThird();
 
                 third += (Math.pow(2, sizeDiff - 1) * (third) / 6) + sizeDiff / 2 * ((third % 3) + 1) / 2 + 1 - (third < 3 ? 1 : 0);
 
-                result = new CombatResultEntity();
-                result.setRoundLoss(third / 3);
-                result.setThirdLoss(third % 3);
-                return result;
+                return AbstractWithLossEntity.create(third);
             case -2:
-                third = 0;
-                if (losses.getRoundLoss() != null) {
-                    third += 3 * losses.getRoundLoss();
-                }
-                if (losses.getThirdLoss() != null) {
-                    third += losses.getThirdLoss();
-                }
+                third = losses.getTotalThird();
 
                 third -= third / 6 + ((third % 3) == 2 ? 1 : 0) + 1 - (third < 3 ? 1 : 0);
 
-                result = new CombatResultEntity();
-                result.setRoundLoss(third / 3);
-                result.setThirdLoss(third % 3);
-                return result;
+                return AbstractWithLossEntity.create(third);
             default:
                 throw new TechnicalException(IConstantsCommonException.INVALID_PARAMETER, "size diff " + sizeDiff + " does not exits.", null, "lossModificationSize", "sizeDiff", sizeDiff);
         }
@@ -942,9 +935,9 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public Integer getArmySize(List<ArmyInfo> counters, Tables tables, GameEntity game) {
+    public Double getArmySize(List<ArmyInfo> counters, Tables tables, GameEntity game) {
         Period period = CommonUtil.findFirst(tables.getPeriods(), per -> per.getBegin() <= game.getTurn() && per.getEnd() >= game.getTurn());
-        ToIntFunction<ArmyInfo> sizeOfCounter = counter -> {
+        ToDoubleFunction<ArmyInfo> sizeOfCounter = counter -> {
             ArmyClasse armyClasse = tables.getArmyClasses().stream()
                     .filter(ac -> counter.getArmyClass() == ac.getArmyClass() &&
                             StringUtils.equals(period.getName(), ac.getPeriod()))
@@ -953,12 +946,63 @@ public final class OEUtilImpl implements IOEUtil {
             return CounterUtil.getSizeFromType(counter.getType()) * armyClasse.getSize();
         };
 
-        int size = counters.stream()
-                .collect(Collectors.summingInt(sizeOfCounter));
+        double size = counters.stream()
+                .collect(Collectors.summingDouble(sizeOfCounter));
 
-        int nbCounters = counters.stream()
-                .collect(Collectors.summingInt(counter -> CounterUtil.getSizeFromType(counter.getType())));
+        double nbCounters = counters.stream()
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
 
         return size / nbCounters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Integer getSizeDiff(Double sizeFor, Double sizeAgainst) {
+        return new BigDecimal(sizeFor).subtract(new BigDecimal(sizeAgainst)).divide(new BigDecimal("3"), BigDecimal.ROUND_HALF_DOWN).intValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AbstractWithLossEntity lossesMitigation(Double size, boolean land, Supplier<Integer> rollDie) {
+        AbstractWithLossEntity lossesReduction = null;
+        if (land) {
+            if (size >= 8) {
+                lossesReduction = AbstractWithLossEntity.create(0);
+            } else if (size >= 7) {
+                boolean odd = rollDie == null || rollDie.get() % 2 == 0;
+                lossesReduction = AbstractWithLossEntity.create(odd ? 1 : 0);
+            } else if (size >= 6) {
+                lossesReduction = AbstractWithLossEntity.create(1);
+            } else if (size >= 4) {
+                lossesReduction = AbstractWithLossEntity.create(2);
+            } else if (size >= 3) {
+                lossesReduction = AbstractWithLossEntity.create(3);
+            } else if (size >= 2) {
+                lossesReduction = AbstractWithLossEntity.create(4);
+            } else if (size + EPSILON >= 1 + THIRD) {
+                lossesReduction = AbstractWithLossEntity.create(5);
+            } else if (Math.abs(1 - size) <= EPSILON) {
+                lossesReduction = AbstractWithLossEntity.create(6);
+            } else if (Math.abs(2 * THIRD - size) <= EPSILON) {
+                lossesReduction = AbstractWithLossEntity.create(7);
+            } else if (Math.abs(THIRD - size) <= EPSILON) {
+                lossesReduction = AbstractWithLossEntity.create(9);
+            }
+        }
+        return lossesReduction;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AbstractWithLossEntity retreat(Integer modifiedRollDie) {
+        // cap die to [1-8)
+        int die = Math.max(1, Math.min(8, modifiedRollDie));
+        return AbstractWithLossEntity.create((die - 1) / 2);
     }
 }

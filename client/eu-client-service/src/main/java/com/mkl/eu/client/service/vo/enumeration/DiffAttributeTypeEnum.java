@@ -67,49 +67,101 @@ public enum DiffAttributeTypeEnum {
     /** Number of move points of a stack. */
     MOVE_POINTS,
     /** To say if the attacker is ready. */
-    ATTACKER_READY,
+    PHASING_READY,
     /** To say if the defender is ready. */
-    DEFENDER_READY,
+    NON_PHASING_READY,
     /** Counter to add as attacker. */
-    ATTACKER_COUNTER_ADD,
+    PHASING_COUNTER_ADD,
     /** Counter to add as defender. */
-    DEFENDER_COUNTER_ADD,
+    NON_PHASING_COUNTER_ADD,
     /** Counter to remove as attacker. */
-    ATTACKER_COUNTER_REMOVE,
+    PHASING_COUNTER_REMOVE,
     /** Counter to remove as defender. */
-    DEFENDER_COUNTER_REMOVE,
+    NON_PHASING_COUNTER_REMOVE,
+    /** Cause of end. */
+    END,
+    /** Who is the winner. */
+    WINNER,
     /** Size of phasing forces in a battle. */
     BATTLE_PHASING_SIZE,
     /** Tech of phasing forces in a battle. */
     BATTLE_PHASING_TECH,
+    /** Fire column of phasing forces in a battle. */
+    BATTLE_PHASING_FIRE_COL,
+    /** Shock column of phasing forces in a battle. */
+    BATTLE_PHASING_SHOCK_COL,
+    /** Moral of phasing forces in a battle. */
+    BATTLE_PHASING_MORAL,
+    /** Pursuit modifier of phasing forces in a battle. */
+    BATTLE_PHASING_PURSUIT_MOD,
+    /** Pursuit unmodified die roll of phasing forces in a battle. */
+    BATTLE_PHASING_PURSUIT,
+    /** Size modifier of phasing forces in a battle. */
+    BATTLE_PHASING_SIZE_DIFF,
+    /** Retreat unmodified die roll of phasing forces in a battle. */
+    BATTLE_PHASING_RETREAT,
+    /** Round losses taken by phasing forces in a battle. */
+    BATTLE_PHASING_ROUND_LOSS,
+    /** Third losses taken by phasing forces in a battle. */
+    BATTLE_PHASING_THIRD_LOSS,
+    /** Morale losses taken by phasing forces in a battle. */
+    BATTLE_PHASING_MORALE_LOSS,
     /** Fire modifier of phasing forces in the first day of a battle. */
     BATTLE_PHASING_FIRST_DAY_FIRE_MOD,
+    /** Fire unmodified die roll of phasing forces in the first day of a battle. */
+    BATTLE_PHASING_FIRST_DAY_FIRE,
     /** Shock modifier of phasing forces in the first day of a battle. */
     BATTLE_PHASING_FIRST_DAY_SHOCK_MOD,
-    /** Pursuit modifier of phasing forces in the first day of a battle. */
-    BATTLE_PHASING_FIRST_DAY_PURSUIT_MOD,
+    /** Shock unmodified die roll of phasing forces in the first day of a battle. */
+    BATTLE_PHASING_FIRST_DAY_SHOCK,
     /** Fire modifier of phasing forces in the second day of a battle. */
     BATTLE_PHASING_SECOND_DAY_FIRE_MOD,
+    /** Fire unmodified die roll of phasing forces in the second day of a battle. */
+    BATTLE_PHASING_SECOND_DAY_FIRE,
     /** Shock modifier of phasing forces in the second day of a battle. */
     BATTLE_PHASING_SECOND_DAY_SHOCK_MOD,
-    /** Pursuit modifier of phasing forces in the second day of a battle. */
-    BATTLE_PHASING_SECOND_DAY_PURSUIT_MOD,
+    /** Shock unmodified die roll of phasing forces in the second day of a battle. */
+    BATTLE_PHASING_SECOND_DAY_SHOCK,
     /** Size of non phasing forces in a battle. */
     BATTLE_NON_PHASING_SIZE,
     /** Tech of non phasing forces in a battle. */
     BATTLE_NON_PHASING_TECH,
+    /** Fire column of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_FIRE_COL,
+    /** Shock column of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_SHOCK_COL,
+    /** Moral of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_MORAL,
+    /** Pursuit modifier of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_PURSUIT_MOD,
+    /** Pursuit unmodified die roll of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_PURSUIT,
+    /** Size modifier of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_SIZE_DIFF,
+    /** Retreat unmodified die roll of non phasing forces in a battle. */
+    BATTLE_NON_PHASING_RETREAT,
+    /** Round losses taken by non phasing forces in a battle. */
+    BATTLE_NON_PHASING_ROUND_LOSS,
+    /** Third losses taken by non phasing forces in a battle. */
+    BATTLE_NON_PHASING_THIRD_LOSS,
+    /** Morale losses taken by non phasing forces in a battle. */
+    BATTLE_NON_PHASING_MORALE_LOSS,
     /** Fire modifier of non phasing forces in the first day of a battle. */
     BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD,
+    /** Fire unmodified die roll of non phasing forces in the first day of a battle. */
+    BATTLE_NON_PHASING_FIRST_DAY_FIRE,
     /** Shock modifier of non phasing forces in the first day of a battle. */
     BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD,
-    /** Pursuit modifier of non phasing forces in the first day of a battle. */
-    BATTLE_NON_PHASING_FIRST_DAY_PURSUIT_MOD,
+    /** Shock unmodified die roll of non phasing forces in the first day of a battle. */
+    BATTLE_NON_PHASING_FIRST_DAY_SHOCK,
     /** Fire modifier of non phasing forces in the second day of a battle. */
     BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD,
+    /** Fire unmodified die roll of non phasing forces in the second day of a battle. */
+    BATTLE_NON_PHASING_SECOND_DAY_FIRE,
     /** Shock modifier of non phasing forces in the second day of a battle. */
     BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD,
-    /** Pursuit modifier of non phasing forces in the second day of a battle. */
-    BATTLE_NON_PHASING_SECOND_DAY_PURSUIT_MOD
+    /** Shock unmodified die roll of non phasing forces in the second day of a battle. */
+    BATTLE_NON_PHASING_SECOND_DAY_SHOCK
 
 
 }

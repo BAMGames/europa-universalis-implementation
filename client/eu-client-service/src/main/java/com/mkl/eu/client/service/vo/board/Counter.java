@@ -18,7 +18,7 @@ public class Counter extends EuObject {
     /** Type of the counter. */
     private CounterFaceTypeEnum type;
     /** Number of veterans in the counter. */
-    private Integer veterans;
+    private Double veterans;
 
     /** @return the country. */
     public String getCountry() {
@@ -52,12 +52,12 @@ public class Counter extends EuObject {
     }
 
     /** @return the veterans. */
-    public Integer getVeterans() {
+    public Double getVeterans() {
         return veterans;
     }
 
     /** @param veterans the veterans to set. */
-    public void setVeterans(Integer veterans) {
+    public void setVeterans(Double veterans) {
         this.veterans = veterans;
     }
 }

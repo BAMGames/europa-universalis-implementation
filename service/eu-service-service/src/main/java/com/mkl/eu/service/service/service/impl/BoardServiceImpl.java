@@ -199,18 +199,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                 .setParams(METHOD_MOVE_STACK, movePoints, stack.getMove(), 12));
 
-        int allyForces = game.getStacks().stream()
+        double allyForces = game.getStacks().stream()
                 .filter(s -> !s.isBesieged() && StringUtils.equals(s.getProvince(), stack.getProvince()) && !idStack.equals(s.getId()))
                 .flatMap(x -> x.getCounters().stream())
                 .filter(counter -> allies.contains(counter.getCountry()))
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
-                .collect(Collectors.summingInt(value -> value));
-        int enemyForces = game.getStacks().stream()
+                .collect(Collectors.summingDouble(value -> value));
+        double enemyForces = game.getStacks().stream()
                 .filter(s -> !s.isBesieged() && StringUtils.equals(s.getProvince(), stack.getProvince()))
                 .flatMap(x -> x.getCounters().stream())
                 .filter(counter -> enemies.contains(counter.getCountry()))
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
-                .collect(Collectors.summingInt(value -> value));
+                .collect(Collectors.summingDouble(value -> value));
 
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(allyForces >= enemyForces)
@@ -323,13 +323,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         checkCanManipulateObject(newController, country, game, METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
 
-        Map<String, Integer> countersByCountry = stack.getCounters().stream()
-                .collect(Collectors.groupingBy(CounterEntity::getCountry, Collectors.summingInt(value -> CounterUtil.getSizeFromType(value.getType()))));
-        int maxInStack = countersByCountry.values().stream()
-                .max(Comparator.<Integer>naturalOrder())
-                .orElse(1);
+        Map<String, Double> countersByCountry = stack.getCounters().stream()
+                .collect(Collectors.groupingBy(CounterEntity::getCountry, Collectors.summingDouble(value -> CounterUtil.getSizeFromType(value.getType()))));
+        double maxInStack = countersByCountry.values().stream()
+                .max(Comparator.<Double>naturalOrder())
+                .orElse(1d);
 
-        int newControllerPresence = countersByCountry.get(newController) == null ? 0 : countersByCountry.get(newController);
+        double newControllerPresence = countersByCountry.get(newController) == null ? 0 : countersByCountry.get(newController);
 
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(newControllerPresence >= maxInStack)
@@ -420,12 +420,12 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         List<String> enemies = oeUtil.getEnemies(country, game);
         AbstractProvinceEntity province = provinceDao.getProvinceByName(stack.getProvince());
         String controller = oeUtil.getController(province, game);
-        int enemyForces = game.getStacks().stream()
+        double enemyForces = game.getStacks().stream()
                 .filter(s -> !s.isBesieged() && StringUtils.equals(s.getProvince(), stack.getProvince()))
                 .flatMap(x -> x.getCounters().stream())
                 .filter(counter -> enemies.contains(counter.getCountry()))
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
-                .collect(Collectors.summingInt(value -> value));
+                .collect(Collectors.summingDouble(value -> value));
         if (enemyForces > 0) {
             // If stack is in the same province as a non besieged enemy stack, then the stack is fighting.
             movePhase = MovePhaseEnum.FIGHTING;
@@ -547,9 +547,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_MOVE_COUNTER));
 
         int futureNbCounters = stack.getCounters().size() + 1;
-        int futureSize = stack.getCounters().stream()
+        double futureSize = stack.getCounters().stream()
                 .map(c -> CounterUtil.getSizeFromType(c.getType()))
-                .collect(Collectors.summingInt(value -> value));
+                .collect(Collectors.summingDouble(value -> value));
         futureSize += CounterUtil.getSizeFromType(counter.getType());
 
         failIfFalse(new CheckForThrow<Boolean>()

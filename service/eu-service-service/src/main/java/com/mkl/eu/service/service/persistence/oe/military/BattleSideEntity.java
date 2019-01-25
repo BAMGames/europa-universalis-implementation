@@ -11,14 +11,34 @@ import javax.persistence.Embeddable;
 public class BattleSideEntity {
     /** Flag saying that the side has selected its forces. */
     private Boolean forces;
+    /** Flag saying that the side has selected its losses. */
+    private Boolean lossesSelected;
+    /** Flag saying that the side has selected its retreat. */
+    private Boolean retreatSelected;
     /** Size of the side. */
-    private Integer size;
+    private Double size;
     /** Technology of the side. */
     private String tech;
+    /** Fire column of the side. */
+    private String fireColumn;
+    /** Shock column of the side. */
+    private String shockColumn;
+    /** Moral of the side. */
+    private Integer moral;
     /** First day modifiers. */
-    private BattleModifierEntity firstDay = new BattleModifierEntity();
+    private BattleDayEntity firstDay = new BattleDayEntity();
     /** Second day modifiers. */
-    private BattleModifierEntity secondDay = new BattleModifierEntity();
+    private BattleDayEntity secondDay = new BattleDayEntity();
+    /** Modifier for the pursuit phase. */
+    private int pursuitMod;
+    /** Unmodified die roll for the pursuit phase. */
+    private Integer pursuit;
+    /** Losses. */
+    private BattleLossesEntity losses = new BattleLossesEntity();
+    /** Size diff. */
+    private Integer sizeDiff;
+    /** Unmodified die roll for the retreat. */
+    private Integer retreat;
 
     /** @return the forces. */
     public Boolean isForces() {
@@ -31,12 +51,12 @@ public class BattleSideEntity {
     }
 
     /** @return the size. */
-    public Integer getSize() {
+    public Double getSize() {
         return size;
     }
 
     /** @param size the size to set. */
-    public void setSize(Integer size) {
+    public void setSize(Double size) {
         this.size = size;
     }
 
@@ -50,23 +70,132 @@ public class BattleSideEntity {
         this.tech = tech;
     }
 
+    /** @return the fireColumn. */
+    public String getFireColumn() {
+        return fireColumn;
+    }
+
+    /** @param fireColumn the fireColumn to set. */
+    public void setFireColumn(String fireColumn) {
+        this.fireColumn = fireColumn;
+    }
+
+    /** @return the shockColumn. */
+    public String getShockColumn() {
+        return shockColumn;
+    }
+
+    /** @param shockColumn the shockColumn to set. */
+    public void setShockColumn(String shockColumn) {
+        this.shockColumn = shockColumn;
+    }
+
+    /** @return the moral. */
+    public Integer getMoral() {
+        return moral;
+    }
+
+    /** @param moral the moral to set. */
+    public void setMoral(Integer moral) {
+        this.moral = moral;
+    }
+
     /** @return the firstDay. */
-    public BattleModifierEntity getFirstDay() {
+    public BattleDayEntity getFirstDay() {
         return firstDay;
     }
 
     /** @param firstDay the firstDay to set. */
-    public void setFirstDay(BattleModifierEntity firstDay) {
+    public void setFirstDay(BattleDayEntity firstDay) {
         this.firstDay = firstDay;
     }
 
     /** @return the secondDay. */
-    public BattleModifierEntity getSecondDay() {
+    public BattleDayEntity getSecondDay() {
         return secondDay;
     }
 
     /** @param secondDay the secondDay to set. */
-    public void setSecondDay(BattleModifierEntity secondDay) {
+    public void setSecondDay(BattleDayEntity secondDay) {
         this.secondDay = secondDay;
+    }
+
+    /** @return the pursuitMod. */
+    public int getPursuitMod() {
+        return pursuitMod;
+    }
+
+    /** @param pursuitMod the pursuitMod to set. */
+    public void setPursuitMod(int pursuitMod) {
+        this.pursuitMod = pursuitMod;
+    }
+
+    /**
+     * Add the pursuit modifier to the current one.
+     *
+     * @param pursuit the pursuit modifier to add.
+     */
+    public void addPursuit(int pursuit) {
+        this.pursuitMod += pursuit;
+    }
+
+    /** @return the pursuit. */
+    public Integer getPursuit() {
+        return pursuit;
+    }
+
+    /** @param pursuit the pursuit to set. */
+    public void setPursuit(Integer pursuit) {
+        this.pursuit = pursuit;
+    }
+
+    /** @return the losses. */
+    public BattleLossesEntity getLosses() {
+        return losses;
+    }
+
+    /** @param losses the losses to set. */
+    public void setLosses(BattleLossesEntity losses) {
+        this.losses = losses;
+    }
+
+    /** @return the sizeDiff. */
+    public Integer getSizeDiff() {
+        return sizeDiff;
+    }
+
+    /** @param sizeDiff the sizeDiff to set. */
+    public void setSizeDiff(Integer sizeDiff) {
+        this.sizeDiff = sizeDiff;
+    }
+
+    /** @return the retreat. */
+    public Integer getRetreat() {
+        return retreat;
+    }
+
+    /** @param retreat the retreat to set. */
+    public void setRetreat(Integer retreat) {
+        this.retreat = retreat;
+    }
+
+    /** @return the lossesSelected. */
+    public Boolean isLossesSelected() {
+        return lossesSelected;
+    }
+
+    /** @param lossesSelected the lossesSelected to set. */
+    public void setLossesSelected(Boolean lossesSelected) {
+        this.lossesSelected = lossesSelected;
+    }
+
+    /** @return the retreatSelected. */
+    public Boolean isRetreatSelected() {
+        return retreatSelected;
+    }
+
+    /** @param retreatSelected the retreatSelected to set. */
+    public void setRetreatSelected(Boolean retreatSelected) {
+        this.retreatSelected = retreatSelected;
     }
 }

@@ -743,7 +743,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         }
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.VETERANS);
         if (attribute != null) {
-            Integer veterans = Integer.valueOf(attribute.getValue());
+            Double veterans = Double.valueOf(attribute.getValue());
             counter.setVeterans(veterans);
         }
         attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL);

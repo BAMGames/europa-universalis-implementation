@@ -5,6 +5,8 @@ import com.mkl.eu.client.service.vo.enumeration.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
+
 /**
  * Utility around counters.
  *
@@ -25,8 +27,8 @@ public final class CounterUtil {
      * @param face the face.
      * @return the military size.
      */
-    public static int getSizeFromType(CounterFaceTypeEnum face) {
-        int size = 0;
+    public static double getSizeFromType(CounterFaceTypeEnum face) {
+        double size = 0;
 
         if (face != null) {
             switch (face) {
@@ -46,6 +48,14 @@ public final class CounterUtil {
                 case NAVAL_GALLEY:
                     size = 1;
                     break;
+                case NAVAL_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_EXPLORATION:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY_EXPLORATION:
+                    size = THIRD;
+                    break;
+                // TODO Pashas
                 default:
                     break;
             }

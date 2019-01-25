@@ -204,7 +204,7 @@ public class CounterDomainImpl implements ICounterDomain {
 
     /** {@inheritDoc} */
     @Override
-    public DiffEntity changeVeteransCounter(Long idCounter, Integer veterans, GameEntity game) {
+    public DiffEntity changeVeteransCounter(Long idCounter, Double veterans, GameEntity game) {
         CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
                 c -> c.getId().equals(idCounter));
 

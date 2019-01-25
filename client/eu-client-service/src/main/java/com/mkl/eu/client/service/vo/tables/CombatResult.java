@@ -8,6 +8,8 @@ import com.mkl.eu.client.service.vo.AbstractWithLoss;
  * @author MKL.
  */
 public class CombatResult extends AbstractWithLoss {
+    /** The E column is special because always used for pursuit. */
+    public static final String COLUMN_E = "E";
     /** Column used. */
     private String column;
     /** Result of the modified dice. */

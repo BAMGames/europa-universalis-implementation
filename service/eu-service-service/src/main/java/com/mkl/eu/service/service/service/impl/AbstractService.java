@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +68,8 @@ public abstract class AbstractService implements INameConstants {
     public static final String MSG_MISSING_COUNTER = "{1}: {0} The counter {2} for country {3} is missing. Please ask an admin for correction.";
     /** Error message when the status is invalid. */
     public static final String MSG_INVALID_STATUS = "{1}: {0} The status {2} is invalid: it should be {3}.";
+    /** Error message when a table netry is missing. */
+    public static final String MSG_MISSING_TABLE = "Entry {1} for table {0} does not exist.";
     /** Socket Handler. */
     @Autowired
     private SocketHandler socketHandler;
@@ -171,6 +175,29 @@ public abstract class AbstractService implements INameConstants {
         String msg = MessageFormat.format(check.getMsgFormat(), args);
         LOGGER.error(msg);
         throw new FunctionalException(check.getCodeError(), msg, null, args);
+    }
+
+    /**
+     *
+     * @param code of the exception.
+     * @param msgFormat message template of the exception.
+     * @param params parameters of the exception.
+     * @return a supplier of technical exception that will also log it.
+     */
+    protected Supplier<TechnicalException> createTechnicalExceptionSupplier(String code, String msgFormat, String... params) {
+        return () -> createTechnicalException(code, msgFormat, params);
+    }
+
+    /**
+     * @param code      of the exception.
+     * @param msgFormat message template of the exception.
+     * @param params    parameters of the exception.
+     * @return a technical exception after logging it.
+     */
+    protected TechnicalException createTechnicalException(String code, String msgFormat, String... params) {
+        String msg = MessageFormat.format(msgFormat, params);
+        LOGGER.error(msg);
+        return new TechnicalException(code, msg, null, params);
     }
 
     /**
@@ -322,6 +349,50 @@ public abstract class AbstractService implements INameConstants {
                 .forEach(diffDao::create);
 
         push(diffs);
+    }
+
+    /**
+     * Creates the diff and then return a Response.
+     *
+     * @param diff      the diff to create.
+     * @param gameDiffs the existing game and diffs.
+     * @param request   the request.
+     * @param <T>       type of request.
+     * @return a Response.
+     */
+    protected <T> DiffResponse createDiff(DiffEntity diff, GameDiffsInfo gameDiffs, Request<T> request) {
+        createDiff(diff);
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        diffs.add(diff);
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(gameDiffs.getGame().getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
+    }
+
+    /**
+     * Creates the diffs and then return a Response.
+     *
+     * @param newDiffs  the diffs to create.
+     * @param gameDiffs the existing game and diffs.
+     * @param request   the request.
+     * @param <T>       type of request.
+     * @return a Response.
+     */
+    protected <T> DiffResponse createDiffs(List<DiffEntity> newDiffs, GameDiffsInfo gameDiffs, Request<T> request) {
+        createDiffs(newDiffs);
+        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        diffs.addAll(newDiffs);
+        DiffResponse response = new DiffResponse();
+        response.setDiffs(diffMapping.oesToVos(diffs));
+        response.setVersionGame(gameDiffs.getGame().getVersion());
+
+        response.setMessages(getMessagesSince(request));
+
+        return response;
     }
 
     /**

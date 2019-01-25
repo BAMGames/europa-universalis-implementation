@@ -1,11 +1,13 @@
 package com.mkl.eu.client.service.vo;
 
+import com.mkl.eu.client.service.vo.tables.Tech;
+
 /**
  * Abstract for VO that has the notion of losses.
  *
  * @author MKL.
  */
-public class AbstractWithLoss extends EuObject {
+public class AbstractWithLoss extends EuObject implements Losses {
     /** Number of round loss. */
     private Integer roundLoss;
     /** Number of third loss (between 0 and 2). */
@@ -13,7 +15,48 @@ public class AbstractWithLoss extends EuObject {
     /** Number of moral loss. */
     private Integer moraleLoss;
 
-    /** @return the roundLoss. */
+    /**
+     * @param tech the tech.
+     * @return the loss adjusted to tech (fire damage mitigated in early techs).
+     */
+    public AbstractWithLoss adjustToTech(String tech) {
+        AbstractWithLoss loss = this;
+        switch (tech) {
+            case Tech.RENAISSANCE:
+                loss = new StandardLoss(null, null, getMoraleLoss());
+                break;
+            case Tech.ARQUEBUS:
+                Integer thirdLosses = getThirdLoss() == null ? 0 : getThirdLoss();
+                if (getRoundLoss() != null) {
+                    thirdLosses += 3 * getRoundLoss();
+                }
+                thirdLosses /= 2;
+                loss = new StandardLoss(thirdLosses / 3, thirdLosses % 3, getMoraleLoss());
+                break;
+            case Tech.GALLEASS:
+                // TODO NGD without VGD
+                break;
+        }
+
+        return loss;
+    }
+
+    /**
+     * @return the total third of this losses (transform each round loss in three third losses).
+     */
+    public int getTotalThird() {
+        int third = 0;
+        if (getRoundLoss() != null) {
+            third += 3 * getRoundLoss();
+        }
+        if (getThirdLoss() != null) {
+            third += getThirdLoss();
+        }
+        return third;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Integer getRoundLoss() {
         return roundLoss;
     }
@@ -23,7 +66,8 @@ public class AbstractWithLoss extends EuObject {
         this.roundLoss = roundLoss;
     }
 
-    /** @return the thirdLoss. */
+    /** {@inheritDoc} */
+    @Override
     public Integer getThirdLoss() {
         return thirdLoss;
     }
@@ -33,7 +77,8 @@ public class AbstractWithLoss extends EuObject {
         this.thirdLoss = thirdLoss;
     }
 
-    /** @return the moraleLoss. */
+    /** {@inheritDoc} */
+    @Override
     public Integer getMoraleLoss() {
         return moraleLoss;
     }
@@ -41,5 +86,23 @@ public class AbstractWithLoss extends EuObject {
     /** @param moraleLoss the moraleLoss to set. */
     public void setMoraleLoss(Integer moraleLoss) {
         this.moraleLoss = moraleLoss;
+    }
+
+    /**
+     * Default implementation.
+     */
+    private static class StandardLoss extends AbstractWithLoss {
+        /**
+         * Constructor.
+         *
+         * @param roundLoss the roundLoss to set.
+         * @param thirdLoss the thirdLoss to set.
+         * @param moralLoss the moralLoss to set.
+         */
+        public StandardLoss(Integer roundLoss, Integer thirdLoss, Integer moralLoss) {
+            setRoundLoss(roundLoss);
+            setThirdLoss(thirdLoss);
+            setMoraleLoss(moralLoss);
+        }
     }
 }

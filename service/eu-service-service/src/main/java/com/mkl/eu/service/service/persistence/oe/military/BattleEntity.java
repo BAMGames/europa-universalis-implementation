@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe.military;
 
 import com.mkl.eu.client.service.vo.enumeration.BattleEndEnum;
 import com.mkl.eu.client.service.vo.enumeration.BattleStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.BattleWinnerEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import org.hibernate.annotations.GenericGenerator;
@@ -29,6 +30,8 @@ public class BattleEntity implements IEntity, Serializable {
     private BattleStatusEnum status;
     /** Cause of battle end. */
     private BattleEndEnum end;
+    /** Winner of battle. */
+    private BattleWinnerEnum winner;
     /** Phasing side. */
     private BattleSideEntity phasing = new BattleSideEntity();
     /** Non phasing side. */
@@ -97,6 +100,18 @@ public class BattleEntity implements IEntity, Serializable {
     /** @param end the end to set. */
     public void setEnd(BattleEndEnum end) {
         this.end = end;
+    }
+
+    /** @return the winner. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "WINNER")
+    public BattleWinnerEnum getWinner() {
+        return winner;
+    }
+
+    /** @param winner the winner to set. */
+    public void setWinner(BattleWinnerEnum winner) {
+        this.winner = winner;
     }
 
     /** @return the phasingSide. */

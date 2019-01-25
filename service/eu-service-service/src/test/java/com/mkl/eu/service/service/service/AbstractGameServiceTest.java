@@ -8,6 +8,9 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.client.service.vo.tables.BattleTech;
+import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
@@ -100,7 +103,10 @@ public abstract class AbstractGameServiceTest {
         when(diffDao.getDiffsSince(GAME_ID, VERSION_SINCE)).thenReturn(diffBefore);
 
         when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
-            List<DiffEntity> diffs = ((List<DiffEntity>) invocation.getArguments()[0]);
+            List<DiffEntity> diffs = invocation.getArgumentAt(0, List.class);
+            if (diffs == null) {
+                return null;
+            }
             diffEntities = diffs.subList(2, diffs.size());
             return diffAfter;
         });
@@ -118,7 +124,8 @@ public abstract class AbstractGameServiceTest {
         return diffAfter;
     }
 
-    protected <V> Pair<Request<V>, GameEntity> testCheckGame(IServiceWithCheckGame<V> service, String method) {
+    public <V> Pair<Request<V>, GameEntity> testCheckGame(IServiceWithCheckGame<V> service, String method) {
+        when(gameDao.lock(GAME_ID)).thenReturn(null);
 
         try {
             service.run(null);
@@ -278,5 +285,71 @@ public abstract class AbstractGameServiceTest {
 
     protected interface IServiceWithCheckGame<V> {
         void run(Request<V> request) throws TechnicalException, FunctionalException;
+    }
+
+    protected void fillBatleTechTables(Tables tables) {
+        BattleTech battleTech = new BattleTech();
+        battleTech.setTechnologyFor(Tech.ARQUEBUS);
+        battleTech.setTechnologyAgainst(Tech.RENAISSANCE);
+        battleTech.setColumnFire("C");
+        battleTech.setColumnShock("A");
+        battleTech.setLand(true);
+        battleTech.setMoral(2);
+        battleTech.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(battleTech);
+        battleTech = new BattleTech();
+        battleTech.setTechnologyFor(Tech.RENAISSANCE);
+        battleTech.setTechnologyAgainst(Tech.ARQUEBUS);
+        battleTech.setColumnFire("C");
+        battleTech.setColumnShock("B");
+        battleTech.setLand(true);
+        battleTech.setMoral(2);
+        battleTech.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(battleTech);
+
+        BattleTech bt = new BattleTech();
+        bt.setTechnologyFor(Tech.RENAISSANCE);
+        bt.setTechnologyAgainst(Tech.RENAISSANCE);
+        bt.setLand(true);
+        bt.setColumnFire("C");
+        bt.setColumnShock("A");
+        bt.setMoral(2);
+        bt.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(bt);
+        bt = new BattleTech();
+        bt.setTechnologyFor(Tech.RENAISSANCE);
+        bt.setTechnologyAgainst(Tech.MEDIEVAL);
+        bt.setLand(true);
+        bt.setColumnFire("C");
+        bt.setColumnShock("A");
+        bt.setMoral(1);
+        bt.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(bt);
+        bt = new BattleTech();
+        bt.setTechnologyFor(Tech.MEDIEVAL);
+        bt.setTechnologyAgainst(Tech.RENAISSANCE);
+        bt.setLand(true);
+        bt.setColumnShock("B");
+        bt.setMoral(1);
+        bt.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(bt);
+        bt = new BattleTech();
+        bt.setTechnologyFor(Tech.ARQUEBUS);
+        bt.setTechnologyAgainst(Tech.ARQUEBUS);
+        bt.setLand(true);
+        bt.setColumnFire("C");
+        bt.setColumnShock("B");
+        bt.setMoral(2);
+        bt.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(bt);
+        bt = new BattleTech();
+        bt.setTechnologyFor(Tech.MUSKET);
+        bt.setTechnologyAgainst(Tech.MUSKET);
+        bt.setLand(true);
+        bt.setColumnFire("C");
+        bt.setColumnShock("B");
+        bt.setMoral(3);
+        bt.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(bt);
     }
 }

@@ -221,28 +221,54 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#BATTLE in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STATUS to know which is the new status of the battle.</li>
-     * <li>DiffAttributeTypeEnum#ATTACKER_READY to know which if the attacker has selected its forces.</li>
-     * <li>DiffAttributeTypeEnum#DEFENDER_READY to know which if the defender has selected its forces.</li>
-     * <li>DiffAttributeTypeEnum#ATTACKER_COUNTER_ADD the attacking counter added to this battle.</li>
-     * <li>DiffAttributeTypeEnum#DEFENDER_COUNTER_ADD the defending counter added to this battle.</li>
-     * <li>DiffAttributeTypeEnum#ATTACKER_COUNTER_REMOVE the attacking counter removed to this battle.</li>
-     * <li>DiffAttributeTypeEnum#DEFENDER_COUNTER_REMOVE the defending counter removed to this battle.</li>
+     * <li>DiffAttributeTypeEnum#PHASING_READY to know which if the attacker has selected its forces.</li>
+     * <li>DiffAttributeTypeEnum#NON_PHASING_READY to know which if the defender has selected its forces.</li>
+     * <li>DiffAttributeTypeEnum#PHASING_COUNTER_ADD the attacking counter added to this battle.</li>
+     * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this battle.</li>
+     * <li>DiffAttributeTypeEnum#PHASING_COUNTER_REMOVE the attacking counter removed to this battle.</li>
+     * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_REMOVE the defending counter removed to this battle.</li>
+     * <li>DiffAttributeTypeEnum#END the cause of ending of this battle.</li>
+     * <li>DiffAttributeTypeEnum#WINNER the winner of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRE_COL the fire column of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SHOCK_COL the shock column of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORAL the moral of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_PURSUIT_MOD the pursuit modifier of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_PURSUIT the pursuit unmodified die roll of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE_DIFF the size diff of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_RETREAT the retreat unmodified die roll of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_ROUND_LOSS the round losses taken by the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_THIRD_LOSS the third losses taken by the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORALE_LOSS the morale losses taken by the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_FIRE_MOD the fire modifier of the phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_FIRE the fire unmodified die roll of the phasing forces in the first day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_SHOCK_MOD the shock modifier of the phasing forces in the first day of this battle.</li>
-     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_PURSUIT_MOD the pursuit modifier of the phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_SHOCK the shock unmodified die roll of the phasing forces in the first day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_FIRE_MOD the fire modifier of the phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_FIRE the fire unmodified die roll of the phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK_MOD the shock modifier of the phasing forces in the second day of this battle.</li>
-     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_PURSUIT_MOD the pursuit modifier of the phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK the shock unmodified die roll of the phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRE_COL the fire column of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SHOCK_COL the shock column of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_MORAL the moral of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_PURSUIT_MOD the pursuit modifier of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_PURSUIT the pursuit unmodified die roll of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE_DIFF the size diff of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_RETREAT the retreat unmodified die roll of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_ROUND_LOSS the round losses taken by the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_THIRD_LOSS the third losses taken by the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_MORALE_LOSS the morale losses taken by the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD the fire modifier of the non phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_FIRE the fire unmodified die roll of the non phasing forces in the first day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD the shock modifier of the non phasing forces in the first day of this battle.</li>
-     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_PURSUIT_MOD the pursuit modifier of the non phasing forces in the first day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_SHOCK the shock unmodified die roll of the non phasing forces in the first day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD the fire modifier of the non phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_FIRE the fire unmodified die roll of the non phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD the shock modifier of the non phasing forces in the second day of this battle.</li>
-     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_PURSUIT_MOD the pursuit modifier of the non phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_SHOCK the shock unmodified die roll of the non phasing forces in the second day of this battle.</li>
      * </ul>
      * </li>
      * </ul>

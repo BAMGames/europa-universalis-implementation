@@ -12,6 +12,10 @@ import java.util.stream.Stream;
  * @author MKL.
  */
 public final class CommonUtil {
+    /** A very little number, for floating number. */
+    public static final double EPSILON = 0.0001d;
+    /** One third. */
+    public static final double THIRD = 1d / 3;
     /**
      * No instance.
      */
@@ -134,6 +138,24 @@ public final class CommonUtil {
      * @param <K> the class of the key.
      */
     public static <K> void add(Map<K, Integer> map, K key, Integer add) {
+        if (map != null) {
+            if (map.get(key) != null) {
+                map.put(key, map.get(key) + add);
+            } else {
+                map.put(key, add);
+            }
+        }
+    }
+
+    /**
+     * Add a value to a specific key in a Map of K->Double.
+     *
+     * @param map the map.
+     * @param key the key.
+     * @param add the value to add.
+     * @param <K> the class of the key.
+     */
+    public static <K> void add(Map<K, Double> map, K key, Double add) {
         if (map != null) {
             if (map.get(key) != null) {
                 map.put(key, map.get(key) + add);

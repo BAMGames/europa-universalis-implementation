@@ -20,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -572,11 +573,11 @@ public class CounterDomainTest {
         game.getStacks().get(1).getCounters().get(0).setId(200L);
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
 
-        DiffEntity diff = counterDomain.changeVeteransCounter(99L, 2, game);
+        DiffEntity diff = counterDomain.changeVeteransCounter(99L, 2d, game);
 
         Assert.assertNull(diff);
 
-        diff = counterDomain.changeVeteransCounter(101L, 2, game);
+        diff = counterDomain.changeVeteransCounter(101L, 2d, game);
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -585,11 +586,11 @@ public class CounterDomainTest {
         Assert.assertEquals(101L, diff.getIdObject().longValue());
         Assert.assertEquals(2, diff.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.VETERANS, diff.getAttributes().get(0).getType());
-        Assert.assertEquals("2", diff.getAttributes().get(0).getValue());
+        Assert.assertEquals(Double.toString(2d), diff.getAttributes().get(0).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(1).getType());
         Assert.assertEquals("idf", diff.getAttributes().get(1).getValue());
 
-        Assert.assertEquals(2, game.getStacks().get(0).getCounters().get(1).getVeterans().intValue());
+        Assert.assertEquals(2, game.getStacks().get(0).getCounters().get(1).getVeterans().doubleValue(), EPSILON);
     }
 
     @Test

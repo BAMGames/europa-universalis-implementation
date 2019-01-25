@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import org.apache.commons.lang.BooleanUtils;
 
 /**
  * Utility class for diff objects.
@@ -146,7 +147,7 @@ public final class DiffUtil {
      * @return the diff attribute created.
      */
     public static DiffAttributesEntity createDiffAttributes(DiffAttributeTypeEnum type, Boolean value, boolean check) {
-        return createDiffAttributes(type, Boolean.toString(value), check);
+        return createDiffAttributes(type, Boolean.toString(BooleanUtils.toBoolean(value)), check);
     }
 
     /**
