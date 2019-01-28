@@ -1083,15 +1083,47 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(militaryService::withdrawBeforeBattle, "withdrawBeforeBattle");
         Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
+        StackEntity stack1 = new StackEntity();
+        stack1.setId(1l);
+        stack1.setProvince("idf");
+        stack1.setCountry("france");
+        stack1.getCounters().add(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_PLUS));
+        stack1.getCounters().add(createCounter(2l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        game.getStacks().add(stack1);
+        StackEntity stack2 = new StackEntity();
+        stack2.setId(2l);
+        stack2.setProvince("idf");
+        stack2.setCountry("spain");
+        stack2.getCounters().add(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS));
+        game.getStacks().add(stack2);
+        StackEntity stack3 = new StackEntity();
+        stack3.setId(3l);
+        stack3.setProvince("idf");
+        stack3.setCountry("savoie");
+        stack3.getCounters().add(createCounter(3l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT));
+        game.getStacks().add(stack3);
+
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         game.getBattles().get(0).setProvince("idf");
+        stack1.getCounters().forEach(counter -> {
+            BattleCounterEntity bc = new BattleCounterEntity();
+            bc.setPhasing(false);
+            bc.setCounter(counter);
+        });
+        stack2.getCounters().forEach(counter -> {
+            BattleCounterEntity bc = new BattleCounterEntity();
+            bc.setPhasing(true);
+            bc.setCounter(counter);
+        });
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
         PlayableCountryEntity country = new PlayableCountryEntity();
         country.setId(27L);
+        country.setName("france");
         game.getCountries().add(country);
+        when(oeUtil.getAllies(country, game)).thenReturn(Arrays.asList("france", "savoie"));
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
         order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
@@ -1124,6 +1156,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         BattleEntity battle = game.getBattles().get(0);
         MilitaryServiceImpl.TABLES = new Tables();
         MilitaryServiceImpl.TABLES.getBattleTechs().add(new BattleTech());
+        simulateDiff();
 
         when(oeUtil.rollDie(game, country)).thenReturn(5);
 
@@ -1137,6 +1170,39 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         militaryService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() == BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+        Assert.assertTrue(battle.getStatus() == BattleStatusEnum.DONE);
+        Assert.assertTrue(battle.getWinner() == BattleWinnerEnum.NONE);
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+        Assert.assertEquals(3, diffs.size());
+        DiffEntity diffBattle = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.BATTLE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffBattle);
+        Assert.assertEquals(battle.getId(), diffBattle.getIdObject());
+        Assert.assertEquals(BattleStatusEnum.DONE.name(), getAttribute(diffBattle, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals(BattleEndEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffBattle, DiffAttributeTypeEnum.END));
+        Assert.assertEquals(BattleWinnerEnum.NONE.name(), getAttribute(diffBattle, DiffAttributeTypeEnum.WINNER));
+        DiffEntity diffStack1 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack1.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack1);
+        Assert.assertEquals("idf", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("idf", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack1, DiffAttributeTypeEnum.MOVE_PHASE));
+        Assert.assertEquals(Boolean.TRUE.toString(), getAttribute(diffStack1, DiffAttributeTypeEnum.BESIEGED));
+        DiffEntity diffStack3 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack3.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack3);
+        Assert.assertEquals("idf", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("idf", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack3, DiffAttributeTypeEnum.MOVE_PHASE));
+        Assert.assertEquals(Boolean.TRUE.toString(), getAttribute(diffStack3, DiffAttributeTypeEnum.BESIEGED));
 
         battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         request.getRequest().setProvinceTo("orleans");
@@ -1145,6 +1211,39 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         militaryService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() == BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+        Assert.assertTrue(battle.getStatus() == BattleStatusEnum.DONE);
+        Assert.assertTrue(battle.getWinner() == BattleWinnerEnum.NONE);
+        diffs = retrieveDiffsCreated();
+        Assert.assertEquals(3, diffs.size());
+        diffBattle = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.BATTLE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffBattle);
+        Assert.assertEquals(battle.getId(), diffBattle.getIdObject());
+        Assert.assertEquals(BattleStatusEnum.DONE.name(), getAttribute(diffBattle, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals(BattleEndEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffBattle, DiffAttributeTypeEnum.END));
+        Assert.assertEquals(BattleWinnerEnum.NONE.name(), getAttribute(diffBattle, DiffAttributeTypeEnum.WINNER));
+        diffStack1 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack1.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack1);
+        Assert.assertEquals("idf", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("orleans", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack1, DiffAttributeTypeEnum.MOVE_PHASE));
+        Assert.assertNull(getAttribute(diffStack1, DiffAttributeTypeEnum.BESIEGED));
+        diffStack3 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack3.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack3);
+        Assert.assertEquals("idf", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("orleans", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack3, DiffAttributeTypeEnum.MOVE_PHASE));
+        Assert.assertNull(getAttribute(diffStack3, DiffAttributeTypeEnum.BESIEGED));
     }
 
     @Test
@@ -1159,7 +1258,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testRoutedFirstFire() throws FunctionalException {
-        // Non phasing routed. Phasing no fire because medieval
+        // Non phasing routed. Non phasing no fire because medieval
         BattleBuilder.create()
                 .rotw(true)
                 .phasing(BattleSideBuilder.create()
@@ -1505,6 +1604,35 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .nonPhasingThirdLosses(9)
                         .nonPhasingMoralLosses(3)
                         .nonPhasingAnnihilated(true));
+
+        // Both side routed. No fire because Renaissance without army.
+        BattleBuilder.create()
+                .rotw(false)
+                .phasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.LAND_DETACHMENT).toCounter())
+                        .sizeReductionDamage(6)
+                        .veteran(false)
+                        .tech(Tech.RENAISSANCE)
+                        .firstShock(10)
+                        .retreat(1))
+                .nonPhasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.LAND_DETACHMENT).toCounter())
+                        .sizeReductionDamage(6)
+                        .veteran(false)
+                        .tech(Tech.RENAISSANCE)
+                        .firstShock(10)
+                        .retreat(1))
+                .whenBattle(militaryService, this)
+                .thenExpect(BattleResultBuilder.create()
+                        .end(BattleEndEnum.ROUTED_AT_FIRST_SHOCK)
+                        .winner(BattleWinnerEnum.NONE)
+                        .phasingThirdLosses(0)
+                        .phasingMoralLosses(2)
+                        .phasingAnnihilated(false)
+                        .nonPhasingThirdLosses(0)
+                        .nonPhasingMoralLosses(2)
+                        .nonPhasingAnnihilated(false));
+
     }
 
     @Test
@@ -1756,6 +1884,13 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             testClass.fillBatleTechTables(tables);
 
             CombatResult result = new CombatResult();
+            result.setColumn("A");
+            result.setDice(10);
+            result.setRoundLoss(2);
+            result.setThirdLoss(1);
+            result.setMoraleLoss(2);
+            tables.getCombatResults().add(result);
+            result = new CombatResult();
             result.setColumn("B");
             result.setDice(7);
             result.setRoundLoss(1);
@@ -1891,10 +2026,12 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                     Assert.assertEquals(toString(nonPhasingLossesAuto), getAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_READY));
                 } else if (!phasingRetreatAuto || !nonPhasingRetreatAuto) {
                     Assert.assertEquals(BattleStatusEnum.RETREAT, battle.getStatus());
+                    Assert.assertTrue(battle.getPhasing().isLossesSelected());
+                    Assert.assertTrue(battle.getNonPhasing().isLossesSelected());
                     Assert.assertEquals(BattleStatusEnum.RETREAT.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
-                    Assert.assertEquals(phasingRetreatAuto, battle.getPhasing().isLossesSelected());
+                    Assert.assertEquals(phasingRetreatAuto, battle.getPhasing().isRetreatSelected());
                     Assert.assertEquals(toString(phasingRetreatAuto), getAttribute(diff, DiffAttributeTypeEnum.PHASING_READY));
-                    Assert.assertEquals(nonPhasingRetreatAuto, battle.getNonPhasing().isLossesSelected());
+                    Assert.assertEquals(nonPhasingRetreatAuto, battle.getNonPhasing().isRetreatSelected());
                     Assert.assertEquals(toString(nonPhasingRetreatAuto), getAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_READY));
                 } else {
                     Assert.assertEquals(BattleStatusEnum.DONE, battle.getStatus());
@@ -1907,14 +2044,6 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             }
 
             return this;
-        }
-
-        private String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {
-            return diff.getAttributes().stream()
-                    .filter(attribute -> attribute.getType() == type)
-                    .map(DiffAttributesEntity::getValue)
-                    .findAny()
-                    .orElse(null);
         }
 
         private String toString(Integer i) {

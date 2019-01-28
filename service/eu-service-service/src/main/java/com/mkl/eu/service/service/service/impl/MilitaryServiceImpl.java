@@ -551,17 +551,19 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WINNER, BattleWinnerEnum.NONE));
                 newDiffs.add(diff);
                 Consumer<StackEntity> retreatStack = stack -> {
+                    boolean besieged = StringUtils.equals(battle.getProvince(), provinceTo);
+                    newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, battle.getProvince()),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BESIEGED, besieged, besieged)));
                     stack.setMovePhase(MovePhaseEnum.MOVED);
                     stack.setProvince(provinceTo);
-                    newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, stack.getProvince()),
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+                    stack.setBesieged(besieged);
                 };
-                battle.getCounters().stream()
-                        .filter(BattleCounterEntity::isNotPhasing)
-                        .map(c -> c.getCounter().getOwner())
-                        .distinct()
+                List<String> allies = oeUtil.getAllies(country, game);
+                game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
                 cleanUpBattle(battle);
 
@@ -982,10 +984,10 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
      * @return the eventual attributes, if any.
      */
     private DiffAttributesEntity computeSequence(BattleSequenceEnum sequence, BattleSideEntity active, BattleSideEntity passive, boolean activePhasing, GameEntity game) {
-        Integer modifier;
-        String column;
-        Consumer<Integer> setDice;
-        DiffAttributeTypeEnum type;
+        Integer modifier = 0;
+        String column = null;
+        Consumer<Integer> setDice = null;
+        DiffAttributeTypeEnum type = null;
         switch (sequence) {
             case FIRST_FIRE:
                 modifier = active.getFirstDay().getFireMod();
@@ -1037,11 +1039,6 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     type = DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT;
                 }
                 break;
-            default:
-                modifier = 0;
-                column = null;
-                setDice = null;
-                type = null;
         }
 
         if (StringUtils.isNotEmpty(column)) {
@@ -1168,9 +1165,13 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
     private void prepareRetreat(BattleEntity battle, List<DiffAttributesEntity> attributes) {
         if (battle.getWinner() == BattleWinnerEnum.PHASING || battle.getPhasing().getLosses().isGreaterThanSize(battle.getPhasing().getSize())) {
             battle.getPhasing().setRetreatSelected(true);
+        } else {
+            battle.getPhasing().setRetreatSelected(false);
         }
         if (battle.getWinner() == BattleWinnerEnum.NON_PHASING || battle.getNonPhasing().getLosses().isGreaterThanSize(battle.getNonPhasing().getSize())) {
             battle.getNonPhasing().setRetreatSelected(true);
+        } else {
+            battle.getNonPhasing().setRetreatSelected(false);
         }
         // Maybe later, if only one province possible to retreat, then force the retreat there.
 

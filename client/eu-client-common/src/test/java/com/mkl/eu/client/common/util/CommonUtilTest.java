@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
+
 /**
  * Unit test for CommonUtil.
  *
@@ -249,6 +251,28 @@ public class CommonUtilTest {
         Assert.assertEquals(2, map.get("two").intValue());
     }
 
+    @Test
+    public void testAddSubtractOneDouble() {
+        Map<String, Double> map = new HashMap<>();
+
+        CommonUtil.add(map, "one", 5d);
+
+        Assert.assertEquals(1, map.size());
+        Assert.assertEquals(5d, map.get("one"), EPSILON);
+
+        CommonUtil.add(map, "one", 3d);
+
+        Assert.assertEquals(1, map.size());
+        Assert.assertEquals(8d, map.get("one"), EPSILON);
+
+        CommonUtil.add(map, "two", 2d);
+
+        Assert.assertEquals(2, map.size());
+        Assert.assertEquals(8d, map.get("one"), EPSILON);
+        Assert.assertEquals(2d, map.get("two"), EPSILON);
+    }
+
+    @Test
     public void testIntegers() {
         Assert.assertEquals(0, CommonUtil.toInt(null));
         Assert.assertEquals(1, CommonUtil.toInt(new Integer("1")));

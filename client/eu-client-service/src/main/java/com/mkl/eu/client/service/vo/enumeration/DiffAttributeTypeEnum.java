@@ -14,6 +14,8 @@ public enum DiffAttributeTypeEnum {
     PROVINCE_TO,
     /** Phase of the moving stack. */
     MOVE_PHASE,
+    /** If the stack is besieging or lifting the siege. */
+    BESIEGED,
     /** Where the diff came from (move of a counter): id of the stack. */
     STACK_FROM,
     /** Where the diff went to (move of a counter): id of the stack. */

@@ -315,6 +315,10 @@ public class OEUtilTest {
         game.setSeed(seed);
 
         Assert.assertEquals(die, oeUtil.rollDie(game, (PlayableCountryEntity) null));
+
+        game.setSeed(seed);
+
+        Assert.assertEquals(die, oeUtil.rollDie(game));
     }
 
     @Test

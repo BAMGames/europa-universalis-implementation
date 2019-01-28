@@ -7,6 +7,8 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.vo.diff.Diff;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
 import com.mkl.eu.client.service.vo.tables.Tables;
@@ -15,7 +17,9 @@ import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.socket.SocketHandler;
@@ -351,5 +355,21 @@ public abstract class AbstractGameServiceTest {
         bt.setMoral(3);
         bt.setMoralBonusVeteran(true);
         tables.getBattleTechs().add(bt);
+    }
+
+    public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type) {
+        CounterEntity counter = new CounterEntity();
+        counter.setId(id);
+        counter.setCountry(country);
+        counter.setType(type);
+        return counter;
+    }
+
+    public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {
+        return diff.getAttributes().stream()
+                .filter(attribute -> attribute.getType() == type)
+                .map(DiffAttributesEntity::getValue)
+                .findAny()
+                .orElse(null);
     }
 }
