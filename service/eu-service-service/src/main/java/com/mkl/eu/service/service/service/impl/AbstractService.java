@@ -362,7 +362,7 @@ public abstract class AbstractService implements INameConstants {
      */
     protected <T> DiffResponse createDiff(DiffEntity diff, GameDiffsInfo gameDiffs, Request<T> request) {
         createDiff(diff);
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        List<DiffEntity> diffs = new ArrayList<>(gameDiffs.getDiffs());
         diffs.add(diff);
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));

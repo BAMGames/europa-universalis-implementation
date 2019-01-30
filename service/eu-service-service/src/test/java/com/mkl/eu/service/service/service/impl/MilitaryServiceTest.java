@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
@@ -1257,6 +1258,141 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
+    public void testRetreatFirstDayFail() {
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::retreatFirstDay, "retreatFirstDay");
+        Request<ValidateRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(27L);
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(26L);
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
+        game.getBattles().get(0).setProvince("idf");
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS));
+        game.getBattles().get(0).getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(1l, "savoie", CounterFaceTypeEnum.ARMY_MINUS));
+        game.getBattles().get(0).getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(1l, "spain", CounterFaceTypeEnum.ARMY_MINUS));
+        game.getBattles().get(0).getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(1l, "austria", CounterFaceTypeEnum.ARMY_MINUS));
+        game.getBattles().get(0).getCounters().add(bc);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(new PlayableCountryEntity());
+        order.getCountry().setId(26L);
+        game.getOrders().add(order);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        testCheckStatus(pair.getRight(), request, militaryService::retreatFirstDay, "retreatFirstDay", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(27L);
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because retreatFirstDay.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ValidateRequest());
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because battle is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("retreatFirstDay", e.getParams()[0]);
+        }
+
+        game.getBattles().get(0).setStatus(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT);
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getEnemies(france, game)).thenReturn(Arrays.asList("spain", "austria"));
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
+        }
+
+        game.getBattles().get(0).setStatus(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF);
+        request.setIdCountry(26L);
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("spain", "austria"));
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getEnemies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
+
+        try {
+            militaryService.retreatFirstDay(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
+        }
+    }
+
+    @Test
     public void testRoutedFirstFire() throws FunctionalException {
         // Non phasing routed. Non phasing no fire because medieval
         BattleBuilder.create()
@@ -1727,8 +1863,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testNoWinnerFirstDay() throws FunctionalException {
-        // Phasing annihilated.
+    public void testRoutedSecondFire() throws FunctionalException {
+        // Phasing routed.
         BattleBuilder.create()
                 .rotw(false)
                 .phasing(BattleSideBuilder.create()
@@ -1736,26 +1872,138 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .veteran(true)
                         .tech(Tech.MUSKET)
                         .firstFire(10)
-                        .firstShock(8))
+                        .firstShock(8)
+                        .retreatFirstDayResult(false)
+                        .secondFire(6)
+                        .retreat(1))
                 .nonPhasing(BattleSideBuilder.create()
                         .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_PLUS).toCounter())
                         .veteran(true)
                         .tech(Tech.MUSKET)
                         .firstFire(10)
-                        .firstShock(8))
+                        .firstShock(8)
+                        .retreatFirstDayResult(false)
+                        .secondFire(7)
+                        .pursuit(2))
                 .whenBattle(militaryService, this)
                 .thenExpect(BattleResultBuilder.create()
-                        .phasingThirdLosses(9)
-                        .phasingMoralLosses(3)
-                        .phasingAnnihilated(false)
+                        .end(BattleEndEnum.ROUTED_AT_SECOND_FIRE)
+                        .winner(BattleWinnerEnum.NON_PHASING)
+                        .phasingThirdLosses(12)
+                        .phasingMoralLosses(4)
+                        .phasingAnnihilated(true)
                         .nonPhasingThirdLosses(9)
                         .nonPhasingMoralLosses(3)
                         .nonPhasingAnnihilated(false));
+        // Phasing routed but non phasing annihilated.
+        BattleBuilder.create()
+                .rotw(false)
+                .phasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_PLUS).toCounter(),
+                                ArmyBuilder.create().type(CounterFaceTypeEnum.LAND_DETACHMENT).toCounter())
+                        .veteran(true)
+                        .tech(Tech.MUSKET)
+                        .firstFire(8)
+                        .firstShock(8)
+                        .retreatFirstDayResult(false)
+                        .secondFire(8)
+                        .retreat(1))
+                .nonPhasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_MINUS).toCounter(),
+                                ArmyBuilder.create().type(CounterFaceTypeEnum.LAND_DETACHMENT).toCounter())
+                        .veteran(true)
+                        .tech(Tech.MUSKET)
+                        .firstFire(10)
+                        .firstShock(8)
+                        .retreatFirstDayResult(false)
+                        .secondFire(7)
+                        .pursuit(2))
+                .whenBattle(militaryService, this)
+                .thenExpect(BattleResultBuilder.create()
+                        .end(BattleEndEnum.ROUTED_AT_SECOND_FIRE)
+                        .winner(BattleWinnerEnum.PHASING)
+                        .phasingThirdLosses(12)
+                        .phasingMoralLosses(4)
+                        .phasingAnnihilated(false)
+                        .nonPhasingThirdLosses(9)
+                        .nonPhasingMoralLosses(3)
+                        .nonPhasingAnnihilated(true));
+    }
+
+    @Test
+    public void testMissedRetreatFirstDay() throws FunctionalException {
+        // without failed retreat, no annihilation and no route
+        BattleBuilder.create()
+                .rotw(false)
+                .phasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_PLUS).toCounter())
+                        .veteran(true)
+                        .tech(Tech.MUSKET)
+                        .firstFire(8)
+                        .firstShock(8)
+                        .secondFire(7)
+                        .secondShock(7)
+                        .retreat(1))
+                .nonPhasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_PLUS).toCounter())
+                        .veteran(true)
+                        .tech(Tech.MUSKET)
+                        .firstFire(8)
+                        .firstShock(8)
+                        .secondFire(7)
+                        .secondShock(7)
+                        .retreat(1))
+                .whenBattle(militaryService, this)
+                .thenExpect(BattleResultBuilder.create()
+                        .end(BattleEndEnum.END_OF_SECOND_DAY)
+                        .winner(BattleWinnerEnum.NONE)
+                        .phasingThirdLosses(9)
+                        .phasingMoralLosses(2)
+                        .phasingAnnihilated(false)
+                        .nonPhasingThirdLosses(9)
+                        .nonPhasingMoralLosses(2)
+                        .nonPhasingAnnihilated(false));
+
+        // with failed retreat, double annihilation and double route
+        BattleBuilder.create()
+                .rotw(false)
+                .phasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_PLUS).toCounter())
+                        .veteran(true)
+                        .tech(Tech.MUSKET)
+                        .firstFire(8)
+                        .firstShock(8)
+                        .retreatFirstDayResult(false)
+                        .secondFire(7)
+                        .secondShock(7)
+                        .retreat(1))
+                .nonPhasing(BattleSideBuilder.create()
+                        .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_PLUS).toCounter())
+                        .veteran(true)
+                        .tech(Tech.MUSKET)
+                        .firstFire(8)
+                        .firstShock(8)
+                        .retreatFirstDayResult(false)
+                        .secondFire(7)
+                        .secondShock(7)
+                        .retreat(1))
+                .whenBattle(militaryService, this)
+                .thenExpect(BattleResultBuilder.create()
+                        .end(BattleEndEnum.ROUTED_AT_SECOND_SHOCK)
+                        .winner(BattleWinnerEnum.NONE)
+                        .phasingThirdLosses(12)
+                        .phasingMoralLosses(4)
+                        .phasingAnnihilated(true)
+                        .nonPhasingThirdLosses(12)
+                        .nonPhasingMoralLosses(4)
+                        .nonPhasingAnnihilated(true));
     }
 
     private static class BattleBuilder {
         BattleEntity battle;
-        List<DiffEntity> diffs;
+        List<DiffEntity> diffsFirstDay;
+        List<DiffEntity> diffsFirstRetreat;
+        List<DiffEntity> diffsSecondDay;
         boolean rotw;
         BattleSideBuilder phasing;
         BattleSideBuilder nonPhasing;
@@ -1795,6 +2043,12 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             nonPhasingCountry.setGame(game);
             nonPhasingCountry.setLandTech(nonPhasing.tech);
             game.getCountries().add(nonPhasingCountry);
+            CountryOrderEntity order = new CountryOrderEntity();
+            order.setActive(true);
+            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+            order.setCountry(new PlayableCountryEntity());
+            order.getCountry().setId(phasingCountry.getId());
+            game.getOrders().add(order);
             battle = new BattleEntity();
             battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
             battle.setGame(game);
@@ -1832,7 +2086,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
             request.setRequest(new WithdrawBeforeBattleRequest());
             request.getRequest().setWithdraw(false);
-            request.setIdCountry(2L);
+            request.setIdCountry(nonPhasingCountry.getId());
 
             when(testClass.oeUtil.getTechnology(any(), anyBoolean(), any(), any(), any())).thenReturn(phasing.tech, nonPhasing.tech);
             when(testClass.oeUtil.isStackVeteran(any())).thenReturn(phasing.veteran, nonPhasing.veteran);
@@ -1851,6 +2105,26 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             if (nonPhasing.firstShock != null) {
                 dice = dice.thenReturn(nonPhasing.firstShock);
             }
+            if (nonPhasing.retreatFirstDayAttempt) {
+                int retreatDie = nonPhasing.retreatFirstDayResult ? 1 : 10;
+                dice = dice.thenReturn(retreatDie);
+            }
+            if (phasing.retreatFirstDayAttempt) {
+                int retreatDie = phasing.retreatFirstDayResult ? 1 : 10;
+                dice = dice.thenReturn(retreatDie);
+            }
+            if (phasing.secondFire != null) {
+                dice = dice.thenReturn(phasing.secondFire);
+            }
+            if (nonPhasing.secondFire != null) {
+                dice = dice.thenReturn(nonPhasing.secondFire);
+            }
+            if (phasing.secondShock != null) {
+                dice = dice.thenReturn(phasing.secondShock);
+            }
+            if (nonPhasing.secondShock != null) {
+                dice = dice.thenReturn(nonPhasing.secondShock);
+            }
             if (phasing.pursuit != null) {
                 dice = dice.thenReturn(phasing.pursuit);
             }
@@ -1861,8 +2135,9 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 dice = dice.thenReturn(phasing.retreat);
             }
             if (nonPhasing.retreat != null) {
-                dice.thenReturn(nonPhasing.retreat);
+                dice = dice.thenReturn(nonPhasing.retreat);
             }
+
             if (Objects.equals(phasing.retreat, nonPhasing.retreat)) {
                 when(testClass.oeUtil.retreat(phasing.retreat)).thenReturn(AbstractWithLossEntity.create(phasing.retreatLosses), AbstractWithLossEntity.create(nonPhasing.retreatLosses));
             } else {
@@ -1892,6 +2167,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             tables.getCombatResults().add(result);
             result = new CombatResult();
             result.setColumn("B");
+            result.setDice(6);
+            result.setThirdLoss(2);
+            tables.getCombatResults().add(result);
+            result = new CombatResult();
+            result.setColumn("B");
             result.setDice(7);
             result.setRoundLoss(1);
             result.setMoraleLoss(1);
@@ -1911,16 +2191,27 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             tables.getCombatResults().add(result);
             result = new CombatResult();
             result.setColumn("C");
-            result.setDice(10);
-            result.setRoundLoss(1);
+            result.setDice(6);
+            result.setThirdLoss(1);
+            tables.getCombatResults().add(result);
+            result = new CombatResult();
+            result.setColumn("C");
+            result.setDice(7);
             result.setThirdLoss(2);
-            result.setMoraleLoss(2);
+            result.setMoraleLoss(1);
             tables.getCombatResults().add(result);
             result = new CombatResult();
             result.setColumn("C");
             result.setDice(8);
             result.setRoundLoss(1);
             result.setMoraleLoss(1);
+            tables.getCombatResults().add(result);
+            result = new CombatResult();
+            result.setColumn("C");
+            result.setDice(10);
+            result.setRoundLoss(1);
+            result.setThirdLoss(2);
+            result.setMoraleLoss(2);
             tables.getCombatResults().add(result);
             result = new CombatResult();
             result.setColumn("E");
@@ -1944,7 +2235,37 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
             militaryService.withdrawBeforeBattle(request);
 
-            diffs = testClass.retrieveDiffsCreated();
+            diffsFirstDay = testClass.retrieveDiffsCreated();
+
+            if (battle.getWinner() == null) {
+                Assert.assertEquals(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF, battle.getStatus());
+
+                Request<ValidateRequest> retreatRequest = new Request<>();
+                retreatRequest.setGame(new GameInfo());
+                retreatRequest.getGame().setIdGame(game.getId());
+                retreatRequest.getGame().setVersionGame(VERSION_SINCE);
+                retreatRequest.setIdCountry(nonPhasingCountry.getId());
+                retreatRequest.setRequest(new ValidateRequest());
+                retreatRequest.getRequest().setValidate(nonPhasing.retreatFirstDayAttempt);
+
+                when(testClass.oeUtil.getAllies(phasingCountry, game)).thenReturn(Collections.singletonList(phasingCountry.getName()));
+                when(testClass.oeUtil.getAllies(nonPhasingCountry, game)).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
+                when(testClass.oeUtil.getEnemies(phasingCountry, game)).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
+                when(testClass.oeUtil.getEnemies(nonPhasingCountry, game)).thenReturn(Collections.singletonList(phasingCountry.getName()));
+
+                militaryService.retreatFirstDay(retreatRequest);
+
+                diffsFirstRetreat = testClass.retrieveDiffsCreated();
+
+                Assert.assertEquals(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT, battle.getStatus());
+
+                retreatRequest.setIdCountry(phasingCountry.getId());
+                retreatRequest.getRequest().setValidate(phasing.retreatFirstDayAttempt);
+
+                militaryService.retreatFirstDay(retreatRequest);
+
+                diffsSecondDay = testClass.retrieveDiffsCreated();
+            }
 
             return this;
         }
@@ -1966,6 +2287,52 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(nonPhasing.pursuit, battle.getNonPhasing().getPursuit());
             Assert.assertEquals(nonPhasing.retreat, battle.getNonPhasing().getRetreat());
 
+            boolean onlyOneDayBattle = result.end == BattleEndEnum.ROUTED_AT_FIRST_FIRE || result.end == BattleEndEnum.ROUTED_AT_FIRST_SHOCK || result.end == BattleEndEnum.ANNIHILATED_AT_FIRST_DAY;
+
+            DiffEntity diffFirstDay = diffsFirstDay.stream().filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE && Objects.equals(d.getIdObject(), battle.getId()))
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diffFirstDay);
+            DiffEntity diffLastDay;
+            List<DiffEntity> diffsLastDay;
+            if (onlyOneDayBattle) {
+                Assert.assertNull(diffsFirstRetreat);
+                Assert.assertNull(diffsSecondDay);
+                diffLastDay = diffFirstDay;
+                diffsLastDay = diffsFirstDay;
+            } else {
+                Assert.assertEquals(1, diffsFirstDay.size());
+                Assert.assertNull(getAttribute(diffFirstDay, DiffAttributeTypeEnum.END));
+                Assert.assertNull(getAttribute(diffFirstDay, DiffAttributeTypeEnum.WINNER));
+                Assert.assertEquals(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF.name(), getAttribute(diffFirstDay, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals(1, diffsFirstRetreat.size());
+                DiffEntity diffRetreat = diffsFirstRetreat.get(0);
+                Assert.assertEquals(DiffTypeEnum.MODIFY, diffRetreat.getType());
+                Assert.assertEquals(DiffTypeObjectEnum.BATTLE, diffRetreat.getTypeObject());
+                Assert.assertEquals(battle.getId(), diffRetreat.getIdObject());
+                Assert.assertEquals(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT.name(), getAttribute(diffRetreat, DiffAttributeTypeEnum.STATUS));
+                if (nonPhasing.retreatFirstDayAttempt && !nonPhasing.retreatFirstDayResult) {
+                    Assert.assertEquals(toString(battle.getNonPhasing().getSecondDay().getFireMod()), getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD));
+                    Assert.assertEquals(toString(battle.getNonPhasing().getSecondDay().getShockMod()), getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD));
+                } else {
+                    Assert.assertNull(getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD));
+                    Assert.assertNull(getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD));
+                }
+
+                diffLastDay = diffsSecondDay.stream().filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE && Objects.equals(d.getIdObject(), battle.getId()))
+                        .findAny()
+                        .orElse(null);
+                diffsLastDay = diffsSecondDay;
+                Assert.assertNotNull(diffLastDay);
+                if (phasing.retreatFirstDayAttempt && !phasing.retreatFirstDayResult) {
+                    Assert.assertEquals(toString(battle.getPhasing().getSecondDay().getFireMod()), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD));
+                    Assert.assertEquals(toString(battle.getPhasing().getSecondDay().getShockMod()), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD));
+                } else {
+                    Assert.assertNull(getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD));
+                    Assert.assertNull(getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD));
+                }
+            }
+
             int diffsSize = 1;
             if (result.phasingAnnihilated) {
                 diffsSize += phasing.counters.size();
@@ -1973,74 +2340,72 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             if (result.nonPhasingAnnihilated) {
                 diffsSize += nonPhasing.counters.size();
             }
-            Assert.assertEquals(diffsSize, diffs.size());
+            Assert.assertEquals(diffsSize, diffsLastDay.size());
 
-            DiffEntity diff = diffs.stream().filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE)
-                    .findAny()
-                    .orElse(null);
-            Assert.assertNotNull(diff);
-            Assert.assertEquals(toString(result.end), getAttribute(diff, DiffAttributeTypeEnum.END));
-            Assert.assertEquals(toString(result.winner), getAttribute(diff, DiffAttributeTypeEnum.WINNER));
-            Assert.assertEquals(battle.getPhasing().getLosses().getRoundLoss() + "", getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS));
-            Assert.assertEquals(battle.getPhasing().getLosses().getThirdLoss() + "", getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS));
-            Assert.assertEquals(result.phasingMoralLosses == 0 ? "" : result.phasingMoralLosses + "", getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS));
-            Assert.assertEquals(battle.getNonPhasing().getLosses().getRoundLoss() + "", getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS));
-            Assert.assertEquals(battle.getNonPhasing().getLosses().getThirdLoss() + "", getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS));
-            Assert.assertEquals(result.nonPhasingMoralLosses == 0 ? "" : result.nonPhasingMoralLosses + "", getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS));
+            Assert.assertEquals(toString(result.end), getAttribute(diffLastDay, DiffAttributeTypeEnum.END));
+            Assert.assertEquals(toString(result.winner), getAttribute(diffLastDay, DiffAttributeTypeEnum.WINNER));
+            Assert.assertEquals(battle.getPhasing().getLosses().getRoundLoss() + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS));
+            Assert.assertEquals(battle.getPhasing().getLosses().getThirdLoss() + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS));
+            Assert.assertEquals(result.phasingMoralLosses == 0 ? "" : result.phasingMoralLosses + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS));
+            Assert.assertEquals(battle.getNonPhasing().getLosses().getRoundLoss() + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS));
+            Assert.assertEquals(battle.getNonPhasing().getLosses().getThirdLoss() + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS));
+            Assert.assertEquals(result.nonPhasingMoralLosses == 0 ? "" : result.nonPhasingMoralLosses + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS));
 
-            Assert.assertEquals(toString(phasing.firstFire), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
-            Assert.assertEquals(toString(phasing.firstShock), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
-            Assert.assertEquals(toString(phasing.pursuit), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT));
-            Assert.assertEquals(toString(phasing.retreat), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_RETREAT));
-            Assert.assertEquals(toString(nonPhasing.firstFire), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
-            Assert.assertEquals(toString(nonPhasing.firstShock), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
-            Assert.assertEquals(toString(nonPhasing.pursuit), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT));
-            Assert.assertEquals(toString(nonPhasing.retreat), getAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_RETREAT));
+            Assert.assertEquals(toString(phasing.firstFire), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
+            Assert.assertEquals(toString(phasing.firstShock), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
+            Assert.assertEquals(toString(nonPhasing.firstFire), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
+            Assert.assertEquals(toString(nonPhasing.firstShock), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+
+            if (!onlyOneDayBattle) {
+                Assert.assertEquals(toString(phasing.secondFire), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE));
+                Assert.assertEquals(toString(phasing.secondShock), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK));
+                Assert.assertEquals(toString(nonPhasing.secondFire), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE));
+                Assert.assertEquals(toString(nonPhasing.secondShock), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK));
+            }
+            Assert.assertEquals(toString(phasing.pursuit), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT));
+            Assert.assertEquals(toString(phasing.retreat), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_RETREAT));
+            Assert.assertEquals(toString(nonPhasing.pursuit), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT));
+            Assert.assertEquals(toString(nonPhasing.retreat), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_RETREAT));
 
             if (result.phasingAnnihilated) {
                 for (CounterEntity counter : phasing.counters) {
-                    Assert.assertTrue(diffs.stream()
+                    Assert.assertTrue(diffsLastDay.stream()
                             .anyMatch(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
                                     Objects.equals(d.getIdObject(), counter.getId())));
                 }
             }
             if (result.nonPhasingAnnihilated) {
                 for (CounterEntity counter : nonPhasing.counters) {
-                    Assert.assertTrue(diffs.stream()
+                    Assert.assertTrue(diffsLastDay.stream()
                             .anyMatch(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
                                     Objects.equals(d.getIdObject(), counter.getId())));
                 }
             }
 
-            if (result.end != null) {
-                boolean phasingLossesAuto = result.phasingAnnihilated || result.phasingThirdLosses == 0;
-                boolean nonPhasingLossesAuto = result.nonPhasingAnnihilated || result.nonPhasingThirdLosses == 0;
-                boolean phasingRetreatAuto = result.winner == BattleWinnerEnum.PHASING || result.phasingAnnihilated;
-                boolean nonPhasingRetreatAuto = result.winner == BattleWinnerEnum.NON_PHASING || result.nonPhasingAnnihilated;
-                if (!phasingLossesAuto || !nonPhasingLossesAuto) {
-                    Assert.assertEquals(BattleStatusEnum.CHOOSE_LOSS, battle.getStatus());
-                    Assert.assertEquals(BattleStatusEnum.CHOOSE_LOSS.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
-                    Assert.assertEquals(phasingLossesAuto, battle.getPhasing().isLossesSelected());
-                    Assert.assertEquals(toString(phasingLossesAuto), getAttribute(diff, DiffAttributeTypeEnum.PHASING_READY));
-                    Assert.assertEquals(nonPhasingLossesAuto, battle.getNonPhasing().isLossesSelected());
-                    Assert.assertEquals(toString(nonPhasingLossesAuto), getAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_READY));
-                } else if (!phasingRetreatAuto || !nonPhasingRetreatAuto) {
-                    Assert.assertEquals(BattleStatusEnum.RETREAT, battle.getStatus());
-                    Assert.assertTrue(battle.getPhasing().isLossesSelected());
-                    Assert.assertTrue(battle.getNonPhasing().isLossesSelected());
-                    Assert.assertEquals(BattleStatusEnum.RETREAT.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
-                    Assert.assertEquals(phasingRetreatAuto, battle.getPhasing().isRetreatSelected());
-                    Assert.assertEquals(toString(phasingRetreatAuto), getAttribute(diff, DiffAttributeTypeEnum.PHASING_READY));
-                    Assert.assertEquals(nonPhasingRetreatAuto, battle.getNonPhasing().isRetreatSelected());
-                    Assert.assertEquals(toString(nonPhasingRetreatAuto), getAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_READY));
-                } else {
-                    Assert.assertEquals(BattleStatusEnum.DONE, battle.getStatus());
-                    Assert.assertEquals(BattleStatusEnum.DONE.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
-                    Assert.assertEquals(0, battle.getCounters().size());
-                }
+            boolean phasingLossesAuto = result.phasingAnnihilated || result.phasingThirdLosses == 0;
+            boolean nonPhasingLossesAuto = result.nonPhasingAnnihilated || result.nonPhasingThirdLosses == 0;
+            boolean phasingRetreatAuto = result.winner == BattleWinnerEnum.PHASING || result.phasingAnnihilated;
+            boolean nonPhasingRetreatAuto = result.winner == BattleWinnerEnum.NON_PHASING || result.nonPhasingAnnihilated;
+            if (!phasingLossesAuto || !nonPhasingLossesAuto) {
+                Assert.assertEquals(BattleStatusEnum.CHOOSE_LOSS, battle.getStatus());
+                Assert.assertEquals(BattleStatusEnum.CHOOSE_LOSS.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals(phasingLossesAuto, battle.getPhasing().isLossesSelected());
+                Assert.assertEquals(toString(phasingLossesAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                Assert.assertEquals(nonPhasingLossesAuto, battle.getNonPhasing().isLossesSelected());
+                Assert.assertEquals(toString(nonPhasingLossesAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+            } else if (!phasingRetreatAuto || !nonPhasingRetreatAuto) {
+                Assert.assertEquals(BattleStatusEnum.RETREAT, battle.getStatus());
+                Assert.assertTrue(battle.getPhasing().isLossesSelected());
+                Assert.assertTrue(battle.getNonPhasing().isLossesSelected());
+                Assert.assertEquals(BattleStatusEnum.RETREAT.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals(phasingRetreatAuto, battle.getPhasing().isRetreatSelected());
+                Assert.assertEquals(toString(phasingRetreatAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                Assert.assertEquals(nonPhasingRetreatAuto, battle.getNonPhasing().isRetreatSelected());
+                Assert.assertEquals(toString(nonPhasingRetreatAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
             } else {
-                Assert.assertEquals(BattleStatusEnum.WITHDRAW_AFTER_FIRST_DAY_ATT, battle.getStatus());
-                Assert.assertEquals(BattleStatusEnum.WITHDRAW_AFTER_FIRST_DAY_ATT.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals(BattleStatusEnum.DONE, battle.getStatus());
+                Assert.assertEquals(BattleStatusEnum.DONE.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals(0, battle.getCounters().size());
             }
 
             return this;
@@ -2065,10 +2430,14 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         String tech;
         Integer firstFire;
         Integer firstShock;
+        Integer secondFire;
+        Integer secondShock;
         Integer pursuit;
         Integer retreat;
         int retreatLosses;
         int sizeReductionDamage;
+        boolean retreatFirstDayAttempt;
+        boolean retreatFirstDayResult;
 
         static BattleSideBuilder create() {
             return new BattleSideBuilder();
@@ -2099,6 +2468,16 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             return this;
         }
 
+        BattleSideBuilder secondFire(Integer secondFire) {
+            this.secondFire = secondFire;
+            return this;
+        }
+
+        BattleSideBuilder secondShock(Integer secondShock) {
+            this.secondShock = secondShock;
+            return this;
+        }
+
         BattleSideBuilder pursuit(Integer pursuit) {
             this.pursuit = pursuit;
             return this;
@@ -2116,6 +2495,12 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         BattleSideBuilder sizeReductionDamage(int sizeReductionDamage) {
             this.sizeReductionDamage = sizeReductionDamage;
+            return this;
+        }
+
+        BattleSideBuilder retreatFirstDayResult(boolean retreatFirstDayResult) {
+            this.retreatFirstDayAttempt = true;
+            this.retreatFirstDayResult = retreatFirstDayResult;
             return this;
         }
     }

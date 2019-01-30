@@ -12,10 +12,10 @@ public enum BattleStatusEnum {
     SELECT_FORCES(true),
     /** Defender can withdraw before battle. */
     WITHDRAW_BEFORE_BATTLE(true),
-    /** The attacker can withdraw after first day of battle. */
-    WITHDRAW_AFTER_FIRST_DAY_ATT(true),
-    /** The defender can withdraw after first day of battle. */
-    WITHDRAW_AFTER_FIRST_DAY_DEF(true),
+    /** The attacker can retreat after first day of battle. */
+    RETREAT_AFTER_FIRST_DAY_ATT(true),
+    /** The defender can retreat after first day of battle. */
+    RETREAT_AFTER_FIRST_DAY_DEF(true),
     /** If needed, each sides must select the forces lost in battle. */
     CHOOSE_LOSS(true),
     /** Retreat of the looser of the battle. */

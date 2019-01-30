@@ -586,16 +586,11 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             }
         }
         if (battle.getEnd() == null) {
-            battle.setStatus(BattleStatusEnum.WITHDRAW_AFTER_FIRST_DAY_ATT);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.WITHDRAW_AFTER_FIRST_DAY_ATT));
+            battle.setStatus(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF));
         }
 
-        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS, battle.getNonPhasing().getLosses().getRoundLoss()));
-        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS, battle.getNonPhasing().getLosses().getThirdLoss()));
-        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS, battle.getNonPhasing().getLosses().getMoraleLoss()));
-        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS, battle.getPhasing().getLosses().getRoundLoss()));
-        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS, battle.getPhasing().getLosses().getThirdLoss()));
-        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS, battle.getPhasing().getLosses().getMoraleLoss()));
+        attributes.addAll(getLossesAttributes(battle));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));
@@ -803,6 +798,157 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         return attributes;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse retreatFirstDay(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_RETREAT_FIRST_DAY)
+                .setParams(METHOD_RETREAT_FIRST_DAY));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_RETREAT_FIRST_DAY, PARAMETER_RETREAT_FIRST_DAY);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_RETREAT_FIRST_DAY, PARAMETER_RETREAT_FIRST_DAY);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_RETREAT_FIRST_DAY, PARAMETER_REQUEST)
+                .setParams(METHOD_RETREAT_FIRST_DAY));
+
+        BattleEntity battle = game.getBattles().stream()
+                .filter(bat -> bat.getStatus() == BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF || bat.getStatus() == BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(battle)
+                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
+                .setName(PARAMETER_RETREAT_FIRST_DAY)
+                .setParams(METHOD_RETREAT_FIRST_DAY, BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF.name()));
+
+        // TODO if intercepting battle, it is the opposite
+        boolean phasing;
+        int remainingMoral;
+        if (battle.getStatus() == BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF) {
+            phasing = false;
+            remainingMoral = CommonUtil.subtract(battle.getNonPhasing().getMoral(), battle.getNonPhasing().getLosses().getMoraleLoss());
+        } else {
+            phasing = true;
+            remainingMoral = CommonUtil.subtract(battle.getPhasing().getMoral(), battle.getPhasing().getLosses().getMoraleLoss());
+        }
+        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        boolean ok = phasing == playerPhasing;
+        if (ok && !playerPhasing) {
+            List<String> allies = oeUtil.getAllies(country, game);
+            List<String> enemies = oeUtil.getEnemies(country, game);
+            ok = !battle.getCounters().stream()
+                    .anyMatch(bc -> bc.isPhasing() && !enemies.contains(bc.getCounter().getCountry()) ||
+                            bc.isNotPhasing() && !allies.contains(bc.getCounter().getCountry()));
+        }
+
+        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(ok)
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_RETREAT_FIRST_DAY, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_RETREAT_FIRST_DAY, country.getName(), "complex"));
+
+        List<DiffEntity> newDiffs = new ArrayList<>();
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        if (request.getRequest().isValidate()) {
+            int die = oeUtil.rollDie(game);
+
+            // TODO leader manoeuvre
+            boolean success = die <= remainingMoral;
+
+            if (success) {
+                battle.setEnd(BattleEndEnum.RETREAT_AT_FIRST_DAY);
+                battle.setWinner(phasing ? BattleWinnerEnum.NON_PHASING : BattleWinnerEnum.PHASING);
+                battle.getPhasing().addPursuit(2);
+                battle.getNonPhasing().addPursuit(2);
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.END, BattleEndEnum.RETREAT_AT_FIRST_DAY));
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT_MOD, battle.getPhasing().getPursuitMod()));
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT_MOD, battle.getNonPhasing().getPursuitMod()));
+
+                newDiffs.addAll(computePursuit(battle, attributes));
+
+                attributes.addAll(getLossesAttributes(battle));
+
+                DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                        attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+                newDiffs.add(diff);
+
+                return createDiffs(newDiffs, gameDiffs, request);
+            } else {
+                if (phasing) {
+                    battle.getPhasing().getSecondDay().addFireAndShock(1);
+                    attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD, battle.getPhasing().getSecondDay().getFireMod()));
+                    attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD, battle.getPhasing().getSecondDay().getShockMod()));
+                } else {
+                    battle.getNonPhasing().getSecondDay().addFireAndShock(1);
+                    attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD, battle.getNonPhasing().getSecondDay().getFireMod()));
+                    attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD, battle.getNonPhasing().getSecondDay().getShockMod()));
+                }
+            }
+        }
+        if (battle.getStatus() == BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF) {
+            battle.setStatus(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT));
+
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                    attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+            return createDiff(diff, gameDiffs, request);
+        } else {
+            attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.SECOND_FIRE));
+            newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_SECOND_FIRE, 1, attributes));
+            // TODO at sea, WIND advantage forces can retreat
+            if (battle.getEnd() == null) {
+                attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.SECOND_SHOCK));
+                newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_SECOND_SHOCK, 0, attributes));
+            }
+            if (battle.getEnd() == null) {
+                battle.setEnd(BattleEndEnum.END_OF_SECOND_DAY);
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.END, BattleEndEnum.END_OF_SECOND_DAY));
+                newDiffs.addAll(computePursuit(battle, attributes));
+            }
+
+            attributes.addAll(getLossesAttributes(battle));
+
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                    attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+            newDiffs.add(diff);
+
+            return createDiffs(newDiffs, gameDiffs, request);
+        }
+    }
+
+    /**
+     * @param battle the battle.
+     * @return the diff attributes of the losses of both side of the battle.
+     */
+    private List<DiffAttributesEntity> getLossesAttributes(BattleEntity battle) {
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS, battle.getNonPhasing().getLosses().getRoundLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS, battle.getNonPhasing().getLosses().getThirdLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS, battle.getNonPhasing().getLosses().getMoraleLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS, battle.getPhasing().getLosses().getRoundLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS, battle.getPhasing().getLosses().getThirdLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS, battle.getPhasing().getLosses().getMoraleLoss()));
+        return attributes;
+    }
+
     /**
      * Compute a sequence of a battle.
      * A sequence can be fire or shock of first or second day.
@@ -811,7 +957,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
      * @param battle the battle.
      * @return the eventual attributes, if any.
      */
-    protected List<DiffAttributesEntity> computeBothSequence(BattleEntity battle, BattleSequenceEnum sequence) {
+    private List<DiffAttributesEntity> computeBothSequence(BattleEntity battle, BattleSequenceEnum sequence) {
         List<DiffAttributesEntity> attributes = new ArrayList<>();
 
         DiffAttributesEntity attribute = computeSequence(sequence, battle.getPhasing(), battle.getNonPhasing(), true, battle.getGame());
@@ -853,7 +999,6 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
     /**
      * Check if any side has been routed.
-     * If so, check if any side has been annihilated.
      * Compute a pursuit if necessary.
      *
      * @param battle       the battle.
@@ -869,21 +1014,14 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             battle.setEnd(potentialEnd);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.END, potentialEnd));
 
-            boolean phasingAnnihilated = isAnnihilated(battle.getPhasing(), battle.getNonPhasing());
-            boolean nonPhasingAnnihilated = isAnnihilated(battle.getNonPhasing(), battle.getPhasing());
-
-            // If both side annihilated or no side annihilated and both side routed, then no winner, it is defeat for both side
-            boolean pursuit = false;
-            if (phasingAnnihilated && nonPhasingAnnihilated || !phasingAnnihilated && !nonPhasingAnnihilated && phasingRouted && nonPhasingRouted) {
+            // If both side routed, then no winner, it is defeat for both side
+            if (phasingRouted && nonPhasingRouted) {
                 battle.setWinner(BattleWinnerEnum.NONE);
-            } else if (phasingAnnihilated || !nonPhasingAnnihilated && phasingRouted) {
+            } else if (phasingRouted) {
                 battle.setWinner(BattleWinnerEnum.NON_PHASING);
-                pursuit = !nonPhasingRouted;
             } else {
                 battle.setWinner(BattleWinnerEnum.PHASING);
-                pursuit = !phasingRouted;
             }
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WINNER, battle.getWinner()));
 
             if (pursuitBonus != 0) {
                 battle.getPhasing().addPursuit(pursuitBonus);
@@ -891,10 +1029,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT_MOD, battle.getPhasing().getPursuitMod()));
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT_MOD, battle.getNonPhasing().getPursuitMod()));
             }
-            if (pursuit) {
-                attributes.addAll(computePursuit(battle));
-            }
-            return endBattle(battle, attributes);
+            return computePursuit(battle, attributes);
         }
 
         return Collections.emptyList();
@@ -925,7 +1060,6 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             } else {
                 battle.setWinner(BattleWinnerEnum.PHASING);
             }
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WINNER, battle.getWinner()));
 
             if (pursuitBonus != 0) {
                 battle.getPhasing().addPursuit(pursuitBonus);
@@ -933,36 +1067,65 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT_MOD, battle.getPhasing().getPursuitMod()));
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT_MOD, battle.getNonPhasing().getPursuitMod()));
             }
-            attributes.addAll(computePursuit(battle));
-            return endBattle(battle, attributes);
+            return computePursuit(battle, attributes);
         }
 
         return Collections.emptyList();
     }
 
     /**
-     * Compute the pursuit of a battle.
+     * Determine the real winner of the battle.
+     * Then compute the pursuit if necessary.
+     * Finally, ends the battle.
      *
      * @param battle the battle.
      * @return the eventual attributes, if any.
      */
-    private List<DiffAttributesEntity> computePursuit(BattleEntity battle) {
-        List<DiffAttributesEntity> attributes = new ArrayList<>();
-        BattleSideEntity winner;
-        BattleSideEntity loser;
+    private List<DiffEntity> computePursuit(BattleEntity battle, List<DiffAttributesEntity> attributes) {
+        // First determine winner
+        // If one side is annihilated, other side is winner, even if there was already a winner in this battle
+        boolean phasingAnnihilated = isAnnihilated(battle.getPhasing(), battle.getNonPhasing());
+        boolean nonPhasingAnnihilated = isAnnihilated(battle.getNonPhasing(), battle.getPhasing());
+        if (phasingAnnihilated && nonPhasingAnnihilated) {
+            battle.setWinner(BattleWinnerEnum.NONE);
+        } else if (phasingAnnihilated) {
+            battle.setWinner(BattleWinnerEnum.NON_PHASING);
+        } else if (nonPhasingAnnihilated) {
+            battle.setWinner(BattleWinnerEnum.PHASING);
+        }
+        // If not, then the already winning side is the winner.
+        // But if no side was winning, then the one with most remaining morale is the winner
+        if (battle.getWinner() == null) {
+            int phasingRemainingMoral = CommonUtil.subtract(battle.getPhasing().getMoral(), battle.getPhasing().getLosses().getMoraleLoss());
+            int nonPhasingRemainingMoral = CommonUtil.subtract(battle.getNonPhasing().getMoral(), battle.getNonPhasing().getLosses().getMoraleLoss());
+            if (phasingRemainingMoral > nonPhasingRemainingMoral) {
+                battle.setWinner(BattleWinnerEnum.PHASING);
+            } else if (nonPhasingRemainingMoral > phasingRemainingMoral) {
+                battle.setWinner(BattleWinnerEnum.NON_PHASING);
+            } else {
+                battle.setWinner(BattleWinnerEnum.NONE);
+            }
+        }
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WINNER, battle.getWinner()));
+
+        BattleSideEntity winner = null;
+        BattleSideEntity loser = null;
+        // only non routed side can pursuit
         switch (battle.getWinner()) {
             case PHASING:
-                winner = battle.getPhasing();
-                loser = battle.getNonPhasing();
+                if (CommonUtil.subtract(battle.getPhasing().getMoral(), battle.getPhasing().getLosses().getMoraleLoss()) > 0) {
+                    winner = battle.getPhasing();
+                    loser = battle.getNonPhasing();
+                }
                 break;
             case NON_PHASING:
-                winner = battle.getNonPhasing();
-                loser = battle.getPhasing();
+                if (CommonUtil.subtract(battle.getNonPhasing().getMoral(), battle.getNonPhasing().getLosses().getMoraleLoss()) > 0) {
+                    winner = battle.getNonPhasing();
+                    loser = battle.getPhasing();
+                }
                 break;
             case NONE:
             default:
-                winner = null;
-                loser = null;
                 break;
         }
 
@@ -970,7 +1133,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             attributes.add(computeSequence(BattleSequenceEnum.PURSUIT, winner, loser, battle.getWinner() == BattleWinnerEnum.PHASING, battle.getGame()));
         }
 
-        return attributes;
+        return endBattle(battle, attributes);
     }
 
     /**

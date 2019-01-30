@@ -50,4 +50,10 @@ public class MilitaryWsServiceImpl extends SpringBeanAutowiringSupport implement
     public DiffResponse withdrawBeforeBattle(Request<WithdrawBeforeBattleRequest> request) throws FunctionalException, TechnicalException {
         return militaryService.withdrawBeforeBattle(request);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse retreatFirstDay(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        return militaryService.retreatFirstDay(request);
+    }
 }

@@ -17,8 +17,6 @@
         <org.slf4j-version>1.7.7</org.slf4j-version>
         <spring.version>5.1.0.RELEASE</spring.version>
         <spring-security.version>5.1.2.RELEASE</spring-security.version>
-        <spring.batch.version>2.1.9.RELEASE</spring.batch.version>
-        <spring.batch.admin.version>1.2.1.RELEASE</spring.batch.admin.version>
         <tiles.version>3.0.1</tiles.version>
         <jackson.version>2.9.8</jackson.version>
         <hibernate.version>5.4.0.Final</hibernate.version>
@@ -690,54 +688,6 @@
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time-jsptags</artifactId>
                 <version>1.1.1</version>
-            </dependency>
-
-            <!-- Spring Batch -->
-            <dependency>
-                <groupId>org.springframework.batch</groupId>
-                <artifactId>spring-batch-core</artifactId>
-                <version>${spring.batch.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.batch</groupId>
-                <artifactId>spring-batch-infrastructure</artifactId>
-                <version>${spring.batch.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.batch</groupId>
-                <artifactId>spring-batch-admin-manager</artifactId>
-                <version>${spring.batch.admin.version}</version>
-                <exclusions>
-                    <!-- Trop vieux, on veut du 2.4 nous ! -->
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.batch</groupId>
-                <artifactId>spring-batch-integration</artifactId>
-                <version>${spring.batch.admin.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.batch</groupId>
-                <artifactId>spring-batch-admin-resources</artifactId>
-                <version>${spring.batch.admin.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- Validation -->

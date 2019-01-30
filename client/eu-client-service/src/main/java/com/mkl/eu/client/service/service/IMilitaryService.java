@@ -69,4 +69,15 @@ public interface IMilitaryService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse withdrawBeforeBattle(@WebParam(name = PARAMETER_WITHDRAW_BEFORE_BATTLE) Request<WithdrawBeforeBattleRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Retreat the current battle at the end of the first day.
+     *
+     * @param request info about province if a retreat is asked.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse retreatFirstDay(@WebParam(name = PARAMETER_RETREAT_FIRST_DAY) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
 }
