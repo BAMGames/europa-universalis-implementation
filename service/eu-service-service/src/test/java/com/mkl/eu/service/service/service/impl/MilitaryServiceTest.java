@@ -1895,7 +1895,9 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .nonPhasingThirdLosses(9)
                         .nonPhasingMoralLosses(3)
                         .nonPhasingAnnihilated(false));
+
         // Phasing routed but non phasing annihilated.
+        // Non passive has only 3 detachments so its losses are capped.
         BattleBuilder.create()
                 .rotw(false)
                 .phasing(BattleSideBuilder.create()
@@ -1906,8 +1908,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(8)
                         .firstShock(8)
                         .retreatFirstDayResult(false)
-                        .secondFire(8)
-                        .retreat(1))
+                        .secondFire(8))
                 .nonPhasing(BattleSideBuilder.create()
                         .addCounters(ArmyBuilder.create().type(CounterFaceTypeEnum.ARMY_MINUS).toCounter(),
                                 ArmyBuilder.create().type(CounterFaceTypeEnum.LAND_DETACHMENT).toCounter())
@@ -1917,12 +1918,12 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstShock(8)
                         .retreatFirstDayResult(false)
                         .secondFire(7)
-                        .pursuit(2))
+                        .retreat(1))
                 .whenBattle(militaryService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_SECOND_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
-                        .phasingThirdLosses(12)
+                        .phasingThirdLosses(9)
                         .phasingMoralLosses(4)
                         .phasingAnnihilated(false)
                         .nonPhasingThirdLosses(9)
