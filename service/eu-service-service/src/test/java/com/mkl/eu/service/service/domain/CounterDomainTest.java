@@ -53,7 +53,6 @@ public class CounterDomainTest {
         when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
             StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
 
-            stack.getCounters().get(0).setId(7L);
             stack.setId(2L);
 
             return stack;
@@ -68,7 +67,6 @@ public class CounterDomainTest {
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
-        Assert.assertEquals(7L, diff.getIdObject().longValue());
         Assert.assertEquals(4, diff.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
         Assert.assertEquals("idf", diff.getAttributes().get(0).getValue());
@@ -80,11 +78,9 @@ public class CounterDomainTest {
         Assert.assertEquals("2", diff.getAttributes().get(3).getValue());
 
         Assert.assertEquals(1, game.getStacks().size());
-        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
         Assert.assertEquals("idf", game.getStacks().get(0).getProvince());
         Assert.assertEquals("france", game.getStacks().get(0).getCountry());
         Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
-        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
         Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
         Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
     }
@@ -103,7 +99,6 @@ public class CounterDomainTest {
         when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
             StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
 
-            stack.getCounters().get(0).setId(7L);
             stack.setId(2L);
 
             return stack;
@@ -118,7 +113,6 @@ public class CounterDomainTest {
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
-        Assert.assertEquals(7L, diff.getIdObject().longValue());
         Assert.assertEquals(5, diff.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
         Assert.assertEquals("rAzteca~C", diff.getAttributes().get(0).getValue());
@@ -135,7 +129,6 @@ public class CounterDomainTest {
         Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
         Assert.assertEquals("rAzteca~C", game.getStacks().get(0).getProvince());
         Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
-        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
         Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_POST_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
         Assert.assertEquals(EstablishmentTypeEnum.TRADING_POST, game.getStacks().get(0).getCounters().get(0).getEstablishment().getType());
@@ -152,7 +145,6 @@ public class CounterDomainTest {
         when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
             StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
 
-            stack.getCounters().get(0).setId(7L);
             stack.setId(2L);
 
             return stack;
@@ -167,7 +159,6 @@ public class CounterDomainTest {
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
-        Assert.assertEquals(7L, diff.getIdObject().longValue());
         Assert.assertEquals(5, diff.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
         Assert.assertEquals("ZPFrance", diff.getAttributes().get(0).getValue());
@@ -181,10 +172,8 @@ public class CounterDomainTest {
         Assert.assertEquals("1", diff.getAttributes().get(4).getValue());
 
         Assert.assertEquals(1, game.getStacks().size());
-        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
         Assert.assertEquals("ZPFrance", game.getStacks().get(0).getProvince());
         Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
-        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
         Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
         Assert.assertEquals("france", game.getTradeFleets().get(0).getCountry());
@@ -205,7 +194,6 @@ public class CounterDomainTest {
         when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
             StackEntity stack = (StackEntity) invocationOnMock.getArguments()[0];
 
-            stack.getCounters().get(0).setId(7L);
             stack.setId(2L);
 
             return stack;
@@ -220,7 +208,6 @@ public class CounterDomainTest {
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.ADD, diff.getType());
         Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
-        Assert.assertEquals(7L, diff.getIdObject().longValue());
         Assert.assertEquals(5, diff.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE, diff.getAttributes().get(0).getType());
         Assert.assertEquals("ZPFrance", diff.getAttributes().get(0).getValue());
@@ -234,10 +221,8 @@ public class CounterDomainTest {
         Assert.assertEquals("1", diff.getAttributes().get(4).getValue());
 
         Assert.assertEquals(1, game.getStacks().size());
-        Assert.assertEquals(2L, game.getStacks().get(0).getId().longValue());
         Assert.assertEquals("ZPFrance", game.getStacks().get(0).getProvince());
         Assert.assertEquals(1, game.getStacks().get(0).getCounters().size());
-        Assert.assertEquals(7L, game.getStacks().get(0).getCounters().get(0).getId().longValue());
         Assert.assertEquals("france", game.getStacks().get(0).getCounters().get(0).getCountry());
         Assert.assertEquals(CounterFaceTypeEnum.TRADING_FLEET_MINUS, game.getStacks().get(0).getCounters().get(0).getType());
         Assert.assertEquals("france", game.getTradeFleets().get(0).getCountry());
