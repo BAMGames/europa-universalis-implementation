@@ -108,6 +108,10 @@ public interface INameConstants {
     String PARAMETER_WITHDRAW_BEFORE_BATTLE = "withdrawBeforeBattle";
     /** Name of the parameter retreatFirstDay. */
     String PARAMETER_RETREAT_FIRST_DAY = "retreatFirstDay";
+    /** Name of the parameter chooseLosses. */
+    String PARAMETER_CHOOSE_LOSSES = "chooseLosses";
+    /** Name of the parameter losses. */
+    String PARAMETER_LOSSES = "losses";
 
 
 
@@ -173,4 +177,6 @@ public interface INameConstants {
     String METHOD_WITHDRAW_BEFORE_BATTLE = "withdrawBeforeBattle";
     /** Name of the method retreatFirstDay. */
     String METHOD_RETREAT_FIRST_DAY = "retreatFirstDay";
+    /** Name of the method chooseLosses. */
+    String METHOD_CHOOSE_LOSSES = "chooseLosses";
 }

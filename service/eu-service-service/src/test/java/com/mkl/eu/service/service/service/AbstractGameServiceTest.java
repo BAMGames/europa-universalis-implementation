@@ -18,6 +18,7 @@ import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.diff.IDiffDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
@@ -375,12 +376,20 @@ public abstract class AbstractGameServiceTest {
         tables.getBattleTechs().add(bt);
     }
 
-    public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type) {
+    public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type, Long ownerId) {
         CounterEntity counter = new CounterEntity();
         counter.setId(id);
         counter.setCountry(country);
         counter.setType(type);
+        if (ownerId != null) {
+            counter.setOwner(new StackEntity());
+            counter.getOwner().setId(ownerId);
+        }
         return counter;
+    }
+
+    public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type) {
+        return createCounter(id, country, type, null);
     }
 
     public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {

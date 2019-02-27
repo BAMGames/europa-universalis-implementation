@@ -65,6 +65,155 @@ public final class CounterUtil {
     }
 
     /**
+     * @param face the face.
+     * @return an face counter equivalent to the face but of size 2.
+     */
+    public static CounterFaceTypeEnum getSize2FromType(CounterFaceTypeEnum face) {
+        CounterFaceTypeEnum face2 = null;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_MINUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.ARMY_MINUS;
+                    break;
+                case ARMY_TIMAR_PLUS:
+                case ARMY_TIMAR_MINUS:
+                case LAND_DETACHMENT_TIMAR:
+                    face2 = CounterFaceTypeEnum.ARMY_TIMAR_MINUS;
+                    break;
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY:
+                case LAND_SEPOY_EXPLORATION:
+                    // No counter of size 2 for them
+                    break;
+                case FLEET_PLUS:
+                case FLEET_MINUS:
+                case NAVAL_DETACHMENT:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.FLEET_MINUS;
+                    break;
+                case FLEET_TRANSPORT_PLUS:
+                case FLEET_TRANSPORT_MINUS:
+                case NAVAL_TRANSPORT:
+                    face2 = CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS;
+                    break;
+                case NAVAL_GALLEY:
+                    break;
+            }
+        }
+
+        return face2;
+    }
+
+    /**
+     * @param face the face.
+     * @return an face counter equivalent to the face but of size 1.
+     */
+    public static CounterFaceTypeEnum getSize1FromType(CounterFaceTypeEnum face) {
+        CounterFaceTypeEnum face2 = null;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_MINUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.LAND_DETACHMENT;
+                    break;
+                case ARMY_TIMAR_PLUS:
+                case ARMY_TIMAR_MINUS:
+                case LAND_DETACHMENT_TIMAR:
+                    face2 = CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR;
+                    break;
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                    face2 = CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK;
+                    break;
+                case LAND_INDIAN:
+                case LAND_INDIAN_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.LAND_INDIAN;
+                    break;
+                case LAND_SEPOY:
+                case LAND_SEPOY_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.LAND_SEPOY;
+                    break;
+                case FLEET_PLUS:
+                case FLEET_MINUS:
+                case NAVAL_DETACHMENT:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.NAVAL_DETACHMENT;
+                    break;
+                case FLEET_TRANSPORT_PLUS:
+                case FLEET_TRANSPORT_MINUS:
+                case NAVAL_TRANSPORT:
+                    face2 = CounterFaceTypeEnum.NAVAL_TRANSPORT;
+                    break;
+                case NAVAL_GALLEY:
+                    face2 = CounterFaceTypeEnum.NAVAL_GALLEY;
+                    break;
+            }
+        }
+
+        return face2;
+    }
+
+    /**
+     * @param face the face.
+     * @return an face counter equivalent to the face but of size third (exploration).
+     */
+    public static CounterFaceTypeEnum getSizeThirdFromType(CounterFaceTypeEnum face) {
+        CounterFaceTypeEnum face2 = null;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_MINUS:
+                case LAND_DETACHMENT:
+                case LAND_DETACHMENT_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION;
+                    break;
+                case ARMY_TIMAR_PLUS:
+                case ARMY_TIMAR_MINUS:
+                case LAND_DETACHMENT_TIMAR:
+                    face2 = CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION;
+                    break;
+                case LAND_DETACHMENT_KOZAK:
+                case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                    face2 = CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK;
+                    break;
+                case LAND_INDIAN:
+                case LAND_INDIAN_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION;
+                    break;
+                case LAND_SEPOY:
+                case LAND_SEPOY_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION;
+                    break;
+                case FLEET_PLUS:
+                case FLEET_MINUS:
+                case NAVAL_DETACHMENT:
+                case NAVAL_DETACHMENT_EXPLORATION:
+                    face2 = CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION;
+                    break;
+                case FLEET_TRANSPORT_PLUS:
+                case FLEET_TRANSPORT_MINUS:
+                case NAVAL_TRANSPORT:
+                case NAVAL_GALLEY:
+                    // No counter of size third for them
+                    break;
+            }
+        }
+
+        return face2;
+    }
+
+    /**
      * Returns the fortress level of a counter.
      *
      * @param face the face.
@@ -1116,6 +1265,8 @@ public final class CounterUtil {
             switch (face) {
                 case LAND_DETACHMENT_EXPLORATION:
                 case LAND_DETACHMENT_EXPLORATION_KOZAK:
+                case LAND_INDIAN_EXPLORATION:
+                case LAND_SEPOY_EXPLORATION:
                 case NAVAL_DETACHMENT_EXPLORATION:
                     explo = true;
                     break;

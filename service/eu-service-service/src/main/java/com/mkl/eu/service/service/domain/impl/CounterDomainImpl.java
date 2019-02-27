@@ -25,6 +25,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * Cross service class for counter manipulation.
  *
@@ -45,23 +47,36 @@ public class CounterDomainImpl implements ICounterDomain {
     /** {@inheritDoc} */
     @Override
     public DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game) {
-        return createAndGetCounter(type, country, province, level, game).getLeft();
+        return createAndGetCounter(type, country, null, province, level, game).getLeft();
     }
 
     /** {@inheritDoc} */
     @Override
-    public Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game) {
-        StackEntity stack = new StackEntity();
-        stack.setProvince(province);
-        stack.setGame(game);
-        stack.setCountry(country);
+    public DiffEntity createCounter(CounterFaceTypeEnum type, String country, Long idStack, GameEntity game) {
+        return createAndGetCounter(type, country, idStack, null, null, game).getLeft();
+    }
 
-        CounterEntity counterEntity = new CounterEntity();
-        counterEntity.setCountry(country);
-        counterEntity.setType(type);
-        counterEntity.setOwner(stack);
-
-        stack.getCounters().add(counterEntity);
+    /**
+     * Creates a counter.
+     *
+     * @param type     of the counter to create.
+     * @param country  owner of the counter to create.
+     * @param idStack  id of an eventual existing stack.
+     * @param province where the counter will be.
+     * @param level    new level of the trade fleet or establishment.
+     * @param game     the game.
+     * @return the diffs related to the creation of the counter and the counter created.
+     */
+    private Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, Long idStack, String province, Integer level, GameEntity game) {
+        StackEntity stack = game.getStacks().stream()
+                .filter(s -> Objects.equals(idStack, s.getId()))
+                .findAny()
+                .orElse(null);
+        if (stack == null) {
+            stack = new StackEntity();
+            stack.setProvince(province);
+            stack.setGame(game);
+            stack.setCountry(country);
 
         /*
          Thanks Hibernate to have 7 years old bugs.
@@ -69,7 +84,15 @@ public class CounterDomainImpl implements ICounterDomain {
          https://hibernate.atlassian.net/browse/HHH-7404
           */
 
-        stackDao.create(stack);
+            stackDao.create(stack);
+        }
+
+        CounterEntity counterEntity = new CounterEntity();
+        counterEntity.setCountry(country);
+        counterEntity.setType(type);
+        counterEntity.setOwner(stack);
+
+        stack.getCounters().add(counterEntity);
 
         game.getStacks().add(stack);
 

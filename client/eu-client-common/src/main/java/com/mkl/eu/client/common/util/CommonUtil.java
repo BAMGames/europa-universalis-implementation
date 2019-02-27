@@ -2,6 +2,7 @@ package com.mkl.eu.client.common.util;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -16,6 +17,7 @@ public final class CommonUtil {
     public static final double EPSILON = 0.0001d;
     /** One third. */
     public static final double THIRD = 1d / 3;
+
     /**
      * No instance.
      */
@@ -277,5 +279,20 @@ public final class CommonUtil {
         }
 
         return returnValue;
+    }
+
+    /**
+     * @param first  parameter.
+     * @param second parameter.
+     * @return if the two parameters are equals, null parameter standing for 0.
+     */
+    public static boolean equals(Integer first, Integer second) {
+        if (first == null) {
+            first = 0;
+        }
+        if (second == null) {
+            second = 0;
+        }
+        return Objects.equals(first, second);
     }
 }

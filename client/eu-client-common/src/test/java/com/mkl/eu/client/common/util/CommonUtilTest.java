@@ -286,4 +286,18 @@ public class CommonUtilTest {
         Assert.assertEquals(2, CommonUtil.subtract(5, 3, null));
         Assert.assertEquals(0, CommonUtil.subtract(null, 3, null, 4));
     }
+
+    @Test
+    public void testEquals() {
+        Assert.assertTrue(CommonUtil.equals(null, null));
+        Assert.assertTrue(CommonUtil.equals(null, 0));
+        Assert.assertTrue(CommonUtil.equals(0, null));
+        Assert.assertTrue(CommonUtil.equals(0, 0));
+        Assert.assertTrue(CommonUtil.equals(1, 1));
+
+        Assert.assertFalse(CommonUtil.equals(1, 0));
+        Assert.assertFalse(CommonUtil.equals(0, 1));
+        Assert.assertFalse(CommonUtil.equals(1, null));
+        Assert.assertFalse(CommonUtil.equals(null, 1));
+    }
 }

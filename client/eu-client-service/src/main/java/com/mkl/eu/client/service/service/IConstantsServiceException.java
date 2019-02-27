@@ -775,4 +775,90 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW = "exception.eu.board.battle_only_non_phasing_can_withdraw";
+
+    /**
+     * <p>
+     * Exception thrown when an action has already been done.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: Name of the action.</li>
+     * <li>2: Country or side that has already done this action.</li>
+     * </ul>
+     * </p>
+     */
+    String ACTION_ALREADY_DONE = "exception.eu.board.action_already_done";
+
+    /**
+     * <p>
+     * Exception thrown when trying to take more or less losses than needed.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: Number of losses asked.</li>
+     * <li>2: Number of losses needed.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_LOSSES_MISMATCH = "exception.eu.board.battle_losses_mismatch";
+
+    /**
+     * <p>
+     * Exception thrown when trying to take third losses in an european province.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_LOSSES_NO_THIRD = "exception.eu.board.battle_losses_no_third";
+
+    /**
+     * <p>
+     * Exception thrown when trying to take losses on a counter not in the battle or not in the good side.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the invalid counter</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_LOSSES_INVALID_COUNTER = "exception.eu.board.battle_losses_invalid_counter";
+
+    /**
+     * <p>
+     * Exception thrown when trying to take more losses on a counter than it can handle.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the invalid counter</li>
+     * <li>2: loss wanted</li>
+     * <li>3: maximum loss possible on this counter</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_LOSSES_TOO_BIG = "exception.eu.board.battle_losses_too_big";
+
+    /**
+     * <p>
+     * Exception thrown when trying to take losses that will result with more than 3 thirds.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_LOSSES_TOO_MANY_THIRD = "exception.eu.board.battle_losses_too_many_third";
 }

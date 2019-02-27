@@ -9,6 +9,7 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IMilitaryService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
+import com.mkl.eu.client.service.service.military.ChooseLossesRequest;
 import com.mkl.eu.client.service.service.military.SelectForceRequest;
 import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
@@ -46,6 +47,9 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
 
 /**
  * Service for military purpose.
@@ -563,7 +567,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 };
                 List<String> allies = oeUtil.getAllies(country, game);
                 game.getStacks().stream()
-                        .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && allies.contains(stack.getCountry()))
+                        .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
                 cleanUpBattle(battle);
 
@@ -849,12 +853,12 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         }
         boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
         boolean ok = phasing == playerPhasing;
-        if (ok && !playerPhasing) {
+        if (ok) {
             List<String> allies = oeUtil.getAllies(country, game);
             List<String> enemies = oeUtil.getEnemies(country, game);
             ok = !battle.getCounters().stream()
-                    .anyMatch(bc -> bc.isPhasing() && !enemies.contains(bc.getCounter().getCountry()) ||
-                            bc.isNotPhasing() && !allies.contains(bc.getCounter().getCountry()));
+                    .anyMatch(bc -> bc.isPhasing() == playerPhasing && !allies.contains(bc.getCounter().getCountry()) ||
+                            bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCounter().getCountry()));
         }
 
         // TODO check that the player doing the request is leader of the stack and replace complex by this leader
@@ -1395,6 +1399,200 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         // Set the modified losses
         active.getLosses().setRoundLoss(finalLosses.getRoundLoss());
         active.getLosses().setThirdLoss(finalLosses.getThirdLoss());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse chooseLossesFromBattle(Request<ChooseLossesRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST)
+                .setParams(METHOD_CHOOSE_LOSSES));
+
+        BattleEntity battle = game.getBattles().stream()
+                .filter(bat -> bat.getStatus() == BattleStatusEnum.CHOOSE_LOSS)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(battle)
+                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
+                .setName(PARAMETER_CHOOSE_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES, BattleStatusEnum.CHOOSE_LOSS.name()));
+
+        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        List<String> allies = oeUtil.getAllies(country, game);
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        boolean accessRight = !battle.getCounters().stream()
+                .anyMatch(bc -> bc.isPhasing() == playerPhasing && !allies.contains(bc.getCounter().getCountry()) ||
+                        bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCounter().getCountry()));
+
+        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(accessRight)
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_CHOOSE_LOSSES, country.getName(), "complex"));
+
+        boolean lossesAlreadyChosen = playerPhasing && BooleanUtils.isTrue(battle.getPhasing().isLossesSelected()) ||
+                !playerPhasing && BooleanUtils.isTrue(battle.getNonPhasing().isLossesSelected());
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(lossesAlreadyChosen)
+                .setCodeError(IConstantsServiceException.ACTION_ALREADY_DONE)
+                .setMsgFormat("{1}: {0} The action {1} has already been done by the country or the side {2}.")
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_CHOOSE_LOSSES, METHOD_CHOOSE_LOSSES, playerPhasing ? "phasing" : "non phasing"));
+
+        BattleSideEntity side;
+        if (playerPhasing) {
+            side = battle.getPhasing();
+        } else {
+            side = battle.getNonPhasing();
+        }
+        // Remove useless entries from request
+        request.getRequest().getLosses().removeIf(ul -> ul.getRoundLosses() <= 0 && ul.getThirdLosses() <= 0);
+        int roundLosses = request.getRequest().getLosses().stream().collect(Collectors.summingInt(ChooseLossesRequest.UnitLoss::getRoundLosses));
+        int thirdLosses = request.getRequest().getLosses().stream().collect(Collectors.summingInt(ChooseLossesRequest.UnitLoss::getThirdLosses));
+
+        if (thirdLosses >= 3) {
+            roundLosses += thirdLosses / 3;
+            thirdLosses = thirdLosses % 3;
+        }
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(!CommonUtil.equals(roundLosses, side.getLosses().getRoundLoss()) || !CommonUtil.equals(thirdLosses, side.getLosses().getThirdLoss()))
+                .setCodeError(IConstantsServiceException.BATTLE_LOSSES_MISMATCH)
+                .setMsgFormat("{1}: {0} The losses taken {1} does not match the losses that should be taken {2}.")
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES, AbstractWithLossEntity.create(3 * roundLosses + thirdLosses).toString(), side.getLosses().toString()));
+
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
+        if (province instanceof EuropeanProvinceEntity) {
+            boolean hasThird = request.getRequest().getLosses().stream().anyMatch(ul -> ul.getThirdLosses() > 0);
+
+            failIfTrue(new CheckForThrow<Boolean>()
+                    .setTest(hasThird)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_NO_THIRD)
+                    .setMsgFormat("{1}: {0} The losses cannot involve third in an european province.")
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setParams(METHOD_CHOOSE_LOSSES));
+        }
+
+        List<DiffEntity> newDiffs = new ArrayList<>();
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        long thirdBefore = battle.getCounters().stream()
+                .filter(bc -> bc.isPhasing() == playerPhasing && CounterUtil.isExploration(bc.getCounter().getType()))
+                .count();
+        int thirdDiff = 0;
+
+        for (ChooseLossesRequest.UnitLoss loss : request.getRequest().getLosses()) {
+            CounterEntity counter = battle.getCounters().stream()
+                    .filter(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter().getId()))
+                    .map(BattleCounterEntity::getCounter)
+                    .findAny()
+                    .orElse(null);
+
+            failIfNull(new CheckForThrow<>()
+                    .setTest(counter)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER)
+                    .setMsgFormat("{1}: {0} The losses cannot involve the counter {2}.")
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter()));
+
+            double lossSize = loss.getRoundLosses() + THIRD * loss.getThirdLosses();
+            double lossMax = CounterUtil.getSizeFromType(counter.getType());
+            failIfTrue(new CheckForThrow<Boolean>()
+                    .setTest(lossSize > lossMax + EPSILON)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG)
+                    .setMsgFormat("{1}: {0} The counter {2} cannot take {3} losses because it cannot take more than {4}.")
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter(), lossSize, lossMax));
+
+            if (lossMax - lossSize <= EPSILON) {
+                newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                battle.getCounters().removeIf(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter().getId()));
+                thirdDiff -= loss.getThirdLosses();
+            } else {
+                List<CounterFaceTypeEnum> faces = new ArrayList<>();
+                double remain = lossMax - lossSize;
+                int round = (int) remain;
+                int third = (int) ((remain - round) / THIRD);
+                if (round >= 2) {
+                    faces.add(CounterUtil.getSize2FromType(counter.getType()));
+                    round -= 2;
+                }
+                if (round >= 1) {
+                    faces.add(CounterUtil.getSize1FromType(counter.getType()));
+                    round -= 1;
+                }
+                while (third > 0) {
+                    CounterFaceTypeEnum face = CounterUtil.getSizeThirdFromType(counter.getType());
+                    if (face != null) {
+                        faces.add(face);
+                        thirdDiff++;
+                    }
+                    third--;
+                }
+                // TODO check if round and third are 0 ?
+                faces.removeIf(o -> o == null);
+                if (faces.isEmpty()) {
+                    newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                    battle.getCounters().removeIf(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter().getId()));
+                } else {
+                    newDiffs.addAll(faces.stream()
+                            .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
+                            .collect(Collectors.toList()));
+                    newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                }
+            }
+        }
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(thirdBefore + thirdDiff >= 3)
+                .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_MANY_THIRD)
+                .setMsgFormat("{1}: {0} The losses are invalid because it will result with too many thirds.")
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES));
+
+        if (playerPhasing) {
+            battle.getPhasing().setLossesSelected(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
+        } else {
+            battle.getNonPhasing().setLossesSelected(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
+        }
+
+        if (BooleanUtils.isTrue(battle.getPhasing().isLossesSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isLossesSelected())) {
+            prepareRetreat(battle, attributes);
+        }
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        newDiffs.add(diff);
+
+        return createDiffs(newDiffs, gameDiffs, request);
     }
 
     /**

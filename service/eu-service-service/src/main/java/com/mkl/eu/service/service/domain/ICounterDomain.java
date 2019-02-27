@@ -25,16 +25,15 @@ public interface ICounterDomain {
     DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game);
 
     /**
-     * Creates a counter in a new stack.
+     * Creates a counter in an existing stack.
      *
-     * @param type     of the counter to create.
-     * @param country  owner of the counter to create.
-     * @param province where the counter will be.
-     * @param level    new level of the trade fleet or establishment.
-     * @param game     the game.
-     * @return the diffs related to the creation of the counter and the counter created.
+     * @param type    of the counter to create.
+     * @param country owner of the counter to create.
+     * @param idStack id of the stack the counter will be attached to.
+     * @param game    the game.
+     * @return the diffs related to the creation of the counter.
      */
-    Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game);
+    DiffEntity createCounter(CounterFaceTypeEnum type, String country, Long idStack, GameEntity game);
 
     /**
      * Removes a counter from a game.

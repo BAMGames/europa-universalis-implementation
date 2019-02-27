@@ -41,6 +41,80 @@ public class CounterUtilTest {
         Assert.assertEquals(THIRD, CounterUtil.getSizeFromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK), EPSILON);
         Assert.assertEquals(THIRD, CounterUtil.getSizeFromType(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION), EPSILON);
         Assert.assertEquals(THIRD, CounterUtil.getSizeFromType(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION), EPSILON);
+
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(null));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.ARSENAL_1_ST_PETER));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS, CounterUtil.getSize2FromType(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(null, CounterUtil.getSize2FromType(CounterFaceTypeEnum.NAVAL_GALLEY));
+
+        Assert.assertEquals(null, CounterUtil.getSize1FromType(null));
+        Assert.assertEquals(null, CounterUtil.getSize1FromType(CounterFaceTypeEnum.ARSENAL_1_ST_PETER));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, CounterUtil.getSize1FromType(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, CounterUtil.getSize1FromType(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_INDIAN, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_INDIAN, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_SEPOY, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_SEPOY, CounterUtil.getSize1FromType(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_TRANSPORT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_TRANSPORT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_TRANSPORT, CounterUtil.getSize1FromType(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_GALLEY, CounterUtil.getSize1FromType(CounterFaceTypeEnum.NAVAL_GALLEY));
+
+        Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(null));
+        Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.ARSENAL_1_ST_PETER));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.ARMY_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_DETACHMENT));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.ARMY_TIMAR_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.ARMY_TIMAR_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_DETACHMENT_TIMAR));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_DETACHMENT_KOZAK));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_INDIAN));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_SEPOY));
+        Assert.assertEquals(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.FLEET_PLUS));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.FLEET_MINUS));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_DETACHMENT));
+        Assert.assertEquals(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+        Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.FLEET_TRANSPORT_PLUS));
+        Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
+        Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_TRANSPORT));
+        Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_GALLEY));
+
+        // TODO test pashas
     }
 
     @Test
@@ -756,6 +830,8 @@ public class CounterUtilTest {
 
         Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
         Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION_KOZAK));
+        Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
+        Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
         Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
     }
 }
