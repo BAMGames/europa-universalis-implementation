@@ -3228,4 +3228,120 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 .filter(s -> StringUtils.equals(s, CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION.name()))
                 .count());
     }
+
+    @Test
+    public void testChooseLossesSuccess2() throws FunctionalException {
+        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(militaryService::chooseLossesFromBattle, "chooseLosses");
+        Request<ChooseLossesRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(27L);
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(26L);
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        game.getBattles().add(new BattleEntity());
+        BattleEntity battle = game.getBattles().get(0);
+        game.getBattles().get(0).setStatus(BattleStatusEnum.CHOOSE_LOSS);
+        game.getBattles().get(0).setProvince("idf");
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, 10L));
+        game.getBattles().get(0).getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
+        game.getBattles().get(0).getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, 20L));
+        game.getBattles().get(0).getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
+        game.getBattles().get(0).getCounters().add(bc);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(france);
+        game.getOrders().add(order);
+        testCheckStatus(pair.getRight(), request, militaryService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
+
+        when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getEnemies(france, game)).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getEnemies(spain, game)).thenReturn(Arrays.asList("france", "savoie"));
+        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(invocation -> {
+            DiffEntity diff = new DiffEntity();
+            diff.setIdObject(invocation.getArgumentAt(0, Long.class));
+            diff.setType(DiffTypeEnum.REMOVE);
+            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+            diff.setVersionGame(VERSION_SINCE);
+            diff.setIdGame(GAME_ID);
+            return diff;
+        });
+        when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
+            DiffEntity diff = new DiffEntity();
+            diff.setIdObject(invocation.getArgumentAt(2, Long.class));
+            diff.setType(DiffTypeEnum.ADD);
+            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+            diff.getAttributes().add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTER_FACE_TYPE, invocation.getArgumentAt(0, CounterFaceTypeEnum.class)));
+            diff.getAttributes().add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, invocation.getArgumentAt(1, String.class)));
+            diff.setVersionGame(VERSION_SINCE);
+            diff.setIdGame(GAME_ID);
+            return diff;
+        });
+
+        battle.getNonPhasing().getLosses().setRoundLoss(1);
+        battle.getNonPhasing().setSize(6d);
+        battle.getPhasing().setLossesSelected(true);
+        battle.setWinner(BattleWinnerEnum.PHASING);
+        ChooseLossesRequest.UnitLoss loss = new ChooseLossesRequest.UnitLoss();
+        loss.setIdCounter(3L);
+        loss.setThirdLosses(3);
+        request.setRequest(new ChooseLossesRequest());
+        request.getRequest().getLosses().add(loss);
+
+
+        simulateDiff();
+
+        militaryService.chooseLossesFromBattle(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(4, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE && Objects.equals(d.getIdObject(), battle.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.PHASING_READY));
+        Assert.assertEquals(BattleStatusEnum.RETREAT.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 3L))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        List<DiffEntity> diffsCreate = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 20L))
+                .collect(Collectors.toList());
+        Assert.assertEquals(2, diffsCreate.size());
+        List<String> faces = diffsCreate.stream()
+                .flatMap(d -> d.getAttributes().stream())
+                .filter(a -> a.getType() == DiffAttributeTypeEnum.COUNTER_FACE_TYPE)
+                .map(DiffAttributesEntity::getValue)
+                .collect(Collectors.toList());
+        Assert.assertEquals(1L, faces.stream()
+                .filter(s -> StringUtils.equals(s, CounterFaceTypeEnum.LAND_DETACHMENT.name()))
+                .count());
+        Assert.assertEquals(1L, faces.stream()
+                .filter(s -> StringUtils.equals(s, CounterFaceTypeEnum.ARMY_MINUS.name()))
+                .count());
+    }
 }
