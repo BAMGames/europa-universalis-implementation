@@ -17,6 +17,7 @@ import com.mkl.eu.client.service.vo.tables.BattleTech;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
@@ -60,6 +61,9 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
     /** Counter Domain. */
     @Autowired
     private ICounterDomain counterDomain;
+    /** Status Workflow Domain. */
+    @Autowired
+    private IStatusWorkflowDomain statusWorkflowDomain;
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
@@ -567,7 +571,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
-                cleanUpBattle(battle);
+                newDiffs.addAll(cleanUpBattle(battle, game));
 
                 return createDiffs(newDiffs, gameDiffs, request);
             }
@@ -1314,7 +1318,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, phasingLossesAuto, phasingLossesAuto));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, nonPhasingLossesAuto, nonPhasingLossesAuto));
         } else {
-            prepareRetreat(battle, attributes);
+            diffs.addAll(prepareRetreat(battle, attributes));
         }
 
         return diffs;
@@ -1326,8 +1330,10 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
      *
      * @param battle     the battle.
      * @param attributes the diff attributes of the battle modify diff event.
+     * @return eventual other diffs.
      */
-    private void prepareRetreat(BattleEntity battle, List<DiffAttributesEntity> attributes) {
+    private List<DiffEntity> prepareRetreat(BattleEntity battle, List<DiffAttributesEntity> attributes) {
+        List<DiffEntity> diffs = new ArrayList<>();
         if (battle.getWinner() == BattleWinnerEnum.PHASING || battle.getPhasing().getLosses().isGreaterThanSize(battle.getPhasing().getSize())) {
             battle.getPhasing().setRetreatSelected(true);
         } else {
@@ -1343,22 +1349,31 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            cleanUpBattle(battle);
+            diffs.addAll(cleanUpBattle(battle, battle.getGame()));
         } else {
             battle.setStatus(BattleStatusEnum.RETREAT);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.RETREAT));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, battle.getPhasing().isRetreatSelected(), BooleanUtils.toBoolean(battle.getPhasing().isRetreatSelected())));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, battle.getNonPhasing().isRetreatSelected(), BooleanUtils.toBoolean(battle.getNonPhasing().isRetreatSelected())));
         }
+        return diffs;
     }
 
     /**
      * Clean up a battle when it is finished.
      *
      * @param battle to clean up.
+     * @param game   the game.
+     * @return eventual other diffs.
      */
-    private void cleanUpBattle(BattleEntity battle) {
+    private List<DiffEntity> cleanUpBattle(BattleEntity battle, GameEntity game) {
         battle.getCounters().clear();
+        if (!game.getBattles().stream()
+                .anyMatch(batl -> batl.getStatus() == BattleStatusEnum.NEW)) {
+            return statusWorkflowDomain.endMilitaryPhase(battle.getGame());
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -1583,7 +1598,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         }
 
         if (BooleanUtils.isTrue(battle.getPhasing().isLossesSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isLossesSelected())) {
-            prepareRetreat(battle, attributes);
+            newDiffs.addAll(prepareRetreat(battle, attributes));
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
@@ -1753,7 +1768,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            cleanUpBattle(battle);
+            newDiffs.addAll(cleanUpBattle(battle, game));
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),

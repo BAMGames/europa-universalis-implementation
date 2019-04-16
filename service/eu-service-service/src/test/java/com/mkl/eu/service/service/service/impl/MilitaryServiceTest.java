@@ -16,6 +16,7 @@ import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
@@ -67,6 +68,9 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private ICounterDomain counterDomain;
+
+    @Mock
+    private IStatusWorkflowDomain statusWorkflowDomain;
 
     @Mock
     private IProvinceDao provinceDao;
@@ -1120,6 +1124,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getStacks().add(stack4);
 
         game.getBattles().add(new BattleEntity());
+        game.getBattles().get(0).setGame(game);
         game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         game.getBattles().get(0).setProvince("idf");
         stack1.getCounters().forEach(counter -> {
@@ -2374,6 +2379,10 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 diff.setIdObject(invocation.getArgumentAt(0, Long.class));
                 return diff;
             });
+            DiffEntity endDiff = new DiffEntity();
+            endDiff.setType(DiffTypeEnum.VALIDATE);
+            endDiff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
+            when(testClass.statusWorkflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(endDiff));
 
             Tables tables = new Tables();
             testClass.fillBatleTechTables(tables);
@@ -2582,15 +2591,6 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 }
             }
 
-            int diffsSize = 1;
-            if (result.phasingAnnihilated) {
-                diffsSize += phasing.counters.size();
-            }
-            if (result.nonPhasingAnnihilated) {
-                diffsSize += nonPhasing.counters.size();
-            }
-            Assert.assertEquals(diffsSize, diffsLastDay.size());
-
             Assert.assertEquals(toString(result.end), getAttribute(diffLastDay, DiffAttributeTypeEnum.END));
             Assert.assertEquals(toString(result.winner), getAttribute(diffLastDay, DiffAttributeTypeEnum.WINNER));
             Assert.assertEquals(battle.getPhasing().getLosses().getRoundLoss() + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS));
@@ -2631,6 +2631,14 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 }
             }
 
+
+            int diffsSize = 1;
+            if (result.phasingAnnihilated) {
+                diffsSize += phasing.counters.size();
+            }
+            if (result.nonPhasingAnnihilated) {
+                diffsSize += nonPhasing.counters.size();
+            }
             boolean phasingLossesAuto = result.phasingAnnihilated || result.phasingThirdLosses == 0;
             boolean nonPhasingLossesAuto = result.nonPhasingAnnihilated || result.nonPhasingThirdLosses == 0;
             boolean phasingRetreatAuto = result.winner == BattleWinnerEnum.PHASING || result.phasingAnnihilated;
@@ -2655,7 +2663,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 Assert.assertEquals(BattleStatusEnum.DONE, battle.getStatus());
                 Assert.assertEquals(BattleStatusEnum.DONE.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
                 Assert.assertEquals(0, battle.getCounters().size());
+                Assert.assertTrue(diffsLastDay.stream()
+                        .anyMatch(d -> d.getType() == DiffTypeEnum.VALIDATE && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER));
+                diffsSize++;
             }
+            Assert.assertEquals(diffsSize, diffsLastDay.size());
 
             return this;
         }

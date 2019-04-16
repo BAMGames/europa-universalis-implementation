@@ -13,8 +13,8 @@ import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
+import com.mkl.eu.service.service.domain.impl.StatusWorkflowDomainImpl;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -63,7 +63,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     private CounterDomainImpl counterDomain;
 
     @Mock
-    private IStatusWorkflowDomain statusWorkflowDomain;
+    private StatusWorkflowDomainImpl statusWorkflowDomain;
 
     @Mock
     private IProvinceDao provinceDao;
@@ -1292,6 +1292,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(false);
+        when(statusWorkflowDomain.endMilitaryPhase(game)).thenCallRealMethod();
 
         simulateDiff();
 
@@ -1427,6 +1428,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         diffsNextRound.add(createDiff(666L, game.getId(), game.getVersion()));
         diffsNextRound.add(createDiff(667L, game.getId(), game.getVersion()));
         when(statusWorkflowDomain.nextRound(game)).thenReturn(diffsNextRound);
+        when(statusWorkflowDomain.endMilitaryPhase(game)).thenCallRealMethod();
 
         boardService.validateMilitaryRound(request);
 

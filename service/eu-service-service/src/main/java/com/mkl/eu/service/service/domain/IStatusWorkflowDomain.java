@@ -33,6 +33,16 @@ public interface IStatusWorkflowDomain {
     List<DiffEntity> computeEndMinorLogistics(GameEntity game);
 
     /**
+     * Method to call at the end of the military phase of a group of playing countries.
+     * Or when battles are completed.
+     * Or when sieges are finished.
+     *
+     * @param game the game.
+     * @return the diff corresponding to the switch of the next round (or phase).
+     */
+    List<DiffEntity> endMilitaryPhase(GameEntity game);
+
+    /**
      * Compute the end of a round.
      * Go to next round, or next phase if it was the last round.
      *
