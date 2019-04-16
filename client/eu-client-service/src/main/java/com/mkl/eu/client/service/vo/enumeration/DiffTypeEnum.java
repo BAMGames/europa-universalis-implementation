@@ -38,6 +38,14 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#COUNTER_FACE_TYPE for the type of an eventual counter face</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#STACK in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#PROVINCE</li>
+     * <li>DiffAttributeTypeEnum#COUNTRY</li>
+     * <li>DiffAttributeTypeEnum#MOVE_PHASE - optional attribute</li>
+     * <li>DiffAttributeTypeEnum#BESIEGED - optional attribute</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     ADD,

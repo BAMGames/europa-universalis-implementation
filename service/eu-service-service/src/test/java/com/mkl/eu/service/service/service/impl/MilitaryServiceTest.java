@@ -7,10 +7,7 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
-import com.mkl.eu.client.service.service.military.ChooseLossesRequest;
-import com.mkl.eu.client.service.service.military.SelectForceRequest;
-import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -2846,24 +2843,24 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         game.getBattles().add(new BattleEntity());
         BattleEntity battle = game.getBattles().get(0);
-        game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
-        game.getBattles().get(0).setProvince("idf");
+        battle.setStatus(BattleStatusEnum.SELECT_FORCES);
+        battle.setProvince("idf");
         BattleCounterEntity bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS, 1L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 1L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 2L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 2L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
@@ -2904,7 +2901,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses", e.getParams()[0]);
         }
 
-        game.getBattles().get(0).setStatus(BattleStatusEnum.CHOOSE_LOSS);
+        battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
 
         try {
             militaryService.chooseLossesFromBattle(request);
@@ -2983,7 +2980,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because losses are bigger than the one sent");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_MISMATCH, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
 
         loss = new ChooseLossesRequest.UnitLoss();
@@ -2996,7 +2993,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because losses are smaller than the one sent");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_MISMATCH, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
 
         battle.getPhasing().getLosses().setThirdLoss(2);
@@ -3007,7 +3004,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because no third loss on european province can be taken");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_NO_THIRD, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
 
         when(provinceDao.getProvinceByName("idf")).thenReturn(new RotwProvinceEntity());
@@ -3018,7 +3015,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because counter outside of battle cannot take loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
 
         loss.setIdCounter(3L);
@@ -3028,7 +3025,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because counter not owned cannot take loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
 
         loss.setIdCounter(2L);
@@ -3038,7 +3035,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because counter cannot take that many loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
     }
 
@@ -3057,24 +3054,24 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         game.getBattles().add(new BattleEntity());
         BattleEntity battle = game.getBattles().get(0);
-        game.getBattles().get(0).setStatus(BattleStatusEnum.CHOOSE_LOSS);
-        game.getBattles().get(0).setProvince("idf");
+        battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
+        battle.setProvince("idf");
         BattleCounterEntity bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 10L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
@@ -3103,7 +3100,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because it would result to too many thirds");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_TOO_MANY_THIRD, e.getCode());
-            Assert.assertEquals("chooseLosses.request.request.losses", e.getParams()[0]);
+            Assert.assertEquals("chooseLosses.request.losses", e.getParams()[0]);
         }
     }
 
@@ -3122,24 +3119,24 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         game.getBattles().add(new BattleEntity());
         BattleEntity battle = game.getBattles().get(0);
-        game.getBattles().get(0).setStatus(BattleStatusEnum.CHOOSE_LOSS);
-        game.getBattles().get(0).setProvince("idf");
+        battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
+        battle.setProvince("idf");
         BattleCounterEntity bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, 10L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
@@ -3244,24 +3241,24 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         game.getBattles().add(new BattleEntity());
         BattleEntity battle = game.getBattles().get(0);
-        game.getBattles().get(0).setStatus(BattleStatusEnum.CHOOSE_LOSS);
-        game.getBattles().get(0).setProvince("idf");
+        battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
+        battle.setProvince("idf");
         BattleCounterEntity bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, 10L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(true);
         bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, 20L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         bc = new BattleCounterEntity();
         bc.setPhasing(false);
         bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        game.getBattles().get(0).getCounters().add(bc);
+        battle.getCounters().add(bc);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
@@ -3343,5 +3340,492 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1L, faces.stream()
                 .filter(s -> StringUtils.equals(s, CounterFaceTypeEnum.ARMY_MINUS.name()))
                 .count());
+    }
+
+    @Test
+    public void testRetreatAfterBattle() {
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(militaryService::retreatAfterBattle, "retreatAfterBattle");
+        Request<RetreatAfterBattleRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(27L);
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(26L);
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        StackEntity stackPhasing = new StackEntity();
+        stackPhasing.setCountry("france");
+        stackPhasing.setProvince("idf");
+        stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing.getId()));
+        game.getStacks().add(stackPhasing);
+        StackEntity stackNonPhasing = new StackEntity();
+        stackNonPhasing.setCountry("spain");
+        stackNonPhasing.setProvince("idf");
+        stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing.getId()));
+        stackNonPhasing.getCounters().add(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing.getId()));
+        game.getStacks().add(stackNonPhasing);
+        game.getBattles().add(new BattleEntity());
+        BattleEntity battle = game.getBattles().get(0);
+        battle.setStatus(BattleStatusEnum.SELECT_FORCES);
+        battle.setProvince("idf");
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS, 1L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 1L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        battle.getCounters().add(bc);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(france);
+        game.getOrders().add(order);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        testCheckStatus(pair.getRight(), request, militaryService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(27L);
+        when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
+        when(oeUtil.isMobile(stackPhasing)).thenReturn(true);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreatAfterBattle.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new RetreatAfterBattleRequest());
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because battle is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("retreatAfterBattle", e.getParams()[0]);
+        }
+
+        battle.setStatus(BattleStatusEnum.RETREAT);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        request.setIdCountry(26L);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because country has no right to decide a retreat in this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        request.setIdCountry(27L);
+        when(oeUtil.getEnemies(france, game)).thenReturn(Arrays.asList("spain", "austria"));
+        battle.getPhasing().setRetreatSelected(true);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat has already been done by this side");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        request.setIdCountry(26L);
+        when(oeUtil.getEnemies(spain, game)).thenReturn(Arrays.asList("france", "savoie"));
+        battle.getNonPhasing().setRetreatSelected(true);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat has already been done by this side");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
+        }
+
+        request.setIdCountry(27L);
+        battle.getPhasing().setRetreatSelected(false);
+        battle.getNonPhasing().setRetreatSelected(false);
+
+        request.getRequest().getRetreatInFortress().add(2L);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat involves a non existing counter");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_INVALID_COUNTER, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.retreatInFortress", e.getParams()[0]);
+        }
+
+        CounterEntity counter = createCounter(2L, "austria", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, stackPhasing.getId());
+        stackPhasing.getCounters().add(counter);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat involves an enemy counter");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_INVALID_COUNTER, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.retreatInFortress", e.getParams()[0]);
+        }
+
+        counter.setCountry("savoie");
+        when(oeUtil.canRetreat(idf, true, THIRD, france, game)).thenReturn(false);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat is impossible in fortress");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_RETREAT, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.retreatInFortress", e.getParams()[0]);
+        }
+
+        when(oeUtil.canRetreat(idf, true, THIRD, france, game)).thenReturn(true);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat did not tell which province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_NEEDED, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvinceTo("orleans");
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.provinceTo", e.getParams()[0]);
+        }
+
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
+
+        try {
+            militaryService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat is impossible in province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_RETREAT, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.provinceTo", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testRetreatAfterBattleInFortressSuccess() throws FunctionalException {
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(militaryService::retreatAfterBattle, "retreatAfterBattle");
+        Request<RetreatAfterBattleRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(27L);
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(26L);
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        StackEntity stackPhasing = new StackEntity();
+        stackPhasing.setCountry("france");
+        stackPhasing.setProvince("idf");
+        stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
+        stackPhasing.getCounters().add(createCounter(2L, "savoie", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
+        game.getStacks().add(stackPhasing);
+        StackEntity stackNonPhasing = new StackEntity();
+        stackNonPhasing.setCountry("spain");
+        stackNonPhasing.setProvince("idf");
+        stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        stackNonPhasing.getCounters().add(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        game.getStacks().add(stackNonPhasing);
+        game.getBattles().add(new BattleEntity());
+        BattleEntity battle = game.getBattles().get(0);
+        battle.setStatus(BattleStatusEnum.RETREAT);
+        battle.setProvince("idf");
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS, 1L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 1L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        battle.getCounters().add(bc);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(france);
+        game.getOrders().add(order);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        testCheckStatus(pair.getRight(), request, militaryService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(27L);
+        when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
+        when(oeUtil.isMobile(stackPhasing)).thenReturn(true);
+        when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getEnemies(france, game)).thenReturn(Arrays.asList("spain", "austria"));
+
+        request.setRequest(new RetreatAfterBattleRequest());
+        request.getRequest().getRetreatInFortress().add(1L);
+        request.getRequest().getRetreatInFortress().add(2L);
+        when(oeUtil.canRetreat(idf, true, 4, france, game)).thenReturn(true);
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenAnswer(invocation -> {
+            CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+            DiffEntity diff = new DiffEntity();
+            diff.setIdObject(counter.getId());
+            diff.setType(DiffTypeEnum.MOVE);
+            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+            diff.setVersionGame(VERSION_SINCE);
+            diff.setIdGame(GAME_ID);
+            StackEntity stack = counter.getOwner();
+            stack.getCounters().remove(counter);
+            if (stack.getCounters().isEmpty()) {
+                game.getStacks().remove(stack);
+            }
+            return diff;
+        });
+
+        simulateDiff();
+
+        militaryService.retreatAfterBattle(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(4, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(1, diff.getAttributes().size());
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.PHASING_READY));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(4, diff.getAttributes().size());
+        Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE));
+        Assert.assertEquals("france", getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.BESIEGED));
+        Assert.assertEquals("MOVED", getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 1L))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 2L))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+    }
+
+    @Test
+    public void testRetreatAfterBattleInFortressAndProvinceSuccess() throws FunctionalException {
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(militaryService::retreatAfterBattle, "retreatAfterBattle");
+        Request<RetreatAfterBattleRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(27L);
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(26L);
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        StackEntity stackPhasing = new StackEntity();
+        stackPhasing.setId(1L);
+        stackPhasing.setCountry("france");
+        stackPhasing.setProvince("idf");
+        stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
+        stackPhasing.getCounters().add(createCounter(2L, "savoie", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
+        game.getStacks().add(stackPhasing);
+        StackEntity stackNonPhasing = new StackEntity();
+        stackNonPhasing.setId(2L);
+        stackNonPhasing.setCountry("spain");
+        stackNonPhasing.setProvince("idf");
+        stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        stackNonPhasing.getCounters().add(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        game.getStacks().add(stackNonPhasing);
+        StackEntity stackNonPhasingNonMoving = new StackEntity();
+        stackNonPhasingNonMoving.setId(3L);
+        stackNonPhasingNonMoving.setCountry("spain");
+        stackNonPhasingNonMoving.setProvince("idf");
+        stackNonPhasingNonMoving.getCounters().add(createCounter(5L, "spain", CounterFaceTypeEnum.MNU_ART_MINUS, stackNonPhasingNonMoving));
+        game.getStacks().add(stackNonPhasingNonMoving);
+        game.getBattles().add(new BattleEntity());
+        BattleEntity battle = game.getBattles().get(0);
+        battle.setStatus(BattleStatusEnum.RETREAT);
+        battle.setProvince("idf");
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS, 1L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 1L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        battle.getCounters().add(bc);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(france);
+        game.getOrders().add(order);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
+        testCheckStatus(pair.getRight(), request, militaryService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
+        battle.getPhasing().setRetreatSelected(true);
+        when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
+        when(oeUtil.isMobile(stackNonPhasing)).thenReturn(true);
+        when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getEnemies(spain, game)).thenReturn(Arrays.asList("france", "savoie"));
+
+        request.setRequest(new RetreatAfterBattleRequest());
+        request.getRequest().getRetreatInFortress().add(3L);
+        request.getRequest().setProvinceTo("orleans");
+        when(oeUtil.canRetreat(idf, true, 2, spain, game)).thenReturn(true);
+        when(oeUtil.canRetreat(orleans, false, 0, spain, game)).thenReturn(true);
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenAnswer(invocation -> {
+            CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+            DiffEntity diff = new DiffEntity();
+            diff.setIdObject(counter.getId());
+            diff.setType(DiffTypeEnum.MOVE);
+            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
+            diff.setVersionGame(VERSION_SINCE);
+            diff.setIdGame(GAME_ID);
+            StackEntity stack = counter.getOwner();
+            stack.getCounters().remove(counter);
+            if (stack.getCounters().isEmpty()) {
+                game.getStacks().remove(stack);
+            }
+            return diff;
+        });
+
+        simulateDiff();
+
+        militaryService.retreatAfterBattle(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(4, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(2, diff.getAttributes().size());
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_READY));
+        Assert.assertEquals("DONE", getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(4, diff.getAttributes().size());
+        Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE));
+        Assert.assertEquals("spain", getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.BESIEGED));
+        Assert.assertEquals("MOVED", getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 3L))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.STACK && Objects.equals(d.getIdObject(), stackNonPhasing.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(3, diff.getAttributes().size());
+        Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("orleans", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals("MOVED", getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
     }
 }

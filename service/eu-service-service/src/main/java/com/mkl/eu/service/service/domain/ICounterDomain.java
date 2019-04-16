@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.domain;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -91,4 +92,24 @@ public interface ICounterDomain {
      * @return the diffs related to the move of the special counter.
      */
     DiffEntity moveSpecialCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
+
+    /**
+     * Creates a stack.
+     *
+     * @param province where is the stack.
+     * @param country  controlling the stack.
+     * @param game     the game.
+     * @return the created stack.
+     */
+    StackEntity createStack(String province, String country, GameEntity game);
+
+    /**
+     * Moves a counter to another stack in the same province.
+     *
+     * @param counter  the counter to move.
+     * @param newOwner the stack where the counter will be.
+     * @param game     the game.
+     * @return the diffs related to the move of the counter.
+     */
+    DiffEntity changeCounterOwner(CounterEntity counter, StackEntity newOwner, GameEntity game);
 }

@@ -112,6 +112,10 @@ public interface INameConstants {
     String PARAMETER_CHOOSE_LOSSES = "chooseLosses";
     /** Name of the parameter losses. */
     String PARAMETER_LOSSES = "losses";
+    /** Name of the parameter retreatAfterBattle. */
+    String PARAMETER_RETREAT_AFTER_BATTLE = "retreatAfterBattle";
+    /** Name of the parameter retreatInFortress. */
+    String PARAMETER_RETREAT_IN_FORTRESS = "retreatInFortress";
 
 
 
@@ -179,4 +183,6 @@ public interface INameConstants {
     String METHOD_RETREAT_FIRST_DAY = "retreatFirstDay";
     /** Name of the method chooseLosses. */
     String METHOD_CHOOSE_LOSSES = "chooseLosses";
+    /** Name of the method retreatAfterBattle. */
+    String METHOD_RETREAT_AFTER_BATTLE = "retreatAfterBattle";
 }

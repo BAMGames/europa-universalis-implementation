@@ -5,10 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IMilitaryService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
-import com.mkl.eu.client.service.service.military.ChooseLossesRequest;
-import com.mkl.eu.client.service.service.military.SelectForceRequest;
-import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,5 +59,11 @@ public class MilitaryWsServiceImpl extends SpringBeanAutowiringSupport implement
     @Override
     public DiffResponse chooseLossesFromBattle(Request<ChooseLossesRequest> request) throws FunctionalException, TechnicalException {
         return militaryService.chooseLossesFromBattle(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse retreatAfterBattle(Request<RetreatAfterBattleRequest> request) throws FunctionalException, TechnicalException {
+        return militaryService.retreatAfterBattle(request);
     }
 }

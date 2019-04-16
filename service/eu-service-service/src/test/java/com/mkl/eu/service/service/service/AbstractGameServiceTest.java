@@ -376,6 +376,15 @@ public abstract class AbstractGameServiceTest {
         tables.getBattleTechs().add(bt);
     }
 
+    public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type, StackEntity owner) {
+        CounterEntity counter = new CounterEntity();
+        counter.setId(id);
+        counter.setCountry(country);
+        counter.setType(type);
+        counter.setOwner(owner);
+        return counter;
+    }
+
     public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type, Long ownerId) {
         CounterEntity counter = new CounterEntity();
         counter.setId(id);
@@ -389,7 +398,7 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type) {
-        return createCounter(id, country, type, null);
+        return createCounter(id, country, type, (Long) null);
     }
 
     public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {

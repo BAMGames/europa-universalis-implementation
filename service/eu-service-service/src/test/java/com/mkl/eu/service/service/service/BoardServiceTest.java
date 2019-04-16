@@ -14,6 +14,7 @@ import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
+import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -34,7 +35,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -58,6 +58,9 @@ import static org.mockito.Mockito.when;
 public class BoardServiceTest extends AbstractGameServiceTest {
     @InjectMocks
     private BoardServiceImpl boardService;
+
+    @Mock
+    private CounterDomainImpl counterDomain;
 
     @Mock
     private IStatusWorkflowDomain statusWorkflowDomain;
@@ -920,14 +923,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsServiceException.STACK_TOO_BIG, e.getCode());
             Assert.assertEquals("moveCounter.request.idStack", e.getParams()[0]);
         }
-
-        counterToMove.setType(CounterFaceTypeEnum.ARMY_MINUS);
-
-        try {
-            boardService.moveCounter(request);
-        } catch (FunctionalException e) {
-            Assert.fail("Should have worked.");
-        }
     }
 
     @Test
@@ -976,6 +971,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
 
         when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
 
         simulateDiff();
 
@@ -991,7 +987,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         inOrder.verify(counterDao).getPatrons("genes", 12L);
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
-        inOrder.verify(gameDao).update(game, false);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -1040,12 +1035,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
 
-        ArgumentCaptor<StackEntity> arg = ArgumentCaptor.forClass(StackEntity.class);
-        when(stackDao.create(arg.capture())).thenAnswer(invocationOnMock -> {
-            StackEntity entity = (StackEntity) invocationOnMock.getArguments()[0];
-            entity.setId(25L);
-            return entity;
-        });
+        StackEntity newStack = new StackEntity();
+        newStack.setProvince("IdF");
+        newStack.setId(25L);
+        when(counterDomain.createStack(any(), any(), any())).thenReturn(newStack);
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
 
         simulateDiff();
 
@@ -1058,9 +1052,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(counterDao).getCounter(13L, 12L);
-        inOrder.verify(stackDao).create(arg.capture());
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(gameDao).update(game, false);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -1083,8 +1075,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
-
-        Assert.assertEquals("france", game.getStacks().get(0).getCountry());
     }
 
     @Test

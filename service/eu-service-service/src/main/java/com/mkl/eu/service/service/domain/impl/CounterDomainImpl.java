@@ -254,20 +254,7 @@ public class CounterDomainImpl implements ICounterDomain {
 
         StackEntity stack = CommonUtil.findFirst(game.getStacks().stream(), s -> StringUtils.equals(province, s.getProvince()));
         if (stack == null) {
-            stack = new StackEntity();
-            stack.setProvince(province);
-            stack.setGame(game);
-            stack.setCountry(counter.getCountry());
-
-            /**
-             Thanks Hibernate to have 7 years old bugs.
-             https://hibernate.atlassian.net/browse/HHH-6776
-             https://hibernate.atlassian.net/browse/HHH-7404
-             */
-
-            stackDao.create(stack);
-
-            game.getStacks().add(stack);
+            stack = createStack(province, counter.getCountry(), game);
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId(),
@@ -281,6 +268,49 @@ public class CounterDomainImpl implements ICounterDomain {
         counter.setOwner(stack);
         oldStack.getCounters().remove(counter);
         stack.getCounters().add(counter);
+        if (oldStack.getCounters().isEmpty()) {
+            oldStack.setGame(null);
+            game.getStacks().remove(oldStack);
+        }
+
+        return diff;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StackEntity createStack(String province, String country, GameEntity game) {
+        StackEntity stack = new StackEntity();
+        stack.setProvince(province);
+        stack.setGame(game);
+        stack.setCountry(country);
+
+        /*
+         Thanks Hibernate to have 7 years old bugs.
+         https://hibernate.atlassian.net/browse/HHH-6776
+         https://hibernate.atlassian.net/browse/HHH-7404
+          */
+
+        stackDao.create(stack);
+
+        game.getStacks().add(stack);
+
+        return stack;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffEntity changeCounterOwner(CounterEntity counter, StackEntity newOwner, GameEntity game) {
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_FROM, counter.getOwner().getId()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_TO, newOwner.getId()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, counter.getOwner().getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, newOwner.getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, counter.getOwner().getId(), counter.getOwner().getCounters().size() == 1));
+
+        StackEntity oldStack = counter.getOwner();
+        counter.setOwner(newOwner);
+        oldStack.getCounters().remove(counter);
+        newOwner.getCounters().add(counter);
         if (oldStack.getCounters().isEmpty()) {
             oldStack.setGame(null);
             game.getStacks().remove(oldStack);

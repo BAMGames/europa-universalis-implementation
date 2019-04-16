@@ -861,4 +861,45 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_LOSSES_TOO_MANY_THIRD = "exception.eu.board.battle_losses_too_many_third";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat in fortress a counter not in the battle or not in the good side.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the invalid counter</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_RETREAT_INVALID_COUNTER = "exception.eu.board.battle_retreat_invalid_counter";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat into a province that is not eligible.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>2: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_CANT_RETREAT = "exception.eu.board.battle_cant_retreat";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat without telling which province (can be ok if all units are in fortress).
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_RETREAT_NEEDED = "exception.eu.board.battle_retreat_needed";
 }

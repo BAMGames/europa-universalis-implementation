@@ -15,6 +15,7 @@ import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -47,6 +48,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class BoardServiceImpl extends AbstractService implements IBoardService {
+    /** Counter Domain. */
+    @Autowired
+    private ICounterDomain counterDomain;
     /** Status workflow domain. */
     @Autowired
     private IStatusWorkflowDomain statusWorkflowDomain;
@@ -516,20 +520,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         if (stackOpt != null && stackOpt.isPresent()) {
             stack = stackOpt.get();
         } else {
-            stack = new StackEntity();
-            stack.setProvince(counter.getOwner().getProvince());
-            stack.setGame(game);
-            stack.setCountry(counter.getCountry());
-
-        /*
-         Thanks Hibernate to have 7 years old bugs.
-         https://hibernate.atlassian.net/browse/HHH-6776
-         https://hibernate.atlassian.net/browse/HHH-7404
-          */
-
-            stackDao.create(stack);
-
-            game.getStacks().add(stack);
+            stack = counterDomain.createStack(counter.getOwner().getProvince(), counter.getCountry(), game);
         }
 
         failIfFalse(new CheckForThrow<Boolean>()
@@ -559,28 +550,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_COUNTER, stack.getId(), futureNbCounters, futureSize));
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, idCounter,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_FROM, counter.getOwner().getId()),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_TO, stack.getId()),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, counter.getOwner().getProvince()),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, stack.getProvince()),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, counter.getOwner().getId(), counter.getOwner().getCounters().size() == 1));
 
+        DiffEntity diff = counterDomain.changeCounterOwner(counter, stack, game);
         createDiff(diff);
-
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         diffs.add(diff);
-
-        StackEntity oldStack = counter.getOwner();
-        counter.setOwner(stack);
-        oldStack.getCounters().remove(counter);
-        stack.getCounters().add(counter);
-        if (oldStack.getCounters().isEmpty()) {
-            oldStack.setGame(null);
-            game.getStacks().remove(oldStack);
-        }
-
-        gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(diffs));

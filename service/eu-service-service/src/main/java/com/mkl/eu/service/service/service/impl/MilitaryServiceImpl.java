@@ -8,10 +8,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IMilitaryService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
-import com.mkl.eu.client.service.service.military.ChooseLossesRequest;
-import com.mkl.eu.client.service.service.military.SelectForceRequest;
-import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -37,6 +34,7 @@ import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1485,7 +1483,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .setTest(!CommonUtil.equals(roundLosses, side.getLosses().getRoundLoss()) || !CommonUtil.equals(thirdLosses, side.getLosses().getThirdLoss()))
                 .setCodeError(IConstantsServiceException.BATTLE_LOSSES_MISMATCH)
                 .setMsgFormat("{1}: {0} The losses taken {1} does not match the losses that should be taken {2}.")
-                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES, AbstractWithLossEntity.create(3 * roundLosses + thirdLosses).toString(), side.getLosses().toString()));
 
         AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
@@ -1496,7 +1494,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     .setTest(hasThird)
                     .setCodeError(IConstantsServiceException.BATTLE_LOSSES_NO_THIRD)
                     .setMsgFormat("{1}: {0} The losses cannot involve third in an european province.")
-                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                     .setParams(METHOD_CHOOSE_LOSSES));
         }
 
@@ -1518,7 +1516,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     .setTest(counter)
                     .setCodeError(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER)
                     .setMsgFormat("{1}: {0} The losses cannot involve the counter {2}.")
-                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                     .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter()));
 
             double lossSize = loss.getRoundLosses() + THIRD * loss.getThirdLosses();
@@ -1527,7 +1525,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                     .setTest(lossSize > lossMax + EPSILON)
                     .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG)
                     .setMsgFormat("{1}: {0} The counter {2} cannot take {3} losses because it cannot take more than {4}.")
-                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                     .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter(), lossSize, lossMax));
 
             if (lossMax - lossSize <= EPSILON) {
@@ -1573,7 +1571,7 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
                 .setTest(thirdBefore + thirdDiff >= 3)
                 .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_MANY_THIRD)
                 .setMsgFormat("{1}: {0} The losses are invalid because it will result with too many thirds.")
-                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES));
 
         if (playerPhasing) {
@@ -1586,6 +1584,176 @@ public class MilitaryServiceImpl extends AbstractService implements IMilitarySer
 
         if (BooleanUtils.isTrue(battle.getPhasing().isLossesSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isLossesSelected())) {
             prepareRetreat(battle, attributes);
+        }
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        newDiffs.add(diff);
+
+        return createDiffs(newDiffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse retreatAfterBattle(Request<RetreatAfterBattleRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_RETREAT_AFTER_BATTLE)
+                .setParams(METHOD_RETREAT_AFTER_BATTLE));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_RETREAT_AFTER_BATTLE, PARAMETER_RETREAT_AFTER_BATTLE);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_RETREAT_AFTER_BATTLE, PARAMETER_RETREAT_AFTER_BATTLE);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST)
+                .setParams(METHOD_RETREAT_AFTER_BATTLE));
+
+        BattleEntity battle = game.getBattles().stream()
+                .filter(bat -> bat.getStatus() == BattleStatusEnum.RETREAT)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(battle)
+                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
+                .setName(PARAMETER_RETREAT_AFTER_BATTLE)
+                .setParams(METHOD_RETREAT_AFTER_BATTLE, BattleStatusEnum.RETREAT.name()));
+
+        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        List<String> allies = oeUtil.getAllies(country, game);
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        boolean accessRight = !battle.getCounters().stream()
+                .anyMatch(bc -> bc.isPhasing() == playerPhasing && !allies.contains(bc.getCounter().getCountry()) ||
+                        bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCounter().getCountry()));
+
+        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(accessRight)
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_RETREAT_AFTER_BATTLE, country.getName(), "complex"));
+
+        boolean retreatAlreadyChosen = playerPhasing && BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) ||
+                !playerPhasing && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected());
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(retreatAlreadyChosen)
+                .setCodeError(IConstantsServiceException.ACTION_ALREADY_DONE)
+                .setMsgFormat("{1}: {0} The action {1} has already been done by the country or the side {2}.")
+                .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_RETREAT_AFTER_BATTLE, METHOD_RETREAT_AFTER_BATTLE, playerPhasing ? "phasing" : "non phasing"));
+
+        List<DiffEntity> newDiffs = new ArrayList<>();
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(request.getRequest().getRetreatInFortress())) {
+            AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
+            StackEntity besiegedStack = counterDomain.createStack(battle.getProvince(), country.getName(), game);
+            besiegedStack.setBesieged(true);
+            besiegedStack.setMovePhase(MovePhaseEnum.MOVED);
+            newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.STACK, besiegedStack.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, battle.getProvince()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, country.getName()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BESIEGED, true),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+            double size = 0;
+            for (Long idCounter : request.getRequest().getRetreatInFortress()) {
+                CounterEntity counter = game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                        .flatMap(stack -> stack.getCounters().stream())
+                        .filter(unit -> Objects.equals(unit.getId(), idCounter) && allies.contains(unit.getCountry()))
+                        .findAny()
+                        .orElse(null);
+
+                failIfNull(new CheckForThrow<>()
+                        .setTest(counter)
+                        .setCodeError(IConstantsServiceException.BATTLE_RETREAT_INVALID_COUNTER)
+                        .setMsgFormat("{1}: {0} The retreat in fortress cannot involve the counter {2}.")
+                        .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_RETREAT_IN_FORTRESS)
+                        .setParams(METHOD_RETREAT_AFTER_BATTLE, idCounter));
+
+                size += CounterUtil.getSizeFromType(counter.getType());
+                newDiffs.add(counterDomain.changeCounterOwner(counter, besiegedStack, game));
+            }
+
+            boolean canRetreatInFortress = oeUtil.canRetreat(province, true, size, country, game);
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(canRetreatInFortress)
+                    .setCodeError(IConstantsServiceException.BATTLE_CANT_RETREAT)
+                    .setMsgFormat("{1}: {0} {2} is not a valid province to retreat.")
+                    .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_RETREAT_IN_FORTRESS)
+                    .setParams(METHOD_RETREAT_AFTER_BATTLE, battle.getProvince()));
+        }
+
+        if (StringUtils.isEmpty(request.getRequest().getProvinceTo())) {
+            boolean remainingCounters = game.getStacks().stream()
+                    .anyMatch(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()));
+            failIfTrue(new CheckForThrow<Boolean>()
+                    .setTest(remainingCounters)
+                    .setCodeError(IConstantsServiceException.BATTLE_RETREAT_NEEDED)
+                    .setMsgFormat("{1}: {0} There are still some units that need to be retreated..")
+                    .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_RETREAT_AFTER_BATTLE));
+        } else {
+            String provinceTo = request.getRequest().getProvinceTo();
+            AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
+            failIfNull(new CheckForThrow<>()
+                    .setTest(province)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_RETREAT_AFTER_BATTLE, provinceTo));
+
+            // no check on size because retreat in multiple provinces is nightmare. Player will have to destroy the surplus at the end of the round.
+            boolean canRetreat = oeUtil.canRetreat(province, false, 0, country, game);
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(canRetreat)
+                    .setCodeError(IConstantsServiceException.BATTLE_CANT_RETREAT)
+                    .setMsgFormat("{1}: {0} {2} is not a valid province to retreat.")
+                    .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                    .setParams(METHOD_RETREAT_AFTER_BATTLE, province.getName()));
+
+            Consumer<StackEntity> retreatStack = stack -> {
+                newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, battle.getProvince()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+                stack.setMovePhase(MovePhaseEnum.MOVED);
+                stack.setProvince(provinceTo);
+            };
+            game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
+                    .forEach(retreatStack);
+        }
+
+        if (playerPhasing) {
+            battle.getPhasing().setRetreatSelected(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
+        } else {
+            battle.getNonPhasing().setRetreatSelected(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
+        }
+
+        if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
+            battle.setStatus(BattleStatusEnum.DONE);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
+            cleanUpBattle(battle);
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),

@@ -4,10 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
-import com.mkl.eu.client.service.service.military.ChooseBattleRequest;
-import com.mkl.eu.client.service.service.military.ChooseLossesRequest;
-import com.mkl.eu.client.service.service.military.SelectForceRequest;
-import com.mkl.eu.client.service.service.military.WithdrawBeforeBattleRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -92,4 +89,15 @@ public interface IMilitaryService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse chooseLossesFromBattle(@WebParam(name = PARAMETER_CHOOSE_LOSSES) Request<ChooseLossesRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Retreat at the end of the current battle.
+     *
+     * @param request info about where to retreat.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse retreatAfterBattle(@WebParam(name = PARAMETER_RETREAT_AFTER_BATTLE) Request<RetreatAfterBattleRequest> request) throws FunctionalException, TechnicalException;
 }
