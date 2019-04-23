@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.military;
 
+import com.mkl.eu.client.service.vo.enumeration.SiegeStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import org.hibernate.annotations.GenericGenerator;
@@ -17,6 +18,8 @@ import java.io.Serializable;
 public class SiegeEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
+    /** Status. */
+    private SiegeStatusEnum status;
     /** Province where the competition occurs. */
     private String province;
     /** Turn of the competition. */
@@ -36,6 +39,18 @@ public class SiegeEntity implements IEntity, Serializable {
     /** @param id the id to set. */
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /** @return the status. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS")
+    public SiegeStatusEnum getStatus() {
+        return status;
+    }
+
+    /** @param status the status to set. */
+    public void setStatus(SiegeStatusEnum status) {
+        this.status = status;
     }
 
     /** @return the province. */

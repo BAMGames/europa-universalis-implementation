@@ -25,7 +25,6 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
-import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
@@ -679,37 +678,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     .count();
 
             if (countriesNotReady == 0) {
-                List<String> provincesAtWar = game.getStacks().stream()
-                        .filter(s -> s.getMovePhase() == MovePhaseEnum.FIGHTING)
-                        .map(StackEntity::getProvince)
-                        .collect(Collectors.toList());
-
-                // Are there somme battles ?
-                if (!provincesAtWar.isEmpty()) {
-                    // Yes -> battle phase !
-                    game.setStatus(GameStatusEnum.MILITARY_BATTLES);
-
-                    DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_BATTLES));
-                    newDiffs.add(diff);
-
-                    for (String province : provincesAtWar) {
-                        BattleEntity battle = new BattleEntity();
-                        battle.setProvince(province);
-                        battle.setTurn(game.getTurn());
-                        battle.setStatus(BattleStatusEnum.NEW);
-                        battle.setGame(game);
-
-                        game.getBattles().add(battle);
-                    }
-
-                    diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
-                    newDiffs.add(diff);
-                } else {
-                    // No -> next round
-                    newDiffs.addAll(statusWorkflowDomain.endMilitaryPhase(game));
-                }
+                newDiffs.addAll(statusWorkflowDomain.endMilitaryPhase(game));
             } else {
                 DiffTypeEnum type = DiffTypeEnum.INVALIDATE;
                 if (request.getRequest().isValidate()) {

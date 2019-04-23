@@ -11,6 +11,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
@@ -165,37 +166,78 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     /** {@inheritDoc} */
     @Override
     public List<DiffEntity> endMilitaryPhase(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        // If we are in battle phase, are there still some battle left ?
+        if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES && game.getBattles().stream().anyMatch(battle -> battle.getStatus() == BattleStatusEnum.NEW)) {
+            return diffs;
+        }
+
+        // If we are in siege phase, are there still some siege left ?
+        if (game.getStatus() == GameStatusEnum.MILITARY_SIEGES && game.getSieges().stream().anyMatch(siege -> siege.getStatus() == SiegeStatusEnum.NEW)) {
+            return diffs;
+        }
+
+        // Are there somme battles ?
+        List<String> provincesAtWar = game.getStacks().stream()
+                .filter(s -> s.getMovePhase() == MovePhaseEnum.FIGHTING)
+                .map(StackEntity::getProvince)
+                .collect(Collectors.toList());
+
+        if (!provincesAtWar.isEmpty()) {
+            // Yes -> battle phase !
+            game.setStatus(GameStatusEnum.MILITARY_BATTLES);
+
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_BATTLES));
+            diffs.add(diff);
+
+            for (String province : provincesAtWar) {
+                BattleEntity battle = new BattleEntity();
+                battle.setProvince(province);
+                battle.setTurn(game.getTurn());
+                battle.setStatus(BattleStatusEnum.NEW);
+                battle.setGame(game);
+
+                game.getBattles().add(battle);
+            }
+
+            diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
+            diffs.add(diff);
+            return diffs;
+        }
+
+        // Other cases: we check if there is another country in current phase of this round
         int currentPosition = game.getOrders().stream()
-                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .filter(o -> o.isActive() && o.getGameStatus() == game.getStatus())
                 .map(CountryOrderEntity::getPosition)
                 .findFirst()
                 .orElse(Integer.MAX_VALUE);
 
-        List<DiffEntity> diffs = new ArrayList<>();
-        // Is it the last country of the round ?
         Integer next = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                .filter(o -> o.getGameStatus() == game.getStatus() &&
                         o.getPosition() > currentPosition)
                 .map(CountryOrderEntity::getPosition)
                 .min(Comparator.naturalOrder())
                 .orElse(null);
 
         if (next != null) {
-            // No it isn't, proceed to next countries.
+            // There are other countries, proceed to next countries.
             game.getOrders().stream()
-                    .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                    .filter(o -> o.getGameStatus() == game.getStatus())
                     .forEach(o -> o.setReady(false));
 
             DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.TURN_ORDER,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, game.getStatus()));
 
             diffs.add(diff);
 
             game.getOrders().stream()
-                    .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                    .filter(o -> o.getGameStatus() == game.getStatus())
                     .forEach(o -> o.setActive(false));
             game.getOrders().stream()
-                    .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                    .filter(o -> o.getGameStatus() == game.getStatus() &&
                             o.getPosition() == next)
                     .forEach(o -> o.setActive(true));
 
@@ -203,39 +245,44 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, next));
 
             diffs.add(diff);
+
+            return diffs;
         } else {
-            // Yes it is, are there some sieges ?
-            List<String> provincesAtSiege = game.getStacks().stream()
-                    .filter(s -> s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING)
-                    .map(StackEntity::getProvince)
-                    .collect(Collectors.toList());
+            // There is no other country. If we are in move phase, check siege
+            if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
+                List<String> provincesAtSiege = game.getStacks().stream()
+                        .filter(s -> s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING)
+                        .map(StackEntity::getProvince)
+                        .collect(Collectors.toList());
 
-            if (!provincesAtSiege.isEmpty()) {
-                // Yes -> siege phase !
-                game.setStatus(GameStatusEnum.MILITARY_SIEGES);
+                if (!provincesAtSiege.isEmpty()) {
+                    // Yes -> siege phase !
+                    game.setStatus(GameStatusEnum.MILITARY_SIEGES);
 
-                DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES));
-                diffs.add(diff);
+                    DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES));
+                    diffs.add(diff);
 
 
-                for (String province : provincesAtSiege) {
-                    SiegeEntity siege = new SiegeEntity();
-                    siege.setProvince(province);
-                    siege.setTurn(game.getTurn());
-                    siege.setGame(game);
+                    for (String province : provincesAtSiege) {
+                        SiegeEntity siege = new SiegeEntity();
+                        siege.setProvince(province);
+                        siege.setTurn(game.getTurn());
+                        siege.setGame(game);
 
-                    game.getSieges().add(siege);
+                        game.getSieges().add(siege);
+                    }
+
+                    diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.SIEGE,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
+                    diffs.add(diff);
+
+                    return diffs;
                 }
-
-                diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.SIEGE,
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
-                diffs.add(diff);
-            } else {
-                // No -> next round !
-
-                diffs.addAll(nextRound(game));
             }
+            // If no siege or last country of siege round, compute next round
+
+            diffs.addAll(nextRound(game));
         }
 
         return diffs;
