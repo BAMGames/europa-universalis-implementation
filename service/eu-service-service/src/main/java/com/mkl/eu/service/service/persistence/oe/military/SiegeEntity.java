@@ -7,6 +7,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entity for a siege.
@@ -24,6 +26,8 @@ public class SiegeEntity implements IEntity, Serializable {
     private String province;
     /** Turn of the competition. */
     private Integer turn;
+    /** Counters involved in the battle. */
+    private Set<SiegeCounterEntity> counters = new HashSet<>();
     /** Game in which the competition occurs. */
     private GameEntity game;
 
@@ -73,6 +77,17 @@ public class SiegeEntity implements IEntity, Serializable {
     /** @param turn the turn to set. */
     public void setTurn(Integer turn) {
         this.turn = turn;
+    }
+
+    /** @return the counters. */
+    @OneToMany(mappedBy = "id.siege", cascade = CascadeType.ALL)
+    public Set<SiegeCounterEntity> getCounters() {
+        return counters;
+    }
+
+    /** @param counters the counters to set. */
+    public void setCounters(Set<SiegeCounterEntity> counters) {
+        this.counters = counters;
     }
 
     /** @return the game. */

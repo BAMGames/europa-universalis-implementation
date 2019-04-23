@@ -77,8 +77,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseBattleFail() {
-        Pair<Request<ChooseBattleRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
-        Request<ChooseBattleRequest> request = pair.getLeft();
+        Pair<Request<ChooseProvinceRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
+        Request<ChooseProvinceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
@@ -97,7 +97,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseBattle.request", e.getParams()[0]);
         }
 
-        request.setRequest(new ChooseBattleRequest());
+        request.setRequest(new ChooseProvinceRequest());
 
         try {
             battleService.chooseBattle(request);
@@ -149,8 +149,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
     }
 
     private void testChooseBattle(boolean gotoWithdraw) throws FunctionalException {
-        Pair<Request<ChooseBattleRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
-        Request<ChooseBattleRequest> request = pair.getLeft();
+        Pair<Request<ChooseProvinceRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
+        Request<ChooseProvinceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         game.getCountries().add(new PlayableCountryEntity());
         game.getCountries().get(0).setId(26L);
@@ -194,7 +194,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
 
         request.setIdCountry(26L);
-        request.setRequest(new ChooseBattleRequest());
+        request.setRequest(new ChooseProvinceRequest());
         request.getRequest().setProvince("idf");
         testCheckStatus(pair.getRight(), request, battleService::chooseBattle, "chooseBattle", GameStatusEnum.MILITARY_BATTLES);
 

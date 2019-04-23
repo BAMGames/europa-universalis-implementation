@@ -27,7 +27,7 @@ public class BattleWsServiceImpl extends SpringBeanAutowiringSupport implements 
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse chooseBattle(Request<ChooseBattleRequest> request) throws FunctionalException, TechnicalException {
+    public DiffResponse chooseBattle(Request<ChooseProvinceRequest> request) throws FunctionalException, TechnicalException {
         return battleService.chooseBattle(request);
     }
 

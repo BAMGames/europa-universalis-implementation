@@ -72,7 +72,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse chooseBattle(Request<ChooseBattleRequest> request) throws FunctionalException, TechnicalException {
+    public DiffResponse chooseBattle(Request<ChooseProvinceRequest> request) throws FunctionalException, TechnicalException {
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)

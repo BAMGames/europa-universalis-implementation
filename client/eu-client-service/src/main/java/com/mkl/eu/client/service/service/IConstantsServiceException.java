@@ -676,7 +676,7 @@ public interface IConstantsServiceException {
     String STACK_CANT_CONTROL = "exception.eu.board.stack_already_controlled";
 
     /**********************************************************************/
-    /**              MILITARY SERVICE EXCEPTION                           */
+    /**                BATTLE SERVICE EXCEPTION                           */
     /**********************************************************************/
 
     /**
@@ -902,4 +902,22 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_RETREAT_NEEDED = "exception.eu.board.battle_retreat_needed";
+
+    /**********************************************************************/
+    /**                SIEGE SERVICE EXCEPTION                            */
+    /**********************************************************************/
+
+    /**
+     * <p>
+     * Exception thrown when trying to begin a siege while another is in process.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: province of the siege in process.</li>
+     * </ul>
+     * </p>
+     */
+    String SIEGE_IN_PROCESS = "exception.eu.military.siege_in_process";
 }

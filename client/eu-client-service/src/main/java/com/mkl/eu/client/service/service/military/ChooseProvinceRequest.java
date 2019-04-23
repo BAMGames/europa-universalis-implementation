@@ -1,18 +1,18 @@
 package com.mkl.eu.client.service.service.military;
 
 /**
- * Request for chooseBattle service.
+ * Request for a service that needs only a province.
  *
  * @author MKL.
  */
-public class ChooseBattleRequest {
+public class ChooseProvinceRequest {
     /** Province of the battle that will be computed. */
     private String province;
 
     /**
      * Constructor for jaxb.
      */
-    public ChooseBattleRequest() {
+    public ChooseProvinceRequest() {
     }
 
     /**
@@ -20,7 +20,7 @@ public class ChooseBattleRequest {
      *
      * @param province the province to set.
      */
-    public ChooseBattleRequest(String province) {
+    public ChooseProvinceRequest(String province) {
         this.province = province;
     }
 

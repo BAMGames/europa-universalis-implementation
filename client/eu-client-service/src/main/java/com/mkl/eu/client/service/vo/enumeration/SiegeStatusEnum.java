@@ -10,6 +10,8 @@ public enum SiegeStatusEnum {
     NEW(false),
     /** When a side has too many forces on the battlefield and must select the forces in battle. */
     SELECT_FORCES(true),
+    /** The besieger chooses between an undermine, an assault and a redeploy. */
+    CHOOSE_MODE(true),
     /** The besieger can choose to take a breach after an undermine. */
     CHOOSE_BREACH(true),
     /** If needed, each sides must select the forces lost in battle. */

@@ -33,7 +33,7 @@ public interface IBattleService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse chooseBattle(@WebParam(name = PARAMETER_CHOOSE_BATTLE) Request<ChooseBattleRequest> request) throws FunctionalException, TechnicalException;
+    DiffResponse chooseBattle(@WebParam(name = PARAMETER_CHOOSE_BATTLE) Request<ChooseProvinceRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * Select or deselect a force for the current battle.
