@@ -5,8 +5,8 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.IMilitaryService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
@@ -57,7 +57,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
  */
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
-public class MilitaryServiceImpl extends AbstractService implements IMilitaryService {
+public class BattleServiceImpl extends AbstractService implements IBattleService {
     /** Counter Domain. */
     @Autowired
     private ICounterDomain counterDomain;

@@ -17,7 +17,7 @@ import javax.jws.WebService;
  * @author MKL.
  */
 @WebService
-public interface IMilitaryService extends INameConstants {
+public interface IBattleService extends INameConstants {
     /**
      * Choose a battle within the possible ones.
      * If some side has too many forces, the selectForce service must be invoked followed by the validateForcesForBattle.

@@ -59,9 +59,9 @@ import static org.mockito.Mockito.when;
  * @author MKL.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class MilitaryServiceTest extends AbstractGameServiceTest {
+public class BattleServiceTest extends AbstractGameServiceTest {
     @InjectMocks
-    private MilitaryServiceImpl militaryService;
+    private BattleServiceImpl battleService;
 
     @Mock
     private IOEUtil oeUtil;
@@ -77,7 +77,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseBattleFail() {
-        Pair<Request<ChooseBattleRequest>, GameEntity> pair = testCheckGame(militaryService::chooseBattle, "chooseBattle");
+        Pair<Request<ChooseBattleRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
         Request<ChooseBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         game.getBattles().add(new BattleEntity());
@@ -87,10 +87,10 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
         request.setIdCountry(26L);
-        testCheckStatus(pair.getRight(), request, militaryService::chooseBattle, "chooseBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::chooseBattle, "chooseBattle", GameStatusEnum.MILITARY_BATTLES);
 
         try {
-            militaryService.chooseBattle(request);
+            battleService.chooseBattle(request);
             Assert.fail("Should break because chooseBattle.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -100,7 +100,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setRequest(new ChooseBattleRequest());
 
         try {
-            militaryService.chooseBattle(request);
+            battleService.chooseBattle(request);
             Assert.fail("Should break because province is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -110,7 +110,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setProvince("");
 
         try {
-            militaryService.chooseBattle(request);
+            battleService.chooseBattle(request);
             Assert.fail("Should break because province is empty");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -120,7 +120,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setProvince("idf");
 
         try {
-            militaryService.chooseBattle(request);
+            battleService.chooseBattle(request);
             Assert.fail("Should break because another battle is in process");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_IN_PROCESS, e.getCode());
@@ -130,7 +130,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).setStatus(BattleStatusEnum.NEW);
 
         try {
-            militaryService.chooseBattle(request);
+            battleService.chooseBattle(request);
             Assert.fail("Should break because no battle is in this province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -149,7 +149,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
     }
 
     private void testChooseBattle(boolean gotoWithdraw) throws FunctionalException {
-        Pair<Request<ChooseBattleRequest>, GameEntity> pair = testCheckGame(militaryService::chooseBattle, "chooseBattle");
+        Pair<Request<ChooseBattleRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
         Request<ChooseBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         game.getCountries().add(new PlayableCountryEntity());
@@ -196,7 +196,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(26L);
         request.setRequest(new ChooseBattleRequest());
         request.getRequest().setProvince("idf");
-        testCheckStatus(pair.getRight(), request, militaryService::chooseBattle, "chooseBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::chooseBattle, "chooseBattle", GameStatusEnum.MILITARY_BATTLES);
 
         List<String> allies = new ArrayList<>();
         allies.add("france");
@@ -211,7 +211,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        DiffResponse response = militaryService.chooseBattle(request);
+        DiffResponse response = battleService.chooseBattle(request);
 
         DiffEntity diffEntity = retrieveDiffCreated();
 
@@ -261,7 +261,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testSelectForceFail() {
-        Pair<Request<SelectForceRequest>, GameEntity> pair = testCheckGame(militaryService::selectForce, "selectForce");
+        Pair<Request<SelectForceRequest>, GameEntity> pair = testCheckGame(battleService::selectForce, "selectForce");
         Request<SelectForceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         game.getBattles().add(new BattleEntity());
@@ -270,11 +270,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
-        testCheckStatus(pair.getRight(), request, militaryService::selectForce, "selectForce", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::selectForce, "selectForce", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(26L);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because selectForce.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -285,7 +285,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(12L);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because idCounter is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -295,7 +295,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setIdCounter(6L);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because no battle is in right status");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
@@ -305,7 +305,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because counter does not exist in the battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -318,7 +318,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).getCounters().add(battleCounter);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
         } catch (FunctionalException e) {
             Assert.fail("Should not break " + e.getMessage());
         }
@@ -326,7 +326,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setAdd(true);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because counter does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -342,7 +342,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
         } catch (FunctionalException e) {
             Assert.fail("Should not break " + e.getMessage());
         }
@@ -350,7 +350,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because counter is not an army");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -361,7 +361,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(0).setCountry("pologne");
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because counter is not owned");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -372,7 +372,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(0).setProvince("idf");
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because counter is not in the right province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -383,7 +383,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).getNonPhasing().setForces(true);
 
         try {
-            militaryService.selectForce(request);
+            battleService.selectForce(request);
             Assert.fail("Should break because the attacker already validated its forces");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_SELECT_VALIDATED, e.getCode());
@@ -412,7 +412,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
     }
 
     private void testSelectForceSuccess(boolean add, boolean attacker) throws FunctionalException {
-        Pair<Request<SelectForceRequest>, GameEntity> pair = testCheckGame(militaryService::selectForce, "selectForce");
+        Pair<Request<SelectForceRequest>, GameEntity> pair = testCheckGame(battleService::selectForce, "selectForce");
         Request<SelectForceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity country = new PlayableCountryEntity();
@@ -433,7 +433,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
         game.getStacks().get(0).getCounters().add(counter);
 
-        testCheckStatus(pair.getRight(), request, militaryService::selectForce, "selectForce", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::selectForce, "selectForce", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(26L);
         request.setRequest(new SelectForceRequest());
         request.setIdCountry(12L);
@@ -459,7 +459,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        DiffResponse response = militaryService.selectForce(request);
+        DiffResponse response = battleService.selectForce(request);
 
         DiffEntity diffEntity = retrieveDiffCreated();
 
@@ -510,7 +510,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testValidateForcesFail() {
-        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::validateForces, "validateForces");
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(battleService::validateForces, "validateForces");
         Request<ValidateRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity country = new PlayableCountryEntity();
@@ -524,11 +524,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
-        testCheckStatus(pair.getRight(), request, militaryService::validateForces, "validateForces", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::validateForces, "validateForces", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(26L);
 
         try {
-            militaryService.validateForces(request);
+            battleService.validateForces(request);
             Assert.fail("Should break because validateForces.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -539,7 +539,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(12L);
 
         try {
-            militaryService.validateForces(request);
+            battleService.validateForces(request);
             Assert.fail("Should break because no battle is in right status");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
@@ -549,7 +549,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).setStatus(BattleStatusEnum.SELECT_FORCES);
 
         try {
-            militaryService.validateForces(request);
+            battleService.validateForces(request);
             Assert.fail("Should break because invalidate is impossible if no other counter exists");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_INVALIDATE_NO_FORCE, e.getCode());
@@ -583,7 +583,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
 
         try {
-            militaryService.validateForces(request);
+            battleService.validateForces(request);
             Assert.fail("Should break because validate is impossible if other counter could be selected");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_VALIDATE_OTHER_FORCE, e.getCode());
@@ -632,7 +632,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
     }
 
     private void testValidateForcesSuccess(boolean phasing, boolean validate, boolean before) throws FunctionalException {
-        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::validateForces, "validateForces");
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(battleService::validateForces, "validateForces");
         Request<ValidateRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity country = new PlayableCountryEntity();
@@ -647,7 +647,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
         game.getBattles().get(1).setProvince("lyonnais");
-        testCheckStatus(pair.getRight(), request, militaryService::validateForces, "validateForces", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::validateForces, "validateForces", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(12L);
         request.setRequest(new ValidateRequest());
         request.getRequest().setValidate(validate);
@@ -687,7 +687,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        DiffResponse response = militaryService.validateForces(request);
+        DiffResponse response = battleService.validateForces(request);
 
         DiffEntity diffEntity = retrieveDiffCreated();
 
@@ -763,8 +763,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         neva.setTerrain(TerrainEnum.SWAMP);
         EuropeanProvinceEntity tyrol = new EuropeanProvinceEntity();
         tyrol.setTerrain(TerrainEnum.MOUNTAIN);
-        MilitaryServiceImpl.TABLES = new Tables();
-        fillBatleTechTables(MilitaryServiceImpl.TABLES);
+        BattleServiceImpl.TABLES = new Tables();
+        fillBatleTechTables(BattleServiceImpl.TABLES);
 
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
         when(provinceDao.getProvinceByName("morbihan")).thenReturn(morbihan);
@@ -773,9 +773,9 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("neva")).thenReturn(neva);
         when(provinceDao.getProvinceByName("tyrol")).thenReturn(tyrol);
 
-        when(oeUtil.getTechnology(Collections.singletonList(phasingCounter), true, militaryService.getReferential(), militaryService.getTables(), battle.getGame()))
+        when(oeUtil.getTechnology(Collections.singletonList(phasingCounter), true, battleService.getReferential(), battleService.getTables(), battle.getGame()))
                 .thenReturn(Tech.ARQUEBUS);
-        when(oeUtil.getTechnology(Collections.singletonList(nonPhasingCounter), true, militaryService.getReferential(), militaryService.getTables(), battle.getGame()))
+        when(oeUtil.getTechnology(Collections.singletonList(nonPhasingCounter), true, battleService.getReferential(), battleService.getTables(), battle.getGame()))
                 .thenReturn(Tech.RENAISSANCE);
         List<ArmyInfo> armyPhasing = new ArrayList<>();
         armyPhasing.add(new ArmyInfo());
@@ -787,8 +787,8 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         armyNonPhasing.get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
         armyNonPhasing.get(0).setCountry(PlayableCountry.SPAIN);
         armyNonPhasing.get(0).setArmyClass(ArmyClassEnum.IV);
-        when(oeUtil.getArmyInfo(Collections.singletonList(phasingCounter), militaryService.getReferential())).thenReturn(armyPhasing);
-        when(oeUtil.getArmyInfo(Collections.singletonList(nonPhasingCounter), militaryService.getReferential())).thenReturn(armyNonPhasing);
+        when(oeUtil.getArmyInfo(Collections.singletonList(phasingCounter), battleService.getReferential())).thenReturn(armyPhasing);
+        when(oeUtil.getArmyInfo(Collections.singletonList(nonPhasingCounter), battleService.getReferential())).thenReturn(armyNonPhasing);
 
         battle.setProvince("idf");
         checkModifiers(battle, Modifiers.init(0));
@@ -820,15 +820,15 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 .addFireNonPhasingSecondDay(1)
                 .addShockNonPhasingSecondDay(1));
 
-        when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(6);
-        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(5);
+        when(oeUtil.getArtilleryBonus(armyPhasing, battleService.getTables(), battle.getGame())).thenReturn(6);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, battleService.getTables(), battle.getGame())).thenReturn(5);
 
         battle.setProvince("idf");
         checkModifiers(battle, Modifiers.init(0)
                 .addFirePhasingFirstDay(1)
                 .addFirePhasingSecondDay(1));
 
-        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(7);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, battleService.getTables(), battle.getGame())).thenReturn(7);
         checkModifiers(battle, Modifiers.init(0)
                 .addFirePhasingFirstDay(1)
                 .addFirePhasingSecondDay(1)
@@ -836,16 +836,16 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 .addFireNonPhasingSecondDay(1));
 
 
-        when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(0);
-        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(1);
-        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(true);
-        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(false);
+        when(oeUtil.getArtilleryBonus(armyPhasing, battleService.getTables(), battle.getGame())).thenReturn(0);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, battleService.getTables(), battle.getGame())).thenReturn(1);
+        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.PLAIN, battleService.getTables(), battle.getGame())).thenReturn(true);
+        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.PLAIN, battleService.getTables(), battle.getGame())).thenReturn(false);
         checkModifiers(battle, Modifiers.init(0)
                 .addShockPhasingFirstDay(1)
                 .addShockPhasingSecondDay(1));
 
-        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(false);
-        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.PLAIN, militaryService.getTables(), battle.getGame())).thenReturn(true);
+        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.PLAIN, battleService.getTables(), battle.getGame())).thenReturn(false);
+        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.PLAIN, battleService.getTables(), battle.getGame())).thenReturn(true);
         checkModifiers(battle, Modifiers.init(0)
                 .addShockNonPhasingFirstDay(1)
                 .addShockNonPhasingSecondDay(1));
@@ -860,10 +860,10 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                 .addFireNonPhasingSecondDay(-1));
 
         battle.setProvince("lyonnais");
-        when(oeUtil.getArtilleryBonus(armyPhasing, militaryService.getTables(), battle.getGame())).thenReturn(10);
-        when(oeUtil.getArtilleryBonus(armyNonPhasing, militaryService.getTables(), battle.getGame())).thenReturn(1);
-        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.SPARSE_FOREST, militaryService.getTables(), battle.getGame())).thenReturn(true);
-        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.SPARSE_FOREST, militaryService.getTables(), battle.getGame())).thenReturn(false);
+        when(oeUtil.getArtilleryBonus(armyPhasing, battleService.getTables(), battle.getGame())).thenReturn(10);
+        when(oeUtil.getArtilleryBonus(armyNonPhasing, battleService.getTables(), battle.getGame())).thenReturn(1);
+        when(oeUtil.getCavalryBonus(armyPhasing, TerrainEnum.SPARSE_FOREST, battleService.getTables(), battle.getGame())).thenReturn(true);
+        when(oeUtil.getCavalryBonus(armyNonPhasing, TerrainEnum.SPARSE_FOREST, battleService.getTables(), battle.getGame())).thenReturn(false);
         checkModifiers(battle, Modifiers.init(-1)
                 .addFirePhasingFirstDay(1)
                 .addFirePhasingSecondDay(1)
@@ -882,7 +882,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
     }
 
     private void checkModifiers(BattleEntity battle, Modifiers modifiers) {
-        militaryService.fillBattleModifiers(battle);
+        battleService.fillBattleModifiers(battle);
 
         Assert.assertEquals(modifiers.firePF, battle.getPhasing().getFirstDay().getFireMod());
         Assert.assertEquals(modifiers.shockPF, battle.getPhasing().getFirstDay().getShockMod());
@@ -981,7 +981,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testWithdrawBeforeBattleFail() {
-        Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(militaryService::withdrawBeforeBattle, "withdrawBeforeBattle");
+        Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(battleService::withdrawBeforeBattle, "withdrawBeforeBattle");
         Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         game.getBattles().add(new BattleEntity());
@@ -1007,11 +1007,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         border.setProvinceTo(orleans);
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
-        testCheckStatus(pair.getRight(), request, militaryService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(26L);
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because withdrawBeforeBattle.idCountry is the phasing player");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW, e.getCode());
@@ -1021,7 +1021,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(27L);
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because withdrawBeforeBattle.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -1032,7 +1032,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setWithdraw(true);
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because battle is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
@@ -1042,7 +1042,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because province is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -1052,7 +1052,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setProvinceTo("");
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because province is empty");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -1062,7 +1062,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setProvinceTo("toto");
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because province does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -1073,7 +1073,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("pecs")).thenReturn(new EuropeanProvinceEntity());
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because province is not next to battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR, e.getCode());
@@ -1084,7 +1084,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
 
         try {
-            militaryService.withdrawBeforeBattle(request);
+            battleService.withdrawBeforeBattle(request);
             Assert.fail("Should break because cannot retreat in this province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_WITHDRAW, e.getCode());
@@ -1094,7 +1094,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testWithdrawBeforeBattleSuccess() throws FunctionalException {
-        Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(militaryService::withdrawBeforeBattle, "withdrawBeforeBattle");
+        Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testCheckGame(battleService::withdrawBeforeBattle, "withdrawBeforeBattle");
         Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         StackEntity stack1 = new StackEntity();
@@ -1169,14 +1169,14 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.lossesMitigation(anyDouble(), anyBoolean(), any())).thenReturn(AbstractWithLossEntity.create(0));
         when(oeUtil.lossModificationSize(any(), anyInt())).thenReturn(AbstractWithLossEntity.create(0));
         when(oeUtil.retreat(anyInt())).thenReturn(AbstractWithLossEntity.create(0));
-        testCheckStatus(pair.getRight(), request, militaryService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
         request.setRequest(new WithdrawBeforeBattleRequest());
         request.getRequest().setWithdraw(true);
         request.getRequest().setProvinceTo("orleans");
         BattleEntity battle = game.getBattles().get(0);
-        MilitaryServiceImpl.TABLES = new Tables();
-        MilitaryServiceImpl.TABLES.getBattleTechs().add(new BattleTech());
+        BattleServiceImpl.TABLES = new Tables();
+        BattleServiceImpl.TABLES.getBattleTechs().add(new BattleTech());
         simulateDiff();
 
         when(oeUtil.rollDie(game, country)).thenReturn(5);
@@ -1184,14 +1184,14 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.isMobile(stack2)).thenReturn(true);
         when(oeUtil.isMobile(stack3)).thenReturn(true);
 
-        militaryService.withdrawBeforeBattle(request);
+        battleService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() != BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
 
         battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         request.getRequest().setProvinceTo("idf");
 
-        militaryService.withdrawBeforeBattle(request);
+        battleService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() == BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
         Assert.assertTrue(battle.getStatus() == BattleStatusEnum.DONE);
@@ -1232,7 +1232,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setProvinceTo("orleans");
         when(oeUtil.rollDie(game, country)).thenReturn(8);
 
-        militaryService.withdrawBeforeBattle(request);
+        battleService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() == BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
         Assert.assertTrue(battle.getStatus() == BattleStatusEnum.DONE);
@@ -1282,7 +1282,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testRetreatFirstDayFail() {
-        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(militaryService::retreatFirstDay, "retreatFirstDay");
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(battleService::retreatFirstDay, "retreatFirstDay");
         Request<ValidateRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -1331,11 +1331,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         border.setProvinceTo(orleans);
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
-        testCheckStatus(pair.getRight(), request, militaryService::retreatFirstDay, "retreatFirstDay", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::retreatFirstDay, "retreatFirstDay", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
 
         try {
-            militaryService.retreatFirstDay(request);
+            battleService.retreatFirstDay(request);
             Assert.fail("Should break because retreatFirstDay.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -1345,7 +1345,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setRequest(new ValidateRequest());
 
         try {
-            militaryService.retreatFirstDay(request);
+            battleService.retreatFirstDay(request);
             Assert.fail("Should break because battle is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
@@ -1355,7 +1355,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(0).setStatus(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_ATT);
 
         try {
-            militaryService.retreatFirstDay(request);
+            battleService.retreatFirstDay(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -1365,7 +1365,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
 
         try {
-            militaryService.retreatFirstDay(request);
+            battleService.retreatFirstDay(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -1376,7 +1376,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(26L);
 
         try {
-            militaryService.retreatFirstDay(request);
+            battleService.retreatFirstDay(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -1386,7 +1386,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
 
         try {
-            militaryService.retreatFirstDay(request);
+            battleService.retreatFirstDay(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -1412,7 +1412,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .sizeReductionDamage(2)
                         .tech(Tech.MEDIEVAL)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1438,7 +1438,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.RENAISSANCE)
                         .firstFire(10)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1464,7 +1464,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.ARQUEBUS)
                         .firstFire(10)
                         .pursuit(5))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1492,7 +1492,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(10)
                         .retreat(5)
                         .retreatLosses(2))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.NONE)
@@ -1519,7 +1519,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.ARQUEBUS)
                         .firstFire(10)
                         .pursuit(5))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1545,7 +1545,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.ARQUEBUS)
                         .firstFire(9)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1570,7 +1570,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.ARQUEBUS)
                         .firstFire(11)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1595,7 +1595,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .veteran(false)
                         .tech(Tech.ARQUEBUS)
                         .firstFire(8))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1620,7 +1620,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .veteran(false)
                         .tech(Tech.ARQUEBUS)
                         .firstFire(10))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1645,7 +1645,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.ARQUEBUS)
                         .firstFire(11)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1671,7 +1671,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.ARQUEBUS)
                         .firstFire(11)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_FIRE)
                         .winner(BattleWinnerEnum.NONE)
@@ -1704,7 +1704,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(10)
                         .firstShock(7)
                         .pursuit(2))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_SHOCK)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1732,7 +1732,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(10)
                         .firstShock(7)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_SHOCK)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1760,7 +1760,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .tech(Tech.RENAISSANCE)
                         .firstShock(10)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_FIRST_SHOCK)
                         .winner(BattleWinnerEnum.NONE)
@@ -1793,7 +1793,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(10)
                         .firstShock(8)
                         .pursuit(2))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ANNIHILATED_AT_FIRST_DAY)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1822,7 +1822,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(10)
                         .firstShock(8)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ANNIHILATED_AT_FIRST_DAY)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1852,7 +1852,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstFire(10)
                         .firstShock(8)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ANNIHILATED_AT_FIRST_DAY)
                         .winner(BattleWinnerEnum.NONE)
@@ -1887,7 +1887,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .retreatFirstDayResult(false)
                         .secondFire(7)
                         .pursuit(2))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_SECOND_FIRE)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -1921,7 +1921,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .retreatFirstDayResult(false)
                         .secondFire(7)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_SECOND_FIRE)
                         .winner(BattleWinnerEnum.PHASING)
@@ -1956,7 +1956,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .secondFire(7)
                         .secondShock(7)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.END_OF_SECOND_DAY)
                         .winner(BattleWinnerEnum.NONE)
@@ -1990,7 +1990,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .secondFire(7)
                         .secondShock(7)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.ROUTED_AT_SECOND_SHOCK)
                         .winner(BattleWinnerEnum.NONE)
@@ -2023,7 +2023,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstShock(7)
                         .retreatFirstDayResult(false)
                         .pursuit(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.RETREAT_AT_FIRST_DAY)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -2052,7 +2052,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstShock(7)
                         .retreatFirstDayResult(true)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.RETREAT_AT_FIRST_DAY)
                         .winner(BattleWinnerEnum.PHASING)
@@ -2081,7 +2081,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .firstShock(7)
                         .retreatFirstDayResult(true)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.RETREAT_AT_FIRST_DAY)
                         .winner(BattleWinnerEnum.PHASING)
@@ -2116,7 +2116,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .secondFire(4)
                         .secondShock(4)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.END_OF_SECOND_DAY)
                         .winner(BattleWinnerEnum.NONE)
@@ -2148,7 +2148,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .secondFire(4)
                         .secondShock(4)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.END_OF_SECOND_DAY)
                         .winner(BattleWinnerEnum.PHASING)
@@ -2180,7 +2180,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .secondFire(4)
                         .secondShock(4)
                         .pursuit(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.END_OF_SECOND_DAY)
                         .winner(BattleWinnerEnum.NON_PHASING)
@@ -2212,7 +2212,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
                         .secondFire(4)
                         .secondShock(4)
                         .retreat(1))
-                .whenBattle(militaryService, this)
+                .whenBattle(battleService, this)
                 .thenExpect(BattleResultBuilder.create()
                         .end(BattleEndEnum.END_OF_SECOND_DAY)
                         .winner(BattleWinnerEnum.NONE)
@@ -2252,7 +2252,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             return this;
         }
 
-        BattleBuilder whenBattle(MilitaryServiceImpl militaryService, MilitaryServiceTest testClass) throws FunctionalException {
+        BattleBuilder whenBattle(BattleServiceImpl militaryService, BattleServiceTest testClass) throws FunctionalException {
             Pair<Request<WithdrawBeforeBattleRequest>, GameEntity> pair = testClass.testCheckGame(militaryService::withdrawBeforeBattle, "withdrawBeforeBattle");
             GameEntity game = pair.getRight();
             game.setStatus(GameStatusEnum.MILITARY_BATTLES);
@@ -2477,7 +2477,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
             result.setThirdLoss(2);
             result.setMoraleLoss(1);
             tables.getCombatResults().add(result);
-            MilitaryServiceImpl.TABLES = tables;
+            BattleServiceImpl.TABLES = tables;
 
             testClass.simulateDiff();
 
@@ -2842,7 +2842,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseLossesFail() {
-        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(militaryService::chooseLossesFromBattle, "chooseLosses");
+        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(battleService::chooseLossesFromBattle, "chooseLosses");
         Request<ChooseLossesRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -2892,11 +2892,11 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         border.setProvinceTo(orleans);
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
-        testCheckStatus(pair.getRight(), request, militaryService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because chooseLosses.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -2906,7 +2906,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setRequest(new ChooseLossesRequest());
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because battle is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
@@ -2916,7 +2916,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -2926,7 +2926,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -2936,7 +2936,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(26L);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -2946,7 +2946,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -2958,7 +2958,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         battle.getPhasing().setLossesSelected(true);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because losses has already been chosen by this side");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
@@ -2970,7 +2970,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         battle.getNonPhasing().setLossesSelected(true);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because losses has already been chosen by this side");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
@@ -2988,7 +2988,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().getLosses().add(loss);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because losses are bigger than the one sent");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_MISMATCH, e.getCode());
@@ -3001,7 +3001,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().getLosses().add(loss);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because losses are smaller than the one sent");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_MISMATCH, e.getCode());
@@ -3012,7 +3012,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("idf")).thenReturn(new EuropeanProvinceEntity());
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because no third loss on european province can be taken");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_NO_THIRD, e.getCode());
@@ -3023,7 +3023,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         loss.setIdCounter(666L);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because counter outside of battle cannot take loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
@@ -3033,7 +3033,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         loss.setIdCounter(3L);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because counter not owned cannot take loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
@@ -3043,7 +3043,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         loss.setIdCounter(2L);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because counter cannot take that many loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG, e.getCode());
@@ -3053,7 +3053,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseLossesComplexFail() {
-        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(militaryService::chooseLossesFromBattle, "chooseLosses");
+        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(battleService::chooseLossesFromBattle, "chooseLosses");
         Request<ChooseLossesRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -3092,7 +3092,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
-        testCheckStatus(pair.getRight(), request, militaryService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
 
         when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
@@ -3108,7 +3108,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().getLosses().add(loss);
 
         try {
-            militaryService.chooseLossesFromBattle(request);
+            battleService.chooseLossesFromBattle(request);
             Assert.fail("Should break because it would result to too many thirds");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_TOO_MANY_THIRD, e.getCode());
@@ -3118,7 +3118,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseLossesSuccess() throws FunctionalException {
-        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(militaryService::chooseLossesFromBattle, "chooseLosses");
+        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(battleService::chooseLossesFromBattle, "chooseLosses");
         Request<ChooseLossesRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -3157,7 +3157,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
-        testCheckStatus(pair.getRight(), request, militaryService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
 
         when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
@@ -3200,7 +3200,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        militaryService.chooseLossesFromBattle(request);
+        battleService.chooseLossesFromBattle(request);
 
         List<DiffEntity> diffs = retrieveDiffsCreated();
 
@@ -3240,7 +3240,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseLossesSuccess2() throws FunctionalException {
-        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(militaryService::chooseLossesFromBattle, "chooseLosses");
+        Pair<Request<ChooseLossesRequest>, GameEntity> pair = testCheckGame(battleService::chooseLossesFromBattle, "chooseLosses");
         Request<ChooseLossesRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -3279,7 +3279,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
-        testCheckStatus(pair.getRight(), request, militaryService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(26L);
 
         when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
@@ -3320,7 +3320,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        militaryService.chooseLossesFromBattle(request);
+        battleService.chooseLossesFromBattle(request);
 
         List<DiffEntity> diffs = retrieveDiffsCreated();
 
@@ -3356,7 +3356,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testRetreatAfterBattle() {
-        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(militaryService::retreatAfterBattle, "retreatAfterBattle");
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(battleService::retreatAfterBattle, "retreatAfterBattle");
         Request<RetreatAfterBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -3417,13 +3417,13 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         border.setProvinceTo(orleans);
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
-        testCheckStatus(pair.getRight(), request, militaryService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
         when(oeUtil.isMobile(stackPhasing)).thenReturn(true);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreatAfterBattle.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -3433,7 +3433,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setRequest(new RetreatAfterBattleRequest());
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because battle is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_STATUS_NONE, e.getCode());
@@ -3443,7 +3443,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         battle.setStatus(BattleStatusEnum.RETREAT);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -3453,7 +3453,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("france", "savoie"));
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -3463,7 +3463,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.setIdCountry(26L);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -3473,7 +3473,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getAllies(spain, game)).thenReturn(Arrays.asList("spain", "austria"));
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because country has no right to decide a retreat in this battle");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
@@ -3485,7 +3485,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         battle.getPhasing().setRetreatSelected(true);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat has already been done by this side");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
@@ -3497,7 +3497,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         battle.getNonPhasing().setRetreatSelected(true);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat has already been done by this side");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
@@ -3511,7 +3511,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().getRetreatInFortress().add(2L);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat involves a non existing counter");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_INVALID_COUNTER, e.getCode());
@@ -3522,7 +3522,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         stackPhasing.getCounters().add(counter);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat involves an enemy counter");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_INVALID_COUNTER, e.getCode());
@@ -3533,7 +3533,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.canRetreat(idf, true, THIRD, france, game)).thenReturn(false);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat is impossible in fortress");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_RETREAT, e.getCode());
@@ -3543,7 +3543,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(oeUtil.canRetreat(idf, true, THIRD, france, game)).thenReturn(true);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat did not tell which province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_NEEDED, e.getCode());
@@ -3553,7 +3553,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         request.getRequest().setProvinceTo("orleans");
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat province does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
@@ -3563,7 +3563,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
 
         try {
-            militaryService.retreatAfterBattle(request);
+            battleService.retreatAfterBattle(request);
             Assert.fail("Should break because retreat is impossible in province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_CANT_RETREAT, e.getCode());
@@ -3573,7 +3573,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testRetreatAfterBattleInFortressSuccess() throws FunctionalException {
-        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(militaryService::retreatAfterBattle, "retreatAfterBattle");
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(battleService::retreatAfterBattle, "retreatAfterBattle");
         Request<RetreatAfterBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -3635,7 +3635,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         border.setProvinceTo(orleans);
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
-        testCheckStatus(pair.getRight(), request, militaryService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(27L);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
         when(oeUtil.isMobile(stackPhasing)).thenReturn(true);
@@ -3664,7 +3664,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        militaryService.retreatAfterBattle(request);
+        battleService.retreatAfterBattle(request);
 
         List<DiffEntity> diffs = retrieveDiffsCreated();
 
@@ -3700,7 +3700,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testRetreatAfterBattleInFortressAndProvinceSuccess() throws FunctionalException {
-        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(militaryService::retreatAfterBattle, "retreatAfterBattle");
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(battleService::retreatAfterBattle, "retreatAfterBattle");
         Request<RetreatAfterBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity france = new PlayableCountryEntity();
@@ -3771,7 +3771,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
         when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
-        testCheckStatus(pair.getRight(), request, militaryService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        testCheckStatus(pair.getRight(), request, battleService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
         request.setIdCountry(26L);
         battle.getPhasing().setRetreatSelected(true);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
@@ -3802,7 +3802,7 @@ public class MilitaryServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        militaryService.retreatAfterBattle(request);
+        battleService.retreatAfterBattle(request);
 
         List<DiffEntity> diffs = retrieveDiffsCreated();
 

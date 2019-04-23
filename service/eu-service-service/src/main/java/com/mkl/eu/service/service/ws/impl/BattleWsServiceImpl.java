@@ -3,7 +3,7 @@ package com.mkl.eu.service.service.ws.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.IMilitaryService;
+import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -18,52 +18,52 @@ import javax.jws.WebService;
  *
  * @author MKL.
  */
-@WebService(endpointInterface = "com.mkl.eu.client.service.service.IMilitaryService")
-public class MilitaryWsServiceImpl extends SpringBeanAutowiringSupport implements IMilitaryService {
+@WebService(endpointInterface = "com.mkl.eu.client.service.service.IBattleService")
+public class BattleWsServiceImpl extends SpringBeanAutowiringSupport implements IBattleService {
     /** Military Service. */
     @Autowired
-    @Qualifier(value = "militaryServiceImpl")
-    private IMilitaryService militaryService;
+    @Qualifier(value = "battleServiceImpl")
+    private IBattleService battleService;
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse chooseBattle(Request<ChooseBattleRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.chooseBattle(request);
+        return battleService.chooseBattle(request);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse selectForce(Request<SelectForceRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.selectForce(request);
+        return battleService.selectForce(request);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse validateForces(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.validateForces(request);
+        return battleService.validateForces(request);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse withdrawBeforeBattle(Request<WithdrawBeforeBattleRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.withdrawBeforeBattle(request);
+        return battleService.withdrawBeforeBattle(request);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse retreatFirstDay(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.retreatFirstDay(request);
+        return battleService.retreatFirstDay(request);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse chooseLossesFromBattle(Request<ChooseLossesRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.chooseLossesFromBattle(request);
+        return battleService.chooseLossesFromBattle(request);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffResponse retreatAfterBattle(Request<RetreatAfterBattleRequest> request) throws FunctionalException, TechnicalException {
-        return militaryService.retreatAfterBattle(request);
+        return battleService.retreatAfterBattle(request);
     }
 }
