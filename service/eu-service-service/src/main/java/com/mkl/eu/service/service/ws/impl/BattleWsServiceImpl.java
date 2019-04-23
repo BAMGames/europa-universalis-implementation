@@ -33,14 +33,8 @@ public class BattleWsServiceImpl extends SpringBeanAutowiringSupport implements 
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse selectForce(Request<SelectForceRequest> request) throws FunctionalException, TechnicalException {
-        return battleService.selectForce(request);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DiffResponse validateForces(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
-        return battleService.validateForces(request);
+    public DiffResponse selectForces(Request<SelectForcesRequest> request) throws FunctionalException, TechnicalException {
+        return battleService.selectForces(request);
     }
 
     /** {@inheritDoc} */

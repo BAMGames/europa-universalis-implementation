@@ -20,7 +20,7 @@ import javax.jws.WebService;
 public interface IBattleService extends INameConstants {
     /**
      * Choose a battle within the possible ones.
-     * If some side has too many forces, the selectForce service must be invoked followed by the validateForcesForBattle.
+     * If some side has too many forces, the selectForces service must be invoked.
      * The defender can call withdrawBeforeBattle.
      * Then the first round is computed. If battle is not finished, each side can withdrawFromBattle
      * (in sea, the one with the wind can withdrawFromBattle during first round too).
@@ -36,7 +36,7 @@ public interface IBattleService extends INameConstants {
     DiffResponse chooseBattle(@WebParam(name = PARAMETER_CHOOSE_BATTLE) Request<ChooseProvinceRequest> request) throws FunctionalException, TechnicalException;
 
     /**
-     * Select or deselect a force for the current battle.
+     * Select the forces for the current battle.
      *
      * @param request info about the force to select/deselect.
      * @return the diffs.
@@ -44,18 +44,7 @@ public interface IBattleService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse selectForce(@WebParam(name = PARAMETER_SELECT_FORCE) Request<SelectForceRequest> request) throws FunctionalException, TechnicalException;
-
-    /**
-     * Validate the forces for the current battle.
-     *
-     * @param request info about the forces to validate/invalidate.
-     * @return the diffs.
-     * @throws FunctionalException functional exception.
-     * @throws TechnicalException  technical exception.
-     */
-    @WebResult(name = RESPONSE)
-    DiffResponse validateForces(@WebParam(name = PARAMETER_VALIDATE_FORCES) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+    DiffResponse selectForces(@WebParam(name = PARAMETER_SELECT_FORCES) Request<SelectForcesRequest> request) throws FunctionalException, TechnicalException;
 
     /**
      * Withdraw the current battle for the non phasing forces.

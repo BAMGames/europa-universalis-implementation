@@ -19,7 +19,7 @@ import javax.jws.WebService;
 public interface ISiegeService extends INameConstants {
     /**
      * Choose a siege within the possible ones.
-     * If besieger has too many forces, the selectForce service must be invoked followed by the validateForcesForSiege.
+     * If besieger has too many forces, the selectForces service must be invoked followed by the validateForcesForSiege.
      * Then the besieger will choose between undermine, assault or redeploy.
      * In a unique case, a breach can be taken to make an assault after an undermine.
      * Finally, all side will choose losses (in case of war honor, besieged will teleport some forces).

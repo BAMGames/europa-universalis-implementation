@@ -100,8 +100,10 @@ public interface INameConstants {
     String PARAMETER_INVESTMENT = "investment";
     /** Name of the parameter chooseBattle. */
     String PARAMETER_CHOOSE_BATTLE = "chooseBattle";
-    /** Name of the parameter selectForce. */
-    String PARAMETER_SELECT_FORCE = "selectForce";
+    /** Name of the parameter selectForces. */
+    String PARAMETER_SELECT_FORCES = "selectForces";
+    /** Name of the parameter forces. */
+    String PARAMETER_FORCES = "forces";
     /** Name of the parameter validateForces. */
     String PARAMETER_VALIDATE_FORCES = "validateForces";
     /** Name of the parameter withdrawBeforeBattle. */
@@ -175,8 +177,8 @@ public interface INameConstants {
     String METHOD_VALIDATE_ADM_ACT = "validateAdminActions";
     /** Name of the method chooseBattle. */
     String METHOD_CHOOSE_BATTLE = "chooseBattle";
-    /** Name of the method selectForce. */
-    String METHOD_SELECT_FORCE = "selectForce";
+    /** Name of the method selectForces. */
+    String METHOD_SELECT_FORCES = "selectForces";
     /** Name of the method validateForces. */
     String METHOD_VALIDATE_FORCES = "validateForces";
     /** Name of the method withdrawBeforeBattle. */

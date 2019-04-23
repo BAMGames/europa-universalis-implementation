@@ -213,17 +213,17 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse selectForce(Request<SelectForceRequest> request) throws FunctionalException, TechnicalException {
+    public DiffResponse selectForces(Request<SelectForcesRequest> request) throws FunctionalException, TechnicalException {
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_SELECT_FORCE)
-                .setParams(METHOD_SELECT_FORCE));
+                .setName(PARAMETER_SELECT_FORCES)
+                .setParams(METHOD_SELECT_FORCES));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SELECT_FORCE, PARAMETER_SELECT_FORCE);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
         GameEntity game = gameDiffs.getGame();
 
-        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_SELECT_FORCE, PARAMETER_SELECT_FORCE);
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
@@ -236,15 +236,15 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setTest(request.getRequest())
                 .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST)
-                .setParams(METHOD_SELECT_FORCE));
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST)
+                .setParams(METHOD_SELECT_FORCES));
 
-        failIfNull(new AbstractService.CheckForThrow<>()
-                .setTest(request.getRequest().getIdCounter())
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(CollectionUtils.isEmpty(request.getRequest().getForces()))
                 .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
-                .setParams(METHOD_SELECT_FORCE));
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES));
 
         BattleEntity battle = game.getBattles().stream()
                 .filter(bat -> bat.getStatus() == BattleStatusEnum.SELECT_FORCES)
@@ -255,8 +255,8 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setTest(battle)
                 .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
                 .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
-                .setName(PARAMETER_SELECT_FORCE)
-                .setParams(METHOD_SELECT_FORCE, BattleStatusEnum.SELECT_FORCES.name()));
+                .setName(PARAMETER_SELECT_FORCES)
+                .setParams(METHOD_SELECT_FORCES, BattleStatusEnum.SELECT_FORCES.name()));
 
         boolean phasing = isCountryActive(game, request.getIdCountry());
 
@@ -266,11 +266,11 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setTest(validated)
                 .setCodeError(IConstantsServiceException.BATTLE_SELECT_VALIDATED)
                 .setMsgFormat("{1}: {0} Forces cannot be added or removed to the battle because it has already been validated.")
-                .setName(PARAMETER_SELECT_FORCE)
-                .setParams(METHOD_SELECT_FORCE, phasing));
+                .setName(PARAMETER_SELECT_FORCES)
+                .setParams(METHOD_SELECT_FORCES, phasing));
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId());
-        if (request.getRequest().isAdd()) {
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        for (Long idCounter : request.getRequest().getForces()) {
             List<String> allies = oeUtil.getAllies(country, game);
 
             CounterEntity counter = game.getStacks().stream()
@@ -278,7 +278,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                             allies.contains(stack.getCountry()))
                     .flatMap(stack -> stack.getCounters().stream())
                     .filter(c -> CounterUtil.isArmy(c.getType()) &&
-                            c.getId().equals(request.getRequest().getIdCounter()))
+                            c.getId().equals(idCounter))
                     .findAny()
                     .orElse(null);
 
@@ -286,8 +286,8 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                     .setTest(counter)
                     .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                     .setMsgFormat(MSG_OBJECT_NOT_FOUND)
-                    .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
-                    .setParams(METHOD_SELECT_FORCE, request.getRequest().getIdCounter()));
+                    .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                    .setParams(METHOD_SELECT_FORCES, idCounter));
 
             BattleCounterEntity comp = new BattleCounterEntity();
             comp.setPhasing(phasing);
@@ -295,153 +295,56 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             comp.setCounter(counter);
             battle.getCounters().add(comp);
 
-            DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_COUNTER_ADD : DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD,
-                    counter.getId());
-            attribute.setDiff(diff);
-            diff.getAttributes().add(attribute);
-        } else {
-            BattleCounterEntity battleCounter = battle.getCounters().stream()
-                    .filter(c -> c.getCounter().getId().equals(request.getRequest().getIdCounter()))
-                    .findAny()
-                    .orElse(null);
-
-            failIfNull(new AbstractService.CheckForThrow<>()
-                    .setTest(battleCounter)
-                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
-                    .setName(PARAMETER_SELECT_FORCE, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
-                    .setParams(METHOD_SELECT_FORCE));
-
-            battle.getCounters().remove(battleCounter);
-
-            DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_COUNTER_REMOVE : DiffAttributeTypeEnum.NON_PHASING_COUNTER_REMOVE,
-                    battleCounter.getCounter().getId());
-            attribute.setDiff(diff);
-            diff.getAttributes().add(attribute);
+            attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_COUNTER_ADD : DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD,
+                    counter.getId()));
         }
+
+        List<Long> alliedCounters = battle.getCounters().stream()
+                .filter(bc -> bc.isPhasing() == phasing)
+                .map(bc -> bc.getCounter().getId())
+                .collect(Collectors.toList());
+        Double armySize = battle.getCounters().stream()
+                .map(bc -> CounterUtil.getSizeFromType(bc.getCounter().getType()))
+                .reduce(Double::sum)
+                .orElse(0d);
+
+        if (alliedCounters.size() < 3 && armySize < 8) {
+            List<String> allies = oeUtil.getAllies(country, game);
+            Double remainingMinSize = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
+                            allies.contains(stack.getCountry()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> CounterUtil.isArmy(counter.getType()) &&
+                            !alliedCounters.contains(counter.getId()))
+                    .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
+                    .min(Double::compare)
+                    .orElse(0d);
+
+            failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                    .setTest(remainingMinSize > 0 && remainingMinSize <= 8 - armySize)
+                    .setCodeError(IConstantsServiceException.BATTLE_VALIDATE_OTHER_FORCE)
+                    .setMsgFormat("{1}: {0} Impossible to select forces in this battle because there are other forces to select (phasing player: {2}).")
+                    .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                    .setParams(METHOD_SELECT_FORCES, phasing));
+        }
+
+        if (phasing) {
+            battle.getPhasing().setForces(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
+        } else {
+            battle.getNonPhasing().setForces(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
+        }
+
+        if (battle.getPhasing().isForces() && battle.getNonPhasing().isForces()) {
+            battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.WITHDRAW_BEFORE_BATTLE));
+        }
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
 
         return createDiff(diff, gameDiffs, request);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DiffResponse validateForces(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
-        failIfNull(new AbstractService.CheckForThrow<>()
-                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_VALIDATE_FORCES)
-                .setParams(METHOD_VALIDATE_FORCES));
-
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_VALIDATE_FORCES, PARAMETER_VALIDATE_FORCES);
-        GameEntity game = gameDiffs.getGame();
-
-        checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_VALIDATE_FORCES, PARAMETER_VALIDATE_FORCES);
-
-        // TODO Authorization
-        PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
-                .findFirst()
-                .orElse(null);
-        // No check on null of country because it will be done in Authorization before
-
-        failIfNull(new AbstractService.CheckForThrow<>()
-                .setTest(request.getRequest())
-                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST)
-                .setParams(METHOD_VALIDATE_FORCES));
-
-        BattleEntity battle = game.getBattles().stream()
-                .filter(bat -> bat.getStatus() == BattleStatusEnum.SELECT_FORCES)
-                .findAny()
-                .orElse(null);
-
-        failIfNull(new AbstractService.CheckForThrow<>()
-                .setTest(battle)
-                .setCodeError(IConstantsServiceException.BATTLE_STATUS_NONE)
-                .setMsgFormat("{1}: {0} No battle of status {2} can be found.")
-                .setName(PARAMETER_VALIDATE_FORCES)
-                .setParams(METHOD_VALIDATE_FORCES, BattleStatusEnum.SELECT_FORCES.name()));
-
-        boolean phasing = isCountryActive(game, request.getIdCountry());
-        // TODO check for non phasing country that he is part of the stack
-
-        Boolean oldValidation = phasing ? battle.getPhasing().isForces() : battle.getNonPhasing().isForces();
-
-        List<DiffEntity> diffs = new ArrayList<>();
-
-        if (request.getRequest().isValidate() != BooleanUtils.toBoolean(oldValidation)) {
-            if (!request.getRequest().isValidate()) {
-                List<String> allies = oeUtil.getAllies(country, game);
-
-                List<Long> alliedCounters = battle.getCounters().stream()
-                        .filter(bc -> bc.isPhasing() == phasing)
-                        .map(bc -> bc.getCounter().getId())
-                        .collect(Collectors.toList());
-                List<CounterEntity> remainingCounters = game.getStacks().stream()
-                        .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
-                                allies.contains(stack.getCountry()))
-                        .flatMap(stack -> stack.getCounters().stream())
-                        .filter(counter -> CounterUtil.isArmy(counter.getType()) &&
-                                !alliedCounters.contains(counter.getId()))
-                        .collect(Collectors.toList());
-
-                failIfTrue(new AbstractService.CheckForThrow<Boolean>()
-                        .setTest(remainingCounters.size() == 0)
-                        .setCodeError(IConstantsServiceException.BATTLE_INVALIDATE_NO_FORCE)
-                        .setMsgFormat("{1}: {0} Impossible to invalidate forces in this battle because there is no other forces to select (phasing player: {2}).")
-                        .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
-                        .setParams(METHOD_VALIDATE_FORCES, phasing));
-            } else {
-                List<Long> alliedCounters = battle.getCounters().stream()
-                        .filter(bc -> bc.isPhasing() == phasing)
-                        .map(bc -> bc.getCounter().getId())
-                        .collect(Collectors.toList());
-                Double armySize = battle.getCounters().stream()
-                        .map(bc -> CounterUtil.getSizeFromType(bc.getCounter().getType()))
-                        .reduce(Double::sum)
-                        .orElse(0d);
-
-                if (alliedCounters.size() < 3 && armySize < 8) {
-                    List<String> allies = oeUtil.getAllies(country, game);
-                    Double remainingMinSize = game.getStacks().stream()
-                            .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
-                                    allies.contains(stack.getCountry()))
-                            .flatMap(stack -> stack.getCounters().stream())
-                            .filter(counter -> CounterUtil.isArmy(counter.getType()) &&
-                                    !alliedCounters.contains(counter.getId()))
-                            .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
-                            .min(Double::compare)
-                            .orElse(0d);
-
-                    failIfTrue(new AbstractService.CheckForThrow<Boolean>()
-                            .setTest(remainingMinSize > 0 && remainingMinSize <= 8 - armySize)
-                            .setCodeError(IConstantsServiceException.BATTLE_VALIDATE_OTHER_FORCE)
-                            .setMsgFormat("{1}: {0} Impossible to validate forces in this battle because there are other forces to select (phasing player: {2}).")
-                            .setName(PARAMETER_VALIDATE_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
-                            .setParams(METHOD_VALIDATE_FORCES, phasing));
-                }
-            }
-
-            if (phasing) {
-                battle.getPhasing().setForces(request.getRequest().isValidate());
-            } else {
-                battle.getNonPhasing().setForces(request.getRequest().isValidate());
-            }
-
-            if (battle.getPhasing().isForces() && battle.getNonPhasing().isForces()) {
-                battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
-            }
-
-            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
-                    DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_READY : DiffAttributeTypeEnum.NON_PHASING_READY, request.getRequest().isValidate()),
-                    // If both side are ready, then go to next phase
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.WITHDRAW_BEFORE_BATTLE, battle.getPhasing().isForces() && battle.getNonPhasing().isForces()));
-
-            diffs.add(diff);
-        }
-
-        return createDiffs(diffs, gameDiffs, request);
     }
 
     /** {@inheritDoc} */
