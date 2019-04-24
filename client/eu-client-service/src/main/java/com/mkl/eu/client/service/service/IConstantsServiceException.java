@@ -709,7 +709,7 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
-     * Exception thrown when trying to make select/deselect a counter in a battle while forces are validated.
+     * Exception thrown when trying to make select a counter in a battle while forces are validated.
      * </p>
      * <p>
      * Parameters:
@@ -720,20 +720,6 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_SELECT_VALIDATED = "exception.eu.military.battle_select_validated";
-
-    /**
-     * <p>
-     * Exception thrown when invalidating forces in a battle that has no other forces to select.
-     * </p>
-     * <p>
-     * Parameters:
-     * <ul>
-     * <li>0: Action being performed (or object being updated).</li>
-     * <li>1: a flag that is true if it is the phasing player, false if it is not.</li>
-     * </ul>
-     * </p>
-     */
-    String BATTLE_INVALIDATE_NO_FORCE = "exception.eu.military.battle_invalidate_no_force";
 
     /**
      * <p>
@@ -920,4 +906,45 @@ public interface IConstantsServiceException {
      * </p>
      */
     String SIEGE_IN_PROCESS = "exception.eu.military.siege_in_process";
+
+    /**
+     * <p>
+     * Exception thrown when trying to make an action that requires a siege in a special status.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: status of siege expected.</li>
+     * </ul>
+     * </p>
+     */
+    String SIEGE_STATUS_NONE = "exception.eu.military.siege_status_none";
+
+    /**
+     * <p>
+     * Exception thrown when trying to make select a counter in a siege while it has already been done.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: a flag that is true if it is the phasing player, false if it is not.</li>
+     * </ul>
+     * </p>
+     */
+    String SIEGE_SELECT_VALIDATED = "exception.eu.military.siege_select_validated";
+
+    /**
+     * <p>
+     * Exception thrown when validating forces in a siege that could have other forces to select.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String SIEGE_VALIDATE_OTHER_FORCE = "exception.eu.military.siege_validate_other_force";
 }

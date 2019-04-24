@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
+import com.mkl.eu.client.service.service.military.SelectForcesRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -31,4 +32,15 @@ public interface ISiegeService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse chooseSiege(@WebParam(name = PARAMETER_CHOOSE_BATTLE) Request<ChooseProvinceRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Select the forces for the current siege.
+     *
+     * @param request info about the force to select.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse selectForces(@WebParam(name = PARAMETER_SELECT_FORCES) Request<SelectForcesRequest> request) throws FunctionalException, TechnicalException;
 }

@@ -38,7 +38,7 @@ public interface IBattleService extends INameConstants {
     /**
      * Select the forces for the current battle.
      *
-     * @param request info about the force to select/deselect.
+     * @param request info about the force to select.
      * @return the diffs.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.

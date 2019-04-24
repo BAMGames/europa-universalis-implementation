@@ -7,6 +7,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
+import com.mkl.eu.client.service.service.military.SelectForcesRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -20,11 +21,13 @@ import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -158,6 +161,129 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         });
 
         diff.getAttributes().get(0).setValue(siege.getStatus().name());
+
+        return createDiff(diff, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse selectForces(Request<SelectForcesRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCES)
+                .setParams(METHOD_SELECT_FORCES));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST)
+                .setParams(METHOD_SELECT_FORCES));
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(CollectionUtils.isEmpty(request.getRequest().getForces()))
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES));
+
+        SiegeEntity siege = game.getSieges().stream()
+                .filter(bat -> bat.getStatus() == SiegeStatusEnum.SELECT_FORCES)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(siege)
+                .setCodeError(IConstantsServiceException.SIEGE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No siege of status {2} can be found.")
+                .setName(PARAMETER_SELECT_FORCES)
+                .setParams(METHOD_SELECT_FORCES, SiegeStatusEnum.SELECT_FORCES.name()));
+
+        boolean phasing = isCountryActive(game, request.getIdCountry());
+
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(phasing)
+                .setCodeError(IConstantsServiceException.SIEGE_SELECT_VALIDATED)
+                .setMsgFormat("{1}: {0} The non phasing forces are always automatically added in a siege.")
+                .setName(PARAMETER_SELECT_FORCES)
+                .setParams(METHOD_SELECT_FORCES));
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        for (Long idCounter : request.getRequest().getForces()) {
+            List<String> allies = oeUtil.getAllies(country, game);
+
+            CounterEntity counter = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
+                            allies.contains(stack.getCountry()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(c -> CounterUtil.isArmy(c.getType()) &&
+                            c.getId().equals(idCounter))
+                    .findAny()
+                    .orElse(null);
+
+            failIfNull(new AbstractService.CheckForThrow<>()
+                    .setTest(counter)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                    .setParams(METHOD_SELECT_FORCES, idCounter));
+
+            SiegeCounterEntity comp = new SiegeCounterEntity();
+            comp.setPhasing(phasing);
+            comp.setSiege(siege);
+            comp.setCounter(counter);
+            siege.getCounters().add(comp);
+
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId()));
+        }
+
+        List<Long> alliedCounters = siege.getCounters().stream()
+                .filter(bc -> bc.isPhasing() == phasing)
+                .map(bc -> bc.getCounter().getId())
+                .collect(Collectors.toList());
+        Double armySize = siege.getCounters().stream()
+                .map(bc -> CounterUtil.getSizeFromType(bc.getCounter().getType()))
+                .reduce(Double::sum)
+                .orElse(0d);
+
+        if (alliedCounters.size() < 3 && armySize < 8) {
+            List<String> allies = oeUtil.getAllies(country, game);
+            Double remainingMinSize = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
+                            allies.contains(stack.getCountry()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> CounterUtil.isArmy(counter.getType()) &&
+                            !alliedCounters.contains(counter.getId()))
+                    .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
+                    .min(Double::compare)
+                    .orElse(0d);
+
+            failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                    .setTest(remainingMinSize > 0 && remainingMinSize <= 8 - armySize)
+                    .setCodeError(IConstantsServiceException.SIEGE_VALIDATE_OTHER_FORCE)
+                    .setMsgFormat("{1}: {0} Impossible to select forces in this siege because there are other forces to select.")
+                    .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                    .setParams(METHOD_SELECT_FORCES));
+        }
+
+        siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_MODE));
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
 
         return createDiff(diff, gameDiffs, request);
     }
