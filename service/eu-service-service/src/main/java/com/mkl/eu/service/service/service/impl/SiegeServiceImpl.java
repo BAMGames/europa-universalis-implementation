@@ -127,6 +127,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 SiegeCounterEntity comp = new SiegeCounterEntity();
                 comp.setSiege(siege);
                 comp.setCounter(counter);
+                comp.setPhasing(true);
                 siege.getCounters().add(comp);
 
                 DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId());
@@ -137,6 +138,24 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         } else {
             siege.setStatus(SiegeStatusEnum.SELECT_FORCES);
         }
+
+        List<CounterEntity> defenderCounters = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
+                        stack.isBesieged())
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .collect(Collectors.toList());
+        defenderCounters.forEach(counter -> {
+            SiegeCounterEntity comp = new SiegeCounterEntity();
+            comp.setSiege(siege);
+            comp.setCounter(counter);
+            comp.setPhasing(false);
+            siege.getCounters().add(comp);
+
+            DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId());
+            attribute.setDiff(diff);
+            diff.getAttributes().add(attribute);
+        });
 
         diff.getAttributes().get(0).setValue(siege.getStatus().name());
 

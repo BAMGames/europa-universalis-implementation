@@ -18,6 +18,8 @@ import javax.persistence.*;
 public class SiegeCounterEntity {
     /** Composite id. */
     private SiegeCounterId id = new SiegeCounterId();
+    /** Flag <code>true</code> when the counter is in the phasing side. */
+    private boolean phasing;
 
     /** @return the id. */
     @EmbeddedId
@@ -50,5 +52,22 @@ public class SiegeCounterEntity {
     /** @param counter the counter to set. */
     public void setCounter(CounterEntity counter) {
         id.setCounter(counter);
+    }
+
+    /** @return the phasing. */
+    @Column(name = "PHASING")
+    public boolean isPhasing() {
+        return phasing;
+    }
+
+    /** @return the not phasing. */
+    @Transient
+    public boolean isNotPhasing() {
+        return !phasing;
+    }
+
+    /** @param phasing the phasing to set. */
+    public void setPhasing(boolean phasing) {
+        this.phasing = phasing;
     }
 }

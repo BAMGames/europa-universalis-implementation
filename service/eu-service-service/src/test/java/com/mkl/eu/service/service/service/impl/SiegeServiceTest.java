@@ -106,16 +106,26 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testChooseSiegeToSelectForces() throws FunctionalException {
-        testChooseSiege(false);
+    public void testChooseSiegeToSelectForcesWithoutBesieged() throws FunctionalException {
+        testChooseSiege(false, false);
     }
 
     @Test
-    public void testChooseSiegeToChooseMode() throws FunctionalException {
-        testChooseSiege(true);
+    public void testChooseSiegeToSelectForcesWithBesieged() throws FunctionalException {
+        testChooseSiege(false, true);
     }
 
-    private void testChooseSiege(boolean gotoChooseMode) throws FunctionalException {
+    @Test
+    public void testChooseSiegeToChooseModeWithoutBesieged() throws FunctionalException {
+        testChooseSiege(true, false);
+    }
+
+    @Test
+    public void testChooseSiegeToChooseModeWithBesieged() throws FunctionalException {
+        testChooseSiege(true, true);
+    }
+
+    private void testChooseSiege(boolean gotoChooseMode, boolean withBesieged) throws FunctionalException {
         Pair<Request<ChooseProvinceRequest>, GameEntity> pair = testCheckGame(siegeService::chooseSiege, "chooseSiege");
         Request<ChooseProvinceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
@@ -145,6 +155,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).getCounters().get(2).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(2).setProvince("idf");
+        game.getStacks().get(2).setBesieged(withBesieged);
         game.getStacks().get(2).setCountry("espagne");
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(0).setId(5L);
@@ -184,15 +195,23 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
         if (gotoChooseMode) {
-            Assert.assertEquals(2, diffEntity.getAttributes().size());
+            Assert.assertEquals(2 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntity.getAttributes().get(0).getType());
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), diffEntity.getAttributes().get(0).getValue());
             Assert.assertEquals(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, diffEntity.getAttributes().get(1).getType());
             Assert.assertEquals("1", diffEntity.getAttributes().get(1).getValue());
         } else {
-            Assert.assertEquals(1, diffEntity.getAttributes().size());
+            Assert.assertEquals(1 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntity.getAttributes().get(0).getType());
             Assert.assertEquals(SiegeStatusEnum.SELECT_FORCES.name(), diffEntity.getAttributes().get(0).getValue());
+        }
+        if (withBesieged) {
+            Assert.assertEquals("5", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD));
+            SiegeCounterEntity counterSpa = game.getSieges().get(0).getCounters().stream()
+                    .filter(c -> c.getCounter().getId().equals(5L))
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(counterSpa);
         }
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
@@ -200,7 +219,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         if (gotoChooseMode) {
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE, game.getSieges().get(0).getStatus());
-            Assert.assertEquals(1, game.getSieges().get(0).getCounters().size());
+            Assert.assertEquals(1 + (withBesieged ? 1 : 0), game.getSieges().get(0).getCounters().size());
             SiegeCounterEntity counterFra = game.getSieges().get(0).getCounters().stream()
                     .filter(c -> c.getCounter().getId().equals(1L))
                     .findAny()
