@@ -4,7 +4,7 @@ import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.ArmyClassEnum;
 
 /**
- * VO for the army artilery table.
+ * VO for the army artillery table.
  *
  * @author MKL.
  */

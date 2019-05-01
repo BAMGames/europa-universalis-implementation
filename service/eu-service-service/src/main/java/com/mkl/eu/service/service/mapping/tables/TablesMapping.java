@@ -432,4 +432,39 @@ public class TablesMapping extends AbstractMapping {
 
         return target;
     }
+
+    /**
+     * Fill the artillery siege tables.
+     *
+     * @param sources List of artillery siege entity.
+     * @param tables  the target tables.
+     */
+    public void fillArtillerySiegeTables(List<ArtillerySiegeEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (ArtillerySiegeEntity source : sources) {
+                tables.getArtillerySieges().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public ArtillerySiege oeToVo(ArtillerySiegeEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        ArtillerySiege target = new ArtillerySiege();
+
+        target.setId(source.getId());
+        target.setArtillery(source.getArtillery());
+        target.setFortress(source.getFortress());
+        target.setBonus(source.getBonus());
+
+        return target;
+    }
 }

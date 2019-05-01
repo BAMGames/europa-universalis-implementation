@@ -35,6 +35,8 @@ public class Tables {
     private List<ArmyClasse> armyClasses = new ArrayList<>();
     /** Artillery of armies. */
     private List<ArmyArtillery> armyArtilleries = new ArrayList<>();
+    /** Bonus of artilleries on sieges. */
+    private List<ArtillerySiege> artillerySieges = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -154,5 +156,15 @@ public class Tables {
     /** @param armyArtilleries the armyArtilleries to set. */
     public void setArmyArtilleries(List<ArmyArtillery> armyArtilleries) {
         this.armyArtilleries = armyArtilleries;
+    }
+
+    /** @return the artillerySieges. */
+    public List<ArtillerySiege> getArtillerySieges() {
+        return artillerySieges;
+    }
+
+    /** @param artillerySieges the artillerySieges to set. */
+    public void setArtillerySieges(List<ArtillerySiege> artillerySieges) {
+        this.artillerySieges = artillerySieges;
     }
 }

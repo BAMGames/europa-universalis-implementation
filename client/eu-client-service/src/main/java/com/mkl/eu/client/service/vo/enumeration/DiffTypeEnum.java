@@ -280,6 +280,14 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SECOND_DAY_SHOCK the shock unmodified die roll of the non phasing forces in the second day of this battle.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#SIEGE in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#STATUS to know which is the new status of the this.</li>
+     * <li>DiffAttributeTypeEnum#PHASING_COUNTER_ADD the attacking counter added to this this.</li>
+     * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this this.</li>
+     * <li>DiffAttributeTypeEnum#BONUS the bonus for undermining to this siege.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     MODIFY

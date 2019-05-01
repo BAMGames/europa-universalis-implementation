@@ -243,4 +243,33 @@ public class TableDaoImplTest {
         Assert.assertNotNull(IIMIII);
         Assert.assertEquals(3, IIMIII.getArtillery().intValue());
     }
+
+    @Test
+    public void testArtillerySiege() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(3, tables.getArtillerySieges().size());
+
+        ArtillerySiege artillerySiege = tables.getArtillerySieges().stream()
+                .filter(as -> as.getFortress() == 0 && as.getArtillery() == 1)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(artillerySiege);
+        Assert.assertEquals(1, artillerySiege.getBonus().intValue());
+
+        artillerySiege = tables.getArtillerySieges().stream()
+                .filter(as -> as.getFortress() == 0 && as.getArtillery() == 3)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(artillerySiege);
+        Assert.assertEquals(2, artillerySiege.getBonus().intValue());
+
+        artillerySiege = tables.getArtillerySieges().stream()
+                .filter(as -> as.getFortress() == 0 && as.getArtillery() == 5)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(artillerySiege);
+        Assert.assertEquals(3, artillerySiege.getBonus().intValue());
+    }
 }

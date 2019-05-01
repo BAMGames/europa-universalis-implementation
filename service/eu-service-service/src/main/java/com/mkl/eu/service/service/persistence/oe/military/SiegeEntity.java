@@ -26,6 +26,10 @@ public class SiegeEntity implements IEntity, Serializable {
     private String province;
     /** Turn of the competition. */
     private Integer turn;
+    /** If there was a breach in this siege previously. */
+    private boolean breach;
+    /** Bonus for undermining. */
+    private int bonus;
     /** Counters involved in the battle. */
     private Set<SiegeCounterEntity> counters = new HashSet<>();
     /** Game in which the competition occurs. */
@@ -77,6 +81,28 @@ public class SiegeEntity implements IEntity, Serializable {
     /** @param turn the turn to set. */
     public void setTurn(Integer turn) {
         this.turn = turn;
+    }
+
+    /** @return the breach. */
+    @Column(name = "BREACH")
+    public boolean isBreach() {
+        return breach;
+    }
+
+    /** @param breach the breach to set. */
+    public void setBreach(boolean breach) {
+        this.breach = breach;
+    }
+
+    /** @return the bonus. */
+    @Column(name = "BONUS")
+    public int getBonus() {
+        return bonus;
+    }
+
+    /** @param bonus the bonus to set. */
+    public void setBonus(int bonus) {
+        this.bonus = bonus;
     }
 
     /** @return the counters. */

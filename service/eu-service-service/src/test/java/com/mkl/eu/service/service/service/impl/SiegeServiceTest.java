@@ -8,18 +8,24 @@ import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.ArtillerySiege;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.*;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -30,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -43,7 +50,15 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
     private SiegeServiceImpl siegeService;
 
     @Mock
+    private IProvinceDao provinceDao;
+
+    @Mock
     private IOEUtil oeUtil;
+
+    @Before
+    public void init() {
+        SiegeServiceImpl.TABLES = new Tables();
+    }
 
     @Test
     public void testChooseSiegeFail() {
@@ -136,6 +151,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(0).setId(26L);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(0).setId(33L);
+        game.getSieges().get(0).setGame(game);
         game.getSieges().get(0).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(0).setProvince("idf");
         game.getStacks().add(new StackEntity());
@@ -178,6 +194,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         request.setRequest(new ChooseProvinceRequest());
         request.getRequest().setProvince("idf");
         testCheckStatus(pair.getRight(), request, siegeService::chooseSiege, "chooseSiege", GameStatusEnum.MILITARY_SIEGES);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setTerrain(TerrainEnum.PLAIN);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
 
         List<String> allies = new ArrayList<>();
         allies.add("france");
@@ -199,14 +218,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
         if (gotoChooseMode) {
             Assert.assertEquals(2 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntity.getAttributes().get(0).getType());
-            Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), diffEntity.getAttributes().get(0).getValue());
-            Assert.assertEquals(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, diffEntity.getAttributes().get(1).getType());
-            Assert.assertEquals("1", diffEntity.getAttributes().get(1).getValue());
+            Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
+            Assert.assertEquals("1", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTER_ADD));
         } else {
             Assert.assertEquals(1 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntity.getAttributes().get(0).getType());
-            Assert.assertEquals(SiegeStatusEnum.SELECT_FORCES.name(), diffEntity.getAttributes().get(0).getValue());
+            Assert.assertEquals(SiegeStatusEnum.SELECT_FORCES.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         }
         if (withBesieged) {
             Assert.assertEquals("5", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD));
@@ -352,6 +368,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         country.setName("france");
         game.getCountries().add(country);
         game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(0).setGame(game);
         game.getSieges().get(0).setStatus(SiegeStatusEnum.SELECT_FORCES);
         game.getSieges().get(0).setProvince("pecs");
         game.getSieges().add(new SiegeEntity());
@@ -381,6 +398,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         counter.setCountry("spain");
         game.getStacks().get(0).getCounters().add(counter);
 
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setTerrain(TerrainEnum.PLAIN);
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList(country.getName()));
 
         CountryOrderEntity order = new CountryOrderEntity();
@@ -410,5 +430,261 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+    }
+
+    @Test
+    public void testComputeBonus() {
+        // Fortress alone : level of fortress is difficulty
+        SiegeBonusBuilder.create().fortressLevel(2).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        // 1 canon is not enough to give a bonus
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(1).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        // 2 canons give a bonus of +1
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(2).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-1);
+
+        // 4 canons give a bonus of +2
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(0);
+
+        // 7 canons give a bonus of +3
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(7).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(1);
+
+        // More than 7 canons does not change anything
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(1);
+
+        // If it is breach: +2
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN).breach(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(3);
+
+        // One siegework minus : +1
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN).breach(true)
+                .addSiegeworkMinus()
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(4);
+
+        // One siegework plus : +3
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN).breach(true)
+                .addSiegeworkMinus().addSiegeworkPlus()
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(7);
+
+        // a detachment besieged : +1
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN).breach(true)
+                .addSiegeworkMinus().addSiegeworkPlus()
+                .addDetachmentBesieged()
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(8);
+
+        // another detachment besieged : no change
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN).breach(true)
+                .addSiegeworkMinus().addSiegeworkPlus()
+                .addDetachmentBesieged().addDetachmentBesieged()
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(8);
+
+        // an army besieged : the +1 becomes +3
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(10).terrain(TerrainEnum.PLAIN).breach(true)
+                .addSiegeworkMinus().addSiegeworkPlus()
+                .addDetachmentBesieged().addDetachmentBesieged().addArmyBesieged()
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(10);
+
+        // Now test terrain, lets come back to a simple base
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.PLAIN)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(0);
+
+        // If not plain : -2
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.DENSE_FOREST)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        // but if not port : -2
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.PLAIN).port(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        // but if both : -3
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.DENSE_FOREST).port(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-3);
+
+        // In rotw, -2 if port or not plain
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.DENSE_FOREST).rotw(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.PLAIN).port(true).rotw(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        SiegeBonusBuilder.create().fortressLevel(2).artilleries(4).terrain(TerrainEnum.DENSE_FOREST).port(true).rotw(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(-2);
+
+        // If fort, -1 if port or not plain
+        SiegeBonusBuilder.create().fortressLevel(0).artilleries(4).terrain(TerrainEnum.DENSE_FOREST).rotw(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(+1);
+
+        SiegeBonusBuilder.create().fortressLevel(0).artilleries(4).terrain(TerrainEnum.PLAIN).port(true).rotw(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(+1);
+
+        SiegeBonusBuilder.create().fortressLevel(0).artilleries(4).terrain(TerrainEnum.DENSE_FOREST).port(true).rotw(true)
+                .whenComputeBonus(siegeService, provinceDao, oeUtil)
+                .thenExpect(+1);
+    }
+
+    private static class SiegeBonusBuilder {
+        int fortressLevel;
+        int artilleries;
+        TerrainEnum terrain;
+        boolean rotw;
+        boolean port;
+        boolean breach;
+        List<CounterFaceTypeEnum> siegeworks = new ArrayList<>();
+        List<CounterFaceTypeEnum> besieged = new ArrayList<>();
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        int bonus;
+
+        static SiegeBonusBuilder create() {
+            return new SiegeBonusBuilder();
+        }
+
+        SiegeBonusBuilder fortressLevel(int fortressLevel) {
+            this.fortressLevel = fortressLevel;
+            return this;
+        }
+
+        SiegeBonusBuilder artilleries(int artilleries) {
+            this.artilleries = artilleries;
+            return this;
+        }
+
+        SiegeBonusBuilder terrain(TerrainEnum terrain) {
+            this.terrain = terrain;
+            return this;
+        }
+
+        SiegeBonusBuilder rotw(boolean rotw) {
+            this.rotw = rotw;
+            return this;
+        }
+
+        SiegeBonusBuilder port(boolean port) {
+            this.port = port;
+            return this;
+        }
+
+        SiegeBonusBuilder breach(boolean breach) {
+            this.breach = breach;
+            return this;
+        }
+
+        SiegeBonusBuilder addSiegeworkPlus() {
+            this.siegeworks.add(CounterFaceTypeEnum.SIEGEWORK_PLUS);
+            return this;
+        }
+
+        SiegeBonusBuilder addSiegeworkMinus() {
+            this.siegeworks.add(CounterFaceTypeEnum.SIEGEWORK_MINUS);
+            return this;
+        }
+
+        SiegeBonusBuilder addArmyBesieged() {
+            this.besieged.add(CounterFaceTypeEnum.ARMY_MINUS);
+            return this;
+        }
+
+        SiegeBonusBuilder addDetachmentBesieged() {
+            this.besieged.add(CounterFaceTypeEnum.LAND_DETACHMENT);
+            return this;
+        }
+
+        SiegeBonusBuilder whenComputeBonus(SiegeServiceImpl siegeService, IProvinceDao provinceDao, IOEUtil oeUtil) {
+            GameEntity game = new GameEntity();
+            SiegeEntity siege = new SiegeEntity();
+            siege.setGame(game);
+            siege.setProvince("idf");
+            siege.setBreach(breach);
+            StackEntity stack = new StackEntity();
+            game.getStacks().add(stack);
+            stack.setProvince("idf");
+            for (CounterFaceTypeEnum siegework : siegeworks) {
+                CounterEntity counter = createCounter(null, null, siegework);
+                stack.getCounters().add(counter);
+            }
+            for (CounterFaceTypeEnum defender : besieged) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setCounter(createCounter(null, null, defender));
+                siege.getCounters().add(siegeCounter);
+            }
+            AbstractProvinceEntity idf;
+            if (rotw) {
+                idf = new RotwProvinceEntity();
+            } else {
+                idf = new EuropeanProvinceEntity();
+            }
+            idf.setTerrain(terrain);
+            if (port) {
+                SeaProvinceEntity sea = new SeaProvinceEntity();
+                BorderEntity border = new BorderEntity();
+                border.setProvinceFrom(idf);
+                border.setProvinceTo(sea);
+                idf.getBorders().add(border);
+            }
+            when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+            when(oeUtil.getFortressLevel(idf, game)).thenReturn(fortressLevel);
+            when(oeUtil.getArtilleryBonus(any(), any(), any(), any())).thenReturn(artilleries);
+
+            siegeService.computeSiegeBonus(siege, attributes);
+            this.bonus = siege.getBonus();
+            Tables tables = new Tables();
+            tables.getArtillerySieges().add(createArtillerySiege(0, 4, 2));
+            tables.getArtillerySieges().add(createArtillerySiege(2, 2, 1));
+            tables.getArtillerySieges().add(createArtillerySiege(2, 4, 2));
+            tables.getArtillerySieges().add(createArtillerySiege(2, 7, 3));
+            SiegeServiceImpl.TABLES = tables;
+
+            return this;
+        }
+
+        SiegeBonusBuilder thenExpect(int bonus) {
+            Assert.assertEquals(bonus, this.bonus);
+            DiffAttributesEntity attribute = attributes.stream()
+                    .filter(attr -> attr.getType() == DiffAttributeTypeEnum.BONUS)
+                    .findAny()
+                    .orElse(null);
+            if (bonus != 0) {
+                Assert.assertNotNull(attribute);
+                Assert.assertEquals(Integer.toString(bonus), attribute.getValue());
+            } else {
+                Assert.assertNull(attribute);
+            }
+
+            return this;
+        }
+    }
+
+    private static ArtillerySiege createArtillerySiege(int fortress, int artilleries, int bonus) {
+        ArtillerySiege as = new ArtillerySiege();
+        as.setFortress(fortress);
+        as.setArtillery(artilleries);
+        as.setBonus(bonus);
+        return as;
     }
 }

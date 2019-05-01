@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.military.SelectForcesRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.ArtillerySiege;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
@@ -18,6 +19,10 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
@@ -28,7 +33,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +46,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class SiegeServiceImpl extends AbstractService implements ISiegeService {
+    /** Province DAO. */
+    @Autowired
+    private IProvinceDao provinceDao;
     @Autowired
     private IOEUtil oeUtil;
 
@@ -109,8 +119,8 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .findAny()
                 .orElse(null);
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, (String) null));
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
 
         List<String> allies = oeUtil.getAllies(country, game);
 
@@ -133,11 +143,10 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 comp.setPhasing(true);
                 siege.getCounters().add(comp);
 
-                DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId());
-                attribute.setDiff(diff);
-                diff.getAttributes().add(attribute);
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId()));
             });
             siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
+            computeSiegeBonus(siege, attributes);
         } else {
             siege.setStatus(SiegeStatusEnum.SELECT_FORCES);
         }
@@ -155,12 +164,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             comp.setPhasing(false);
             siege.getCounters().add(comp);
 
-            DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId());
-            attribute.setDiff(diff);
-            diff.getAttributes().add(attribute);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId()));
         });
 
-        diff.getAttributes().get(0).setValue(siege.getStatus().name());
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, siege.getStatus()));
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
 
         return createDiff(diff, gameDiffs, request);
     }
@@ -280,11 +289,74 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         }
 
         siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
+        computeSiegeBonus(siege, attributes);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_MODE));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));
 
         return createDiff(diff, gameDiffs, request);
+    }
+
+    /**
+     * Compute the undermining bonus of a siege.
+     *
+     * @param siege      the siege.
+     * @param attributes the attributes of the MODIFY SIEGE diff.
+     */
+    protected void computeSiegeBonus(SiegeEntity siege, List<DiffAttributesEntity> attributes) {
+        GameEntity game = siege.getGame();
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
+        int fortress = oeUtil.getFortressLevel(province, game);
+        int artilleries = oeUtil.getArtilleryBonus(siege.getCounters().stream()
+                .filter(SiegeCounterEntity::isPhasing)
+                .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.toList()), getReferential(), getTables(), game);
+        int artilleryBonus = getTables().getArtillerySieges().stream()
+                .filter(as -> as.getFortress() == fortress && as.getArtillery() <= artilleries)
+                .map(ArtillerySiege::getBonus)
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(0);
+        boolean plain = province.getTerrain() == TerrainEnum.PLAIN;
+        boolean port = province.getBorders().stream()
+                .anyMatch(border -> border.getProvinceTo() instanceof SeaProvinceEntity);
+        // TODO cancel port if it is blockaded
+        boolean rotw = province instanceof RotwProvinceEntity;
+        int terrainMalus = 0;
+        if (!rotw) {
+            if (!plain && port) {
+                terrainMalus = 3;
+            } else if (!plain || port) {
+                terrainMalus = 2;
+            }
+        } else {
+            if (!plain || port) {
+                terrainMalus = 2;
+            }
+            if (fortress == 0) {
+                terrainMalus /= 2;
+            }
+        }
+
+        int breachBonus = siege.isBreach() ? 2 : 0;
+
+        ToIntFunction<CounterEntity> siegeworkValue = counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS ? 3 : counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS ? 1 : 0;
+        int siegeworkBonus = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .collect(Collectors.summingInt(siegeworkValue));
+        // TODO siege bonus of leaders
+        int besiegingBonus = siege.getCounters().stream()
+                .filter(SiegeCounterEntity::isNotPhasing)
+                .map(SiegeCounterEntity::getCounter)
+                .map(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2 ? 3 : 1)
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(0);
+
+        int bonus = -fortress + artilleryBonus - terrainMalus + breachBonus + siegeworkBonus + besiegingBonus;
+        if (bonus != siege.getBonus()) {
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BONUS, bonus));
+        }
+        siege.setBonus(bonus);
     }
 }
