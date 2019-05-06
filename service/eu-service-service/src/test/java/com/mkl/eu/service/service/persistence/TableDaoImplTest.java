@@ -272,4 +272,36 @@ public class TableDaoImplTest {
         Assert.assertNotNull(artillerySiege);
         Assert.assertEquals(3, artillerySiege.getBonus().intValue());
     }
+
+    @Test
+    public void testFortressResistance() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(3, tables.getFortressResistances().size());
+
+        FortressResistance fortressResistance = tables.getFortressResistances().stream()
+                .filter(fr -> fr.getFortress() == 4 && !fr.isBreach())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(fortressResistance);
+        Assert.assertEquals(3, fortressResistance.getRound().intValue());
+        Assert.assertEquals(0, fortressResistance.getThird().intValue());
+
+        fortressResistance = tables.getFortressResistances().stream()
+                .filter(fr -> fr.getFortress() == 5 && !fr.isBreach())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(fortressResistance);
+        Assert.assertEquals(3, fortressResistance.getRound().intValue());
+        Assert.assertEquals(0, fortressResistance.getThird().intValue());
+
+        fortressResistance = tables.getFortressResistances().stream()
+                .filter(fr -> fr.getFortress() == 0 && fr.isBreach())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(fortressResistance);
+        Assert.assertEquals(0, fortressResistance.getRound().intValue());
+        Assert.assertEquals(1, fortressResistance.getThird().intValue());
+    }
 }

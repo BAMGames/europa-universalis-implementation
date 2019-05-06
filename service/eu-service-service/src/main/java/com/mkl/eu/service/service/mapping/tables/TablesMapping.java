@@ -467,4 +467,40 @@ public class TablesMapping extends AbstractMapping {
 
         return target;
     }
+
+    /**
+     * Fill the fortress resistance tables.
+     *
+     * @param sources List of fortress resistance entity.
+     * @param tables  the target tables.
+     */
+    public void fillFortressResistanceTables(List<FortressResistanceEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (FortressResistanceEntity source : sources) {
+                tables.getFortressResistances().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public FortressResistance oeToVo(FortressResistanceEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        FortressResistance target = new FortressResistance();
+
+        target.setId(source.getId());
+        target.setFortress(source.getFortress());
+        target.setRound(source.getRound());
+        target.setThird(source.getThird());
+        target.setBreach(source.isBreach());
+
+        return target;
+    }
 }

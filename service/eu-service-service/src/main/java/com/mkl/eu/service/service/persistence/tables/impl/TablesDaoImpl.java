@@ -137,4 +137,13 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
         //noinspection unchecked
         return criteria.list();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<FortressResistanceEntity> getFortressResistance() {
+        Criteria criteria = getSession().createCriteria(FortressResistanceEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
 }

@@ -37,6 +37,8 @@ public class Tables {
     private List<ArmyArtillery> armyArtilleries = new ArrayList<>();
     /** Bonus of artilleries on sieges. */
     private List<ArtillerySiege> artillerySieges = new ArrayList<>();
+    /** Fortress resistance for assaults. */
+    private List<FortressResistance> fortressResistances = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -166,5 +168,15 @@ public class Tables {
     /** @param artillerySieges the artillerySieges to set. */
     public void setArtillerySieges(List<ArtillerySiege> artillerySieges) {
         this.artillerySieges = artillerySieges;
+    }
+
+    /** @return the fortressResistances. */
+    public List<FortressResistance> getFortressResistances() {
+        return fortressResistances;
+    }
+
+    /** @param fortressResistances the fortressResistances to set. */
+    public void setFortressResistances(List<FortressResistance> fortressResistances) {
+        this.fortressResistances = fortressResistances;
     }
 }

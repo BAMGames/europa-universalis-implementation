@@ -75,4 +75,9 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the artillery siege tables.
      */
     List<ArtillerySiegeEntity> getArtillerySieges();
+
+    /**
+     * @return the fortress resistance tables.
+     */
+    List<FortressResistanceEntity> getFortressResistance();
 }
