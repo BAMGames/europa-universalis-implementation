@@ -39,6 +39,8 @@ public class Tables {
     private List<ArtillerySiege> artillerySieges = new ArrayList<>();
     /** Fortress resistance for assaults. */
     private List<FortressResistance> fortressResistances = new ArrayList<>();
+    /** Results of assault. */
+    private List<AssaultResult> assaultResults = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -178,5 +180,15 @@ public class Tables {
     /** @param fortressResistances the fortressResistances to set. */
     public void setFortressResistances(List<FortressResistance> fortressResistances) {
         this.fortressResistances = fortressResistances;
+    }
+
+    /** @return the assaultResults. */
+    public List<AssaultResult> getAssaultResults() {
+        return assaultResults;
+    }
+
+    /** @param assaultResults the assaultResults to set. */
+    public void setAssaultResults(List<AssaultResult> assaultResults) {
+        this.assaultResults = assaultResults;
     }
 }

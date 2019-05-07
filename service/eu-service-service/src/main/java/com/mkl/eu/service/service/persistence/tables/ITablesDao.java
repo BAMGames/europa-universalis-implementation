@@ -80,4 +80,9 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the fortress resistance tables.
      */
     List<FortressResistanceEntity> getFortressResistance();
+
+    /**
+     * @return the assault result tables.
+     */
+    List<AssaultResultEntity> getAssaultResults();
 }

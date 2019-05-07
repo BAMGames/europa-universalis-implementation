@@ -304,4 +304,39 @@ public class TableDaoImplTest {
         Assert.assertEquals(0, fortressResistance.getRound().intValue());
         Assert.assertEquals(1, fortressResistance.getThird().intValue());
     }
+
+    @Test
+    public void testAssaultResult() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+
+        Assert.assertEquals(3, tables.getAssaultResults().size());
+
+        AssaultResult assaultResult = tables.getAssaultResults().stream()
+                .filter(ar -> ar.getDice() == 6 && ar.isFire() && !ar.isBreach() && !ar.isBesieger())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(assaultResult);
+        Assert.assertEquals(0, assaultResult.getRoundLoss().intValue());
+        Assert.assertEquals(2, assaultResult.getThirdLoss().intValue());
+        Assert.assertEquals(1, assaultResult.getMoraleLoss().intValue());
+
+        assaultResult = tables.getAssaultResults().stream()
+                .filter(ar -> ar.getDice() == 7 && ar.isFire() && !ar.isBreach() && ar.isBesieger())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(assaultResult);
+        Assert.assertEquals(1, assaultResult.getRoundLoss().intValue());
+        Assert.assertEquals(0, assaultResult.getThirdLoss().intValue());
+        Assert.assertEquals(1, assaultResult.getMoraleLoss().intValue());
+
+        assaultResult = tables.getAssaultResults().stream()
+                .filter(ar -> ar.getDice() == 10 && !ar.isFire() && ar.isBreach() && !ar.isBesieger())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(assaultResult);
+        Assert.assertEquals(1, assaultResult.getRoundLoss().intValue());
+        Assert.assertEquals(0, assaultResult.getThirdLoss().intValue());
+        Assert.assertEquals(3, assaultResult.getMoraleLoss().intValue());
+    }
 }

@@ -3,7 +3,7 @@ package com.mkl.eu.client.service.vo.tables;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 
 /**
- * Entity for the combat result table.
+ * VO for the combat result table.
  *
  * @author MKL.
  */

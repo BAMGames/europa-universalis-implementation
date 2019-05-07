@@ -503,4 +503,41 @@ public class TablesMapping extends AbstractMapping {
 
         return target;
     }
+
+    /**
+     * Fill the assault result tables.
+     *
+     * @param sources List of assault result entity.
+     * @param tables  the target tables.
+     */
+    public void fillAssaultResultTables(List<AssaultResultEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (AssaultResultEntity source : sources) {
+                tables.getAssaultResults().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public AssaultResult oeToVo(AssaultResultEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        AssaultResult target = new AssaultResult();
+
+        withLossMapping.oeToVo(source, target);
+        target.setId(source.getId());
+        target.setDice(source.getDice());
+        target.setFire(source.isFire());
+        target.setBreach(source.isBreach());
+        target.setBesieger(source.isBesieger());
+
+        return target;
+    }
 }
