@@ -268,6 +268,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                         SiegeEntity siege = new SiegeEntity();
                         siege.setProvince(province);
                         siege.setTurn(game.getTurn());
+                        siege.setBreach(game.getSieges().stream()
+                                .anyMatch(sie -> sie.isBreach() && Objects.equals(sie.getTurn(), game.getTurn()) && StringUtils.equals(sie.getProvince(), province)));
                         siege.setGame(game);
 
                         game.getSieges().add(siege);
