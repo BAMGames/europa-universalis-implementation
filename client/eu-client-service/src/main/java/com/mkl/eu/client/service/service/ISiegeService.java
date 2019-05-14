@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -43,4 +44,15 @@ public interface ISiegeService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse selectForces(@WebParam(name = PARAMETER_SELECT_FORCES) Request<SelectForcesRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Choose the mode (undermining, assault or redeploy) for the current siege.
+     *
+     * @param request info about the mode to choose.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse chooseMode(@WebParam(name = PARAMETER_SELECT_FORCES) Request<ChooseModeForSiegeRequest> request) throws FunctionalException, TechnicalException;
 }

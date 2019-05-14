@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -686,5 +688,84 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         as.setArtillery(artilleries);
         as.setBonus(bonus);
         return as;
+    }
+
+    @Test
+    public void testChooseModeFail() {
+        Pair<Request<ChooseModeForSiegeRequest>, GameEntity> pair = testCheckGame(siegeService::chooseMode, "chooseMode");
+        Request<ChooseModeForSiegeRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(0).setStatus(SiegeStatusEnum.SELECT_FORCES);
+        game.getSieges().get(0).setProvince("pecs");
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        request.setIdCountry(12L);
+        testCheckStatus(pair.getRight(), request, siegeService::chooseMode, "chooseMode", GameStatusEnum.MILITARY_SIEGES);
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because chooseMode.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseMode.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ChooseModeForSiegeRequest());
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because mode is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseMode.request.mode", e.getParams()[0]);
+        }
+
+        request.getRequest().setMode(SiegeModeEnum.REDEPLOY);
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because provinceTo is mandatory if mode is REDEPLOY");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseMode.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvinceTo("idf");
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because no siege is in right status");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SIEGE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("chooseMode", e.getParams()[0]);
+        }
+
+        game.getSieges().get(0).setStatus(SiegeStatusEnum.CHOOSE_MODE);
+        when(provinceDao.getProvinceByName(anyString())).thenReturn(new EuropeanProvinceEntity());
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because redeploy is not possible in this province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SIEGE_CANT_REDEPLOY, e.getCode());
+            Assert.assertEquals("chooseMode.request.provinceTo", e.getParams()[0]);
+        }
+
+        request.getRequest().setMode(SiegeModeEnum.UNDERMINE);
+        when(oeUtil.getFortressLevel(any(), any())).thenReturn(2);
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because undermine is not possible with so few forces");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SIEGE_UNDERMINE_TOO_FEW, e.getCode());
+            Assert.assertEquals("chooseMode.request.mode", e.getParams()[0]);
+        }
     }
 }

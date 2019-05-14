@@ -947,4 +947,31 @@ public interface IConstantsServiceException {
      * </p>
      */
     String SIEGE_VALIDATE_OTHER_FORCE = "exception.eu.military.siege_validate_other_force";
+
+    /**
+     * <p>
+     * Exception thrown when trying to undermine a fortress with insufficient forces.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String SIEGE_UNDERMINE_TOO_FEW = "exception.eu.military.siege_undermine_too_few";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat into a province that is not eligible.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>2: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String SIEGE_CANT_REDEPLOY = "exception.eu.board.siege_cant_redeploy";
 }
