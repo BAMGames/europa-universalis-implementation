@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.persistence.oe.military;
 
 import com.mkl.eu.client.service.vo.enumeration.SiegeStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.SiegeUndermineResultEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import org.hibernate.annotations.GenericGenerator;
@@ -30,6 +31,16 @@ public class SiegeEntity implements IEntity, Serializable {
     private boolean breach;
     /** Bonus for undermining. */
     private int bonus;
+    /** If mode is UNDERMINE, the undermine unmodified die. */
+    private int undermineDie;
+    /** If mode is UNDERMINE, the undermine result (in case of multiple results, the one selected by the besieger). */
+    private SiegeUndermineResultEnum undermineResult;
+    /** Flag saying that the fortress has fallen to the besieger. */
+    private boolean fortressFalls;
+    /** Phasing side for a possible assault. */
+    private SiegeSideEntity phasing = new SiegeSideEntity();
+    /** Non phasing side for a possible assault. */
+    private SiegeSideEntity nonPhasing = new SiegeSideEntity();
     /** Counters involved in the battle. */
     private Set<SiegeCounterEntity> counters = new HashSet<>();
     /** Game in which the competition occurs. */
@@ -103,6 +114,57 @@ public class SiegeEntity implements IEntity, Serializable {
     /** @param bonus the bonus to set. */
     public void setBonus(int bonus) {
         this.bonus = bonus;
+    }
+
+    /** @return the undermineDie. */
+    public int getUndermineDie() {
+        return undermineDie;
+    }
+
+    /** @param undermineDie the undermineDie to set. */
+    public void setUndermineDie(int undermineDie) {
+        this.undermineDie = undermineDie;
+    }
+
+    /** @return the undermineResult. */
+    @Enumerated(EnumType.STRING)
+    public SiegeUndermineResultEnum getUndermineResult() {
+        return undermineResult;
+    }
+
+    /** @param undermineResult the undermineResult to set. */
+    public void setUndermineResult(SiegeUndermineResultEnum undermineResult) {
+        this.undermineResult = undermineResult;
+    }
+
+    /** @return the fortressFalls. */
+    public boolean isFortressFalls() {
+        return fortressFalls;
+    }
+
+    /** @param fortressFalls the fortressFalls to set. */
+    public void setFortressFalls(boolean fortressFalls) {
+        this.fortressFalls = fortressFalls;
+    }
+
+    /** @return the phasing. */
+    public SiegeSideEntity getPhasing() {
+        return phasing;
+    }
+
+    /** @param phasing the phasing to set. */
+    public void setPhasing(SiegeSideEntity phasing) {
+        this.phasing = phasing;
+    }
+
+    /** @return the nonPhasing. */
+    public SiegeSideEntity getNonPhasing() {
+        return nonPhasing;
+    }
+
+    /** @param nonPhasing the nonPhasing to set. */
+    public void setNonPhasing(SiegeSideEntity nonPhasing) {
+        this.nonPhasing = nonPhasing;
     }
 
     /** @return the counters. */

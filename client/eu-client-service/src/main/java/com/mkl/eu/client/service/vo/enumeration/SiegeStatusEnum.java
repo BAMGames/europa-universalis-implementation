@@ -16,6 +16,10 @@ public enum SiegeStatusEnum {
     CHOOSE_BREACH(true),
     /** If needed, each sides must select the forces lost in battle. */
     CHOOSE_LOSS(true),
+    /** In case of undermining result of war honour, the besieging forces are redeployed elsewhere. Also apply to leaders when fortress falls. */
+    REDEPLOY(true),
+    /** When the fortress falls, the besieger chooses to man it or not. */
+    CHOOSE_MAN(true),
     /** Battle computed. */
     DONE(false);
 

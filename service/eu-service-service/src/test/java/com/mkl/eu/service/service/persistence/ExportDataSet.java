@@ -61,7 +61,7 @@ public class ExportDataSet {
      * @throws Exception exception.
      */
     private static void exportTables(IDatabaseConnection connection) throws Exception {
-        export(new String[]{"T_PERIOD", "T_TECH", "T_TRADE", "T_BASIC_FORCE", "T_UNIT", "T_LIMIT", "T_RESULT", "T_BATTLE_TECH", "T_COMBAT_RESULT", "T_ARMY_CLASS", "T_ARMY_ARTILLERY"},
+        export(new String[]{"T_PERIOD", "T_TECH", "T_TRADE", "T_BASIC_FORCE", "T_UNIT", "T_LIMIT", "T_RESULT", "T_BATTLE_TECH", "T_COMBAT_RESULT", "T_ARMY_CLASS", "T_ARMY_ARTILLERY", "T_ARTILLERY_SIEGE", "T_FORTRESS_RESISTANCE", "T_ASSAULT_RESULT"},
                "src/test/resources/com/mkl/eu/service/service/persistence/tables", connection);
     }
 

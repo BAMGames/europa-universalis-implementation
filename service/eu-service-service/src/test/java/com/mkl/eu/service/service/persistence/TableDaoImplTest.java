@@ -249,7 +249,7 @@ public class TableDaoImplTest {
         tablesService.refresh();
         Tables tables = tablesService.getTables();
 
-        Assert.assertEquals(3, tables.getArtillerySieges().size());
+        Assert.assertEquals(18, tables.getArtillerySieges().size());
 
         ArtillerySiege artillerySiege = tables.getArtillerySieges().stream()
                 .filter(as -> as.getFortress() == 0 && as.getArtillery() == 1)
@@ -278,7 +278,7 @@ public class TableDaoImplTest {
         tablesService.refresh();
         Tables tables = tablesService.getTables();
 
-        Assert.assertEquals(3, tables.getFortressResistances().size());
+        Assert.assertEquals(12, tables.getFortressResistances().size());
 
         FortressResistance fortressResistance = tables.getFortressResistances().stream()
                 .filter(fr -> fr.getFortress() == 4 && !fr.isBreach())
@@ -310,7 +310,7 @@ public class TableDaoImplTest {
         tablesService.refresh();
         Tables tables = tablesService.getTables();
 
-        Assert.assertEquals(3, tables.getAssaultResults().size());
+        Assert.assertEquals(60, tables.getAssaultResults().size());
 
         AssaultResult assaultResult = tables.getAssaultResults().stream()
                 .filter(ar -> ar.getDice() == 6 && ar.isFire() && !ar.isBreach() && !ar.isBesieger())
