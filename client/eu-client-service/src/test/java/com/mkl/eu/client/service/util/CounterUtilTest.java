@@ -170,6 +170,16 @@ public class CounterUtilTest {
 
         Assert.assertEquals(1, CounterUtil.getFortressesFromLevel(5).size());
         Assert.assertEquals(CounterFaceTypeEnum.FORTRESS_5, CounterUtil.getFortressesFromLevel(5).get(0));
+
+        Assert.assertEquals(CounterFaceTypeEnum.FORT, CounterUtil.getFortressesFromLevel(0, false));
+        Assert.assertEquals(CounterFaceTypeEnum.FORTRESS_1, CounterUtil.getFortressesFromLevel(1, false));
+        Assert.assertEquals(CounterFaceTypeEnum.ARSENAL_2, CounterUtil.getFortressesFromLevel(2, true));
+        Assert.assertEquals(CounterFaceTypeEnum.FORTRESS_2, CounterUtil.getFortressesFromLevel(2, false));
+        Assert.assertEquals(CounterFaceTypeEnum.ARSENAL_3, CounterUtil.getFortressesFromLevel(3, true));
+        Assert.assertEquals(CounterFaceTypeEnum.FORTRESS_3, CounterUtil.getFortressesFromLevel(3, false));
+        Assert.assertEquals(CounterFaceTypeEnum.ARSENAL_4, CounterUtil.getFortressesFromLevel(4, true));
+        Assert.assertEquals(CounterFaceTypeEnum.FORTRESS_4, CounterUtil.getFortressesFromLevel(4, false));
+        Assert.assertEquals(CounterFaceTypeEnum.FORTRESS_5, CounterUtil.getFortressesFromLevel(5, false));
     }
 
     @Test

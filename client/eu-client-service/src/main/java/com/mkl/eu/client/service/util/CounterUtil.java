@@ -338,6 +338,51 @@ public final class CounterUtil {
     }
 
     /**
+     * @param level   of the fortresses.
+     * @param arsenal if this is an arsenal
+     * @return the counter types of the fortress or arsenal given a level.
+     */
+    public static CounterFaceTypeEnum getFortressesFromLevel(int level, boolean arsenal) {
+        CounterFaceTypeEnum fortress = null;
+
+        switch (level) {
+            case 0:
+                fortress = CounterFaceTypeEnum.FORT;
+                break;
+            case 1:
+                fortress = CounterFaceTypeEnum.FORTRESS_1;
+                break;
+            case 2:
+                if (arsenal) {
+                    fortress = CounterFaceTypeEnum.ARSENAL_2;
+                } else {
+                    fortress = CounterFaceTypeEnum.FORTRESS_2;
+                }
+                break;
+            case 3:
+                if (arsenal) {
+                    fortress = CounterFaceTypeEnum.ARSENAL_3;
+                } else {
+                    fortress = CounterFaceTypeEnum.FORTRESS_3;
+                }
+                break;
+            case 4:
+                if (arsenal) {
+                    fortress = CounterFaceTypeEnum.ARSENAL_4;
+                } else {
+                    fortress = CounterFaceTypeEnum.FORTRESS_4;
+                }
+                break;
+            case 5:
+                fortress = CounterFaceTypeEnum.FORTRESS_5;
+                break;
+
+        }
+
+        return fortress;
+    }
+
+    /**
      * @param face the face.
      * @return <code>true</code> if the counter face type is an army (land or naval), <code>false</code> otherwise.
      */
