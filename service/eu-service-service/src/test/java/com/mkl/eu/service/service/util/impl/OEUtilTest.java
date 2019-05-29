@@ -672,12 +672,12 @@ public class OEUtilTest {
         Assert.assertEquals(WarStatusEnum.PEACE, oeUtil.getWarStatus(game, country));
 
         Assert.assertEquals(0, oeUtil.getEnemies(null, null, true).size());
-        Assert.assertEquals(0, oeUtil.getEnemies(game, null, true).size());
-        Assert.assertEquals(0, oeUtil.getEnemies(null, country, true).size());
+        Assert.assertEquals(0, oeUtil.getEnemies(null, game, true).size());
+        Assert.assertEquals(0, oeUtil.getEnemies(country, null, true).size());
 
         List<String> enemies;
         country.setName("espagne");
-        enemies = oeUtil.getEnemies(game, country, true);
+        enemies = oeUtil.getEnemies(country, game, true);
         Collections.sort(enemies);
 
         Assert.assertEquals(4, enemies.size());
@@ -686,7 +686,7 @@ public class OEUtilTest {
         Assert.assertEquals("pologne", enemies.get(2));
         Assert.assertEquals("turquie", enemies.get(3));
 
-        enemies = oeUtil.getEnemies(game, country, false);
+        enemies = oeUtil.getEnemies(country, game, false);
         Collections.sort(enemies);
 
         Assert.assertEquals(2, enemies.size());
@@ -694,7 +694,7 @@ public class OEUtilTest {
         Assert.assertEquals("france", enemies.get(1));
 
         country.setName("france");
-        enemies = oeUtil.getEnemies(game, country, true);
+        enemies = oeUtil.getEnemies(country, game, true);
         Collections.sort(enemies);
 
         Assert.assertEquals(3, enemies.size());
@@ -702,44 +702,44 @@ public class OEUtilTest {
         Assert.assertEquals("espagne", enemies.get(1));
         Assert.assertEquals("suede", enemies.get(2));
 
-        enemies = oeUtil.getEnemies(game, country, false);
+        enemies = oeUtil.getEnemies(country, game, false);
         Collections.sort(enemies);
 
         Assert.assertEquals(1, enemies.size());
         Assert.assertEquals("espagne", enemies.get(0));
 
         country.setName("angleterre");
-        enemies = oeUtil.getEnemies(game, country, true);
+        enemies = oeUtil.getEnemies(country, game, true);
         Collections.sort(enemies);
 
         Assert.assertEquals(2, enemies.size());
         Assert.assertEquals("espagne", enemies.get(0));
         Assert.assertEquals("suede", enemies.get(1));
 
-        enemies = oeUtil.getEnemies(game, country, false);
+        enemies = oeUtil.getEnemies(country, game, false);
         Collections.sort(enemies);
 
         Assert.assertEquals(1, enemies.size());
         Assert.assertEquals("espagne", enemies.get(0));
 
         country.setName("pologne");
-        enemies = oeUtil.getEnemies(game, country, true);
+        enemies = oeUtil.getEnemies(country, game, true);
         Collections.sort(enemies);
 
         Assert.assertEquals(0, enemies.size());
 
-        enemies = oeUtil.getEnemies(game, country, false);
+        enemies = oeUtil.getEnemies(country, game, false);
         Collections.sort(enemies);
 
         Assert.assertEquals(0, enemies.size());
 
         country.setName("russie");
-        enemies = oeUtil.getEnemies(game, country, true);
+        enemies = oeUtil.getEnemies(country, game, true);
         Collections.sort(enemies);
 
         Assert.assertEquals(0, enemies.size());
 
-        enemies = oeUtil.getEnemies(game, country, false);
+        enemies = oeUtil.getEnemies(country, game, false);
         Collections.sort(enemies);
 
         Assert.assertEquals(0, enemies.size());
@@ -874,10 +874,12 @@ public class OEUtilTest {
         GameEntity game = new GameEntity();
         EuropeanProvinceEntity provinceEu = new EuropeanProvinceEntity();
 
+        Assert.assertEquals(null, oeUtil.getOwner(provinceEu, game));
         Assert.assertEquals(null, oeUtil.getController(provinceEu, game));
 
         provinceEu.setDefaultOwner("france");
 
+        Assert.assertEquals("france", oeUtil.getOwner(provinceEu, game));
         Assert.assertEquals("france", oeUtil.getController(provinceEu, game));
 
         game.getStacks().add(new StackEntity());
@@ -887,10 +889,12 @@ public class OEUtilTest {
         counter.setCountry("espagne");
         game.getStacks().get(0).getCounters().add(counter);
 
+        Assert.assertEquals("france", oeUtil.getOwner(provinceEu, game));
         Assert.assertEquals("france", oeUtil.getController(provinceEu, game));
 
         provinceEu.setName("eArtois");
 
+        Assert.assertEquals("espagne", oeUtil.getOwner(provinceEu, game));
         Assert.assertEquals("espagne", oeUtil.getController(provinceEu, game));
 
         counter = new CounterEntity();
@@ -898,6 +902,7 @@ public class OEUtilTest {
         counter.setCountry("hollande");
         game.getStacks().get(0).getCounters().add(counter);
 
+        Assert.assertEquals("espagne", oeUtil.getOwner(provinceEu, game));
         Assert.assertEquals("hollande", oeUtil.getController(provinceEu, game));
 
         game.getStacks().add(new StackEntity());
@@ -906,6 +911,7 @@ public class OEUtilTest {
         RotwProvinceEntity provinceRotw = new RotwProvinceEntity();
         provinceRotw.setName("rAral");
 
+        Assert.assertEquals(null, oeUtil.getOwner(provinceRotw, game));
         Assert.assertEquals(null, oeUtil.getController(provinceRotw, game));
 
         counter = new CounterEntity();
@@ -913,6 +919,7 @@ public class OEUtilTest {
         counter.setCountry("russie");
         game.getStacks().get(1).getCounters().add(counter);
 
+        Assert.assertEquals("russie", oeUtil.getOwner(provinceRotw, game));
         Assert.assertEquals("russie", oeUtil.getController(provinceRotw, game));
 
         game.getStacks().add(new StackEntity());
@@ -922,6 +929,7 @@ public class OEUtilTest {
         counter.setCountry("turquie");
         game.getStacks().get(2).getCounters().add(counter);
 
+        Assert.assertEquals("russie", oeUtil.getOwner(provinceRotw, game));
         Assert.assertEquals("turquie", oeUtil.getController(provinceRotw, game));
     }
 

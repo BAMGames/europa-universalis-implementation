@@ -112,4 +112,14 @@ public interface ICounterDomain {
      * @return the diffs related to the move of the counter.
      */
     DiffEntity changeCounterOwner(CounterEntity counter, StackEntity newOwner, GameEntity game);
+
+    /**
+     * Changes the country of a counter.
+     *
+     * @param counter    the counter to move.
+     * @param newCountry the new country the counter will belong to.
+     * @param game       the game.
+     * @return the diffs related to the move of the counter.
+     */
+    DiffEntity changeCounterCountry(CounterEntity counter, String newCountry, GameEntity game);
 }

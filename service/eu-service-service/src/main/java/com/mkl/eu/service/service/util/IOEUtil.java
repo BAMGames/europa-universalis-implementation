@@ -129,12 +129,12 @@ public interface IOEUtil {
     WarStatusEnum getWarStatus(GameEntity game, PlayableCountryEntity country);
 
     /**
-     * @param game                 the game.
      * @param country              the country.
+     * @param game                 the game.
      * @param includeInterventions flag to include enemy countries in limited or foreign intervention.
      * @return the list of country that are at war with the input country.
      */
-    List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions);
+    List<String> getEnemies(PlayableCountryEntity country, GameEntity game, boolean includeInterventions);
 
     /**
      * @param stack the stack to check mobility.
@@ -150,6 +150,13 @@ public interface IOEUtil {
      * are not adjacent, returns -1.
      */
     int getMovePoints(AbstractProvinceEntity provinceFrom, AbstractProvinceEntity provinceTo, boolean provinceToFriendly);
+
+    /**
+     * @param province the province.
+     * @param game     the game.
+     * @return the name of the country owning the province.
+     */
+    String getOwner(AbstractProvinceEntity province, GameEntity game);
 
     /**
      * @param province the province.

@@ -285,7 +285,11 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#STATUS to know which is the new status of the this.</li>
      * <li>DiffAttributeTypeEnum#PHASING_COUNTER_ADD the attacking counter added to this this.</li>
      * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this this.</li>
+     * <li>DiffAttributeTypeEnum#LEVEL the level of the besieged fortress.</li>
      * <li>DiffAttributeTypeEnum#BONUS the bonus for undermining to this siege.</li>
+     * <li>DiffAttributeTypeEnum#SIEGE_UNDERMINE_DIE the unmodified die roll for undermining to this siege.</li>
+     * <li>DiffAttributeTypeEnum#SIEGE_UNDERMINE_RESULT the result of the undermining to this siege.</li>
+     * <li>DiffAttributeTypeEnum#SIEGE_FORTRESS_FALLS if the fortress fell due to this siege.</li>
      * </ul>
      * </li>
      * </ul>

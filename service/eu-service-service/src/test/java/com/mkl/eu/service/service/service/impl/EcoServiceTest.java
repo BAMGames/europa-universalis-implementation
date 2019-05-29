@@ -3137,7 +3137,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         List<String> enemies = new ArrayList<>();
         enemies.add("enemy");
-        when(oeUtil.getEnemies(game, game.getCountries().get(0), true)).thenReturn(enemies);
+        when(oeUtil.getEnemies(game.getCountries().get(0), game, true)).thenReturn(enemies);
         when(playableCountryDao.isFatherlandInDanger("france", enemies, 12L)).thenReturn(true);
 
         try {

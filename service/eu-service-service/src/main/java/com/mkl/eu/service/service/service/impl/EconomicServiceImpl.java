@@ -1143,7 +1143,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         boolean stabFree = false;
         if (warStatus.hasTaxesReduction()) {
-            List<String> enemies = oeUtil.getEnemies(game, country, true);
+            List<String> enemies = oeUtil.getEnemies(country, game, true);
 
             stabFree = playableCountryDao.isFatherlandInDanger(country.getName(), enemies, game.getId());
         }

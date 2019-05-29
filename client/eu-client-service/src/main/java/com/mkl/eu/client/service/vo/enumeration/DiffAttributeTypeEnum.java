@@ -163,7 +163,13 @@ public enum DiffAttributeTypeEnum {
     /** Shock modifier of non phasing forces in the second day of a battle. */
     BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD,
     /** Shock unmodified die roll of non phasing forces in the second day of a battle. */
-    BATTLE_NON_PHASING_SECOND_DAY_SHOCK
+    BATTLE_NON_PHASING_SECOND_DAY_SHOCK,
+    /** Unmodified die of an undermine attempt in a siege. */
+    SIEGE_UNDERMINE_DIE,
+    /** Result of an undermine attempt in a siege. */
+    SIEGE_UNDERMINE_RESULT,
+    /** If the fortress falls. */
+    SIEGE_FORTRESS_FALLS
 
 
 }

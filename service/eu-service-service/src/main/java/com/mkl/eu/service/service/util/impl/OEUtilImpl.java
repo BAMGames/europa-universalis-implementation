@@ -372,7 +372,7 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public List<String> getEnemies(GameEntity game, PlayableCountryEntity country, boolean includeInterventions) {
+    public List<String> getEnemies(PlayableCountryEntity country, GameEntity game, boolean includeInterventions) {
         List<String> enemies = new ArrayList<>();
 
         if (game == null || country == null) {
@@ -509,12 +509,12 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public String getController(AbstractProvinceEntity province, GameEntity game) {
-        String controller = null;
+    public String getOwner(AbstractProvinceEntity province, GameEntity game) {
+        String owner = null;
 
-        // By default, the controller is the default owner.
+        // By default, the owner is the default owner.
         if (province instanceof EuropeanProvinceEntity) {
-            controller = ((EuropeanProvinceEntity) province).getDefaultOwner();
+            owner = ((EuropeanProvinceEntity) province).getDefaultOwner();
         }
 
         List<CounterEntity> counters = game.getStacks().stream()
@@ -523,24 +523,37 @@ public final class OEUtilImpl implements IOEUtil {
                 .collect(Collectors.toList());
 
         // In ROTW, having an establishment means we owns the province.
-        controller = counters.stream()
+        owner = counters.stream()
                 .filter(counter -> CounterUtil.isEstablishment(counter.getType()))
                 .map(CounterEntity::getCountry)
-                .findFirst()
-                .orElse(controller);
+                .findAny()
+                .orElse(owner);
 
         // If the province is owned by another country, then it will be the controller.
-        controller = counters.stream()
+        owner = counters.stream()
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.OWN)
                 .map(CounterEntity::getCountry)
-                .findFirst()
-                .orElse(controller);
+                .findAny()
+                .orElse(owner);
+
+        return owner;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getController(AbstractProvinceEntity province, GameEntity game) {
+        // By default, the controller is the owner.
+        String controller = getOwner(province, game);
 
         // Except if another country explicitly controls it.
-        controller = counters.stream()
+        controller = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(province.getName(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.CONTROL)
                 .map(CounterEntity::getCountry)
-                .findFirst()
+                .findAny()
                 .orElse(controller);
 
         return controller;

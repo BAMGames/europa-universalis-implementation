@@ -474,7 +474,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
-                newDiffs.addAll(cleanUpBattle(battle, game));
+                newDiffs.addAll(cleanUpBattle(battle));
 
                 return createDiffs(newDiffs, gameDiffs, request);
             }
@@ -1252,7 +1252,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            diffs.addAll(cleanUpBattle(battle, battle.getGame()));
+            diffs.addAll(cleanUpBattle(battle));
         } else {
             battle.setStatus(BattleStatusEnum.RETREAT);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.RETREAT));
@@ -1266,17 +1266,11 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
      * Clean up a battle when it is finished.
      *
      * @param battle to clean up.
-     * @param game   the game.
      * @return eventual other diffs.
      */
-    private List<DiffEntity> cleanUpBattle(BattleEntity battle, GameEntity game) {
+    private List<DiffEntity> cleanUpBattle(BattleEntity battle) {
         battle.getCounters().clear();
-        if (!game.getBattles().stream()
-                .anyMatch(batl -> batl.getStatus() == BattleStatusEnum.NEW)) {
-            return statusWorkflowDomain.endMilitaryPhase(battle.getGame());
-        } else {
-            return Collections.emptyList();
-        }
+        return statusWorkflowDomain.endMilitaryPhase(battle.getGame());
     }
 
     /**
@@ -1671,7 +1665,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            newDiffs.addAll(cleanUpBattle(battle, game));
+            newDiffs.addAll(cleanUpBattle(battle));
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),

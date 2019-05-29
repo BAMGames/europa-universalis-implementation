@@ -318,4 +318,13 @@ public class CounterDomainImpl implements ICounterDomain {
 
         return diff;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffEntity changeCounterCountry(CounterEntity counter, String newCountry, GameEntity game) {
+        counter.setCountry(newCountry);
+
+        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, counter.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newCountry));
+    }
 }

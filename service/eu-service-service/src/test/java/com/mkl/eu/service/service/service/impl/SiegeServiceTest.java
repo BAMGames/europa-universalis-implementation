@@ -7,10 +7,13 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.ArtillerySiege;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -23,6 +26,7 @@ import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -34,11 +38,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -50,6 +54,12 @@ import static org.mockito.Mockito.when;
 public class SiegeServiceTest extends AbstractGameServiceTest {
     @InjectMocks
     private SiegeServiceImpl siegeService;
+
+    @Mock
+    private ICounterDomain counterDomain;
+
+    @Mock
+    private IStatusWorkflowDomain workflowDomain;
 
     @Mock
     private IProvinceDao provinceDao;
@@ -219,9 +229,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
         if (gotoChooseMode) {
-            Assert.assertEquals(2 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
+            Assert.assertEquals(3 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
             Assert.assertEquals("1", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTER_ADD));
+            Assert.assertEquals("0", getAttribute(diffEntity, DiffAttributeTypeEnum.LEVEL));
         } else {
             Assert.assertEquals(1 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(SiegeStatusEnum.SELECT_FORCES.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
@@ -424,11 +435,12 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
         Assert.assertTrue(diffEntity.getAttributes().size() >= 1);
-        Assert.assertEquals(3, diffEntity.getAttributes().size());
+        Assert.assertEquals(4, diffEntity.getAttributes().size());
         Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         Assert.assertEquals(2l, diffEntity.getAttributes().stream()
                 .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD)
                 .count());
+        Assert.assertEquals("0", getAttribute(diffEntity, DiffAttributeTypeEnum.LEVEL));
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
@@ -677,6 +689,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             } else {
                 Assert.assertNull(attribute);
             }
+            Assert.assertEquals(fortressLevel + "", attributes.stream()
+                    .filter(attr -> attr.getType() == DiffAttributeTypeEnum.LEVEL)
+                    .map(DiffAttributesEntity::getValue)
+                    .findAny()
+                    .orElse(null));
 
             return this;
         }
@@ -699,9 +716,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         country.setId(12L);
         country.setName("france");
         game.getCountries().add(country);
-        game.getSieges().add(new SiegeEntity());
-        game.getSieges().get(0).setStatus(SiegeStatusEnum.SELECT_FORCES);
-        game.getSieges().get(0).setProvince("pecs");
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.SELECT_FORCES);
+        siege.setProvince("pecs");
+        game.getSieges().add(siege);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
@@ -758,7 +777,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         }
 
         request.getRequest().setMode(SiegeModeEnum.UNDERMINE);
-        when(oeUtil.getFortressLevel(any(), any())).thenReturn(2);
+        siege.setFortressLevel(2);
 
         try {
             siegeService.chooseMode(request);
@@ -768,4 +787,543 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseMode.request.mode", e.getParams()[0]);
         }
     }
+
+    @Test
+    public void testChooseUndermineNoEffect() throws FunctionalException {
+        SiegeUndermineBuilder.create()
+                .bonus(0).die(3)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE));
+    }
+
+    @Test
+    public void testChooseUndermineSiegeworkMinus() throws FunctionalException {
+        SiegeUndermineBuilder.create()
+                .bonus(0).die(4)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_MINUS)
+                        .addSiegework().newStackForSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(-5).die(10)
+                .addSiegeworkPlus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_MINUS)
+                        .addSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(5).die(1)
+                .addSiegeworkMinus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_MINUS)
+                        .switchSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(2).die(4)
+                .addSiegeworkPlus().addSiegeworkMinus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_MINUS)
+                        .switchSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(-2).die(6)
+                .addSiegeworkPlus().addSiegeworkPlus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_MINUS));
+    }
+
+    @Test
+    public void testChooseUndermineSiegeworkPlus() throws FunctionalException {
+        SiegeUndermineBuilder.create()
+                .bonus(0).die(7)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_PLUS)
+                        .addSiegework().newStackForSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(-1).die(10)
+                .addSiegeworkPlus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_PLUS)
+                        .addSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(5).die(3)
+                .addSiegeworkMinus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_PLUS)
+                        .addSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(2).die(7)
+                .addSiegeworkPlus().addSiegeworkMinus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_PLUS)
+                        .switchSiegework());
+
+        SiegeUndermineBuilder.create()
+                .bonus(-2).die(9)
+                .addSiegeworkPlus().addSiegeworkPlus()
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SIEGE_WORK_PLUS));
+    }
+
+    @Test
+    public void testChooseUndermineBreach() throws FunctionalException {
+        SiegeUndermineBuilder.create()
+                .bonus(0).die(10)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.CHOOSE_BREACH));
+    }
+
+    @Test
+    public void testChooseUndermineSurrender() throws FunctionalException {
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).fortress(3)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.CHOOSE_MAN).result(SiegeUndermineResultEnum.SURRENDER));
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).fortress(2)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .addControl().fortressFalls());
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).naturalFortress(2)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .addControl().fortressFalls().newFortressType(CounterFaceTypeEnum.FORTRESS_1));
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).naturalFortress(1)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .addControl().fortressFalls());
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).naturalFortress(1).fortress(2)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .addControl().fortressFalls());
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).naturalFortress(1)
+                .owner(Camp.ALLY).controller(Camp.ENEMY)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .removeControl().fortressFalls());
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).naturalFortress(1)
+                .owner(Camp.NEUTRAL).controller(Camp.ENEMY)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .removeControl().fortressFalls());
+
+        SiegeUndermineBuilder.create()
+                .bonus(3).die(10)
+                .besiegerForces(3).naturalFortress(1)
+                .owner(Camp.ENEMY).controller(Camp.ENEMY)
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeUndermineResultBuilder.create()
+                        .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
+                        .switchControl().fortressFalls());
+    }
+
+    private static class SiegeUndermineBuilder {
+        private Camp owner;
+        private Camp controller;
+        private Integer naturalFortress;
+        private Integer fortress;
+        private int besiegerForces;
+        private int siegeworkMinus;
+        private int siegeworkPlus;
+        private int bonus;
+        private int die;
+        private SiegeEntity siege;
+        List<DiffEntity> diffs;
+
+        static SiegeUndermineBuilder create() {
+            return new SiegeUndermineBuilder();
+        }
+
+        SiegeUndermineBuilder owner(Camp owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        SiegeUndermineBuilder controller(Camp controller) {
+            this.controller = controller;
+            return this;
+        }
+
+        SiegeUndermineBuilder naturalFortress(Integer naturalFortress) {
+            this.naturalFortress = naturalFortress;
+            return this;
+        }
+
+        SiegeUndermineBuilder fortress(Integer fortress) {
+            this.fortress = fortress;
+            return this;
+        }
+
+        SiegeUndermineBuilder besiegerForces(int besiegerForces) {
+            this.besiegerForces = besiegerForces;
+            return this;
+        }
+
+        SiegeUndermineBuilder addSiegeworkMinus() {
+            this.siegeworkMinus++;
+            return this;
+        }
+
+        SiegeUndermineBuilder addSiegeworkPlus() {
+            this.siegeworkPlus++;
+            return this;
+        }
+
+        SiegeUndermineBuilder bonus(int bonus) {
+            this.bonus = bonus;
+            return this;
+        }
+
+        SiegeUndermineBuilder die(int die) {
+            this.die = die;
+            return this;
+        }
+
+        SiegeUndermineBuilder whenChooseMode(SiegeServiceImpl siegeService, SiegeServiceTest testClass) throws FunctionalException {
+            Pair<Request<ChooseModeForSiegeRequest>, GameEntity> pair = testClass.testCheckGame(siegeService::chooseMode, "chooseMode");
+            Request<ChooseModeForSiegeRequest> request = pair.getLeft();
+            GameEntity game = pair.getRight();
+            PlayableCountryEntity self = new PlayableCountryEntity();
+            self.setId(12L);
+            self.setName(Camp.SELF.name);
+            game.getCountries().add(self);
+            PlayableCountryEntity ally = new PlayableCountryEntity();
+            ally.setId(13L);
+            ally.setName(Camp.ALLY.name);
+            game.getCountries().add(ally);
+            PlayableCountryEntity neutral = new PlayableCountryEntity();
+            neutral.setId(14L);
+            neutral.setName(Camp.NEUTRAL.name);
+            game.getCountries().add(neutral);
+            PlayableCountryEntity enemy = new PlayableCountryEntity();
+            enemy.setId(15L);
+            enemy.setName(Camp.ENEMY.name);
+            game.getCountries().add(enemy);
+
+            StackEntity stack = new StackEntity();
+            stack.setId(99L);
+            stack.setProvince("pecs");
+            if (fortress != null) {
+                CounterFaceTypeEnum fortressType = CounterUtil.getFortressesFromLevel(fortress, false);
+                stack.getCounters().add(createCounter(101L, Camp.ENEMY.name, fortressType));
+            }
+            if (controller != null) {
+                stack.getCounters().add(createCounter(102L, controller.name, CounterFaceTypeEnum.CONTROL));
+            }
+            for (int i = 0; i < siegeworkMinus; i++) {
+                stack.getCounters().add(createCounter(110L + i, null, CounterFaceTypeEnum.SIEGEWORK_MINUS));
+            }
+            for (int i = 0; i < siegeworkPlus; i++) {
+                stack.getCounters().add(createCounter(120L + i, null, CounterFaceTypeEnum.SIEGEWORK_PLUS));
+            }
+            if (!stack.getCounters().isEmpty()) {
+                game.getStacks().add(stack);
+            }
+
+            siege = new SiegeEntity();
+            siege.setGame(game);
+            siege.setFortressLevel(fortress != null ? fortress : naturalFortress != null ? naturalFortress : 0);
+            siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
+            siege.setProvince("pecs");
+            siege.setBonus(bonus);
+            for (int i = 0; i < besiegerForces; i++) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setPhasing(true);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setCountry(Camp.SELF.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+                siege.getCounters().add(siegeCounter);
+            }
+            game.getSieges().add(siege);
+
+            if (owner == null) {
+                owner = Camp.ENEMY;
+            }
+            if (controller == null) {
+                controller = owner;
+            }
+            AbstractProvinceEntity province;
+            if (naturalFortress != null) {
+                province = new EuropeanProvinceEntity();
+                ((EuropeanProvinceEntity) province).setFortress(naturalFortress);
+            } else {
+                province = new RotwProvinceEntity();
+            }
+            when(testClass.provinceDao.getProvinceByName("pecs")).thenReturn(province);
+            when(testClass.oeUtil.getOwner(province, game)).thenReturn(owner.name);
+            when(testClass.oeUtil.getController(province, game)).thenReturn(controller.name);
+            when(testClass.oeUtil.rollDie(game, self)).thenReturn(die);
+            when(testClass.oeUtil.getAllies(self, game)).thenReturn(Arrays.asList(Camp.SELF.name, Camp.ALLY.name));
+            when(testClass.oeUtil.getEnemies(self, game)).thenReturn(Collections.singletonList(Camp.ENEMY.name));
+
+            when(testClass.counterDomain.createStack("pecs", null, game)).thenAnswer(invocationOnMock -> {
+                StackEntity newStack = new StackEntity();
+                newStack.setId(1099L);
+                return newStack;
+            });
+            when(testClass.counterDomain.switchCounter(110l, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, game))
+                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 110L));
+            when(testClass.counterDomain.createCounter(any(), any(), any(), any()))
+                    .thenAnswer(invocationOnMock -> {
+                        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, 1010L);
+                        diff.getAttributes().add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
+                        return diff;
+                    });
+
+            when(testClass.counterDomain.removeCounter(anyLong(), any()))
+                    .thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, Long.class)));
+            when(testClass.counterDomain.changeCounterCountry(any(), anyString(), any()))
+                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 102L));
+            when(testClass.counterDomain.createCounter(any(), any(), any(), any(), any()))
+                    .thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class) == CounterFaceTypeEnum.CONTROL ? 1020L : 1030L,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, invocationOnMock.getArgumentAt(1, String.class), invocationOnMock.getArgumentAt(1, String.class) != null),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class))));
+
+            when(testClass.workflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.TURN_ORDER, null)));
+
+            request.setIdCountry(self.getId());
+            request.setRequest(new ChooseModeForSiegeRequest());
+            request.getRequest().setProvinceTo("pecs");
+            request.getRequest().setMode(SiegeModeEnum.UNDERMINE);
+            testClass.testCheckStatus(pair.getRight(), request, siegeService::chooseMode, "chooseMode", GameStatusEnum.MILITARY_SIEGES);
+
+            testClass.simulateDiff();
+
+            siegeService.chooseMode(request);
+
+            diffs = testClass.retrieveDiffsCreated();
+
+            return this;
+        }
+
+        SiegeUndermineBuilder thenExpect(SiegeUndermineResultBuilder result) {
+            DiffEntity diffSiege = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.SIEGE)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diffSiege);
+
+            Assert.assertEquals(result.result != null ? result.result.name() : null, getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+            Assert.assertEquals(result.result, siege.getUndermineResult());
+            Assert.assertEquals(result.status != null ? result.status.name() : null, getAttribute(diffSiege, DiffAttributeTypeEnum.STATUS));
+            Assert.assertEquals(result.status, siege.getStatus());
+            Assert.assertEquals(die + "", getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_DIE));
+            Assert.assertEquals(die, siege.getUndermineDie());
+            DiffEntity switchSiegework = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 110L)
+                    .findAny()
+                    .orElse(null);
+            if (result.switchSiegework) {
+                Assert.assertNotNull("Siegework minus should have changed to siegework plus but was not", switchSiegework);
+            } else {
+                Assert.assertNull("Siegework minus should not have changed to siegework plus but was", switchSiegework);
+            }
+            DiffEntity addSiegework = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 1010L)
+                    .findAny()
+                    .orElse(null);
+            if (result.addSiegework) {
+                Assert.assertNotNull("A siegework should have been added but was not.", addSiegework);
+                Long id = result.newStackForSiegework ? 1099L : 99L;
+                Assert.assertEquals("The new fortress belongs to the wront stack.", id.toString(), getAttribute(addSiegework, DiffAttributeTypeEnum.STACK));
+            } else {
+                Assert.assertNull("A siegework should not have been added but was.", addSiegework);
+            }
+            long removedSiegeworks = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() >= 110L && d.getIdObject() < 130L)
+                    .count();
+            DiffEntity removeFortress = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 101L)
+                    .findAny()
+                    .orElse(null);
+            if (result.fortressFalls) {
+                Assert.assertEquals("All siegeworks should have been removed but there are still left.", siegeworkMinus + siegeworkPlus, removedSiegeworks);
+                if (fortress != null) {
+                    Assert.assertNotNull("The fortress should have been removed but was not.", removeFortress);
+                } else {
+                    Assert.assertNull("The fortress has been removed but there was no fortress to remove.", removeFortress);
+                }
+            } else {
+                Assert.assertEquals("Some siegeworks have been removed and it was not expected.", 0, removedSiegeworks);
+                Assert.assertNull("The fortress should not have been removed but was.", removeFortress);
+            }
+            DiffEntity removeControl = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 102L)
+                    .findAny()
+                    .orElse(null);
+            if (result.removeControl) {
+                Assert.assertNotNull("A control counter should have been removed but was not.", removeControl);
+            } else {
+                Assert.assertNull("A control counter should not have been removed but was.", removeControl);
+            }
+            DiffEntity switchControl = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 102L)
+                    .findAny()
+                    .orElse(null);
+            if (result.switchControl) {
+                Assert.assertNotNull("A control counter should have been switched to another country but was not.", switchControl);
+            } else {
+                Assert.assertNull("A control counter should not have been switched to another country but was.", switchControl);
+            }
+            DiffEntity addControl = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 1020L)
+                    .findAny()
+                    .orElse(null);
+            if (result.addControl) {
+                Assert.assertNotNull("A control counter should have been added but was not.", addControl);
+            } else {
+                Assert.assertNull("A control counter should not have been added but was.", addControl);
+            }
+            DiffEntity addFortress = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 1030L)
+                    .findAny()
+                    .orElse(null);
+            if (result.newFortressType != null) {
+                Assert.assertNotNull("A fortress counter should have been added but was not.", addFortress);
+                Assert.assertEquals("The new fortress has not the rigth face type.", result.newFortressType.name(), getAttribute(addFortress, DiffAttributeTypeEnum.TYPE));
+                Assert.assertEquals("The new fortress belongs to the wrong country.", result.newFortressCountry, getAttribute(addFortress, DiffAttributeTypeEnum.COUNTRY));
+            } else {
+                Assert.assertNull("A fortress counter should not have been added but was.", addFortress);
+            }
+            DiffEntity endSiege = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.VALIDATE && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                    .findAny()
+                    .orElse(null);
+            if (result.status == SiegeStatusEnum.DONE) {
+                Assert.assertNotNull("The endSiege diff event has not been received while it should.", endSiege);
+            } else {
+                Assert.assertNull("The endSiege diff event has been received while it should not.", endSiege);
+            }
+
+            return this;
+        }
+    }
+
+    private static class SiegeUndermineResultBuilder {
+        SiegeUndermineResultEnum result;
+        SiegeStatusEnum status;
+        boolean fortressFalls;
+        boolean switchSiegework;
+        boolean addSiegework;
+        boolean newStackForSiegework;
+        boolean removeControl;
+        boolean switchControl;
+        boolean addControl;
+        CounterFaceTypeEnum newFortressType;
+        String newFortressCountry;
+
+        static SiegeUndermineResultBuilder create() {
+            return new SiegeUndermineResultBuilder();
+        }
+
+        SiegeUndermineResultBuilder result(SiegeUndermineResultEnum result) {
+            this.result = result;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder status(SiegeStatusEnum status) {
+            this.status = status;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder fortressFalls() {
+            this.fortressFalls = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder switchSiegework() {
+            this.switchSiegework = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder addSiegework() {
+            this.addSiegework = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder newStackForSiegework() {
+            this.newStackForSiegework = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder removeControl() {
+            this.removeControl = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder switchControl() {
+            this.switchControl = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder addControl() {
+            this.addControl = true;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder newFortressType(CounterFaceTypeEnum newFortressType) {
+            this.newFortressType = newFortressType;
+            return this;
+        }
+
+        SiegeUndermineResultBuilder newFortressCountry(String newFortressCountry) {
+            this.newFortressCountry = newFortressCountry;
+            return this;
+        }
+    }
+
+    private enum Camp {
+        SELF("espagne"),
+        ALLY("austria"),
+        NEUTRAL("turquie"),
+        ENEMY("france");
+
+        String name;
+
+        private Camp(String name) {
+            this.name = name;
+        }
+    }
+
 }
