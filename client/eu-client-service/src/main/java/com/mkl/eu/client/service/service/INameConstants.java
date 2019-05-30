@@ -124,6 +124,8 @@ public interface INameConstants {
     String PARAMETER_CHOOSE_MODE = "chooseMode";
     /** Name of the parameter mode. */
     String PARAMETER_MODE = "mode";
+    /** Name of the parameter chooseMan. */
+    String PARAMETER_CHOOSE_MAN = "chooseMan";
 
 
 
@@ -197,4 +199,6 @@ public interface INameConstants {
     String METHOD_CHOOSE_SIEGE = "chooseSiege";
     /** Name of the parameter chooseMode. */
     String METHOD_CHOOSE_MODE = "chooseMode";
+    /** Name of the parameter chooseMan. */
+    String METHOD_CHOOSE_MAN = "chooseMan";
 }

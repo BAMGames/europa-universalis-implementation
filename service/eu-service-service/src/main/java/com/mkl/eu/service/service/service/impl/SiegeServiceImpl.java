@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.ISiegeService;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
@@ -24,7 +25,6 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
@@ -432,15 +432,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_MODE)
                 .setParams(METHOD_CHOOSE_MODE, SiegeStatusEnum.CHOOSE_MODE.name()));
 
-        boolean phasing = isCountryActive(game, request.getIdCountry());
-
-        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                .setTest(phasing)
-                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                .setMsgFormat(MSG_ACCESS_RIGHT)
-                .setName(PARAMETER_CHOOSE_MODE)
-                .setParams(METHOD_CHOOSE_MODE, country.getName(), "complex"));
-
         double size = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
                 .collect(Collectors.summingDouble(c -> CounterUtil.getSizeFromType(c.getCounter().getType())));
@@ -592,14 +583,20 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
     private List<DiffEntity> fortressFalls(SiegeEntity siege, PlayableCountryEntity country, GameEntity game, List<DiffAttributesEntity> attributes) {
         siege.setFortressFalls(true);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS, true));
-        if (siege.getFortressLevel() > 2 && siege.getCounters().stream()
+        boolean manPossible = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
-                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType()))) >= 1) {
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType()))) >= 1 && siege.getFortressLevel() > 1;
+        if (manPossible && siege.getFortressLevel() == 2) {
+            AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
+            int naturalFortress = oeUtil.getNaturalFortressLevel(province, game);
+            manPossible = naturalFortress == 0;
+        }
+        if (manPossible) {
             siege.setStatus(SiegeStatusEnum.CHOOSE_MAN);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_MAN));
             return Collections.emptyList();
         } else {
-            return endSiege(siege, country, game, attributes);
+            return endSiege(siege, country, game, attributes, false);
         }
     }
 
@@ -610,9 +607,10 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
      * @param country    the besieger.
      * @param game       the game.
      * @param attributes the attributes about the MODIFY SIEGE diff.
+     * @param man        if the fortress is manned by the besieger.
      * @return the diffs involved.
      */
-    private List<DiffEntity> endSiege(SiegeEntity siege, PlayableCountryEntity country, GameEntity game, List<DiffAttributesEntity> attributes) {
+    private List<DiffEntity> endSiege(SiegeEntity siege, PlayableCountryEntity country, GameEntity game, List<DiffAttributesEntity> attributes, boolean man) {
         List<DiffEntity> diffs = new ArrayList<>();
         List<CounterEntity> presentCounters = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()))
@@ -646,19 +644,24 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .filter(counter -> CounterUtil.isFortress(counter.getType()))
                 .findAny()
                 .orElse(null);
-        int naturalFortressLevel = 0;
-        if (province instanceof EuropeanProvinceEntity) {
-            naturalFortressLevel = ((EuropeanProvinceEntity) province).getFortress();
-        }
-        int level = siege.getFortressLevel() - 2;
+        int naturalFortressLevel = oeUtil.getNaturalFortressLevel(province, game);
+        int levelLost = man ? 1 : 2;
+        int level = siege.getFortressLevel() - levelLost;
         if (fortress != null) {
             // TODO special fortresses
             CounterFaceTypeEnum newFortress = CounterUtil.getFortressesFromLevel(level, CounterUtil.isArsenal(fortress.getType()));
             diffs.add(counterDomain.removeCounter(fortress.getId(), game));
             if (level > naturalFortressLevel) {
-                // TODO Leaders use controller of the siege for control counter
-                // FIXME the country is wrong. I'll do the tests before correcting it.
-                diffs.add(counterDomain.createCounter(newFortress, country.getName(), siege.getProvince(), null, game));
+                String newController;
+                if (enemies.contains(owner)) {
+                    // TODO Leaders use controller of the siege for control counter
+                    newController = country.getName();
+                } else {
+                    newController = owner;
+                }
+                diffs.add(counterDomain.createCounter(newFortress, newController, siege.getProvince(), null, game));
+            } else if (level < naturalFortressLevel && level > 0) {
+                diffs.add(counterDomain.createCounter(newFortress, null, siege.getProvince(), null, game));
             }
         } else if (naturalFortressLevel > 1) {
             // TODO add a rule that remove these neutral fortress 1 counters at end of turn
@@ -682,5 +685,57 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         siege.getCounters().clear();
         return statusWorkflowDomain.endMilitaryPhase(siege.getGame());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse chooseMan(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_MAN)
+                .setParams(METHOD_CHOOSE_MAN));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST)
+                .setParams(METHOD_CHOOSE_MAN));
+
+        SiegeEntity siege = game.getSieges().stream()
+                .filter(bat -> bat.getStatus() == SiegeStatusEnum.CHOOSE_MAN)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(siege)
+                .setCodeError(IConstantsServiceException.SIEGE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No siege of status {2} can be found.")
+                .setName(PARAMETER_CHOOSE_MAN)
+                .setParams(METHOD_CHOOSE_MAN, SiegeStatusEnum.CHOOSE_MAN.name()));
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        diffs.addAll(endSiege(siege, country, game, attributes, request.getRequest().isValidate()));
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        diffs.add(diff);
+
+        return createDiffs(diffs, gameDiffs, request);
     }
 }

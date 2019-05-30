@@ -610,8 +610,27 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public int getFortressLevel(AbstractProvinceEntity province, GameEntity game) {
+    public int getNaturalFortressLevel(AbstractProvinceEntity province, GameEntity game) {
         int level = 0;
+        if (province instanceof EuropeanProvinceEntity) {
+            if (((EuropeanProvinceEntity) province).getFortress() != null) {
+                level = ((EuropeanProvinceEntity) province).getFortress();
+            }
+        } else if (province instanceof RotwProvinceEntity) {
+            if (((RotwProvinceEntity) province).getFortress() != null) {
+                level = ((RotwProvinceEntity) province).getFortress();
+            }
+        }
+
+        return level;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getFortressLevel(AbstractProvinceEntity province, GameEntity game) {
+        int level = getNaturalFortressLevel(province, game);
         if (province instanceof EuropeanProvinceEntity) {
             if (((EuropeanProvinceEntity) province).getFortress() != null) {
                 level = ((EuropeanProvinceEntity) province).getFortress();

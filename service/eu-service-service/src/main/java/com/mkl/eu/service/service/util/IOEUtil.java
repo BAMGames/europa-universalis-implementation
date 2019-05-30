@@ -182,6 +182,13 @@ public interface IOEUtil {
     /**
      * @param province the province.
      * @param game     the game.
+     * @return the natural level of the fortress of the province.
+     */
+    int getNaturalFortressLevel(AbstractProvinceEntity province, GameEntity game);
+
+    /**
+     * @param province the province.
+     * @param game     the game.
      * @return the level of the fortress of the province.
      */
     int getFortressLevel(AbstractProvinceEntity province, GameEntity game);

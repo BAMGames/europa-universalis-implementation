@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
@@ -54,5 +55,16 @@ public interface ISiegeService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse chooseMode(@WebParam(name = PARAMETER_SELECT_FORCES) Request<ChooseModeForSiegeRequest> request) throws FunctionalException, TechnicalException;
+    DiffResponse chooseMode(@WebParam(name = PARAMETER_CHOOSE_MODE) Request<ChooseModeForSiegeRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Choose to man a fortress after taking it.
+     *
+     * @param request info about the man to choose.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse chooseMan(@WebParam(name = PARAMETER_CHOOSE_MAN) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
 }
