@@ -1079,11 +1079,18 @@ public class OEUtilTest {
 
         Assert.assertEquals(2, oeUtil.getFortressLevel(provinceEu, game));
 
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(0).setProvince("idf");
-        game.getStacks().get(0).getCounters().add(new CounterEntity());
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.FORTRESS_1);
-        game.getStacks().get(0).getCounters().get(0).setCountry("france");
+        StackEntity stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.getCounters().add(new CounterEntity());
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.FORTRESS_1);
+        stack.getCounters().get(0).setCountry("france");
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.getCounters().add(new CounterEntity());
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.FORTRESS_1);
+        game.getStacks().add(stack);
 
         Assert.assertEquals(2, oeUtil.getFortressLevel(provinceEu, game));
 
@@ -1099,12 +1106,23 @@ public class OEUtilTest {
 
         Assert.assertEquals(0, oeUtil.getFortressLevel(provinceRotw, game));
 
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(1).setProvince("idf");
-        game.getStacks().get(1).getCounters().add(new CounterEntity());
-        game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
-        game.getStacks().get(1).getCounters().get(0).setCountry("france");
+        provinceRotw.setFortress(3);
 
+        Assert.assertEquals(3, oeUtil.getFortressLevel(provinceRotw, game));
+
+        stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.getCounters().add(new CounterEntity());
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+        stack.getCounters().get(0).setCountry("france");
+        game.getStacks().add(stack);
+
+        Assert.assertEquals(1, oeUtil.getFortressLevel(provinceRotw, game));
+
+        provinceEu.setName("pecs");
+        provinceRotw.setName("pecs");
+
+        Assert.assertEquals(1, oeUtil.getFortressLevel(provinceEu, game));
         Assert.assertEquals(1, oeUtil.getFortressLevel(provinceRotw, game));
     }
 

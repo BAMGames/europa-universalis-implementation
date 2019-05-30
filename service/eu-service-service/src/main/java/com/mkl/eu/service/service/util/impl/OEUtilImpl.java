@@ -616,11 +616,15 @@ public final class OEUtilImpl implements IOEUtil {
             if (((EuropeanProvinceEntity) province).getFortress() != null) {
                 level = ((EuropeanProvinceEntity) province).getFortress();
             }
+        } else if (province instanceof RotwProvinceEntity) {
+            if (((RotwProvinceEntity) province).getFortress() != null) {
+                level = ((RotwProvinceEntity) province).getFortress();
+            }
         }
         List<StackEntity> stacks = getStacksOnProvince(game, province.getName());
         String controller = getController(province, game);
         CounterEntity fortressCounter = CommonUtil.findFirst(stacks.stream().flatMap(stack -> stack.getCounters().stream()),
-                counter -> StringUtils.equals(controller, counter.getCountry()) && CounterUtil.isFortress(counter.getType()));
+                counter -> (StringUtils.equals(controller, counter.getCountry()) || counter.getCountry() == null) && CounterUtil.isFortress(counter.getType()));
         if (fortressCounter != null) {
             level = CounterUtil.getFortressLevelFromType(fortressCounter.getType());
         }
