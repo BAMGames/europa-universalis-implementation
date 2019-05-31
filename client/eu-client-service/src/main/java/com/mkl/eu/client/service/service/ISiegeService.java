@@ -3,7 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.military.ChooseManForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
@@ -66,5 +66,5 @@ public interface ISiegeService extends INameConstants {
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse chooseMan(@WebParam(name = PARAMETER_CHOOSE_MAN) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+    DiffResponse chooseMan(@WebParam(name = PARAMETER_CHOOSE_MAN) Request<ChooseManForSiegeRequest> request) throws FunctionalException, TechnicalException;
 }

@@ -22,7 +22,7 @@ public class ChooseModeForSiegeRequest {
     /**
      * Constructor.
      *
-     * @param mode       the withdraw to set.
+     * @param mode       the mode to set.
      * @param provinceTo the provinceTo to set.
      */
     public ChooseModeForSiegeRequest(SiegeModeEnum mode, String provinceTo) {

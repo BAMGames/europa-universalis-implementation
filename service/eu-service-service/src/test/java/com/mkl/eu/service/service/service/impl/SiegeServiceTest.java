@@ -5,7 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.military.ChooseManForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
@@ -792,8 +792,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testChooseManFail() {
-        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(siegeService::chooseMan, "chooseMan");
-        Request<ValidateRequest> request = pair.getLeft();
+        Pair<Request<ChooseManForSiegeRequest>, GameEntity> pair = testCheckGame(siegeService::chooseMan, "chooseMan");
+        Request<ChooseManForSiegeRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         PlayableCountryEntity country = new PlayableCountryEntity();
         country.setId(12L);
@@ -812,13 +812,13 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.chooseMan(request);
-            Assert.fail("Should break because chooseMode.request is null");
+            Assert.fail("Should break because chooseMan.request is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
             Assert.assertEquals("chooseMan.request", e.getParams()[0]);
         }
 
-        request.setRequest(new ValidateRequest());
+        request.setRequest(new ChooseManForSiegeRequest());
 
         try {
             siegeService.chooseMan(request);
@@ -827,12 +827,73 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsServiceException.SIEGE_STATUS_NONE, e.getCode());
             Assert.assertEquals("chooseMan", e.getParams()[0]);
         }
+
+        siege.setStatus(SiegeStatusEnum.CHOOSE_MAN);
+        request.getRequest().setMan(true);
+
+        try {
+            siegeService.chooseMan(request);
+            Assert.fail("Should break because chooseMan.counter is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCounter(12l);
+
+        try {
+            siegeService.chooseMan(request);
+            Assert.fail("Should break because chooseMan.counter does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
+            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+        }
+
+        SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+        siegeCounter.setCounter(createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        siege.getCounters().add(siegeCounter);
+
+        try {
+            siegeService.chooseMan(request);
+            Assert.fail("Should break because chooseMan.counter belongs to other player");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
+            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+        }
+
+        siegeCounter.setPhasing(true);
+
+        try {
+            siegeService.chooseMan(request);
+            Assert.fail("Should break because chooseMan.counter is too small to take a loss");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG, e.getCode());
+            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+        }
+
+        siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        SiegeCounterEntity otherSiegeCounter = new SiegeCounterEntity();
+        otherSiegeCounter.setPhasing(true);
+        otherSiegeCounter.setCounter(createCounter(13l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siege.getCounters().add(otherSiegeCounter);
+        otherSiegeCounter = new SiegeCounterEntity();
+        otherSiegeCounter.setPhasing(true);
+        otherSiegeCounter.setCounter(createCounter(14l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siege.getCounters().add(otherSiegeCounter);
+
+        try {
+            siegeService.chooseMan(request);
+            Assert.fail("Should break because chooseMan.counter will lead to a stack with more than 3 counters");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_TOO_BIG, e.getCode());
+            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+        }
     }
 
     @Test
     public void testChooseUndermineNoEffect() throws FunctionalException {
         SiegeUndermineBuilder.create()
-                .bonus(0).die(3)
+                .bonus(-5).die(3)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE));
@@ -933,14 +994,14 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
     public void testChooseUndermineSurrender() throws FunctionalException {
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(3).fortress(3)
+                .fortress(3)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.CHOOSE_MAN).result(SiegeUndermineResultEnum.SURRENDER));
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(3).fortress(2).naturalFortress(1)
+                .fortress(2).naturalFortress(1)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -948,7 +1009,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(3).naturalFortress(2)
+                .naturalFortress(2)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -956,23 +1017,23 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(3).naturalFortress(1)
+                .naturalFortress(1)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
                         .addControl().fortressFalls());
 
         SiegeUndermineBuilder.create()
-                .bonus(3).die(10)
-                .besiegerForces(3).naturalFortress(1).fortress(2)
+                .bonus(4).die(10)
+                .naturalFortress(1).fortress(2)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
                         .addControl().fortressFalls());
 
         SiegeUndermineBuilder.create()
-                .bonus(3).die(10)
-                .besiegerForces(3).fortress(1)
+                .bonus(6).die(10)
+                .fortress(1)
                 .owner(Camp.ALLY).controller(Camp.ENEMY)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
@@ -980,8 +1041,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                         .removeControl().fortressFalls());
 
         SiegeUndermineBuilder.create()
-                .bonus(3).die(10)
-                .besiegerForces(3)
+                .bonus(8).die(10)
+
                 .owner(Camp.NEUTRAL).controller(Camp.ENEMY)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
@@ -990,7 +1051,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(3).naturalFortress(1)
+                .naturalFortress(1)
                 .owner(Camp.ENEMY).controller(Camp.ENEMY)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
@@ -1002,7 +1063,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
     public void testChooseUndermineSurrenderManned() throws FunctionalException {
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(5).naturalFortress(2).fortress(4).man(true)
+                .naturalFortress(2).fortress(4).man(true)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1010,7 +1071,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(5).naturalFortress(2).fortress(4).man(false)
+                .naturalFortress(2).fortress(4).man(false)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1018,7 +1079,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(5).naturalFortress(2).fortress(3).man(false)
+                .naturalFortress(2).fortress(3).man(false)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1026,7 +1087,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
-                .besiegerForces(5).fortress(2).man(true)
+                .fortress(2).man(true)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1035,7 +1096,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
                 .owner(Camp.SELF).controller(Camp.ENEMY)
-                .besiegerForces(5).fortress(2).man(true)
+                .fortress(2).man(true)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1044,7 +1105,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
                 .owner(Camp.ENEMY).controller(Camp.ENEMY)
-                .besiegerForces(5).fortress(2).man(true)
+                .fortress(2).man(true)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1053,7 +1114,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
                 .owner(Camp.ALLY).controller(Camp.ENEMY)
-                .besiegerForces(5).fortress(2).man(true)
+                .fortress(2).man(true)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1062,7 +1123,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeUndermineBuilder.create()
                 .bonus(3).die(10)
                 .owner(Camp.NEUTRAL).controller(Camp.ENEMY)
-                .besiegerForces(5).fortress(2).man(true)
+                .fortress(2).man(true)
                 .whenChooseMode(siegeService, this)
                 .thenExpect(SiegeUndermineResultBuilder.create()
                         .status(SiegeStatusEnum.DONE).result(SiegeUndermineResultEnum.SURRENDER)
@@ -1074,7 +1135,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         private Camp controller;
         private int naturalFortress;
         private Integer fortress;
-        private int besiegerForces;
         private int siegeworkMinus;
         private int siegeworkPlus;
         private int bonus;
@@ -1105,11 +1165,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder fortress(Integer fortress) {
             this.fortress = fortress;
-            return this;
-        }
-
-        SiegeUndermineBuilder besiegerForces(int besiegerForces) {
-            this.besiegerForces = besiegerForces;
             return this;
         }
 
@@ -1185,15 +1240,26 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
             siege.setProvince("pecs");
             siege.setBonus(bonus);
-            for (int i = 0; i < besiegerForces; i++) {
-                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
-                siegeCounter.setSiege(siege);
-                siegeCounter.setPhasing(true);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setCountry(Camp.SELF.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
-                siege.getCounters().add(siegeCounter);
-            }
+            SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+            siegeCounter.setSiege(siege);
+            siegeCounter.setPhasing(true);
+            siegeCounter.setCounter(new CounterEntity());
+            siegeCounter.getCounter().setId(12l);
+            siegeCounter.getCounter().setCountry(Camp.SELF.name);
+            siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+            siegeCounter.getCounter().setOwner(new StackEntity());
+            siegeCounter.getCounter().getOwner().setId(2l);
+            siege.getCounters().add(siegeCounter);
+            siegeCounter = new SiegeCounterEntity();
+            siegeCounter.setSiege(siege);
+            siegeCounter.setPhasing(true);
+            siegeCounter.setCounter(new CounterEntity());
+            siegeCounter.getCounter().setId(13l);
+            siegeCounter.getCounter().setCountry(Camp.SELF.name);
+            siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+            siegeCounter.getCounter().setOwner(new StackEntity());
+            siegeCounter.getCounter().getOwner().setId(2l);
+            siege.getCounters().add(siegeCounter);
             game.getSieges().add(siege);
 
             if (owner == null) {
@@ -1220,9 +1286,13 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 110L));
             when(testClass.counterDomain.createCounter(any(), any(), any(), any()))
                     .thenAnswer(invocationOnMock -> {
-                        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, 1010L);
-                        diff.getAttributes().add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
-                        return diff;
+                        CounterFaceTypeEnum face = invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class);
+                        if (face != CounterFaceTypeEnum.SIEGEWORK_MINUS && face != CounterFaceTypeEnum.SIEGEWORK_PLUS) {
+                            return DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, 1060l,
+                                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
+                        }
+                        return DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, 1010L,
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
                     });
 
             when(testClass.counterDomain.removeCounter(anyLong(), any()))
@@ -1249,12 +1319,12 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             diffs = testClass.retrieveDiffsCreated();
 
             if (man != null) {
-                Request<ValidateRequest> manRequest = new Request<>();
+                Request<ChooseManForSiegeRequest> manRequest = new Request<>();
                 manRequest.setGame(new GameInfo());
                 manRequest.getGame().setIdGame(game.getId());
                 manRequest.getGame().setVersionGame(VERSION_SINCE);
                 manRequest.setIdCountry(self.getId());
-                manRequest.setRequest(new ValidateRequest(man));
+                manRequest.setRequest(new ChooseManForSiegeRequest(man, 12l));
                 siegeService.chooseMan(manRequest);
 
                 diffsMan = testClass.retrieveDiffsCreated();
@@ -1376,6 +1446,20 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 Assert.assertNotNull("The endSiege diff event has not been received while it should.", endSiege);
             } else {
                 Assert.assertNull("The endSiege diff event has been received while it should not.", endSiege);
+            }
+            long counterAdded = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 1060l)
+                    .count();
+            DiffEntity removeArmy = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 12l)
+                    .findAny()
+                    .orElse(null);
+            if (man != null && man) {
+                Assert.assertEquals("2 counters should have been added because of manning the fortress but was not.", 2l, counterAdded);
+                Assert.assertNotNull("The army counter should have been removed because of manning the fortress but was not.", removeArmy);
+            } else {
+                Assert.assertEquals("0 counter should have been added because of not manning the fortress but was not.", 0l, counterAdded);
+                Assert.assertNull("The army counter should not have been removed because of not manning the fortress but was.", removeArmy);
             }
 
             return this;

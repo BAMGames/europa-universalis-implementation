@@ -6,7 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.ISiegeService;
-import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.military.ChooseManForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.SelectForcesRequest;
@@ -37,10 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -689,7 +686,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse chooseMan(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+    public DiffResponse chooseMan(Request<ChooseManForSiegeRequest> request) throws FunctionalException, TechnicalException {
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
@@ -730,7 +727,66 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         List<DiffEntity> diffs = new ArrayList<>();
 
-        diffs.addAll(endSiege(siege, country, game, attributes, request.getRequest().isValidate()));
+        if (request.getRequest().isMan()) {
+            failIfNull(new AbstractService.CheckForThrow<>()
+                    .setTest(request.getRequest().getIdCounter())
+                    .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                    .setMsgFormat(MSG_MISSING_PARAMETER)
+                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                    .setParams(METHOD_CHOOSE_MAN));
+
+            CounterEntity counter = siege.getCounters().stream()
+                    .filter(SiegeCounterEntity::isPhasing)
+                    .map(SiegeCounterEntity::getCounter)
+                    .filter(c -> Objects.equals(request.getRequest().getIdCounter(), c.getId()))
+                    .findAny()
+                    .orElse(null);
+
+            failIfNull(new AbstractService.CheckForThrow<>()
+                    .setTest(counter)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER)
+                    .setMsgFormat("{1}: {0} The losses cannot involve the counter {2}.")
+                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                    .setParams(METHOD_CHOOSE_MAN, request.getRequest().getIdCounter()));
+
+            double size = CounterUtil.getSizeFromType(counter.getType());
+            failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                    .setTest(size < 1)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG)
+                    .setMsgFormat("{1}: {0} The counter {2} cannot take {3} losses because it cannot take more than {4}.")
+                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                    .setParams(METHOD_CHOOSE_MAN, request.getRequest().getIdCounter(), 1, size));
+
+            if (size > 1) {
+                List<CounterFaceTypeEnum> faces = new ArrayList<>();
+                if (size == 2) {
+                    faces.add(CounterUtil.getSize2FromType(counter.getType()));
+                } else if (size == 4) {
+                    faces.add(CounterUtil.getSize2FromType(counter.getType()));
+                    faces.add(CounterUtil.getSize1FromType(counter.getType()));
+                }
+                faces.removeIf(o -> o == null);
+
+                long newStackSize = siege.getCounters().stream()
+                        .filter(SiegeCounterEntity::isPhasing)
+                        .map(SiegeCounterEntity::getCounter)
+                        .collect(Collectors.counting()) + faces.size() - 1;
+
+                failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                        .setTest(newStackSize > 3)
+                        .setCodeError(IConstantsServiceException.STACK_TOO_BIG)
+                        .setMsgFormat("{1}: {0} The stack {2} is too big to add the counter (size: {3} / 3, force: {4} / 8}.")
+                        .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                        .setParams(METHOD_CHOOSE_MAN, "besieger", newStackSize, "N/A"));
+
+                diffs.addAll(faces.stream()
+                        .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
+                        .collect(Collectors.toList()));
+            }
+            diffs.add(counterDomain.removeCounter(request.getRequest().getIdCounter(), game));
+        }
+
+        diffs.addAll(endSiege(siege, country, game, attributes, request.getRequest().isMan()));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));
