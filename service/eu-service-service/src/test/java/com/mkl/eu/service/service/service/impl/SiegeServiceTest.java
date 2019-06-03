@@ -5,10 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.military.ChooseManForSiegeRequest;
-import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
-import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
-import com.mkl.eu.client.service.service.military.SelectForcesRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -891,6 +888,153 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
+    public void testChooseBreachFail() {
+        Pair<Request<ChooseBreachForSiegeRequest>, GameEntity> pair = testCheckGame(siegeService::chooseBreach, "chooseBreach");
+        Request<ChooseBreachForSiegeRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.SELECT_FORCES);
+        siege.setProvince("pecs");
+        game.getSieges().add(siege);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        request.setIdCountry(12L);
+        testCheckStatus(pair.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
+
+        try {
+            siegeService.chooseBreach(request);
+            Assert.fail("Should break because chooseBreach.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseBreach.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ChooseBreachForSiegeRequest());
+
+        try {
+            siegeService.chooseBreach(request);
+            Assert.fail("Should break because no siege is in right status");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SIEGE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("chooseBreach", e.getParams()[0]);
+        }
+
+        siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
+
+        try {
+            siegeService.chooseBreach(request);
+            Assert.fail("Should break because chooseBreach.choice is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseBreach.request.choice", e.getParams()[0]);
+        }
+
+        request.getRequest().setChoice(ChooseBreachForSiegeRequest.ChoiceBreachEnum.WAR_HONORS);
+
+        try {
+            siegeService.chooseBreach(request);
+            Assert.fail("Should break because war honors is not possible");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseBreach.request.choice", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testChooseBreachWarHonors() throws FunctionalException {
+        Pair<Request<ChooseBreachForSiegeRequest>, GameEntity> pair = testCheckGame(siegeService::chooseBreach, "chooseBreach");
+        Request<ChooseBreachForSiegeRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
+        siege.setBonus(2);
+        siege.setUndermineDie(10);
+        siege.setProvince("pecs");
+        game.getSieges().add(siege);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        request.setIdCountry(12L);
+        testCheckStatus(pair.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
+
+        request.setRequest(new ChooseBreachForSiegeRequest());
+        request.getRequest().setChoice(ChooseBreachForSiegeRequest.ChoiceBreachEnum.WAR_HONORS);
+
+        simulateDiff();
+
+        siegeService.chooseBreach(request);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
+
+        Assert.assertNotNull(diffEntity);
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.SIEGE, diffEntity.getTypeObject());
+        Assert.assertEquals(siege.getId(), diffEntity.getIdObject());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(game.getId(), diffEntity.getIdGame());
+        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(SiegeStatusEnum.REDEPLOY.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals(SiegeStatusEnum.REDEPLOY, siege.getStatus());
+    }
+
+    @Test
+    public void testChooseBreachNothing() throws FunctionalException {
+        Pair<Request<ChooseBreachForSiegeRequest>, GameEntity> pair = testCheckGame(siegeService::chooseBreach, "chooseBreach");
+        Request<ChooseBreachForSiegeRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
+        siege.setBonus(2);
+        siege.setUndermineDie(10);
+        siege.setProvince("pecs");
+        game.getSieges().add(siege);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        request.setIdCountry(12L);
+        testCheckStatus(pair.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
+
+        request.setRequest(new ChooseBreachForSiegeRequest());
+        request.getRequest().setChoice(ChooseBreachForSiegeRequest.ChoiceBreachEnum.NOTHING);
+
+        simulateDiff();
+
+        siegeService.chooseBreach(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+        DiffEntity diffEntity = diffEntities.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.SIEGE)
+                .findAny()
+                .orElse(null);
+
+        Assert.assertNotNull(diffEntity);
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.SIEGE, diffEntity.getTypeObject());
+        Assert.assertEquals(siege.getId(), diffEntity.getIdObject());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(game.getId(), diffEntity.getIdGame());
+        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(SiegeStatusEnum.DONE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals(SiegeStatusEnum.DONE, siege.getStatus());
+    }
+
+    @Test
     public void testChooseUndermineNoEffect() throws FunctionalException {
         SiegeUndermineBuilder.create()
                 .bonus(-5).die(3)
@@ -1246,7 +1390,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siegeCounter.setCounter(new CounterEntity());
             siegeCounter.getCounter().setId(12l);
             siegeCounter.getCounter().setCountry(Camp.SELF.name);
-            siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+            siegeCounter.getCounter().setType(fortress != null && fortress >= 3 ? CounterFaceTypeEnum.ARMY_PLUS : CounterFaceTypeEnum.ARMY_MINUS);
             siegeCounter.getCounter().setOwner(new StackEntity());
             siegeCounter.getCounter().getOwner().setId(2l);
             siege.getCounters().add(siegeCounter);
@@ -1455,7 +1599,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                     .findAny()
                     .orElse(null);
             if (man != null && man) {
-                Assert.assertEquals("2 counters should have been added because of manning the fortress but was not.", 2l, counterAdded);
+                long expectedAdded = fortress != null && fortress >= 3 ? 2 : 1;
+                Assert.assertEquals("2 counters should have been added because of manning the fortress but was not.", expectedAdded, counterAdded);
                 Assert.assertNotNull("The army counter should have been removed because of manning the fortress but was not.", removeArmy);
             } else {
                 Assert.assertEquals("0 counter should have been added because of not manning the fortress but was not.", 0l, counterAdded);

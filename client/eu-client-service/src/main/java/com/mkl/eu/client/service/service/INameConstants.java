@@ -104,8 +104,6 @@ public interface INameConstants {
     String PARAMETER_SELECT_FORCES = "selectForces";
     /** Name of the parameter forces. */
     String PARAMETER_FORCES = "forces";
-    /** Name of the parameter validateForces. */
-    String PARAMETER_VALIDATE_FORCES = "validateForces";
     /** Name of the parameter withdrawBeforeBattle. */
     String PARAMETER_WITHDRAW_BEFORE_BATTLE = "withdrawBeforeBattle";
     /** Name of the parameter retreatFirstDay. */
@@ -126,6 +124,10 @@ public interface INameConstants {
     String PARAMETER_MODE = "mode";
     /** Name of the parameter chooseMan. */
     String PARAMETER_CHOOSE_MAN = "chooseMan";
+    /** Name of the parameter chooseBreach. */
+    String PARAMETER_CHOOSE_BREACH = "chooseBreach";
+    /** Name of the parameter choice. */
+    String PARAMETER_CHOICE = "choice";
 
 
 
@@ -185,8 +187,6 @@ public interface INameConstants {
     String METHOD_CHOOSE_BATTLE = "chooseBattle";
     /** Name of the method selectForces. */
     String METHOD_SELECT_FORCES = "selectForces";
-    /** Name of the method validateForces. */
-    String METHOD_VALIDATE_FORCES = "validateForces";
     /** Name of the method withdrawBeforeBattle. */
     String METHOD_WITHDRAW_BEFORE_BATTLE = "withdrawBeforeBattle";
     /** Name of the method retreatFirstDay. */
@@ -197,8 +197,10 @@ public interface INameConstants {
     String METHOD_RETREAT_AFTER_BATTLE = "retreatAfterBattle";
     /** Name of the method chooseSiege. */
     String METHOD_CHOOSE_SIEGE = "chooseSiege";
-    /** Name of the parameter chooseMode. */
+    /** Name of the method chooseMode. */
     String METHOD_CHOOSE_MODE = "chooseMode";
-    /** Name of the parameter chooseMan. */
+    /** Name of the method chooseMan. */
     String METHOD_CHOOSE_MAN = "chooseMan";
+    /** Name of the method chooseBreach. */
+    String METHOD_CHOOSE_BREACH = "chooseBreach";
 }

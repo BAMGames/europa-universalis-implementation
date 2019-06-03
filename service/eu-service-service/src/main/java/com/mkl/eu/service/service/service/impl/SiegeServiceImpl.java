@@ -6,10 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.ISiegeService;
-import com.mkl.eu.client.service.service.military.ChooseManForSiegeRequest;
-import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
-import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
-import com.mkl.eu.client.service.service.military.SelectForcesRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -787,6 +784,84 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         }
 
         diffs.addAll(endSiege(siege, country, game, attributes, request.getRequest().isMan()));
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        diffs.add(diff);
+
+        return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse chooseBreach(Request<ChooseBreachForSiegeRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_BREACH)
+                .setParams(METHOD_CHOOSE_BREACH));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_BREACH, PARAMETER_REQUEST)
+                .setParams(METHOD_CHOOSE_BREACH));
+
+        SiegeEntity siege = game.getSieges().stream()
+                .filter(bat -> bat.getStatus() == SiegeStatusEnum.CHOOSE_BREACH)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(siege)
+                .setCodeError(IConstantsServiceException.SIEGE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No siege of status {2} can be found.")
+                .setName(PARAMETER_CHOOSE_BREACH)
+                .setParams(METHOD_CHOOSE_BREACH, SiegeStatusEnum.CHOOSE_BREACH.name()));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest().getChoice())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_BREACH, PARAMETER_REQUEST, PARAMETER_CHOICE)
+                .setParams(METHOD_CHOOSE_BREACH));
+
+        boolean warHonorsImpossible = request.getRequest().getChoice() == ChooseBreachForSiegeRequest.ChoiceBreachEnum.WAR_HONORS && siege.getBonus() + siege.getUndermineDie() != 12;
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(warHonorsImpossible)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat("{1}: {0} War honors is not a possibility.")
+                .setName(PARAMETER_CHOOSE_BREACH, PARAMETER_REQUEST, PARAMETER_CHOICE)
+                .setParams(METHOD_CHOOSE_BREACH));
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        switch (request.getRequest().getChoice()) {
+            case BREACH:
+                break;
+            case WAR_HONORS:
+                siege.setStatus(SiegeStatusEnum.REDEPLOY);
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.REDEPLOY));
+                break;
+            case NOTHING:
+                diffs.addAll(cleanUpSiege(siege, attributes));
+                break;
+        }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));

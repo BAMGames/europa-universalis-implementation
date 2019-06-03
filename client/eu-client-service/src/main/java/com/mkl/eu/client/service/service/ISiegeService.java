@@ -3,10 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.service.military.ChooseManForSiegeRequest;
-import com.mkl.eu.client.service.service.military.ChooseModeForSiegeRequest;
-import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
-import com.mkl.eu.client.service.service.military.SelectForcesRequest;
+import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
@@ -67,4 +64,15 @@ public interface ISiegeService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse chooseMan(@WebParam(name = PARAMETER_CHOOSE_MAN) Request<ChooseManForSiegeRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Choose to take a breach in a siege.
+     *
+     * @param request info about the breach to take.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse chooseBreach(@WebParam(name = PARAMETER_CHOOSE_BREACH) Request<ChooseBreachForSiegeRequest> request) throws FunctionalException, TechnicalException;
 }
