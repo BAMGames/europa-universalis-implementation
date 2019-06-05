@@ -974,4 +974,59 @@ public interface IConstantsServiceException {
      * </p>
      */
     String SIEGE_CANT_REDEPLOY = "exception.eu.board.siege_cant_redeploy";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat multiple times in the same province.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>2: name of the province</li>
+     * </ul>
+     * </p>
+     */
+    String PROVINCE_REDEPLOY_TWICE = "exception.eu.board.province_redeploy_twice";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat twice.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>2: id or size of the unit trying to redeploy</li>
+     * </ul>
+     * </p>
+     */
+    String UNIT_CANT_REDEPLOY_TWICE = "exception.eu.board.unit_cant_redeploy_twice";
+
+    /**
+     * <p>
+     * Exception thrown when trying to retreat into a province that is not eligible.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>2: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String UNIT_CANT_REDEPLOY_PROVINCE = "exception.eu.board.unit_cant_redeploy_province";
+
+    /**
+     * <p>
+     * Exception thrown when trying to redeploy a garrison without a War Honors result.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String GARRISON_CANT_REDEPLOY = "exception.eu.board.garrison_cant_redeploy";
 }

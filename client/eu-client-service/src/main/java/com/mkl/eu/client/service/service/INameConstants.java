@@ -128,6 +128,10 @@ public interface INameConstants {
     String PARAMETER_CHOOSE_BREACH = "chooseBreach";
     /** Name of the parameter choice. */
     String PARAMETER_CHOICE = "choice";
+    /** Name of the parameter redeploy. */
+    String PARAMETER_REDEPLOY = "redeploy";
+    /** Name of the parameter unit. */
+    String PARAMETER_UNIT = "unit";
 
 
 
@@ -203,4 +207,6 @@ public interface INameConstants {
     String METHOD_CHOOSE_MAN = "chooseMan";
     /** Name of the method chooseBreach. */
     String METHOD_CHOOSE_BREACH = "chooseBreach";
+    /** Name of the method redeploy. */
+    String METHOD_REDEPLOY = "redeploy";
 }

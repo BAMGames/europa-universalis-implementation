@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.ISiegeService;
+import com.mkl.eu.client.service.service.common.RedeployRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -729,7 +730,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .setTest(request.getRequest().getIdCounter())
                     .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                     .setMsgFormat(MSG_MISSING_PARAMETER)
-                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                     .setParams(METHOD_CHOOSE_MAN));
 
             CounterEntity counter = siege.getCounters().stream()
@@ -743,7 +744,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .setTest(counter)
                     .setCodeError(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER)
                     .setMsgFormat("{1}: {0} The losses cannot involve the counter {2}.")
-                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                     .setParams(METHOD_CHOOSE_MAN, request.getRequest().getIdCounter()));
 
             double size = CounterUtil.getSizeFromType(counter.getType());
@@ -751,7 +752,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .setTest(size < 1)
                     .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG)
                     .setMsgFormat("{1}: {0} The counter {2} cannot take {3} losses because it cannot take more than {4}.")
-                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                    .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                     .setParams(METHOD_CHOOSE_MAN, request.getRequest().getIdCounter(), 1, size));
 
             if (size > 1) {
@@ -773,7 +774,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                         .setTest(newStackSize > 3)
                         .setCodeError(IConstantsServiceException.STACK_TOO_BIG)
                         .setMsgFormat("{1}: {0} The stack {2} is too big to add the counter (size: {3} / 3, force: {4} / 8}.")
-                        .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_COUNTER)
+                        .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                         .setParams(METHOD_CHOOSE_MAN, "besieger", newStackSize, "N/A"));
 
                 diffs.addAll(faces.stream()
@@ -862,6 +863,162 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 diffs.addAll(cleanUpSiege(siege, attributes));
                 break;
         }
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        diffs.add(diff);
+
+        return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse redeploy(Request<RedeployRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_REDEPLOY)
+                .setParams(METHOD_REDEPLOY));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_REDEPLOY, PARAMETER_REDEPLOY);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_REDEPLOY, PARAMETER_REDEPLOY);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST)
+                .setParams(METHOD_REDEPLOY));
+
+        SiegeEntity siege = game.getSieges().stream()
+                .filter(bat -> bat.getStatus() == SiegeStatusEnum.REDEPLOY)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(siege)
+                .setCodeError(IConstantsServiceException.SIEGE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No siege of status {2} can be found.")
+                .setName(PARAMETER_REDEPLOY)
+                .setParams(METHOD_REDEPLOY, SiegeStatusEnum.REDEPLOY.name()));
+
+        List<RedeployRequest.ProvinceRedeploy> redeploys = request.getRequest().getRedeploys();
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(CollectionUtils.isEmpty(redeploys))
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY)
+                .setParams(METHOD_REDEPLOY));
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        List<DiffEntity> diffs = new ArrayList<>();
+        boolean missingProvince = redeploys.stream()
+                .anyMatch(redeploy -> StringUtils.isEmpty(redeploy.getProvince()));
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(missingProvince)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat("{1} : {0} The province is mandatory.")
+                .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_PROVINCE)
+                .setParams(METHOD_REDEPLOY));
+        Set<String> provinces = new HashSet<>();
+        List<String> duplicateProvinces = redeploys.stream()
+                .map(RedeployRequest.ProvinceRedeploy::getProvince)
+                .filter(province -> !provinces.add(province))
+                .collect(Collectors.toList());
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(duplicateProvinces.isEmpty())
+                .setCodeError(IConstantsServiceException.PROVINCE_REDEPLOY_TWICE)
+                .setMsgFormat("{1} : {0} The province {2} has already been redeployed.")
+                .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_PROVINCE)
+                .setParams(METHOD_REDEPLOY, duplicateProvinces));
+
+        Set<Long> idCounters = new HashSet<>();
+        List<Long> duplicateCounters = redeploys.stream()
+                .flatMap(redeploy -> redeploy.getUnits().stream())
+                .map(RedeployRequest.Unit::getIdCounter)
+                .filter(id -> !idCounters.add(id))
+                .collect(Collectors.toList());
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(duplicateCounters.isEmpty())
+                .setCodeError(IConstantsServiceException.UNIT_CANT_REDEPLOY_TWICE)
+                .setMsgFormat("{1} : {0} The counter {2} has already been redeployed.")
+                .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_UNIT)
+                .setParams(METHOD_REDEPLOY, duplicateCounters));
+
+        for (RedeployRequest.ProvinceRedeploy redeploy : redeploys) {
+            StackEntity stack = counterDomain.createStack(redeploy.getProvince(), country.getName(), game);
+            AbstractProvinceEntity province = provinceDao.getProvinceByName(redeploy.getProvince());
+
+            failIfNull(new AbstractService.CheckForThrow<>()
+                    .setTest(province)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_PROVINCE)
+                    .setParams(METHOD_REDEPLOY, redeploy.getProvince()));
+
+            boolean canRedeploy = oeUtil.canRetreat(province, false, 0d, country, game);
+
+            failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                    .setTest(canRedeploy)
+                    .setCodeError(IConstantsServiceException.UNIT_CANT_REDEPLOY_PROVINCE)
+                    .setMsgFormat("{1}: {0} Impossible to redeploy units in the province {2}.")
+                    .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_PROVINCE)
+                    .setParams(METHOD_CHOOSE_MODE, province.getName()));
+
+            for (RedeployRequest.Unit unit : redeploy.getUnits()) {
+                failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                        .setTest(unit.getIdCounter() == null && unit.getFace() != CounterFaceTypeEnum.LAND_DETACHMENT)
+                        .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                        .setMsgFormat("{1} : {0} The id or a land detachment is mandatory.")
+                        .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_UNIT)
+                        .setParams(METHOD_REDEPLOY));
+
+                if (unit.getIdCounter() == null) {
+                    failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                            .setTest(siege.getUndermineResult() == SiegeUndermineResultEnum.WAR_HONOUR)
+                            .setCodeError(IConstantsServiceException.GARRISON_CANT_REDEPLOY)
+                            .setMsgFormat("{1} : {0} The garrison can only be redeployed if War Honor were given.")
+                            .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_UNIT)
+                            .setParams(METHOD_REDEPLOY));
+                    AbstractProvinceEntity siegeProvince = provinceDao.getProvinceByName(siege.getProvince());
+                    String controller = oeUtil.getController(siegeProvince, game);
+                    failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                            .setTest(StringUtils.equals(controller, unit.getCountry()))
+                            .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                            .setMsgFormat("{1} : {0} The country {2} is wrong.")
+                            .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_UNIT, PARAMETER_COUNTRY)
+                            .setParams(METHOD_REDEPLOY, unit.getCountry()));
+                    diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, unit.getCountry(), province.getName(), null, game));
+                } else {
+                    CounterEntity counter = siege.getCounters().stream()
+                            .filter(SiegeCounterEntity::isNotPhasing)
+                            .map(SiegeCounterEntity::getCounter)
+                            .filter(c -> Objects.equals(unit.getIdCounter(), c.getId()))
+                            .findAny()
+                            .orElse(null);
+
+                    failIfNull(new AbstractService.CheckForThrow<>()
+                            .setTest(counter)
+                            .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                            .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                            .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_REDEPLOY, PARAMETER_UNIT, PARAMETER_ID_COUNTER)
+                            .setParams(METHOD_REDEPLOY, unit.getIdCounter()));
+
+                    diffs.add(counterDomain.changeCounterOwner(counter, stack, game));
+                }
+            }
+        }
+
+        diffs.addAll(fortressFalls(siege, country, game, attributes));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));

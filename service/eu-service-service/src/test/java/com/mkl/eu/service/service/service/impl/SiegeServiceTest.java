@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.service.common.RedeployRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -36,10 +37,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
@@ -830,20 +828,20 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.chooseMan(request);
-            Assert.fail("Should break because chooseMan.counter is null");
+            Assert.fail("Should break because chooseMan.idCounter is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+            Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
 
         request.getRequest().setIdCounter(12l);
 
         try {
             siegeService.chooseMan(request);
-            Assert.fail("Should break because chooseMan.counter does not exist");
+            Assert.fail("Should break because chooseMan.idCounter does not exist");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
-            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+            Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
 
         SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
@@ -852,20 +850,20 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.chooseMan(request);
-            Assert.fail("Should break because chooseMan.counter belongs to other player");
+            Assert.fail("Should break because chooseMan.idCounter belongs to other player");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER, e.getCode());
-            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+            Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
 
         siegeCounter.setPhasing(true);
 
         try {
             siegeService.chooseMan(request);
-            Assert.fail("Should break because chooseMan.counter is too small to take a loss");
+            Assert.fail("Should break because chooseMan.idCounter is too small to take a loss");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG, e.getCode());
-            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+            Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
 
         siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
@@ -880,10 +878,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.chooseMan(request);
-            Assert.fail("Should break because chooseMan.counter will lead to a stack with more than 3 counters");
+            Assert.fail("Should break because chooseMan.idCounter will lead to a stack with more than 3 counters");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.STACK_TOO_BIG, e.getCode());
-            Assert.assertEquals("chooseMan.request.counter", e.getParams()[0]);
+            Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
     }
 
@@ -1692,9 +1690,310 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         String name;
 
-        private Camp(String name) {
+        Camp(String name) {
             this.name = name;
         }
     }
 
+    @Test
+    public void testRedeployFail() {
+        Pair<Request<RedeployRequest>, GameEntity> pair = testCheckGame(siegeService::redeploy, "redeploy");
+        Request<RedeployRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.SELECT_FORCES);
+        siege.setProvince("pecs");
+        game.getSieges().add(siege);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
+        request.setIdCountry(12L);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because redeploy.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new RedeployRequest());
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because no siege is in right status");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SIEGE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("redeploy", e.getParams()[0]);
+        }
+
+        siege.setStatus(SiegeStatusEnum.REDEPLOY);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy", e.getParams()[0]);
+        }
+
+        RedeployRequest.ProvinceRedeploy redeploy1 = new RedeployRequest.ProvinceRedeploy();
+        request.getRequest().getRedeploys().add(redeploy1);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.province is empty");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.province", e.getParams()[0]);
+        }
+
+        redeploy1.setProvince("");
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.province is empty");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.province", e.getParams()[0]);
+        }
+
+        redeploy1.setProvince("idf");
+        RedeployRequest.Unit unit11 = new RedeployRequest.Unit();
+        redeploy1.getUnits().add(unit11);
+        RedeployRequest.Unit unit12 = new RedeployRequest.Unit();
+        redeploy1.getUnits().add(unit12);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.unit has been redeployed multiple times");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.UNIT_CANT_REDEPLOY_TWICE, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit", e.getParams()[0]);
+        }
+
+        unit12.setIdCounter(12l);
+
+        RedeployRequest.ProvinceRedeploy redeploy2 = new RedeployRequest.ProvinceRedeploy();
+        redeploy2.setProvince("idf");
+        request.getRequest().getRedeploys().add(redeploy2);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.province has been redeployed multiple times");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCE_REDEPLOY_TWICE, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.province", e.getParams()[0]);
+        }
+
+        redeploy2.setProvince("orleans");
+        RedeployRequest.Unit unit21 = new RedeployRequest.Unit();
+        unit21.setIdCounter(12l);
+        redeploy2.getUnits().add(unit21);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.unit has been redeployed multiple times");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.UNIT_CANT_REDEPLOY_TWICE, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit", e.getParams()[0]);
+        }
+
+        unit21.setIdCounter(21L);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.province", e.getParams()[0]);
+        }
+
+        when(provinceDao.getProvinceByName("idf")).thenReturn(new EuropeanProvinceEntity());
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(new EuropeanProvinceEntity());
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.province is not a province where you can retreat");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.UNIT_CANT_REDEPLOY_PROVINCE, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.province", e.getParams()[0]);
+        }
+
+        when(oeUtil.canRetreat(any(), anyBoolean(), anyDouble(), any(), any())).thenReturn(true);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.unit has no id nor is a garrison");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit", e.getParams()[0]);
+        }
+
+        unit11.setFace(CounterFaceTypeEnum.LAND_DETACHMENT);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.unit is a garrison and no war honor were given");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.GARRISON_CANT_REDEPLOY, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit", e.getParams()[0]);
+        }
+
+        siege.setUndermineResult(SiegeUndermineResultEnum.WAR_HONOUR);
+        when(oeUtil.getController(any(), any())).thenReturn("spain");
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because request.redeploy.unit.country is a garrison of the wrong country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit.country", e.getParams()[0]);
+        }
+
+        unit11.setCountry("spain");
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because redeploy.unit.idCounter does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit.idCounter", e.getParams()[0]);
+        }
+
+        SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+        siegeCounter.setCounter(createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        siegeCounter.setPhasing(true);
+        siege.getCounters().add(siegeCounter);
+        siegeCounter = new SiegeCounterEntity();
+        siegeCounter.setCounter(createCounter(21l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        siegeCounter.setPhasing(true);
+        siege.getCounters().add(siegeCounter);
+
+        try {
+            siegeService.redeploy(request);
+            Assert.fail("Should break because redeploy.unit.idCounter belongs to other player");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("redeploy.request.redeploy.unit.idCounter", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testRedeploySuccess() throws FunctionalException {
+        Pair<Request<RedeployRequest>, GameEntity> pair = testCheckGame(siegeService::redeploy, "redeploy");
+        Request<RedeployRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.REDEPLOY);
+        siege.setUndermineResult(SiegeUndermineResultEnum.WAR_HONOUR);
+        siege.setFortressLevel(3);
+        siege.setProvince("pecs");
+        game.getSieges().add(siege);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
+
+        request.setIdCountry(12L);
+        request.setRequest(new RedeployRequest());
+
+        RedeployRequest.ProvinceRedeploy redeploy1 = new RedeployRequest.ProvinceRedeploy();
+        redeploy1.setProvince("idf");
+        RedeployRequest.Unit unit11 = new RedeployRequest.Unit();
+        unit11.setFace(CounterFaceTypeEnum.LAND_DETACHMENT);
+        unit11.setCountry("spain");
+        redeploy1.getUnits().add(unit11);
+        RedeployRequest.Unit unit12 = new RedeployRequest.Unit();
+        unit12.setIdCounter(12l);
+        redeploy1.getUnits().add(unit12);
+        request.getRequest().getRedeploys().add(redeploy1);
+
+
+        RedeployRequest.ProvinceRedeploy redeploy2 = new RedeployRequest.ProvinceRedeploy();
+        redeploy2.setProvince("orleans");
+        RedeployRequest.Unit unit21 = new RedeployRequest.Unit();
+        unit21.setIdCounter(21L);
+        redeploy2.getUnits().add(unit21);
+        request.getRequest().getRedeploys().add(redeploy2);
+
+        AbstractProvinceEntity idf = new EuropeanProvinceEntity();
+        AbstractProvinceEntity orleans = new EuropeanProvinceEntity();
+        AbstractProvinceEntity pecs = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+
+        when(oeUtil.canRetreat(idf, false, 0d, country, game)).thenReturn(true);
+        when(oeUtil.canRetreat(orleans, false, 0d, country, game)).thenReturn(true);
+
+        when(oeUtil.getController(pecs, game)).thenReturn("spain");
+
+        SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+        siegeCounter.setCounter(createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siege.getCounters().add(siegeCounter);
+        siegeCounter = new SiegeCounterEntity();
+        siegeCounter.setCounter(createCounter(21l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siege.getCounters().add(siegeCounter);
+        siegeCounter = new SiegeCounterEntity();
+        siegeCounter.setCounter(createCounter(30l, "turquie", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siegeCounter.setPhasing(true);
+        siege.getCounters().add(siegeCounter);
+
+        StackEntity stackIdf = new StackEntity();
+        stackIdf.setId(666l);
+        when(counterDomain.createStack("idf", country.getName(), game)).thenReturn(stackIdf);
+        StackEntity stackOrleans = new StackEntity();
+        stackOrleans.setId(667l);
+        when(counterDomain.createStack("orleans", country.getName(), game)).thenReturn(stackOrleans);
+        when(counterDomain.createCounter(any(), any(), any(), any(), any())).thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER));
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, CounterEntity.class).getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(1, StackEntity.class).getId())));
+
+        simulateDiff();
+
+        siegeService.redeploy(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(4, diffs.size());
+        DiffEntity garrisonDeployed = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.ADD && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(garrisonDeployed);
+        DiffEntity unitDeployedInIdf = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(diff.getIdObject(), 12l))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(unitDeployedInIdf);
+        Assert.assertEquals("666", getAttribute(unitDeployedInIdf, DiffAttributeTypeEnum.STACK));
+        DiffEntity unitDeployedInOrleans = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(diff.getIdObject(), 21l))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(unitDeployedInOrleans);
+        Assert.assertEquals("667", getAttribute(unitDeployedInOrleans, DiffAttributeTypeEnum.STACK));
+        DiffEntity siegeDiff = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.SIEGE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(siegeDiff);
+        Assert.assertEquals(2, siegeDiff.getAttributes().size());
+        Assert.assertEquals(SiegeStatusEnum.CHOOSE_MAN.name(), getAttribute(siegeDiff, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals(SiegeStatusEnum.CHOOSE_MAN, siege.getStatus());
+        Assert.assertEquals("true", getAttribute(siegeDiff, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS));
+        Assert.assertTrue(siege.isFortressFalls());
+    }
 }

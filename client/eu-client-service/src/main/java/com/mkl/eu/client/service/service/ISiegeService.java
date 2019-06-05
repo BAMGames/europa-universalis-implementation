@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.service;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.common.RedeployRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
@@ -75,4 +76,15 @@ public interface ISiegeService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse chooseBreach(@WebParam(name = PARAMETER_CHOOSE_BREACH) Request<ChooseBreachForSiegeRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Redeploy forces after war honors (or leaders after end of siege).
+     *
+     * @param request info about the redeploy to do.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse redeploy(@WebParam(name = PARAMETER_REDEPLOY) Request<RedeployRequest> request) throws FunctionalException, TechnicalException;
 }
