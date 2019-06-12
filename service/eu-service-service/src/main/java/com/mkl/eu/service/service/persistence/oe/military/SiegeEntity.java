@@ -28,7 +28,7 @@ public class SiegeEntity implements IEntity, Serializable {
     /** Turn of the competition. */
     private Integer turn;
     /** Level of the besieged fortress. */
-    private Integer fortressLevel;
+    private int fortressLevel;
     /** If there was a breach in this siege previously. */
     private boolean breach;
     /** Bonus for undermining. */
@@ -97,12 +97,12 @@ public class SiegeEntity implements IEntity, Serializable {
     }
 
     /** @return the fortressLevel. */
-    public Integer getFortressLevel() {
+    public int getFortressLevel() {
         return fortressLevel;
     }
 
     /** @param fortressLevel the fortressLevel to set. */
-    public void setFortressLevel(Integer fortressLevel) {
+    public void setFortressLevel(int fortressLevel) {
         this.fortressLevel = fortressLevel;
     }
 

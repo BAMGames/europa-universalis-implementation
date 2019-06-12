@@ -3,17 +3,20 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.common.RedeployRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.tables.ArtillerySiege;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
+import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -22,7 +25,9 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
+import com.mkl.eu.service.service.persistence.oe.military.SiegeSideEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
@@ -442,7 +447,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                         .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_MODE)
                         .setParams(METHOD_CHOOSE_MODE));
 
-                diffs.addAll(computeUndermine(siege, country, game, attributes));
+                diffs.addAll(computeUndermine(siege, country, attributes));
                 break;
             case REDEPLOY:
                 boolean canRetreat = oeUtil.canRetreat(province, false, size, country, game);
@@ -454,6 +459,11 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                         .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
                         .setParams(METHOD_CHOOSE_MODE, province.getName()));
 
+                // FIXME do the redeploy
+
+                break;
+            case ASSAULT:
+                diffs.addAll(computeAssault(siege, country, false, attributes));
                 break;
         }
 
@@ -469,14 +479,13 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
      *
      * @param siege      the siege.
      * @param country    the country doing the undermine.
-     * @param game       the game.
      * @param attributes the attributes about the MODIFY SIEGE diff.
      * @return the diffs involved.
      */
-    private List<DiffEntity> computeUndermine(SiegeEntity siege, PlayableCountryEntity country, GameEntity game, List<DiffAttributesEntity> attributes) {
+    private List<DiffEntity> computeUndermine(SiegeEntity siege, PlayableCountryEntity country, List<DiffAttributesEntity> attributes) {
         List<DiffEntity> diffs = new ArrayList<>();
 
-        int die = oeUtil.rollDie(game, country);
+        int die = oeUtil.rollDie(siege.getGame(), country);
         siege.setUndermineDie(die);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIEGE_UNDERMINE_DIE, die));
 
@@ -495,14 +504,14 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             case 5:
             case 6:
                 siege.setUndermineResult(SiegeUndermineResultEnum.SIEGE_WORK_MINUS);
-                diffs.addAll(addSiegework(CounterFaceTypeEnum.SIEGEWORK_MINUS, siege, game, attributes));
+                diffs.addAll(addSiegework(CounterFaceTypeEnum.SIEGEWORK_MINUS, siege));
                 diffs.addAll(cleanUpSiege(siege, attributes));
                 break;
             case 7:
             case 8:
             case 9:
                 siege.setUndermineResult(SiegeUndermineResultEnum.SIEGE_WORK_PLUS);
-                diffs.addAll(addSiegework(CounterFaceTypeEnum.SIEGEWORK_PLUS, siege, game, attributes));
+                diffs.addAll(addSiegework(CounterFaceTypeEnum.SIEGEWORK_PLUS, siege));
                 diffs.addAll(cleanUpSiege(siege, attributes));
                 break;
             case 10:
@@ -510,10 +519,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             case 12:
                 siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_BREACH));
+                siege.setBreach(true);
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIEGE_BREACH, true));
                 break;
             case 13:
                 siege.setUndermineResult(SiegeUndermineResultEnum.SURRENDER);
-                diffs.addAll(fortressFalls(siege, country, game, attributes));
+                diffs.addAll(fortressFalls(siege, country, attributes));
                 break;
         }
         if (siege.getUndermineResult() != null) {
@@ -526,19 +537,17 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
     /**
      * Adds a siegework in the province where the siege is.
      *
-     * @param siegework  the type of siegework to add.
-     * @param siege      the siege.
-     * @param game       the game.
-     * @param attributes the attributes about the MODIFY SIEGE diff.
+     * @param siegework the type of siegework to add.
+     * @param siege     the siege.
      * @return the diffs involved.
      */
-    private List<DiffEntity> addSiegework(CounterFaceTypeEnum siegework, SiegeEntity siege, GameEntity game, List<DiffAttributesEntity> attributes) {
+    private List<DiffEntity> addSiegework(CounterFaceTypeEnum siegework, SiegeEntity siege) {
         List<DiffEntity> diffs = new ArrayList<>();
 
-        StackEntity stack = game.getStacks().stream()
+        StackEntity stack = siege.getGame().getStacks().stream()
                 .filter(s -> StringUtils.equals(s.getProvince(), siege.getProvince()) && s.getCounters().stream().anyMatch(HAS_SIEGEWORK))
                 .findAny()
-                .orElseGet(() -> counterDomain.createStack(siege.getProvince(), null, game));
+                .orElseGet(() -> counterDomain.createStack(siege.getProvince(), null, siege.getGame()));
 
         long siegeworkPlus = stack.getCounters().stream()
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS)
@@ -547,9 +556,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS)
                 .collect(Collectors.counting());
 
-        if (siegeworkPlus >= 2) {
-            // Already max number of siegeworks, add nothing
-        } else if (siegeworkMinus == 1 && (siegework == CounterFaceTypeEnum.SIEGEWORK_MINUS || siegeworkPlus == 1)) {
+        if (siegeworkPlus < 2 && siegeworkMinus == 1 && (siegework == CounterFaceTypeEnum.SIEGEWORK_MINUS || siegeworkPlus == 1)) {
             // Transforms a SIEGEWORK_MINUS into a SIEGEWORK_PLUS
             Long idSiegework = stack.getCounters().stream()
                     .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS)
@@ -557,10 +564,10 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .findAny()
                     .orElse(null);
 
-            diffs.add(counterDomain.switchCounter(idSiegework, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, game));
-        } else {
+            diffs.add(counterDomain.switchCounter(idSiegework, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, siege.getGame()));
+        } else if (siegeworkPlus < 2) {
             // Other cases : add a siegework
-            diffs.add(counterDomain.createCounter(siegework, null, stack.getId(), game));
+            diffs.add(counterDomain.createCounter(siegework, null, stack.getId(), siege.getGame()));
         }
 
         return diffs;
@@ -571,19 +578,74 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
      *
      * @param siege      the siege.
      * @param country    the besieger.
-     * @param game       the game.
      * @param attributes the attributes about the MODIFY SIEGE diff.
      * @return the diffs involved.
      */
-    private List<DiffEntity> fortressFalls(SiegeEntity siege, PlayableCountryEntity country, GameEntity game, List<DiffAttributesEntity> attributes) {
+    private List<DiffEntity> fortressFalls(SiegeEntity siege, PlayableCountryEntity country, List<DiffAttributesEntity> attributes) {
         siege.setFortressFalls(true);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS, true));
+        return areLossesAuto(siege, country, attributes);
+    }
+
+    /**
+     * At the end of a siege, check if some losses are waiting for an input or not.
+     *
+     * @param siege      the siege.
+     * @param country    the besieger.
+     * @param attributes the attributes about the MODIFY SIEGE diff.
+     * @return the diffs involved.
+     */
+    private List<DiffEntity> areLossesAuto(SiegeEntity siege, PlayableCountryEntity country, List<DiffAttributesEntity> attributes) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        boolean phasingLossesAuto = siege.getPhasing().getLosses().getTotalThird() == 0 || siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize());
+        boolean nonPhasingLossesAuto = siege.getNonPhasing().getLosses().getTotalThird() == 0 || siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize());
+
+        siege.getPhasing().setLossesSelected(phasingLossesAuto);
+        siege.getNonPhasing().setLossesSelected(nonPhasingLossesAuto);
+
+        // if annihilated, remove all counters
+        if (siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize())) {
+            siege.getCounters().stream()
+                    .filter(SiegeCounterEntity::isPhasing)
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter().getId(), siege.getGame())));
+            siege.getCounters().removeIf(SiegeCounterEntity::isPhasing);
+        }
+        if (siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize())) {
+            siege.getCounters().stream()
+                    .filter(SiegeCounterEntity::isNotPhasing)
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter().getId(), siege.getGame())));
+            siege.getCounters().removeIf(SiegeCounterEntity::isNotPhasing);
+        }
+
+        if (!phasingLossesAuto || !nonPhasingLossesAuto) {
+            siege.setStatus(SiegeStatusEnum.CHOOSE_LOSS);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_LOSS));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, phasingLossesAuto, phasingLossesAuto));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, nonPhasingLossesAuto, nonPhasingLossesAuto));
+        } else if (siege.isFortressFalls()) {
+            diffs.addAll(isFortressMan(siege, country, attributes));
+        } else {
+            diffs.addAll(cleanUpSiege(siege, attributes));
+        }
+
+        return diffs;
+    }
+
+    /**
+     * At the end of a successfull siege, check if the fortress can be manned.
+     *
+     * @param siege      the siege.
+     * @param country    the besieger.
+     * @param attributes the attributes about the MODIFY SIEGE diff.
+     * @return the diffs involved.
+     */
+    private List<DiffEntity> isFortressMan(SiegeEntity siege, PlayableCountryEntity country, List<DiffAttributesEntity> attributes) {
         boolean manPossible = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
                 .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType()))) >= 1 && siege.getFortressLevel() > 1;
         if (manPossible && siege.getFortressLevel() == 2) {
             AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
-            int naturalFortress = oeUtil.getNaturalFortressLevel(province, game);
+            int naturalFortress = oeUtil.getNaturalFortressLevel(province, siege.getGame());
             manPossible = naturalFortress == 0;
         }
         if (manPossible) {
@@ -591,7 +653,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_MAN));
             return Collections.emptyList();
         } else {
-            return endSiege(siege, country, game, attributes, false);
+            return endSiege(siege, country, attributes, false);
         }
     }
 
@@ -600,12 +662,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
      *
      * @param siege      the siege.
      * @param country    the besieger.
-     * @param game       the game.
      * @param attributes the attributes about the MODIFY SIEGE diff.
      * @param man        if the fortress is manned by the besieger.
      * @return the diffs involved.
      */
-    private List<DiffEntity> endSiege(SiegeEntity siege, PlayableCountryEntity country, GameEntity game, List<DiffAttributesEntity> attributes, boolean man) {
+    private List<DiffEntity> endSiege(SiegeEntity siege, PlayableCountryEntity country, List<DiffAttributesEntity> attributes, boolean man) {
+        GameEntity game = siege.getGame();
         List<DiffEntity> diffs = new ArrayList<>();
         List<CounterEntity> presentCounters = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()))
@@ -784,7 +846,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             diffs.add(counterDomain.removeCounter(request.getRequest().getIdCounter(), game));
         }
 
-        diffs.addAll(endSiege(siege, country, game, attributes, request.getRequest().isMan()));
+        diffs.addAll(endSiege(siege, country, attributes, request.getRequest().isMan()));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));
@@ -854,6 +916,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         switch (request.getRequest().getChoice()) {
             case BREACH:
+                diffs.addAll(computeAssault(siege, country, true, attributes));
                 break;
             case WAR_HONORS:
                 siege.setStatus(SiegeStatusEnum.REDEPLOY);
@@ -869,6 +932,288 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         diffs.add(diff);
 
         return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /**
+     * Compute an assault, be it after a breach or not.
+     *
+     * @param siege      the siege.
+     * @param country    the country doing the assault.
+     * @param breach     if the fortress was just breached.
+     * @param attributes the attributes about the MODIFY SIEGE diff.
+     * @return the diffs involved.
+     */
+    private List<DiffEntity> computeAssault(SiegeEntity siege, PlayableCountryEntity country, boolean breach, List<DiffAttributesEntity> attributes) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        attributes.addAll(fillSiegeModifiers(siege, breach));
+        computeSequence(true, siege.getPhasing(), siege.getNonPhasing(), true, breach, siege.getGame());
+        computeSequence(true, siege.getNonPhasing(), siege.getPhasing(), false, breach, siege.getGame());
+        boolean phasingRouted = CommonUtil.subtract(siege.getPhasing().getMoral(), siege.getPhasing().getLosses().getMoraleLoss()) <= 0;
+        boolean nonPhasingRouted = CommonUtil.subtract(siege.getNonPhasing().getMoral(), siege.getNonPhasing().getLosses().getMoraleLoss()) <= 0;
+        if (!phasingRouted) {
+            computeSequence(false, siege.getPhasing(), siege.getNonPhasing(), true, breach, siege.getGame());
+        }
+        if (!nonPhasingRouted) {
+            computeSequence(false, siege.getNonPhasing(), siege.getPhasing(), false, breach, siege.getGame());
+        }
+        reduceBesiegerLosses(siege, breach);
+        reduceBesiegingLosses(siege);
+
+
+        boolean fortressRouted = CommonUtil.subtract(siege.getNonPhasing().getMoral(), siege.getNonPhasing().getLosses().getMoraleLoss()) <= 0;
+        FortressResistance fortressResistance = getTables().getFortressResistances().stream()
+                .filter(resistance -> resistance.isBreach() == breach && resistance.getFortress() == siege.getFortressLevel())
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "fortresssResistances", siege.getFortressLevel() + " - " + breach));
+        boolean fortressDestroyed = siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize() + fortressResistance.getSize());
+
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
+        if (province instanceof EuropeanProvinceEntity) {
+            siege.getPhasing().getLosses().roundToClosestInteger();
+            siege.getNonPhasing().getLosses().roundToClosestInteger();
+        }
+        boolean besiegerDestroyed = siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize());
+
+        if (!besiegerDestroyed && (fortressRouted || fortressDestroyed)) {
+            diffs.addAll(fortressFalls(siege, country, attributes));
+        } else {
+            diffs.addAll(areLossesAuto(siege, country, attributes));
+        }
+
+        return diffs;
+    }
+
+    /**
+     * Fill the assault modifiers of a siege:
+     * - fire bonus
+     * - shock bonus
+     * - size
+     * - tech
+     * - moral
+     *
+     * @param siege  the siege.
+     * @param breach if the fortress was just breached.
+     * @return the eventual attributes, if any.
+     */
+    protected List<DiffAttributesEntity> fillSiegeModifiers(SiegeEntity siege, boolean breach) {
+        siege.getPhasing().getModifiers().clear();
+        siege.getNonPhasing().getModifiers().clear();
+
+        List<CounterEntity> countersPhasing = siege.getCounters().stream()
+                .filter(SiegeCounterEntity::isPhasing)
+                .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.toList());
+        List<CounterEntity> countersNotPhasing = siege.getCounters().stream()
+                .filter(SiegeCounterEntity::isNotPhasing)
+                .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.toList());
+
+        siege.getPhasing().setSize(countersPhasing.stream()
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType()))));
+        siege.getNonPhasing().setSize(countersNotPhasing.stream()
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType()))));
+
+        String techPhasing = oeUtil.getTechnology(countersPhasing,
+                true, getReferential(), getTables(), siege.getGame());
+        siege.getPhasing().setTech(techPhasing);
+
+        String techNotPhasing = oeUtil.getTechnology(countersNotPhasing,
+                true, getReferential(), getTables(), siege.getGame());
+        siege.getNonPhasing().setTech(techNotPhasing);
+
+        // TODO tercios moral boost
+        BattleTech battleTechPhasing = getTables().getBattleTechs().stream()
+                .filter(bt -> StringUtils.equals(bt.getTechnologyFor(), techPhasing) && StringUtils.equals(bt.getTechnologyAgainst(), techNotPhasing))
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "battleTechs", techPhasing + " - " + techNotPhasing));
+        if (battleTechPhasing.isMoralBonusVeteran() && oeUtil.isStackVeteran(countersPhasing)) {
+            siege.getPhasing().setMoral(battleTechPhasing.getMoral() + 1);
+        } else {
+            siege.getPhasing().setMoral(battleTechPhasing.getMoral());
+        }
+
+        BattleTech battleTechNonPhasing = getTables().getBattleTechs().stream()
+                .filter(bt -> StringUtils.equals(bt.getTechnologyFor(), techNotPhasing) && StringUtils.equals(bt.getTechnologyAgainst(), techPhasing))
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "battleTechs", techNotPhasing + " - " + techPhasing));
+        if (battleTechNonPhasing.isMoralBonusVeteran()) {
+            siege.getNonPhasing().setMoral(battleTechNonPhasing.getMoral() + 1);
+        } else {
+            siege.getNonPhasing().setMoral(battleTechNonPhasing.getMoral());
+        }
+
+        // TODO leaders
+
+
+        if (StringUtils.equals(techNotPhasing, Tech.MEDIEVAL)) {
+            siege.getPhasing().getModifiers().addFireAndShock(1);
+        } else if (!StringUtils.equals(techNotPhasing, Tech.RENAISSANCE)) {
+            siege.getPhasing().getModifiers().addFireAndShock(-1);
+        }
+
+        if (!breach) {
+            siege.getPhasing().getModifiers().addFireAndShock(-siege.getFortressLevel());
+        }
+
+        int artilleries = oeUtil.getArtilleryBonus(countersPhasing, getReferential(), getTables(), siege.getGame());
+        int artilleryBonus = getTables().getArtillerySieges().stream()
+                .filter(as -> as.getFortress() == siege.getFortressLevel() && as.getArtillery() <= artilleries)
+                .map(ArtillerySiege::getBonus)
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(0);
+        siege.getPhasing().getModifiers().addFireAndShock(artilleryBonus);
+
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, siege.getPhasing().getSize()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_TECH, siege.getPhasing().getTech()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_MORAL, siege.getPhasing().getMoral()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE_MOD, siege.getPhasing().getModifiers().getFireMod()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK_MOD, siege.getPhasing().getModifiers().getShockMod()));
+
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE, siege.getNonPhasing().getSize()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_TECH, siege.getNonPhasing().getTech()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORAL, siege.getNonPhasing().getMoral()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD, siege.getNonPhasing().getModifiers().getFireMod()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, siege.getNonPhasing().getModifiers().getShockMod()));
+
+        return attributes;
+    }
+
+    /**
+     * Compute a sequence of assault for one side.
+     *
+     * @param fire     if it is the fire sequence of the assault.
+     * @param active   the side doing the damage.
+     * @param passive  the side receiving the damage.
+     * @param besieger if the side doing the damage is the besieger.
+     * @param breach   if the fortress was just breached.
+     * @param game     the game.
+     * @return the eventual attributes, if any.
+     */
+    private DiffAttributesEntity computeSequence(boolean fire, SiegeSideEntity active, SiegeSideEntity passive, boolean besieger, boolean breach, GameEntity game) {
+        int modifier;
+        Consumer<Integer> setDice;
+        DiffAttributeTypeEnum type;
+        if (fire) {
+            modifier = active.getModifiers().getFireMod();
+            setDice = die -> active.getModifiers().setFire(die);
+            if (besieger) {
+                type = DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE;
+            } else {
+                type = DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE;
+            }
+        } else {
+            modifier = active.getModifiers().getShockMod();
+            setDice = die -> active.getModifiers().setShock(die);
+            if (besieger) {
+                type = DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK;
+            } else {
+                type = DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK;
+            }
+        }
+
+        // Only a besieging with medieval tech will not roll for fire
+        if (!fire || !besieger || !StringUtils.equals(Tech.MEDIEVAL, active.getTech())) {
+            Integer die = oeUtil.rollDie(game);
+            setDice.accept(die);
+
+
+            AbstractWithLoss phasingResult = getResult(die, modifier, fire, besieger, breach && !besieger);
+            if (fire && besieger) {
+                phasingResult = phasingResult.adjustToTech(active.getTech());
+            }
+            passive.getLosses().add(phasingResult);
+            // losses attributes will be sent at the end of the main method
+
+            return DiffUtil.createDiffAttributes(type, die);
+        }
+        return null;
+    }
+
+    /**
+     * @param die      rolled.
+     * @param modifier to the die.
+     * @param fire     if it is the fire sequence.
+     * @param besieger if it is the besieger side.
+     * @param breach   if the fortress was just breached.
+     * @return the result of a combat round for the given die, modifier and column.
+     */
+    private AssaultResult getResult(Integer die, Integer modifier, boolean fire, boolean besieger, boolean breach) {
+        int min = getTables().getAssaultResults().stream()
+                .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach)
+                .map(AssaultResult::getDice)
+                .min(Comparator.naturalOrder())
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "assaultResults", "N/A"));
+        int max = getTables().getAssaultResults().stream()
+                .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach)
+                .map(AssaultResult::getDice)
+                .max(Comparator.naturalOrder())
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "assaultResults", "N/A"));
+        int modifiedDie = die + modifier < min ? min : die + modifier > max ? max : die + modifier;
+
+        return getTables().getAssaultResults().stream()
+                .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach && modifiedDie == result.getDice())
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "assaultResults", "N/A" + " - " + modifiedDie));
+    }
+
+    /**
+     * Reduce the losses because of the stack sizes.
+     *
+     * @param siege the siege.
+     */
+    private void reduceBesiegingLosses(SiegeEntity siege) {
+        int thirds = siege.getNonPhasing().getLosses().getTotalThird();
+        if (siege.getPhasing().getSize() <= 6) {
+            thirds--;
+        }
+        if (siege.getPhasing().getSize() <= 4) {
+            thirds--;
+        }
+        List<CounterEntity> besiegerCounters = siege.getCounters().stream()
+                .filter(SiegeCounterEntity::isPhasing)
+                .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.toList());
+        if (!besiegerCounters.stream()
+                .anyMatch(counter -> CounterUtil.isArmyCounter(counter.getType()))) {
+            thirds -= 2;
+        }
+        if (oeUtil.getAssaultBonus(besiegerCounters, getTables(), siege.getGame())) {
+            thirds += 2;
+        }
+        if (thirds < 0) {
+            thirds = 0;
+        }
+        AbstractWithLossEntity finalLosses = AbstractWithLossEntity.create(thirds);
+        siege.getNonPhasing().getLosses().setRoundLoss(finalLosses.getRoundLoss());
+        siege.getNonPhasing().getLosses().setThirdLoss(finalLosses.getThirdLoss());
+    }
+
+    /**
+     * Reduce the losses because of the stack sizes.
+     *
+     * @param siege  the siege.
+     * @param breach if the fortress was just breached.
+     */
+    private void reduceBesiegerLosses(SiegeEntity siege, boolean breach) {
+        FortressResistance fortressResistance = getTables().getFortressResistances().stream()
+                .filter(resistance -> resistance.isBreach() == breach && resistance.getFortress() == siege.getFortressLevel())
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "fortresssResistances", siege.getFortressLevel() + " - " + breach));
+        double counterSize = siege.getCounters().stream()
+                .filter(SiegeCounterEntity::isNotPhasing)
+                .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
+
+        double size = 2 * fortressResistance.getSize() + counterSize;
+
+        siege.getPhasing().getLosses().maxToSize(size);
+
+        boolean routed = CommonUtil.subtract(siege.getPhasing().getMoral(), siege.getPhasing().getLosses().getMoraleLoss()) <= 0;
+        if (routed) {
+            siege.getPhasing().getLosses().add(AbstractWithLossEntity.create(2));
+        }
     }
 
     /** {@inheritDoc} */
@@ -1018,7 +1363,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             }
         }
 
-        diffs.addAll(fortressFalls(siege, country, game, attributes));
+        diffs.addAll(fortressFalls(siege, country, attributes));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));

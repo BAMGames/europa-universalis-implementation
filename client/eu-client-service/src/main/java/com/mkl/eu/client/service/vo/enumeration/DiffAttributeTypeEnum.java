@@ -48,7 +48,7 @@ public enum DiffAttributeTypeEnum {
     COLUMN,
     /** Bonus of the action. */
     BONUS,
-    /** Status of the game. */
+    /** Status of the object. */
     STATUS,
     /** Number of veterans of a counter. */
     VETERANS,
@@ -169,7 +169,9 @@ public enum DiffAttributeTypeEnum {
     /** Result of an undermine attempt in a siege. */
     SIEGE_UNDERMINE_RESULT,
     /** If the fortress falls. */
-    SIEGE_FORTRESS_FALLS
+    SIEGE_FORTRESS_FALLS,
+    /** If the fortress suffers a breach. */
+    SIEGE_BREACH,
 
 
 }

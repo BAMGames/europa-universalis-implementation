@@ -1519,6 +1519,52 @@ public class OEUtilTest {
         checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT, TerrainEnum.DENSE_FOREST), periodVI.getEnd(), tables);
         checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT), periodVII.getBegin(), tables);
         checkTerrains(allArmies, Arrays.asList(TerrainEnum.PLAIN, TerrainEnum.DESERT), periodVII.getEnd(), tables);
+
+        checkAssault(false, periodI.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.FRANCE));
+        checkAssault(false, periodI.getBegin(), tables, createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.POLAND));
+        checkAssault(true, periodI.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.POLAND));
+        checkAssault(true, periodI.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.RUSSIA));
+        checkAssault(true, periodI.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.TURKEY));
+        checkAssault(false, periodI.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, PlayableCountry.TURKEY));
+
+        checkAssault(false, periodI.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_PLUS, PlayableCountry.FRANCE));
+        checkAssault(false, periodI.getEnd(), tables, createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.POLAND));
+        checkAssault(true, periodI.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_PLUS, PlayableCountry.POLAND));
+        checkAssault(true, periodI.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_PLUS, PlayableCountry.RUSSIA));
+        checkAssault(true, periodI.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_PLUS, PlayableCountry.TURKEY));
+        checkAssault(false, periodI.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_PLUS, PlayableCountry.TURKEY));
+
+        checkAssault(false, periodII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.FRANCE));
+        checkAssault(false, periodII.getBegin(), tables, createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.POLAND));
+        checkAssault(true, periodII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.POLAND));
+        checkAssault(true, periodII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.RUSSIA));
+        checkAssault(true, periodII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.TURKEY));
+        checkAssault(false, periodII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, PlayableCountry.TURKEY));
+
+        checkAssault(false, periodII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.FRANCE));
+        checkAssault(false, periodII.getEnd(), tables, createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.POLAND));
+        checkAssault(true, periodII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.POLAND));
+        checkAssault(true, periodII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.RUSSIA));
+        checkAssault(true, periodII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.TURKEY));
+        checkAssault(false, periodII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, PlayableCountry.TURKEY));
+
+        checkAssault(false, periodIII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.FRANCE));
+        checkAssault(false, periodIII.getBegin(), tables, createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.POLAND));
+        checkAssault(false, periodIII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.POLAND));
+        checkAssault(true, periodIII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.RUSSIA));
+        checkAssault(true, periodIII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.TURKEY));
+        checkAssault(false, periodIII.getBegin(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, PlayableCountry.TURKEY));
+
+        checkAssault(false, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.FRANCE));
+        checkAssault(false, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.POLAND));
+        checkAssault(false, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.POLAND));
+        checkAssault(true, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.RUSSIA));
+        checkAssault(true, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_MINUS, PlayableCountry.TURKEY));
+        checkAssault(false, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, PlayableCountry.TURKEY));
+
+        checkAssault(true, periodIII.getEnd(), tables, createCounter(CounterFaceTypeEnum.ARMY_TIMAR_MINUS, PlayableCountry.TURKEY),
+                createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, PlayableCountry.TURKEY),
+                createCounter(CounterFaceTypeEnum.ARMY_PLUS, PlayableCountry.TURKEY));
     }
 
     private void checkTerrains(List<ArmyInfo> armies, List<TerrainEnum> terrains, int turn, Tables tables) {
@@ -1528,6 +1574,12 @@ public class OEUtilTest {
             Assert.assertEquals("Expected " + (terrains.contains(terrain) ? "" : "no ") + "bonus for terrain " + terrain + " but it was not the case.",
                     terrains.contains(terrain), oeUtil.getCavalryBonus(armies, terrain, tables, game));
         }
+    }
+
+    private void checkAssault(boolean hasBonus, int turn, Tables tables, CounterEntity... counters) {
+        GameEntity game = new GameEntity();
+        game.setTurn(turn);
+        Assert.assertEquals(hasBonus, oeUtil.getAssaultBonus(Arrays.asList(counters), tables, game));
     }
 
     private ArmyInfo createArmy(String country) {

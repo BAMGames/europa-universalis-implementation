@@ -2,6 +2,8 @@ package com.mkl.eu.client.service.vo.tables;
 
 import com.mkl.eu.client.service.vo.EuObject;
 
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
+
 /**
  * VO for the fortress resistance table.
  *
@@ -45,6 +47,11 @@ public class FortressResistance extends EuObject {
     /** @param third the third to set. */
     public void setThird(Integer third) {
         this.third = third;
+    }
+
+    /** @return the size of the fortress resistance. */
+    public double getSize() {
+        return (round != null ? round : 0) + (third != null ? third * THIRD : 0);
     }
 
     /** @return the breach. */

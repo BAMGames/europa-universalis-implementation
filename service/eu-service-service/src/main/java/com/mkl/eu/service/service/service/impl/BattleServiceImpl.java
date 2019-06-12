@@ -534,7 +534,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .map(BattleCounterEntity::getCounter)
                 .collect(Collectors.toList());
         List<CounterEntity> countersNotPhasing = battle.getCounters().stream()
-                .filter(bc -> !bc.isPhasing())
+                .filter(BattleCounterEntity::isNotPhasing)
                 .map(BattleCounterEntity::getCounter)
                 .collect(Collectors.toList());
 
@@ -614,9 +614,9 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         // TODO river/straits
 
         boolean phasingNoArmy = !countersPhasing.stream()
-                .anyMatch(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2);
+                .anyMatch(counter -> CounterUtil.isArmyCounter(counter.getType()));
         boolean nonPhasingNoArmy = !countersNotPhasing.stream()
-                .anyMatch(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2);
+                .anyMatch(counter -> CounterUtil.isArmyCounter(counter.getType()));
         // Renaissance in Europe without army => no fire phase
         if (StringUtils.equals(techPhasing, Tech.RENAISSANCE) && province instanceof EuropeanProvinceEntity && phasingNoArmy) {
             battle.getPhasing().setFireColumn(null);

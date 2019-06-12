@@ -237,13 +237,21 @@ public interface IOEUtil {
     int getArtilleryBonus(List<ArmyInfo> counters, Tables tables, GameEntity game);
 
     /**
-     * @param counters stack whom we want the artillery bonus.
+     * @param counters stack whom we want the cavalry bonus.
      * @param terrain  the terrain where the battle occurs.
      * @param tables   the tables.
      * @param game     the game.
      * @return <code>true</code> if the stack has a cavalry bonus in this terrain and turn.
      */
     boolean getCavalryBonus(List<ArmyInfo> counters, TerrainEnum terrain, Tables tables, GameEntity game);
+
+    /**
+     * @param counters stack whom we want the assault bonus.
+     * @param tables   the tables.
+     * @param game     the game.
+     * @return <code>true</code> if the stack has an assault bonus.
+     */
+    boolean getAssaultBonus(List<CounterEntity> counters, Tables tables, GameEntity game);
 
     /**
      * @param province   to retreat.

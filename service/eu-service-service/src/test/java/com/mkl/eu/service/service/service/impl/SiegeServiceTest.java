@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.service.impl;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
@@ -10,8 +11,7 @@ import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.tables.ArtillerySiege;
-import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -28,6 +28,7 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,9 +37,11 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.OngoingStubbing;
 
 import java.util.*;
 
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
@@ -1402,6 +1405,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siegeCounter.getCounter().setOwner(new StackEntity());
             siegeCounter.getCounter().getOwner().setId(2l);
             siege.getCounters().add(siegeCounter);
+            siege.getPhasing().setSize(fortress != null && fortress >= 3 ? 5 : 3);
             game.getSieges().add(siege);
 
             if (owner == null) {
@@ -1446,7 +1450,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, invocationOnMock.getArgumentAt(1, String.class), invocationOnMock.getArgumentAt(1, String.class) != null),
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class))));
 
-            when(testClass.workflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.TURN_ORDER, null)));
+            when(testClass.workflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.TURN_ORDER)));
 
             request.setIdCountry(self.getId());
             request.setRequest(new ChooseModeForSiegeRequest());
@@ -1900,6 +1904,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         siege.setUndermineResult(SiegeUndermineResultEnum.WAR_HONOUR);
         siege.setFortressLevel(3);
         siege.setProvince("pecs");
+        siege.setGame(game);
         game.getSieges().add(siege);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
@@ -1950,6 +1955,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         siegeCounter.setCounter(createCounter(30l, "turquie", CounterFaceTypeEnum.LAND_DETACHMENT));
         siegeCounter.setPhasing(true);
         siege.getCounters().add(siegeCounter);
+        siege.getNonPhasing().setSize(2);
+        siege.getPhasing().setSize(1);
 
         StackEntity stackIdf = new StackEntity();
         stackIdf.setId(666l);
@@ -1995,5 +2002,940 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(SiegeStatusEnum.CHOOSE_MAN, siege.getStatus());
         Assert.assertEquals("true", getAttribute(siegeDiff, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS));
         Assert.assertTrue(siege.isFortressFalls());
+    }
+
+    @Test
+    public void testAssaultLossesReduction() throws FunctionalException {
+        // besieging losses 2/3 - 1 1/3 -> 0
+        SiegeAssaultBuilder.create()
+                .fortress(3)
+                .phasing(AssaultSideBuilder.create().size(3d).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create()));
+        // besieging losses 1 2/3 - 1 1/3 -> 1/3 but not in europe
+        SiegeAssaultBuilder.create()
+                .fortress(3).breach()
+                .phasing(AssaultSideBuilder.create().size(3d).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1).third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create()));
+        // besieging losses 1 2/3 - 1 1/3 -> 1/3
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(3d).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1).third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().third(1)));
+        // besieging losses 1 2/3 - 2/3 -> 1
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1).third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(1)));
+        // besieging losses 1 2/3 - 2/3 + 2/3 -> 1 2/3
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(4d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1).third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(1).third(2)));
+        // besieging losses 1 2/3 - 1/3 + 2/3 -> 2
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(5d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1).third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(2)));
+        // besieging losses 1 2/3 + 2/3 -> 2 1/3
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1).third(1))
+                        .shock(LossBuilder.create().third(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(2).third(1)));
+        // no fire in medieval only for besieger
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.MEDIEVAL)
+                        .fire(LossBuilder.create().noSequence())
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MEDIEVAL)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(1)));
+        // no fire damage in renaissance only for besieger
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(1)));
+        // half fire damage in arquebus only for besieger
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.ARQUEBUS)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.ARQUEBUS)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(1).third(1)));
+        // besieging half fire damage in arquebus only for besieger
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.ARQUEBUS)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.ARQUEBUS)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2))
+                        .nonPhasingLosses(LossBuilder.create().round(1).third(1)));
+        // besieger losses capped to twice fortress resistance
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2))
+                        .shock(LossBuilder.create().round(2)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2).third(2))
+                        .nonPhasingLosses(LossBuilder.create().round(2)));
+        // besieger losses capped to twice fortress resistance + 2/3 because routed
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2))
+                        .shock(LossBuilder.create().round(2).morale(5)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(3).third(1).morale(5))
+                        .nonPhasingLosses(LossBuilder.create().round(2)));
+        // besieger losses capped to twice fortress resistance + 1 because besieging forces
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).size(1).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2))
+                        .shock(LossBuilder.create().round(2)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(3).third(2))
+                        .nonPhasingLosses(LossBuilder.create().round(2)).nonPhasingDestroyed());
+        // besieger losses not capped
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(1))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).size(1).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2))
+                        .shock(LossBuilder.create().round(2).morale(5)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(4).third(1).morale(5))
+                        .nonPhasingLosses(LossBuilder.create().round(2)).nonPhasingDestroyed());
+    }
+
+    @Test
+    public void testAssaultRoutedAtFire() throws FunctionalException {
+        // A medieval besieger routed at fire will not roll anything. Big up Satori !
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.MEDIEVAL)
+                        .fire(LossBuilder.create().noSequence())
+                        .shock(LossBuilder.create().noSequence()))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MEDIEVAL)
+                        .fire(LossBuilder.create().round(1).morale(1))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2).third(2).morale(1))
+                        .nonPhasingLosses(LossBuilder.create()));
+        // Besieging routed
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().morale(3))
+                        .shock(LossBuilder.create().round(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().round(1).morale(1))
+                        .shock(LossBuilder.create().noSequence()))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(1).morale(1))
+                        .nonPhasingLosses(LossBuilder.create().round(1).morale(3)));
+        // Both routed
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().morale(3))
+                        .shock(LossBuilder.create().noSequence()))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().round(1).morale(2))
+                        .shock(LossBuilder.create().noSequence()))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(1).third(2).morale(2))
+                        .nonPhasingLosses(LossBuilder.create().morale(3)));
+        // Only besieger routed because besieging always veteran
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(7d).hasArmy().tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().morale(2))
+                        .shock(LossBuilder.create().noSequence()))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.RENAISSANCE)
+                        .fire(LossBuilder.create().round(1).morale(2))
+                        .shock(LossBuilder.create().round(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                        .phasingLosses(LossBuilder.create().round(2).third(2).morale(2))
+                        .nonPhasingLosses(LossBuilder.create().morale(2)));
+    }
+
+    @Test
+    public void testAssaultFortressFalls() throws FunctionalException {
+        // Even if besieging is routed and destroyed, if no besieger forces, it fails
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(2)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.DONE)
+                        .phasingLosses(LossBuilder.create().round(3).third(1).morale(3)).phasingDestroyed()
+                        .nonPhasingLosses(LossBuilder.create().round(4).morale(4)).nonPhasingDestroyed());
+        // But if some besieger forces remain, then it fails
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET).veteran()
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(2)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                        .phasingLosses(LossBuilder.create().round(2).third(2).morale(3))
+                        .nonPhasingLosses(LossBuilder.create().round(4).morale(4)).nonPhasingDestroyed());
+        // special case : besieger forces are destroyed after the capping of European province
+        SiegeAssaultBuilder.create()
+                .fortress(3)
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET).veteran()
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(2)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(1)))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.DONE)
+                        .phasingLosses(LossBuilder.create().round(3).morale(3)).phasingDestroyed()
+                        .nonPhasingLosses(LossBuilder.create().round(4).morale(4)).nonPhasingDestroyed());
+        // fortress falls and besieger suffers no loss : MAN if size >= 1
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw().breach()
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET).veteran()
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(2)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create())
+                        .shock(LossBuilder.create()))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_MAN).fortressFalls()
+                        .phasingLosses(LossBuilder.create())
+                        .nonPhasingLosses(LossBuilder.create().round(4).morale(4)).nonPhasingDestroyed());
+        // fortress falls and besieger suffers no loss : DONE if size < 1
+        SiegeAssaultBuilder.create()
+                .fortress(3).rotw()
+                .phasing(AssaultSideBuilder.create().size(2 * THIRD).hasAssaultBonus().tech(Tech.MUSKET).veteran()
+                        .fire(LossBuilder.create().round(2).morale(2))
+                        .shock(LossBuilder.create().round(2).morale(2)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create())
+                        .shock(LossBuilder.create()))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.DONE).fortressFalls().newFortressType(CounterFaceTypeEnum.FORTRESS_1).newFortressCountry(Camp.SELF).addControl()
+                        .phasingLosses(LossBuilder.create())
+                        .nonPhasingLosses(LossBuilder.create().round(3).third(1).morale(4)).nonPhasingDestroyed());
+        // You can do 1 damage to a fortress 3 (with 1 and 1/3 resistance) and still win if the cap to 1 was done because of european province
+        SiegeAssaultBuilder.create()
+                .fortress(3)
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET).veteran()
+                        .fire(LossBuilder.create().round(1).morale(1))
+                        .shock(LossBuilder.create().third(1).morale(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create())
+                        .shock(LossBuilder.create()))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_MAN).fortressFalls()
+                        .phasingLosses(LossBuilder.create())
+                        .nonPhasingLosses(LossBuilder.create().round(1).morale(2)).nonPhasingDestroyed());
+        // Of course, if it was 1 damage before the european cap, the fortress does not fall
+        SiegeAssaultBuilder.create()
+                .fortress(3)
+                .phasing(AssaultSideBuilder.create().size(3d).hasArmy().hasAssaultBonus().tech(Tech.MUSKET).veteran()
+                        .fire(LossBuilder.create().round(1).morale(1))
+                        .shock(LossBuilder.create().morale(1)))
+                .notPhasing(AssaultSideBuilder.create().fortressResistance(LossBuilder.create().round(1).third(1)).tech(Tech.MUSKET)
+                        .fire(LossBuilder.create())
+                        .shock(LossBuilder.create()))
+                .whenChooseMode(siegeService, this)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.DONE)
+                        .phasingLosses(LossBuilder.create())
+                        .nonPhasingLosses(LossBuilder.create().round(1).morale(2)).nonPhasingDestroyed());
+    }
+
+    private static class SiegeAssaultBuilder {
+        Camp owner;
+        Camp controller;
+        int naturalFortress;
+        Integer fortress;
+        boolean rotw;
+        boolean breach;
+        AssaultSideBuilder phasing;
+        AssaultSideBuilder notPhasing;
+        SiegeEntity siege;
+        List<DiffEntity> diffs;
+
+        static SiegeAssaultBuilder create() {
+            return new SiegeAssaultBuilder();
+        }
+
+        SiegeAssaultBuilder owner(Camp owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        SiegeAssaultBuilder controller(Camp controller) {
+            this.controller = controller;
+            return this;
+        }
+
+        SiegeAssaultBuilder naturalFortress(int naturalFortress) {
+            this.naturalFortress = naturalFortress;
+            return this;
+        }
+
+        SiegeAssaultBuilder fortress(Integer fortress) {
+            this.fortress = fortress;
+            return this;
+        }
+
+        SiegeAssaultBuilder rotw() {
+            this.rotw = true;
+            return this;
+        }
+
+        SiegeAssaultBuilder breach() {
+            this.breach = true;
+            return this;
+        }
+
+        SiegeAssaultBuilder phasing(AssaultSideBuilder phasing) {
+            this.phasing = phasing;
+            return this;
+        }
+
+        SiegeAssaultBuilder notPhasing(AssaultSideBuilder notPhasing) {
+            this.notPhasing = notPhasing;
+            return this;
+        }
+
+        SiegeAssaultBuilder whenChooseMode(SiegeServiceImpl siegeService, SiegeServiceTest testClass) throws FunctionalException {
+            GameEntity game;
+            Pair<Request<ChooseBreachForSiegeRequest>, GameEntity> pairAssaultBreach = null;
+            Pair<Request<ChooseModeForSiegeRequest>, GameEntity> pairAssault = null;
+            if (breach) {
+                pairAssaultBreach = testClass.testCheckGame(siegeService::chooseBreach, "chooseBreach");
+                game = pairAssaultBreach.getRight();
+            } else {
+                pairAssault = testClass.testCheckGame(siegeService::chooseMode, "chooseMode");
+                game = pairAssault.getRight();
+            }
+
+            PlayableCountryEntity self = new PlayableCountryEntity();
+            self.setId(12L);
+            self.setName(Camp.SELF.name);
+            game.getCountries().add(self);
+            PlayableCountryEntity ally = new PlayableCountryEntity();
+            ally.setId(13L);
+            ally.setName(Camp.ALLY.name);
+            game.getCountries().add(ally);
+            PlayableCountryEntity neutral = new PlayableCountryEntity();
+            neutral.setId(14L);
+            neutral.setName(Camp.NEUTRAL.name);
+            game.getCountries().add(neutral);
+            PlayableCountryEntity enemy = new PlayableCountryEntity();
+            enemy.setId(15L);
+            enemy.setName(Camp.ENEMY.name);
+            game.getCountries().add(enemy);
+
+            Tables tables = new Tables();
+            testClass.fillBatleTechTables(tables);
+            SiegeServiceImpl.TABLES = tables;
+            StackEntity stack = new StackEntity();
+            stack.setId(99L);
+            stack.setProvince("pecs");
+            if (fortress != null) {
+                CounterFaceTypeEnum fortressType = CounterUtil.getFortressesFromLevel(fortress, false);
+                stack.getCounters().add(createCounter(101L, Camp.ENEMY.name, fortressType));
+            }
+            if (controller != null) {
+                stack.getCounters().add(createCounter(102L, controller.name, CounterFaceTypeEnum.CONTROL));
+            }
+            if (!stack.getCounters().isEmpty()) {
+                game.getStacks().add(stack);
+            }
+
+            siege = new SiegeEntity();
+            siege.setGame(game);
+            siege.setFortressLevel(fortress != null ? fortress : naturalFortress);
+            if (breach) {
+                siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
+            } else {
+                siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
+            }
+            siege.setProvince("pecs");
+            long cpt = 11l;
+            if (phasing.hasArmy) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setPhasing(true);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setId(cpt++);
+                siegeCounter.getCounter().setCountry(Camp.SELF.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
+                siegeCounter.getCounter().setOwner(new StackEntity());
+                siegeCounter.getCounter().getOwner().setId(2l);
+                siege.getCounters().add(siegeCounter);
+                phasing.counters.add(siegeCounter.getCounter());
+            }
+            for (int i = (phasing.hasArmy ? 2 : 0); i < (int) phasing.size; i++) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setPhasing(true);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setId(cpt++);
+                siegeCounter.getCounter().setCountry(Camp.SELF.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+                siegeCounter.getCounter().setOwner(new StackEntity());
+                siegeCounter.getCounter().getOwner().setId(2l);
+                siege.getCounters().add(siegeCounter);
+                phasing.counters.add(siegeCounter.getCounter());
+            }
+            for (int i = 0; i < (phasing.size - (int) phasing.size) / THIRD; i++) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setPhasing(true);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setId(cpt++);
+                siegeCounter.getCounter().setCountry(Camp.SELF.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+                siegeCounter.getCounter().setOwner(new StackEntity());
+                siegeCounter.getCounter().getOwner().setId(2l);
+                siege.getCounters().add(siegeCounter);
+                phasing.counters.add(siegeCounter.getCounter());
+            }
+            when(testClass.oeUtil.isStackVeteran(any())).thenReturn(phasing.veteran);
+            when(testClass.oeUtil.getAssaultBonus(any(), any(), any())).thenReturn(phasing.hasAssaultBonus);
+            cpt = 21l;
+            if (notPhasing.hasArmy) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setId(cpt++);
+                siegeCounter.getCounter().setCountry(Camp.ENEMY.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
+                siegeCounter.getCounter().setOwner(new StackEntity());
+                siegeCounter.getCounter().getOwner().setId(3l);
+                siege.getCounters().add(siegeCounter);
+                notPhasing.counters.add(siegeCounter.getCounter());
+            }
+            for (int i = (notPhasing.hasArmy ? 2 : 0); i < (int) notPhasing.size; i++) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setId(cpt++);
+                siegeCounter.getCounter().setCountry(Camp.ENEMY.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+                siegeCounter.getCounter().setOwner(new StackEntity());
+                siegeCounter.getCounter().getOwner().setId(3l);
+                siege.getCounters().add(siegeCounter);
+                notPhasing.counters.add(siegeCounter.getCounter());
+            }
+            for (int i = 0; i < (notPhasing.size - (int) notPhasing.size) / THIRD; i++) {
+                SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
+                siegeCounter.setSiege(siege);
+                siegeCounter.setCounter(new CounterEntity());
+                siegeCounter.getCounter().setId(cpt++);
+                siegeCounter.getCounter().setCountry(Camp.ENEMY.name);
+                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+                siegeCounter.getCounter().setOwner(new StackEntity());
+                siegeCounter.getCounter().getOwner().setId(3l);
+                siege.getCounters().add(siegeCounter);
+                notPhasing.counters.add(siegeCounter.getCounter());
+            }
+            when(testClass.oeUtil.getTechnology(any(), anyBoolean(), any(), any(), any())).thenReturn(phasing.tech, notPhasing.tech);
+
+            ArtillerySiege artillerySiege = new ArtillerySiege();
+            artillerySiege.setFortress(fortress != null ? fortress : naturalFortress);
+            when(testClass.oeUtil.getArtilleryBonus(any(), any(), any(), any())).thenReturn(12);
+            artillerySiege.setArtillery(12);
+            artillerySiege.setBonus(phasing.artilleryBonus);
+            tables.getArtillerySieges().add(artillerySiege);
+            FortressResistance fortressResistance = new FortressResistance();
+            fortressResistance.setFortress(fortress != null ? fortress : naturalFortress);
+            fortressResistance.setBreach(breach);
+            if (notPhasing.fortressResistance != null) {
+                fortressResistance.setRound(notPhasing.fortressResistance.round);
+                fortressResistance.setThird(notPhasing.fortressResistance.third);
+            }
+            tables.getFortressResistances().add(fortressResistance);
+
+            OngoingStubbing<Integer> dice = when(testClass.oeUtil.rollDie(game));
+            int modifier = phasing.artilleryBonus - (fortress != null ? fortress : naturalFortress);
+            if (StringUtils.equals(Tech.MEDIEVAL, notPhasing.tech)) {
+                modifier++;
+            } else if (StringUtils.equals(Tech.RENAISSANCE, notPhasing.tech)) {
+                modifier--;
+            }
+            dice = rollDie(true, phasing.fire, 1, modifier, tables, dice);
+            dice = rollDie(true, notPhasing.fire, 2, null, tables, dice);
+            dice = rollDie(false, phasing.shock, 3, modifier, tables, dice);
+            dice = rollDie(false, notPhasing.shock, 4, null, tables, dice);
+
+            game.getSieges().add(siege);
+
+            if (owner == null) {
+                owner = Camp.ENEMY;
+            }
+            if (controller == null) {
+                controller = owner;
+            }
+            AbstractProvinceEntity province;
+            if (rotw) {
+                province = new RotwProvinceEntity();
+            } else {
+                province = new EuropeanProvinceEntity();
+            }
+            when(testClass.provinceDao.getProvinceByName("pecs")).thenReturn(province);
+            when(testClass.oeUtil.getNaturalFortressLevel(province, game)).thenReturn(naturalFortress);
+            when(testClass.oeUtil.getOwner(province, game)).thenReturn(owner.name);
+            when(testClass.oeUtil.getController(province, game)).thenReturn(controller.name);
+            when(testClass.oeUtil.getAllies(self, game)).thenReturn(Arrays.asList(Camp.SELF.name, Camp.ALLY.name));
+            when(testClass.oeUtil.getEnemies(self, game)).thenReturn(Collections.singletonList(Camp.ENEMY.name));
+
+            when(testClass.counterDomain.createStack("pecs", null, game)).thenAnswer(invocationOnMock -> {
+                StackEntity newStack = new StackEntity();
+                newStack.setId(1099L);
+                return newStack;
+            });
+            when(testClass.counterDomain.switchCounter(110l, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, game))
+                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 110L));
+            when(testClass.counterDomain.createCounter(any(), any(), any(), any()))
+                    .thenAnswer(invocationOnMock -> {
+                        CounterFaceTypeEnum face = invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class);
+                        if (face != CounterFaceTypeEnum.SIEGEWORK_MINUS && face != CounterFaceTypeEnum.SIEGEWORK_PLUS) {
+                            return DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, 1060l,
+                                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
+                        }
+                        return DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, 1010L,
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
+                    });
+
+            when(testClass.counterDomain.removeCounter(anyLong(), any()))
+                    .thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, Long.class)));
+            when(testClass.counterDomain.changeCounterCountry(any(), anyString(), any()))
+                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 102L));
+            when(testClass.counterDomain.createCounter(any(), any(), any(), any(), any()))
+                    .thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class) == CounterFaceTypeEnum.CONTROL ? 1020L : 1030L,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, invocationOnMock.getArgumentAt(1, String.class), invocationOnMock.getArgumentAt(1, String.class) != null),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class))));
+
+            when(testClass.workflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.TURN_ORDER, null)));
+
+            testClass.simulateDiff();
+
+            if (breach) {
+                Request<ChooseBreachForSiegeRequest> request = pairAssaultBreach.getLeft();
+                request.setIdCountry(self.getId());
+                request.setRequest(new ChooseBreachForSiegeRequest());
+                request.getRequest().setChoice(ChooseBreachForSiegeRequest.ChoiceBreachEnum.BREACH);
+                testClass.testCheckStatus(pairAssaultBreach.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
+                siegeService.chooseBreach(request);
+            } else {
+                Request<ChooseModeForSiegeRequest> request = pairAssault.getLeft();
+                request.setIdCountry(self.getId());
+                request.setRequest(new ChooseModeForSiegeRequest());
+                request.getRequest().setProvinceTo("pecs");
+                request.getRequest().setMode(SiegeModeEnum.ASSAULT);
+                testClass.testCheckStatus(pairAssault.getRight(), request, siegeService::chooseMode, "chooseMode", GameStatusEnum.MILITARY_SIEGES);
+                siegeService.chooseMode(request);
+            }
+
+            diffs = testClass.retrieveDiffsCreated();
+
+            return this;
+        }
+
+        OngoingStubbing<Integer> rollDie(boolean fire, LossBuilder loss, int result, Integer modifier, Tables tables, OngoingStubbing<Integer> dice) {
+            if (!loss.noSequence) {
+                dice = dice.thenReturn(result - (modifier != null ? modifier : 0));
+                AssaultResult assaultResult = new AssaultResult();
+                assaultResult.setBesieger(modifier != null);
+                assaultResult.setFire(fire);
+                if (modifier == null) {
+                    assaultResult.setBreach(breach);
+                }
+                assaultResult.setRoundLoss(loss.round);
+                assaultResult.setThirdLoss(loss.third);
+                assaultResult.setMoraleLoss(loss.morale);
+                assaultResult.setDice(result);
+
+                tables.getAssaultResults().add(assaultResult);
+            }
+            return dice;
+        }
+
+        SiegeAssaultBuilder thenExpect(SiegeAssaultResultBuilder result) {
+            DiffEntity diffSiege = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.SIEGE)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diffSiege);
+
+            Assert.assertEquals(result.status != null ? result.status.name() : null, getAttribute(diffSiege, DiffAttributeTypeEnum.STATUS));
+            Assert.assertEquals(result.status, siege.getStatus());
+            DiffEntity removeFortress = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 101L)
+                    .findAny()
+                    .orElse(null);
+            if (result.fortressFalls) {
+                Assert.assertTrue(siege.isFortressFalls());
+                Assert.assertEquals("true", getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS));
+                if (result.status == SiegeStatusEnum.DONE && fortress != null) {
+                    Assert.assertNotNull("The fortress should have been removed but was not.", removeFortress);
+                } else {
+                    Assert.assertNull("The fortress has been removed but there was no fortress to remove or it was not the time yet to do it.", removeFortress);
+                }
+            } else {
+                Assert.assertNull("The fortress should not have been removed but was.", removeFortress);
+                Assert.assertFalse(siege.isFortressFalls());
+                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS));
+            }
+            DiffEntity removeControl = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 102L)
+                    .findAny()
+                    .orElse(null);
+            if (result.removeControl) {
+                Assert.assertNotNull("A control counter should have been removed but was not.", removeControl);
+            } else {
+                Assert.assertNull("A control counter should not have been removed but was.", removeControl);
+            }
+            DiffEntity switchControl = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 102L)
+                    .findAny()
+                    .orElse(null);
+            if (result.switchControl) {
+                Assert.assertNotNull("A control counter should have been switched to another country but was not.", switchControl);
+            } else {
+                Assert.assertNull("A control counter should not have been switched to another country but was.", switchControl);
+            }
+            DiffEntity addControl = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 1020L)
+                    .findAny()
+                    .orElse(null);
+            if (result.addControl) {
+                Assert.assertNotNull("A control counter should have been added but was not.", addControl);
+            } else {
+                Assert.assertNull("A control counter should not have been added but was.", addControl);
+            }
+            DiffEntity addFortress = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 1030L)
+                    .findAny()
+                    .orElse(null);
+            if (result.newFortressType != null) {
+                Assert.assertNotNull("A fortress counter should have been added but was not.", addFortress);
+                Assert.assertEquals("The new fortress has not the rigth face type.", result.newFortressType.name(), getAttribute(addFortress, DiffAttributeTypeEnum.TYPE));
+                Assert.assertEquals("The new fortress belongs to the wrong country.", result.newFortressCountry != null ? result.newFortressCountry.name : null, getAttribute(addFortress, DiffAttributeTypeEnum.COUNTRY));
+            } else {
+                Assert.assertNull("A fortress counter should not have been added but was.", addFortress);
+            }
+            DiffEntity endSiege = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.VALIDATE && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                    .findAny()
+                    .orElse(null);
+            if (result.status == SiegeStatusEnum.DONE) {
+                Assert.assertNotNull("The endSiege diff event has not been received while it should.", endSiege);
+            } else {
+                Assert.assertNull("The endSiege diff event has been received while it should not.", endSiege);
+            }
+            long phasingCounterRemoved = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() >= 11l && d.getIdObject() <= 20l)
+                    .count();
+            long notPhasingCounterRemoved = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() >= 21l && d.getIdObject() <= 30l)
+                    .count();
+            if (result.phasingDestroyed) {
+                Assert.assertEquals("Phasing counter removed does not match.", phasing.counters.size(), phasingCounterRemoved);
+            } else {
+                Assert.assertEquals("0 phasing counter should have been removed but was not.", 0l, phasingCounterRemoved);
+            }
+            if (result.nonPhasingDestroyed) {
+                Assert.assertEquals("Phasing counter removed does not match.", notPhasing.counters.size(), notPhasingCounterRemoved);
+            } else {
+                Assert.assertEquals("0 non phasing counter should have been removed but was not.", 0l, notPhasingCounterRemoved);
+            }
+
+            Assert.assertTrue("The round losses of the phasing side does not match: " + siege.getPhasing().getLosses().getRoundLoss(),
+                    CommonUtil.equals(result.phasingLosses.round, siege.getPhasing().getLosses().getRoundLoss()));
+            Assert.assertTrue("The third losses of the phasing side does not match: " + siege.getPhasing().getLosses().getThirdLoss(),
+                    CommonUtil.equals(result.phasingLosses.third, siege.getPhasing().getLosses().getThirdLoss()));
+            Assert.assertTrue("The morale losses of the phasing side does not match: " + siege.getPhasing().getLosses().getMoraleLoss(),
+                    CommonUtil.equals(result.phasingLosses.morale, siege.getPhasing().getLosses().getMoraleLoss()));
+            Assert.assertTrue("The round losses of the non phasing side does not match: " + siege.getNonPhasing().getLosses().getRoundLoss(),
+                    CommonUtil.equals(result.nonPhasingLosses.round, siege.getNonPhasing().getLosses().getRoundLoss()));
+            Assert.assertTrue("The third losses of the non phasing side does not match: " + siege.getNonPhasing().getLosses().getThirdLoss(),
+                    CommonUtil.equals(result.nonPhasingLosses.third, siege.getNonPhasing().getLosses().getThirdLoss()));
+            Assert.assertTrue("The morale losses of the non phasing side does not match: " + siege.getNonPhasing().getLosses().getMoraleLoss(),
+                    CommonUtil.equals(result.nonPhasingLosses.morale, siege.getNonPhasing().getLosses().getMoraleLoss()));
+
+            return this;
+        }
+    }
+
+    private static class AssaultSideBuilder {
+        double size;
+        LossBuilder fortressResistance;
+        boolean veteran;
+        boolean hasArmy;
+        boolean hasAssaultBonus;
+        int artilleryBonus;
+        String tech;
+        LossBuilder fire;
+        LossBuilder shock;
+        List<CounterEntity> counters = new ArrayList<>();
+
+        static AssaultSideBuilder create() {
+            return new AssaultSideBuilder();
+        }
+
+        AssaultSideBuilder size(double size) {
+            this.size = size;
+            return this;
+        }
+
+        AssaultSideBuilder fortressResistance(LossBuilder fortressResistance) {
+            this.fortressResistance = fortressResistance;
+            return this;
+        }
+
+        AssaultSideBuilder veteran() {
+            this.veteran = true;
+            return this;
+        }
+
+        AssaultSideBuilder hasArmy() {
+            this.hasArmy = true;
+            return this;
+        }
+
+        AssaultSideBuilder hasAssaultBonus() {
+            this.hasAssaultBonus = true;
+            return this;
+        }
+
+        AssaultSideBuilder artilleryBonus(int artilleryBonus) {
+            this.artilleryBonus = artilleryBonus;
+            return this;
+        }
+
+        AssaultSideBuilder tech(String tech) {
+            this.tech = tech;
+            return this;
+        }
+
+        AssaultSideBuilder fire(LossBuilder fire) {
+            this.fire = fire;
+            return this;
+        }
+
+        AssaultSideBuilder shock(LossBuilder shock) {
+            this.shock = shock;
+            return this;
+        }
+    }
+
+    private static class LossBuilder {
+        int round;
+        int third;
+        int morale;
+        boolean noSequence;
+
+        static LossBuilder create() {
+            return new LossBuilder();
+        }
+
+        LossBuilder round(int round) {
+            this.round = round;
+            return this;
+        }
+
+        LossBuilder third(int third) {
+            this.third = third;
+            return this;
+        }
+
+        LossBuilder morale(int morale) {
+            this.morale = morale;
+            return this;
+        }
+
+        LossBuilder noSequence() {
+            this.noSequence = true;
+            return this;
+        }
+    }
+
+    private static class SiegeAssaultResultBuilder {
+        SiegeStatusEnum status;
+        boolean fortressFalls;
+        boolean removeControl;
+        boolean switchControl;
+        boolean addControl;
+        CounterFaceTypeEnum newFortressType;
+        Camp newFortressCountry;
+        LossBuilder phasingLosses;
+        LossBuilder nonPhasingLosses;
+        boolean phasingDestroyed;
+        boolean nonPhasingDestroyed;
+
+        static SiegeAssaultResultBuilder create() {
+            return new SiegeAssaultResultBuilder();
+        }
+
+        SiegeAssaultResultBuilder status(SiegeStatusEnum status) {
+            this.status = status;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder fortressFalls() {
+            this.fortressFalls = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder removeControl() {
+            this.removeControl = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder switchControl() {
+            this.switchControl = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder addControl() {
+            this.addControl = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder newFortressType(CounterFaceTypeEnum newFortressType) {
+            this.newFortressType = newFortressType;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder newFortressCountry(Camp newFortressCountry) {
+            this.newFortressCountry = newFortressCountry;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder phasingLosses(LossBuilder phasingLosses) {
+            this.phasingLosses = phasingLosses;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder nonPhasingLosses(LossBuilder nonPhasingLosses) {
+            this.nonPhasingLosses = nonPhasingLosses;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder phasingDestroyed() {
+            this.phasingDestroyed = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder nonPhasingDestroyed() {
+            this.nonPhasingDestroyed = true;
+            return this;
+        }
     }
 }

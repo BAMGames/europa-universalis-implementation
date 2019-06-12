@@ -875,7 +875,7 @@ public final class OEUtilImpl implements IOEUtil {
      * @return <code>true</code> if the army has the right type and country.
      */
     private boolean hasCavalry(ArmyInfo army, String country) {
-        return isArmy(army) && StringUtils.equals(country, army.getCountry());
+        return CounterUtil.isArmyCounter(army.getType()) && StringUtils.equals(country, army.getCountry());
     }
 
     /**
@@ -884,18 +884,40 @@ public final class OEUtilImpl implements IOEUtil {
      * @return <code>true</code> if the army has the right type and class.
      */
     private boolean hasCavalry(ArmyInfo army, ArmyClassEnum armyClass) {
-        return isArmy(army) && armyClass == army.getArmyClass();
+        return CounterUtil.isArmyCounter(army.getType()) && armyClass == army.getArmyClass();
     }
 
     /**
-     * @param army the army.
-     * @return <code>true</code> if the army has the right type.
+     * {@inheritDoc}
      */
-    private boolean isArmy(ArmyInfo army) {
-        return army.getType() == CounterFaceTypeEnum.ARMY_MINUS ||
-                army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_MINUS ||
-                army.getType() == CounterFaceTypeEnum.ARMY_PLUS ||
-                army.getType() == CounterFaceTypeEnum.ARMY_TIMAR_PLUS;
+    @Override
+    public boolean getAssaultBonus(List<CounterEntity> armies, Tables tables, GameEntity game) {
+        Period PI = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_I, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PII = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_II, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PIII = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_III, period.getName()))
+                .findAny()
+                .orElse(null);
+
+        // TODO reforms of turkey
+        return between(game.getTurn(), PI, PII) && armies.stream().anyMatch(army -> hasAssault(army, PlayableCountry.POLAND)) ||
+                between(game.getTurn(), PI, PIII) && armies.stream().anyMatch(army -> hasAssault(army, PlayableCountry.RUSSIA)) ||
+                between(game.getTurn(), PI, PIII) && armies.stream().anyMatch(army -> hasAssault(army, PlayableCountry.TURKEY));
+    }
+
+    /**
+     * @param army    the army.
+     * @param country the country.
+     * @return <code>true</code> if the army is an army counter (not timar) and is of the right country.
+     */
+    private boolean hasAssault(CounterEntity army, String country) {
+        return (army.getType() == CounterFaceTypeEnum.ARMY_PLUS || army.getType() == CounterFaceTypeEnum.ARMY_MINUS) && StringUtils.equals(country, army.getCountry());
     }
 
     /**

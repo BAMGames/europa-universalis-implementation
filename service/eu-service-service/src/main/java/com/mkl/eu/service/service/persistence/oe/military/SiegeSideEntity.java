@@ -12,7 +12,7 @@ public class SiegeSideEntity {
     /** Flag saying that the side has selected its losses. */
     private Boolean lossesSelected;
     /** Size of the side. */
-    private Double size;
+    private double size;
     /** Technology of the side. */
     private String tech;
     /** Moral of the side. */
@@ -24,12 +24,12 @@ public class SiegeSideEntity {
 
 
     /** @return the size. */
-    public Double getSize() {
+    public double getSize() {
         return size;
     }
 
     /** @param size the size to set. */
-    public void setSize(Double size) {
+    public void setSize(double size) {
         this.size = size;
     }
 

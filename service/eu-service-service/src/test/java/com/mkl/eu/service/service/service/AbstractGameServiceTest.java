@@ -374,6 +374,14 @@ public abstract class AbstractGameServiceTest {
         bt.setMoral(3);
         bt.setMoralBonusVeteran(true);
         tables.getBattleTechs().add(bt);
+        bt = new BattleTech();
+        bt.setTechnologyFor(Tech.MEDIEVAL);
+        bt.setTechnologyAgainst(Tech.MEDIEVAL);
+        bt.setLand(true);
+        bt.setColumnShock("B");
+        bt.setMoral(1);
+        bt.setMoralBonusVeteran(true);
+        tables.getBattleTechs().add(bt);
     }
 
     public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type, StackEntity owner) {

@@ -482,6 +482,29 @@ public final class CounterUtil {
     }
 
     /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is an army counter(A- or A+), <code>false</code> otherwise.
+     */
+    public static boolean isArmyCounter(CounterFaceTypeEnum face) {
+        boolean army = false;
+
+        if (face != null) {
+            switch (face) {
+                case ARMY_PLUS:
+                case ARMY_TIMAR_PLUS:
+                case ARMY_MINUS:
+                case ARMY_TIMAR_MINUS:
+                    army = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return army;
+    }
+
+    /**
      * Transform a force to a size.
      *
      * @param force to transform in size.
