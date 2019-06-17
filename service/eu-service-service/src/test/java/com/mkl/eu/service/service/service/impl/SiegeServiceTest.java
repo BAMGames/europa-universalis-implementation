@@ -749,6 +749,16 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.chooseMode(request);
+            Assert.fail("Should break because no siege is in right status");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.SIEGE_STATUS_NONE, e.getCode());
+            Assert.assertEquals("chooseMode", e.getParams()[0]);
+        }
+
+        game.getSieges().get(0).setStatus(SiegeStatusEnum.CHOOSE_MODE);
+
+        try {
+            siegeService.chooseMode(request);
             Assert.fail("Should break because provinceTo is mandatory if mode is REDEPLOY");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -759,14 +769,29 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.chooseMode(request);
-            Assert.fail("Should break because no siege is in right status");
+            Assert.fail("Should break because provinceTo does not exist");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.SIEGE_STATUS_NONE, e.getCode());
-            Assert.assertEquals("chooseMode", e.getParams()[0]);
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("chooseMode.request.provinceTo", e.getParams()[0]);
         }
 
-        game.getSieges().get(0).setStatus(SiegeStatusEnum.CHOOSE_MODE);
-        when(provinceDao.getProvinceByName(anyString())).thenReturn(new EuropeanProvinceEntity());
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+
+        try {
+            siegeService.chooseMode(request);
+            Assert.fail("Should break because province to redeploy is not near the siege province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR, e.getCode());
+            Assert.assertEquals("chooseMode.request.provinceTo", e.getParams()[0]);
+        }
+
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(pecs);
+        border.setProvinceTo(idf);
+        pecs.getBorders().add(border);
 
         try {
             siegeService.chooseMode(request);
@@ -786,6 +811,118 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsServiceException.SIEGE_UNDERMINE_TOO_FEW, e.getCode());
             Assert.assertEquals("chooseMode.request.mode", e.getParams()[0]);
         }
+    }
+
+    @Test
+    public void testChodeModeRedeploy() throws FunctionalException {
+        Pair<Request<ChooseModeForSiegeRequest>, GameEntity> pair = testCheckGame(siegeService::chooseMode, "chooseMode");
+        Request<ChooseModeForSiegeRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(12L);
+        country.setName("france");
+        game.getCountries().add(country);
+        StackEntity stack1 = new StackEntity();
+        stack1.setId(1l);
+        stack1.setProvince("pecs");
+        stack1.setCountry("france");
+        stack1.getCounters().add(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_PLUS));
+        stack1.getCounters().add(createCounter(11l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        game.getStacks().add(stack1);
+        StackEntity stack2 = new StackEntity();
+        stack2.setId(2l);
+        stack2.setProvince("pecs");
+        stack2.setCountry("spain");
+        stack2.getCounters().add(createCounter(2l, "spain", CounterFaceTypeEnum.ARMY_MINUS));
+        game.getStacks().add(stack2);
+        StackEntity stack3 = new StackEntity();
+        stack3.setId(3l);
+        stack3.setProvince("pecs");
+        stack3.setCountry("savoie");
+        stack3.getCounters().add(createCounter(3l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT));
+        game.getStacks().add(stack3);
+        StackEntity stack4 = new StackEntity();
+        stack4.setId(3l);
+        stack4.setProvince("pecs");
+        stack4.setCountry("france");
+        stack4.getCounters().add(createCounter(4l, "france", CounterFaceTypeEnum.MNU_ART_MINUS));
+        game.getStacks().add(stack4);
+
+        SiegeEntity siege = new SiegeEntity();
+        siege.setFortressLevel(0);
+        siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
+        siege.setProvince("pecs");
+        stack1.getCounters().forEach(counter -> {
+            SiegeCounterEntity sc = new SiegeCounterEntity();
+            sc.setPhasing(false);
+            sc.setCounter(counter);
+            siege.getCounters().add(sc);
+        });
+        stack2.getCounters().forEach(counter -> {
+            SiegeCounterEntity sc = new SiegeCounterEntity();
+            sc.setPhasing(true);
+            sc.setCounter(counter);
+            siege.getCounters().add(sc);
+        });
+        game.getSieges().add(siege);
+        game.getSieges().add(new SiegeEntity());
+        game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
+        game.getSieges().get(1).setProvince("lyonnais");
+        request.setIdCountry(12L);
+        testCheckStatus(pair.getRight(), request, siegeService::chooseMode, "chooseMode", GameStatusEnum.MILITARY_SIEGES);
+
+        request.setRequest(new ChooseModeForSiegeRequest());
+        request.getRequest().setMode(SiegeModeEnum.REDEPLOY);
+        request.getRequest().setProvinceTo("idf");
+
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(pecs);
+        border.setProvinceTo(idf);
+        pecs.getBorders().add(border);
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+
+        when(oeUtil.canRetreat(idf, false, 0d, country, game)).thenReturn(true);
+        when(oeUtil.isMobile(stack1)).thenReturn(true);
+        when(oeUtil.isMobile(stack2)).thenReturn(true);
+        when(oeUtil.isMobile(stack3)).thenReturn(true);
+        when(oeUtil.getAllies(country, game)).thenReturn(Arrays.asList("france", "savoie"));
+
+        simulateDiff();
+
+        siegeService.chooseMode(request);
+
+        Assert.assertTrue(siege.getStatus() == SiegeStatusEnum.DONE);
+        Assert.assertFalse(siege.isFortressFalls());
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+        Assert.assertEquals(3, diffs.size());
+        DiffEntity diffSiege = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.SIEGE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffSiege);
+        Assert.assertEquals(siege.getId(), diffSiege.getIdObject());
+        Assert.assertEquals(SiegeStatusEnum.DONE.name(), getAttribute(diffSiege, DiffAttributeTypeEnum.STATUS));
+        DiffEntity diffStack1 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack1.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack1);
+        Assert.assertEquals("pecs", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("idf", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack1, DiffAttributeTypeEnum.MOVE_PHASE));
+        DiffEntity diffStack3 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack3.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack3);
+        Assert.assertEquals("pecs", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("idf", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack3, DiffAttributeTypeEnum.MOVE_PHASE));
     }
 
     @Test

@@ -855,11 +855,13 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             BattleCounterEntity bc = new BattleCounterEntity();
             bc.setPhasing(false);
             bc.setCounter(counter);
+            game.getBattles().get(0).getCounters().add(bc);
         });
         stack2.getCounters().forEach(counter -> {
             BattleCounterEntity bc = new BattleCounterEntity();
             bc.setPhasing(true);
             bc.setCounter(counter);
+            game.getBattles().get(0).getCounters().add(bc);
         });
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);

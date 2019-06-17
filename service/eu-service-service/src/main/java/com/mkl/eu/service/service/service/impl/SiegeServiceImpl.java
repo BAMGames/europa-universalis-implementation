@@ -412,14 +412,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_MODE)
                 .setParams(METHOD_CHOOSE_MODE));
 
-        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
-                .setTest(request.getRequest().getMode() == SiegeModeEnum.REDEPLOY &&
-                        StringUtils.isEmpty(request.getRequest().getProvinceTo()))
-                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                .setParams(METHOD_CHOOSE_MODE));
-
         SiegeEntity siege = game.getSieges().stream()
                 .filter(bat -> bat.getStatus() == SiegeStatusEnum.CHOOSE_MODE)
                 .findAny()
@@ -435,7 +427,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         double size = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
                 .collect(Collectors.summingDouble(c -> CounterUtil.getSizeFromType(c.getCounter().getType())));
-        AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         List<DiffEntity> diffs = new ArrayList<>();
         switch (request.getRequest().getMode()) {
@@ -450,17 +441,56 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 diffs.addAll(computeUndermine(siege, country, attributes));
                 break;
             case REDEPLOY:
-                boolean canRetreat = oeUtil.canRetreat(province, false, size, country, game);
+                String provinceTo = request.getRequest().getProvinceTo();
+                failIfEmpty(new AbstractService.CheckForThrow<String>()
+                        .setTest(provinceTo)
+                        .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                        .setMsgFormat(MSG_MISSING_PARAMETER)
+                        .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                        .setParams(METHOD_CHOOSE_MODE));
+
+                AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);
+
+                failIfNull(new CheckForThrow<>()
+                        .setTest(province)
+                        .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                        .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                        .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                        .setParams(METHOD_CHOOSE_MODE, province));
+
+                AbstractProvinceEntity provinceFrom = provinceDao.getProvinceByName(siege.getProvince());
+                boolean isNear = provinceFrom.getBorders().stream()
+                        .anyMatch(x -> Objects.equals(province.getId(), x.getProvinceTo().getId()));
+
+                failIfFalse(new CheckForThrow<Boolean>()
+                        .setTest(isNear)
+                        .setCodeError(IConstantsServiceException.PROVINCES_NOT_NEIGHBOR)
+                        .setMsgFormat(MSG_NOT_NEIGHBOR)
+                        .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                        .setParams(METHOD_CHOOSE_MODE, siege.getProvince(), provinceTo));
+
+                boolean canRetreat = oeUtil.canRetreat(province, false, 0, country, game);
 
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                         .setTest(canRetreat)
                         .setCodeError(IConstantsServiceException.SIEGE_CANT_REDEPLOY)
                         .setMsgFormat("{1}: {0} Impossible to redeploy besieging forces in the province {2}.")
                         .setName(PARAMETER_CHOOSE_MODE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                        .setParams(METHOD_CHOOSE_MODE, province.getName()));
+                        .setParams(METHOD_CHOOSE_MODE, provinceTo));
 
-                // FIXME do the redeploy
-
+                Consumer<StackEntity> retreatStack = stack -> {
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, siege.getProvince()),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+                    stack.setMovePhase(MovePhaseEnum.MOVED);
+                    stack.setProvince(provinceTo);
+                };
+                List<String> allies = oeUtil.getAllies(country, game);
+                game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
+                        .forEach(retreatStack);
+                diffs.addAll(cleanUpSiege(siege, attributes));
                 break;
             case ASSAULT:
                 diffs.addAll(computeAssault(siege, country, false, attributes));
