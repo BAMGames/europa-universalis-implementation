@@ -35,6 +35,7 @@ import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
+
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
+import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
 
 /**
  * Service for siege purpose.
@@ -1394,6 +1398,204 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         }
 
         diffs.addAll(fortressFalls(siege, country, attributes));
+
+        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
+                attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+        diffs.add(diff);
+
+        return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse chooseLossesAfterAssault(Request<ChooseLossesRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
+        GameEntity game = gameDiffs.getGame();
+
+        checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
+
+        // TODO Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .findFirst()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST)
+                .setParams(METHOD_CHOOSE_LOSSES));
+
+        SiegeEntity siege = game.getSieges().stream()
+                .filter(sieg -> sieg.getStatus() == SiegeStatusEnum.CHOOSE_LOSS)
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(siege)
+                .setCodeError(IConstantsServiceException.SIEGE_STATUS_NONE)
+                .setMsgFormat("{1}: {0} No siege of status {2} can be found.")
+                .setName(PARAMETER_CHOOSE_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES, SiegeStatusEnum.CHOOSE_LOSS.name()));
+
+        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        List<String> allies = oeUtil.getAllies(country, game);
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        boolean accessRight = !siege.getCounters().stream()
+                .anyMatch(sc -> sc.isPhasing() == playerPhasing && !allies.contains(sc.getCounter().getCountry()) ||
+                        sc.isPhasing() != playerPhasing && !enemies.contains(sc.getCounter().getCountry()));
+
+        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(accessRight)
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_CHOOSE_LOSSES, country.getName(), "complex"));
+
+        boolean lossesAlreadyChosen = playerPhasing && BooleanUtils.isTrue(siege.getPhasing().isLossesSelected()) ||
+                !playerPhasing && BooleanUtils.isTrue(siege.getNonPhasing().isLossesSelected());
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(lossesAlreadyChosen)
+                .setCodeError(IConstantsServiceException.ACTION_ALREADY_DONE)
+                .setMsgFormat("{1}: {0} The action {1} has already been done by the country or the side {2}.")
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_CHOOSE_LOSSES, METHOD_CHOOSE_LOSSES, playerPhasing ? "phasing" : "non phasing"));
+
+        SiegeSideEntity side;
+        if (playerPhasing) {
+            side = siege.getPhasing();
+        } else {
+            side = siege.getNonPhasing();
+        }
+        // Remove useless entries from request
+        request.getRequest().getLosses().removeIf(ul -> ul.getRoundLosses() <= 0 && ul.getThirdLosses() <= 0);
+        int roundLosses = request.getRequest().getLosses().stream().collect(Collectors.summingInt(ChooseLossesRequest.UnitLoss::getRoundLosses));
+        int thirdLosses = request.getRequest().getLosses().stream().collect(Collectors.summingInt(ChooseLossesRequest.UnitLoss::getThirdLosses));
+
+        if (thirdLosses >= 3) {
+            roundLosses += thirdLosses / 3;
+            thirdLosses = thirdLosses % 3;
+        }
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(!CommonUtil.equals(roundLosses, side.getLosses().getRoundLoss()) || !CommonUtil.equals(thirdLosses, side.getLosses().getThirdLoss()))
+                .setCodeError(IConstantsServiceException.BATTLE_LOSSES_MISMATCH)
+                .setMsgFormat("{1}: {0} The losses taken {1} does not match the losses that should be taken {2}.")
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES, AbstractWithLossEntity.create(3 * roundLosses + thirdLosses).toString(), side.getLosses().toString()));
+
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
+        if (province instanceof EuropeanProvinceEntity) {
+            boolean hasThird = request.getRequest().getLosses().stream().anyMatch(ul -> ul.getThirdLosses() > 0);
+
+            failIfTrue(new CheckForThrow<Boolean>()
+                    .setTest(hasThird)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_NO_THIRD)
+                    .setMsgFormat("{1}: {0} The losses cannot involve third in an european province.")
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setParams(METHOD_CHOOSE_LOSSES));
+        }
+
+        List<DiffEntity> diffs = new ArrayList<>();
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        long thirdBefore = siege.getCounters().stream()
+                .filter(sc -> sc.isPhasing() == playerPhasing && CounterUtil.isExploration(sc.getCounter().getType()))
+                .count();
+        int thirdDiff = 0;
+
+        for (ChooseLossesRequest.UnitLoss loss : request.getRequest().getLosses()) {
+            CounterEntity counter = siege.getCounters().stream()
+                    .filter(sc -> sc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), sc.getCounter().getId()))
+                    .map(SiegeCounterEntity::getCounter)
+                    .findAny()
+                    .orElse(null);
+
+            failIfNull(new CheckForThrow<>()
+                    .setTest(counter)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_INVALID_COUNTER)
+                    .setMsgFormat("{1}: {0} The losses cannot involve the counter {2}.")
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter()));
+
+            double lossSize = loss.getRoundLosses() + THIRD * loss.getThirdLosses();
+            double lossMax = CounterUtil.getSizeFromType(counter.getType());
+            failIfTrue(new CheckForThrow<Boolean>()
+                    .setTest(lossSize > lossMax + EPSILON)
+                    .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_BIG)
+                    .setMsgFormat("{1}: {0} The counter {2} cannot take {3} losses because it cannot take more than {4}.")
+                    .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                    .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter(), lossSize, lossMax));
+
+            if (lossMax - lossSize <= EPSILON) {
+                diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                siege.getCounters().removeIf(sc -> sc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), sc.getCounter().getId()));
+                thirdDiff -= loss.getThirdLosses();
+            } else {
+                List<CounterFaceTypeEnum> faces = new ArrayList<>();
+                double remain = lossMax - lossSize;
+                int round = (int) remain;
+                int third = (int) ((remain - round) / THIRD);
+                if (round >= 2) {
+                    faces.add(CounterUtil.getSize2FromType(counter.getType()));
+                    round -= 2;
+                }
+                if (round >= 1) {
+                    faces.add(CounterUtil.getSize1FromType(counter.getType()));
+                    round -= 1;
+                }
+                while (third > 0) {
+                    CounterFaceTypeEnum face = CounterUtil.getSizeThirdFromType(counter.getType());
+                    if (face != null) {
+                        faces.add(face);
+                        thirdDiff++;
+                    }
+                    third--;
+                }
+                // TODO check if round and third are 0 ?
+                faces.removeIf(o -> o == null);
+                if (faces.isEmpty()) {
+                    diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                    siege.getCounters().removeIf(sc -> sc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), sc.getCounter().getId()));
+                } else {
+                    diffs.addAll(faces.stream()
+                            .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
+                            .collect(Collectors.toList()));
+                    diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                }
+            }
+        }
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(thirdBefore + thirdDiff >= 3)
+                .setCodeError(IConstantsServiceException.BATTLE_LOSSES_TOO_MANY_THIRD)
+                .setMsgFormat("{1}: {0} The losses are invalid because it will result with too many thirds.")
+                .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
+                .setParams(METHOD_CHOOSE_LOSSES));
+
+        if (playerPhasing) {
+            siege.getPhasing().setLossesSelected(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
+        } else {
+            siege.getNonPhasing().setLossesSelected(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
+        }
+
+        if (BooleanUtils.isTrue(siege.getPhasing().isLossesSelected()) && BooleanUtils.isTrue(siege.getNonPhasing().isLossesSelected())) {
+            if (siege.isFortressFalls()) {
+                diffs.addAll(isFortressMan(siege, country, attributes));
+            } else {
+                diffs.addAll(cleanUpSiege(siege, attributes));
+            }
+        }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));

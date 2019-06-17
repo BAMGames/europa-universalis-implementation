@@ -87,4 +87,15 @@ public interface ISiegeService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse redeploy(@WebParam(name = PARAMETER_REDEPLOY) Request<RedeployRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Choose losses from the current assault.
+     *
+     * @param request info about on which units the losses will be taken.
+     * @return the diffs.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse chooseLossesAfterAssault(@WebParam(name = PARAMETER_CHOOSE_LOSSES) Request<ChooseLossesRequest> request) throws FunctionalException, TechnicalException;
 }
