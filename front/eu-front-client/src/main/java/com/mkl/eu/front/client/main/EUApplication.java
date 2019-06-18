@@ -79,7 +79,7 @@ public class EUApplication extends Application {
         primaryStage.setTitle(message.getMessage("game.title", null, globalConfiguration.getLocale()));
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(event -> {
-            gamePopups.forEach(gamePopup -> gamePopup.handle(event));
+            gamePopups.forEach(GamePopup::close);
             Platform.exit();
             // Should not be necessary but processing 3 PSurfaceJOGL
             // doesn't close properly.
@@ -150,6 +150,7 @@ public class EUApplication extends Application {
                                     Tab tab = new Tab(title);
                                     tab.setContent(popup.getContent());
                                     verticalTab.getTabs().add(tab);
+                                    tab.setOnClosed(event1 -> popup.close());
                                     return tab;
                                 };
                                 Tab tab = verticalTab.getTabs().stream()

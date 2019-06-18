@@ -42,7 +42,6 @@ import com.mkl.eu.front.client.map.marker.MarkerUtils;
 import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.marker.Marker;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -55,7 +54,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.WindowEvent;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -89,7 +87,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, ApplicationContextAware {
+public class GamePopup implements IDiffListener, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(GamePopup.class);
     /** Content of this component. */
@@ -1440,8 +1438,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /** {@inheritDoc} */
-    @Override
-    public void handle(WindowEvent event) {
+    public void close() {
         if (!closed) {
             map.destroy();
             client.setTerminate(true);
