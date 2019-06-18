@@ -12,6 +12,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -19,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -27,6 +29,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * JavaFX component prior to loading a game (display list of games, configuration and so on).
@@ -61,11 +64,18 @@ public class EUApplication extends Application {
 
 //        primaryStage.getIcons().add(new Image("file:resources/images/address_book_32.png"));
 
-        TabPane tabPane = new TabPane();
-        tabPane.getTabs().add(createGameTab());
-        tabPane.getTabs().add(createTabLog());
+        TabPane verticalTab = new TabPane();
+        verticalTab.setSide(Side.LEFT);
 
-        Scene scene = new Scene(tabPane, 300, 250);
+        TabPane tabPane = new TabPane();
+        tabPane.getTabs().add(createGameTab(verticalTab));
+        tabPane.getTabs().add(createTabLog());
+        Tab tab = new Tab(message.getMessage("game.games.title", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(tabPane);
+        verticalTab.getTabs().add(tab);
+
+        Scene scene = new Scene(verticalTab, 800, 600);
         primaryStage.setTitle(message.getMessage("game.title", null, globalConfiguration.getLocale()));
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(event -> {
@@ -81,7 +91,7 @@ public class EUApplication extends Application {
     /**
      * @return the tab containing the list of games.
      */
-    private Tab createGameTab() {
+    private Tab createGameTab(TabPane verticalTab) {
         TableView<GameLight> table = new TableView<>();
         table.setTableMenuButtonVisible(true);
         table.setPrefWidth(750);
@@ -132,8 +142,21 @@ public class EUApplication extends Application {
                             Button btn = new Button(message.getMessage("game.games.load", null, globalConfiguration.getLocale()));
                             btn.setOnAction(event -> {
                                 GameLight game = getTableView().getItems().get(getIndex());
-                                GamePopup popup = context.getBean(GamePopup.class, game.getId(), game.getIdCountry());
-                                gamePopups.add(popup);
+                                String title = message.getMessage("game.popup.title", new Object[]{game.getId(), game.getCountry()}, globalConfiguration.getLocale());
+                                Supplier<Tab> createTab = () -> {
+                                    GamePopup popup = context.getBean(GamePopup.class, game.getId(), game.getIdCountry());
+                                    gamePopups.add(popup);
+
+                                    Tab tab = new Tab(title);
+                                    tab.setContent(popup.getContent());
+                                    verticalTab.getTabs().add(tab);
+                                    return tab;
+                                };
+                                Tab tab = verticalTab.getTabs().stream()
+                                        .filter(t -> StringUtils.equals(title, t.getText()))
+                                        .findAny()
+                                        .orElseGet(createTab);
+                                verticalTab.getSelectionModel().select(tab);
                             });
                             setGraphic(btn);
                             setText(null);

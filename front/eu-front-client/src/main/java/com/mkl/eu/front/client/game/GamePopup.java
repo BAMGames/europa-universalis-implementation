@@ -45,7 +45,6 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -53,8 +52,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +80,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
 /**
  * Popup used when loading a game. Holds the actions of opening other popups (map, chat, actions,...).
+ * Is not a popup anymore.
  *
  * @author MKL.
  */
@@ -91,6 +89,8 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(GamePopup.class);
+    /** Content of this component. */
+    private GridPane content = new GridPane();
     /** Flag saying that the popup has already been closed. */
     private boolean closed;
     /** Spring application context. */
@@ -138,6 +138,11 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
         gameConfig = new GameConfiguration();
         gameConfig.setIdGame(idGame);
         gameConfig.setIdCountry(idCountry);
+    }
+
+    /** @return the content. */
+    public GridPane getContent() {
+        return content;
     }
 
     /**
@@ -221,26 +226,16 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      * Initialize all the UIs on the popup.
      */
     private void initUI() {
-        Stage dialog = new Stage();
-        String countryName = game.getCountries().stream()
-                .filter(country -> country.getId().equals(gameConfig.getIdCountry()))
-                .map(PlayableCountry::getName)
-                .findAny()
-                .orElse("");
-        dialog.setTitle(message.getMessage("game.popup.title", new Object[]{countryName, game.getId()}, globalConfiguration.getLocale()));
-        dialog.initModality(Modality.WINDOW_MODAL);
+        content.setAlignment(Pos.CENTER);
+        content.setHgap(10);
+        content.setVgap(10);
+        content.setPadding(new Insets(25, 25, 25, 25));
 
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
-
-        grid.add(info, 0, 0, 1, 1);
+        content.add(info, 0, 0, 1, 1);
         updateTitle();
         updateActivePlayers();
 
-        grid.add(activeCountries, 1, 0, 1, 5);
+        content.add(activeCountries, 1, 0, 1, 5);
 
         Button mapBtn = new Button(message.getMessage("game.popup.map", null, globalConfiguration.getLocale()));
         mapBtn.setOnAction(event -> {
@@ -255,7 +250,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 }
             }
         });
-        grid.add(mapBtn, 0, 1, 1, 1);
+        content.add(mapBtn, 0, 1, 1, 1);
 
         Button chatBtn = new Button(message.getMessage("game.popup.chat", null, globalConfiguration.getLocale()));
         chatBtn.setOnAction(event -> {
@@ -265,7 +260,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 chatWindow.requestFocus();
             }
         });
-        grid.add(chatBtn, 0, 2, 1, 1);
+        content.add(chatBtn, 0, 2, 1, 1);
 
         Button ecoBtn = new Button(message.getMessage("game.popup.eco", null, globalConfiguration.getLocale()));
         ecoBtn.setOnAction(event -> {
@@ -275,7 +270,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 ecoWindow.requestFocus();
             }
         });
-        grid.add(ecoBtn, 0, 3, 1, 1);
+        content.add(ecoBtn, 0, 3, 1, 1);
 
         Button admActBtn = new Button(message.getMessage("game.popup.admin_actions", null, globalConfiguration.getLocale()));
         admActBtn.setOnAction(event -> {
@@ -285,13 +280,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 adminActionsWindow.requestFocus();
             }
         });
-        grid.add(admActBtn, 0, 4, 1, 1);
-
-        Scene dialogScene = new Scene(grid, 300, 300);
-        dialog.setScene(dialogScene);
-        dialog.show();
-
-        dialog.setOnCloseRequest(this);
+        content.add(admActBtn, 0, 4, 1, 1);
     }
 
     private void updateTitle() {
