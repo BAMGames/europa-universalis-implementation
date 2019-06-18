@@ -45,7 +45,10 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -90,7 +93,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(GamePopup.class);
     /** Content of this component. */
-    private GridPane content = new GridPane();
+    private TabPane content;
     /** Flag saying that the popup has already been closed. */
     private boolean closed;
     /** Spring application context. */
@@ -141,7 +144,7 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     }
 
     /** @return the content. */
-    public GridPane getContent() {
+    public Node getContent() {
         return content;
     }
 
@@ -152,12 +155,13 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
      */
     @PostConstruct
     public void init() throws FunctionalException {
+        content = new TabPane();
         initGame();
         Map<String, Marker> markers = MarkerUtils.createMarkers(game);
         initMap(markers);
+        initUI();
         initChat();
         initEco(markers);
-        initUI();
     }
 
     /**
@@ -207,6 +211,10 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private void initChat() {
         chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
         chatWindow.addDiffListener(this);
+        Tab tab = new Tab(message.getMessage("chat.title", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(chatWindow.getTabPane());
+        content.getTabs().add(tab);
     }
 
     /**
@@ -217,25 +225,35 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     private void initEco(Map<String, Marker> markers) {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
+        Tab tab = new Tab(message.getMessage("eco.title", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(ecoWindow.getTabPane());
+        content.getTabs().add(tab);
+
         List<IMapMarker> mapMarkers = markers.values().stream().filter(marker -> marker instanceof IMapMarker).map(marker -> (IMapMarker) marker).collect(Collectors.toList());
         adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
+        tab = new Tab(message.getMessage("admin_action.title", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(adminActionsWindow.getTabPane());
+        content.getTabs().add(tab);
     }
 
     /**
      * Initialize all the UIs on the popup.
      */
     private void initUI() {
-        content.setAlignment(Pos.CENTER);
-        content.setHgap(10);
-        content.setVgap(10);
-        content.setPadding(new Insets(25, 25, 25, 25));
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
 
-        content.add(info, 0, 0, 1, 1);
+        grid.add(info, 0, 0, 1, 1);
         updateTitle();
         updateActivePlayers();
 
-        content.add(activeCountries, 1, 0, 1, 5);
+        grid.add(activeCountries, 1, 0, 1, 5);
 
         Button mapBtn = new Button(message.getMessage("game.popup.map", null, globalConfiguration.getLocale()));
         mapBtn.setOnAction(event -> {
@@ -250,37 +268,12 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
                 }
             }
         });
-        content.add(mapBtn, 0, 1, 1, 1);
+        grid.add(mapBtn, 0, 1, 1, 1);
 
-        Button chatBtn = new Button(message.getMessage("game.popup.chat", null, globalConfiguration.getLocale()));
-        chatBtn.setOnAction(event -> {
-            if (!chatWindow.isShowing()) {
-                chatWindow.show();
-            } else {
-                chatWindow.requestFocus();
-            }
-        });
-        content.add(chatBtn, 0, 2, 1, 1);
-
-        Button ecoBtn = new Button(message.getMessage("game.popup.eco", null, globalConfiguration.getLocale()));
-        ecoBtn.setOnAction(event -> {
-            if (!ecoWindow.isShowing()) {
-                ecoWindow.show();
-            } else {
-                ecoWindow.requestFocus();
-            }
-        });
-        content.add(ecoBtn, 0, 3, 1, 1);
-
-        Button admActBtn = new Button(message.getMessage("game.popup.admin_actions", null, globalConfiguration.getLocale()));
-        admActBtn.setOnAction(event -> {
-            if (!adminActionsWindow.isShowing()) {
-                adminActionsWindow.show();
-            } else {
-                adminActionsWindow.requestFocus();
-            }
-        });
-        content.add(admActBtn, 0, 4, 1, 1);
+        Tab tab = new Tab(message.getMessage("game.popup.global", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(grid);
+        content.getTabs().add(tab);
     }
 
     private void updateTitle() {
@@ -1451,9 +1444,6 @@ public class GamePopup implements IDiffListener, EventHandler<WindowEvent>, Appl
     public void handle(WindowEvent event) {
         if (!closed) {
             map.destroy();
-            chatWindow.hide();
-            ecoWindow.hide();
-            adminActionsWindow.hide();
             client.setTerminate(true);
             closed = true;
         }

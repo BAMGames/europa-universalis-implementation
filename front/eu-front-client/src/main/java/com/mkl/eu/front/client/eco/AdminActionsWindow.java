@@ -36,14 +36,10 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
@@ -92,8 +88,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     private List<IMapMarker> markers;
     /** Game configuration. */
     private GameConfiguration gameConfig;
-    /** Stage of the window. */
-    private Stage stage;
+    /** Global node. */
+    private TabPane tabPane;
 
     /********************************************/
     /**        Nodes about maintenance          */
@@ -178,30 +174,23 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         this.gameConfig = gameConfig;
     }
 
+    /** @return the tabPane. */
+    public TabPane getTabPane() {
+        return tabPane;
+    }
+
     /**
      * Initialize the window.
      */
     @PostConstruct
     public void init() {
-        stage = new Stage();
-        stage.setTitle(message.getMessage("admin_action.title", null, globalConfiguration.getLocale()));
-        stage.initModality(Modality.WINDOW_MODAL);
-
-        BorderPane border = new BorderPane();
-
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
         PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
         if (country != null) {
             tabPane.getTabs().add(createAdminForm(country));
         }
         tabPane.getTabs().add(createAdminList(country));
         tabPane.getTabs().add(createCompetition());
-
-        border.setCenter(tabPane);
-
-        Scene scene = new Scene(border, 800, 600);
-        stage.setScene(scene);
-        stage.setOnCloseRequest(event -> hide());
     }
 
     /**
@@ -1700,34 +1689,6 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         }
 
         return sb.toString();
-    }
-
-    /**
-     * Show this popup.
-     */
-    public void show() {
-        this.stage.show();
-    }
-
-    /**
-     * Hide this popup.
-     */
-    public void hide() {
-        this.stage.hide();
-    }
-
-    /**
-     * @return Whether or not this popup is showing.
-     */
-    public boolean isShowing() {
-        return this.stage.isShowing();
-    }
-
-    /**
-     * Requests that this {@code Window} get the input focus.
-     */
-    public void requestFocus() {
-        this.stage.requestFocus();
     }
 
     /**

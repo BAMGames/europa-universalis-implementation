@@ -25,15 +25,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,8 +86,6 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     private List<PlayableCountry> countries;
     /** Game configuration. */
     private GameConfiguration gameConfig;
-    /** Stage of the window. */
-    private Stage stage;
     /** The TabPane to update it later. */
     private TabPane tabPane;
 
@@ -107,17 +102,16 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         this.gameConfig = gameConfig;
     }
 
+    /** @return the tabPane. */
+    public TabPane getTabPane() {
+        return tabPane;
+    }
+
     /**
      * Initialize the window.
      */
     @PostConstruct
     public void init() {
-        stage = new Stage();
-        stage.setTitle(message.getMessage("chat.title", null, globalConfiguration.getLocale()));
-        stage.initModality(Modality.WINDOW_MODAL);
-
-        BorderPane border = new BorderPane();
-
         tabPane = new TabPane();
 
         tabPane.getTabs().add(createRoom(null, message.getMessage("chat.global", null, globalConfiguration.getLocale()),
@@ -270,12 +264,6 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 }
             }
         });
-
-        border.setCenter(tabPane);
-
-        Scene scene = new Scene(border, 800, 600);
-        stage.setScene(scene);
-        stage.setOnCloseRequest(event -> hide());
     }
 
     /**
@@ -473,34 +461,6 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
             tab.setText(label);
         }
-    }
-
-    /**
-     * Show this popup.
-     */
-    public void show() {
-        this.stage.show();
-    }
-
-    /**
-     * Hide this popup.
-     */
-    public void hide() {
-        this.stage.hide();
-    }
-
-    /**
-     * @return Whether or not this popup is showing.
-     */
-    public boolean isShowing() {
-        return this.stage.isShowing();
-    }
-
-    /**
-     * Requests that this {@code Window} get the input focus.
-     */
-    public void requestFocus() {
-        this.stage.requestFocus();
     }
 
     /**

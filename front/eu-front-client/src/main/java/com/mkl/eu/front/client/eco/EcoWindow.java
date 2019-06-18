@@ -20,15 +20,11 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -75,8 +71,6 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private List<TradeFleet> tradeFleets;
     /** Game configuration. */
     private GameConfiguration gameConfig;
-    /** Stage of the window. */
-    private Stage stage;
     /** Flag saying that a trading fleet has changed and that trade fleet tab should be updated. */
     private boolean tradeFleetModified;
     /** ChoiceBox for the countries for sheet B. */
@@ -89,6 +83,8 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private TableView<TradeFleetSheet> tableTFAtl;
     /** TableView for trade fleets in indian trade center. */
     private TableView<TradeFleetSheet> tableTFInd;
+    /** Content of the economic window. */
+    private TabPane tabPane;
 
     static {
         config = new ArrayList<>();
@@ -156,28 +152,21 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         this.gameConfig = gameConfig;
     }
 
+    /** @return the tabPane. */
+    public TabPane getTabPane() {
+        return tabPane;
+    }
+
     /**
      * Initialize the window.
      */
     @PostConstruct
     public void init() {
-        stage = new Stage();
-        stage.setTitle(message.getMessage("eco.title", null, globalConfiguration.getLocale()));
-        stage.initModality(Modality.WINDOW_MODAL);
-
-        BorderPane border = new BorderPane();
-
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
         PlayableCountry country = CommonUtil.findFirst(countries, playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
         tabPane.getTabs().add(createSheetA(country));
         tabPane.getTabs().add(createSheetB(country));
         tabPane.getTabs().add(createTradeFleets());
-
-        border.setCenter(tabPane);
-
-        Scene scene = new Scene(border, 800, 600);
-        stage.setScene(scene);
-        stage.setOnCloseRequest(event -> hide());
     }
 
     /**
@@ -188,6 +177,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
      */
     private Tab createSheetA(PlayableCountry country) {
         Tab tab = new Tab(message.getMessage("eco.sheetA", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
 
         return tab;
     }
@@ -200,6 +190,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
      */
     private Tab createSheetB(PlayableCountry country) {
         Tab tab = new Tab(message.getMessage("eco.sheetB", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
 
         choiceB = new ChoiceBox<>();
         choiceB.setItems(FXCollections.observableArrayList(countries));
@@ -334,8 +325,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
      */
     private Tab createTradeFleets() {
         Tab tab = new Tab(message.getMessage("eco.tfs", null, globalConfiguration.getLocale()));
-
-
+        tab.setClosable(false);
 
         Text titleMed = new Text(message.getMessage("eco.tfs.mediterranean", null, globalConfiguration.getLocale()));
         tableTFMed = new TableView<>();
@@ -520,34 +510,6 @@ public class EcoWindow extends AbstractDiffListenerContainer {
      */
     private static String toString(Integer i) {
         return i == null ? "" : Integer.toString(i);
-    }
-
-    /**
-     * Show this popup.
-     */
-    public void show() {
-        this.stage.show();
-    }
-
-    /**
-     * Hide this popup.
-     */
-    public void hide() {
-        this.stage.hide();
-    }
-
-    /**
-     * @return Whether or not this popup is showing.
-     */
-    public boolean isShowing() {
-        return this.stage.isShowing();
-    }
-
-    /**
-     * Requests that this {@code Window} get the input focus.
-     */
-    public void requestFocus() {
-        this.stage.requestFocus();
     }
 
     /**
