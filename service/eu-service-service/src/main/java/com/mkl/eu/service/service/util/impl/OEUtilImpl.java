@@ -16,6 +16,9 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
@@ -23,6 +26,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -604,6 +608,44 @@ public final class OEUtilImpl implements IOEUtil {
                         }));
 
         return countries;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void fillWarOfBattle(BattleEntity battle, GameEntity game) {
+        WarEntity goodWar = null;
+        Boolean phasingOffensive = null;
+        for (WarEntity war : game.getWars()) {
+            boolean ok = true;
+            phasingOffensive = null;
+
+            for (BattleCounterEntity counter : battle.getCounters()) {
+                if (!ok) {
+                    break;
+                }
+                for (CountryInWarEntity country : war.getCountries()) {
+                    if (StringUtils.equals(country.getCountry().getName(), counter.getCounter().getCountry())) {
+                        boolean localPhasingOffensive = counter.isPhasing() == country.isOffensive();
+                        if (phasingOffensive == null) {
+                            phasingOffensive = localPhasingOffensive;
+                        } else if (phasingOffensive != localPhasingOffensive) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (ok) {
+                goodWar = war;
+                break;
+            }
+        }
+
+        battle.setWar(goodWar);
+        battle.setPhasingOffensive(BooleanUtils.toBoolean(phasingOffensive));
     }
 
     /**

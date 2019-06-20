@@ -9,6 +9,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 
 import java.util.List;
@@ -88,7 +89,7 @@ public interface IOEUtil {
     /**
      * Rolls a die for a non identified country in the given game.
      *
-     * @param game    the game.
+     * @param game the game.
      * @return the result of a die 10.
      */
     int rollDie(GameEntity game);
@@ -178,6 +179,13 @@ public interface IOEUtil {
      * @return the enemies of the country.
      */
     List<String> getEnemies(PlayableCountryEntity country, GameEntity game);
+
+    /**
+     * @param battle the battle.
+     * @param game   the game.
+     * @return the war related to this battle.
+     */
+    void fillWarOfBattle(BattleEntity battle, GameEntity game);
 
     /**
      * @param province the province.

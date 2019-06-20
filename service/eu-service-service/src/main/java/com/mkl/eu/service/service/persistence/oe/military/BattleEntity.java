@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.vo.enumeration.BattleStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.BattleWinnerEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -38,6 +39,10 @@ public class BattleEntity implements IEntity, Serializable {
     private BattleSideEntity nonPhasing = new BattleSideEntity();
     /** Counters involved in the battle. */
     private Set<BattleCounterEntity> counters = new HashSet<>();
+    /** War in which the battle occurs. */
+    private WarEntity war;
+    /** If the phasing side of the battle is the offensive side of the war. */
+    private boolean phasingOffensive;
     /** Game in which the battle occurs. */
     private GameEntity game;
 
@@ -145,6 +150,28 @@ public class BattleEntity implements IEntity, Serializable {
     /** @param counters the counters to set. */
     public void setCounters(Set<BattleCounterEntity> counters) {
         this.counters = counters;
+    }
+
+    /** @return the war. */
+    @ManyToOne
+    @JoinColumn(name = "ID_WAR")
+    public WarEntity getWar() {
+        return war;
+    }
+
+    /** @param war the war to set. */
+    public void setWar(WarEntity war) {
+        this.war = war;
+    }
+
+    /** @return the phasingOffensive. */
+    public boolean isPhasingOffensive() {
+        return phasingOffensive;
+    }
+
+    /** @param phasingOffensive the phasingOffensive to set. */
+    public void setPhasingOffensive(boolean phasingOffensive) {
+        this.phasingOffensive = phasingOffensive;
     }
 
     /** @return the game. */

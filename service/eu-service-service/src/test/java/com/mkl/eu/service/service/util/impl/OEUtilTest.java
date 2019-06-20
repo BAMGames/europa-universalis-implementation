@@ -18,6 +18,8 @@ import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
@@ -26,6 +28,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity
 import com.mkl.eu.service.service.persistence.oe.tables.CombatResultEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.util.ArmyInfo;
+import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -2974,5 +2977,142 @@ public class OEUtilTest {
         Assert.assertEquals(3, oeUtil.retreat(9).getTotalThird());
         Assert.assertEquals(3, oeUtil.retreat(10).getTotalThird());
         Assert.assertEquals(3, oeUtil.retreat(11).getTotalThird());
+    }
+
+    @Test
+    public void testWarFromBattle() {
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("spain", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(1L, true);
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("spain", true)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(null, true);
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", false)
+                        .addCounter("spain", true)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(1L, false);
+    }
+
+    private static class WarFromBattleBuilder {
+        List<WarEntity> wars = new ArrayList<>();
+        BattleEntity battle;
+
+        static WarFromBattleBuilder create() {
+            return new WarFromBattleBuilder();
+        }
+
+        WarFromBattleBuilder addWar(WarEntity war) {
+            wars.add(war);
+            return this;
+        }
+
+        WarFromBattleBuilder battle(BattleEntity battle) {
+            this.battle = battle;
+            return this;
+        }
+
+        WarFromBattleBuilder whenSearchWar(IOEUtil oeUtil) {
+            GameEntity game = new GameEntity();
+            game.getWars().addAll(wars);
+            oeUtil.fillWarOfBattle(battle, game);
+            return this;
+        }
+
+        WarFromBattleBuilder thenExpect(Long id, boolean phasingOffensive) {
+            if (id == null) {
+                Assert.assertNull("No war was fitting this battle, but a war was found.", battle.getWar());
+            } else {
+                Assert.assertNotNull("A war was fitting this battle, but was not found.", battle.getWar());
+                Assert.assertEquals("The wrong war was retrieved.", id, battle.getWar().getId());
+                Assert.assertEquals("The wrong role (phasing = offensive) was retrieved.", phasingOffensive, battle.isPhasingOffensive());
+            }
+            return this;
+        }
+    }
+
+    private static class WarBuilder {
+        Long id;
+        WarTypeEnum type;
+        List<CountryInWarEntity> countries = new ArrayList<>();
+
+        static WarBuilder create() {
+            return new WarBuilder();
+        }
+
+        WarBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        WarBuilder type(WarTypeEnum type) {
+            this.type = type;
+            return this;
+        }
+
+        WarBuilder addCountry(String country, boolean offensive, WarImplicationEnum implication) {
+            CountryInWarEntity countryInWarEntity = new CountryInWarEntity();
+            countryInWarEntity.setCountry(new CountryEntity());
+            countryInWarEntity.getCountry().setName(country);
+            countryInWarEntity.setOffensive(offensive);
+            countryInWarEntity.setImplication(implication);
+            countries.add(countryInWarEntity);
+            return this;
+        }
+
+        WarEntity toWar() {
+            WarEntity war = new WarEntity();
+            war.setId(id);
+            war.setType(type);
+            war.getCountries().addAll(countries);
+            return war;
+        }
+    }
+
+    private static class BattleBuilder {
+        List<BattleCounterEntity> counters = new ArrayList<>();
+
+        static BattleBuilder create() {
+            return new BattleBuilder();
+        }
+
+        BattleBuilder addCounter(String country, boolean phasing) {
+            BattleCounterEntity counter = new BattleCounterEntity();
+            counter.setCounter(new CounterEntity());
+            counter.getCounter().setCountry(country);
+            counter.setPhasing(phasing);
+            counters.add(counter);
+            return this;
+        }
+
+        BattleEntity toBattle() {
+            BattleEntity battle = new BattleEntity();
+            battle.getCounters().addAll(counters);
+            return battle;
+        }
     }
 }
