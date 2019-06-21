@@ -3003,7 +3003,7 @@ public class OEUtilTest {
                         .addCounter("spain", true)
                         .toBattle())
                 .whenSearchWar(oeUtil)
-                .thenExpect(null, true);
+                .thenExpectNothing();
 
         WarFromBattleBuilder.create()
                 .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
@@ -3016,6 +3016,108 @@ public class OEUtilTest {
                         .toBattle())
                 .whenSearchWar(oeUtil)
                 .thenExpect(1L, false);
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .addCountry("austria", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("spain", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(1L, true);
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .addCountry("austria", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("spain", false)
+                        .addCounter("austria", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(1L, true);
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("spain", false)
+                        .addCounter("austria", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpectNothing();
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .addCountry("austria", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .addWar(WarBuilder.create().id(2L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("poland", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", true, WarImplicationEnum.FULL)
+                        .addCountry("turkey", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("turkey", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpectNothing();
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .addCountry("austria", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .addWar(WarBuilder.create().id(2L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("poland", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", true, WarImplicationEnum.FULL)
+                        .addCountry("turkey", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .addWar(WarBuilder.create().id(3L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("turkey", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("france", true)
+                        .addCounter("turkey", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(3L, true);
+
+        WarFromBattleBuilder.create()
+                .addWar(WarBuilder.create().id(1L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", false, WarImplicationEnum.FULL)
+                        .addCountry("austria", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .addWar(WarBuilder.create().id(2L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("poland", true, WarImplicationEnum.FULL)
+                        .addCountry("spain", true, WarImplicationEnum.FULL)
+                        .addCountry("turkey", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .addWar(WarBuilder.create().id(3L).type(WarTypeEnum.CLASSIC_WAR)
+                        .addCountry("france", true, WarImplicationEnum.FULL)
+                        .addCountry("turkey", false, WarImplicationEnum.FULL)
+                        .toWar())
+                .battle(BattleBuilder.create()
+                        .addCounter("turkey", true)
+                        .addCounter("france", false)
+                        .toBattle())
+                .whenSearchWar(oeUtil)
+                .thenExpect(3L, false);
     }
 
     private static class WarFromBattleBuilder {
@@ -3052,6 +3154,10 @@ public class OEUtilTest {
                 Assert.assertEquals("The wrong role (phasing = offensive) was retrieved.", phasingOffensive, battle.isPhasingOffensive());
             }
             return this;
+        }
+
+        WarFromBattleBuilder thenExpectNothing() {
+            return thenExpect(null, true);
         }
     }
 

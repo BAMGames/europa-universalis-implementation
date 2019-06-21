@@ -622,6 +622,7 @@ public final class OEUtilImpl implements IOEUtil {
             phasingOffensive = null;
 
             for (BattleCounterEntity counter : battle.getCounters()) {
+                boolean found = false;
                 if (!ok) {
                     break;
                 }
@@ -630,11 +631,14 @@ public final class OEUtilImpl implements IOEUtil {
                         boolean localPhasingOffensive = counter.isPhasing() == country.isOffensive();
                         if (phasingOffensive == null) {
                             phasingOffensive = localPhasingOffensive;
-                        } else if (phasingOffensive != localPhasingOffensive) {
-                            ok = false;
-                            break;
                         }
+                        found = phasingOffensive == localPhasingOffensive;
+                        break;
                     }
+                }
+
+                if (!found) {
+                    ok = false;
                 }
             }
 
