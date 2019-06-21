@@ -16,7 +16,6 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
-import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
@@ -28,10 +27,12 @@ import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
@@ -615,41 +616,32 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public void fillWarOfBattle(BattleEntity battle, GameEntity game) {
-        WarEntity goodWar = null;
-        Boolean phasingOffensive = null;
-        for (WarEntity war : game.getWars()) {
-            boolean ok = true;
-            phasingOffensive = null;
-
-            for (BattleCounterEntity counter : battle.getCounters()) {
-                boolean found = false;
-                if (!ok) {
-                    break;
-                }
-                for (CountryInWarEntity country : war.getCountries()) {
-                    if (StringUtils.equals(country.getCountry().getName(), counter.getCounter().getCountry())) {
-                        boolean localPhasingOffensive = counter.isPhasing() == country.isOffensive();
-                        if (phasingOffensive == null) {
-                            phasingOffensive = localPhasingOffensive;
+        game.getWars().stream()
+                .map(war -> {
+                    Function<BattleCounterEntity, Boolean> isCountryOffensive = counter -> {
+                        for (CountryInWarEntity country : war.getCountries()) {
+                            if (StringUtils.equals(country.getCountry().getName(), counter.getCounter().getCountry())) {
+                                return counter.isPhasing() == country.isOffensive();
+                            }
                         }
-                        found = phasingOffensive == localPhasingOffensive;
-                        break;
+                        return null;
+                    };
+                    List<Boolean> phasingOffensives = battle.getCounters().stream()
+                            .map(isCountryOffensive)
+                            .collect(Collectors.toList());
+                    boolean allTrue = phasingOffensives.stream().allMatch(BooleanUtils::isTrue);
+                    boolean allFalse = phasingOffensives.stream().allMatch(BooleanUtils::isFalse);
+                    if (allTrue || allFalse) {
+                        return new ImmutablePair<>(war, allTrue);
                     }
-                }
-
-                if (!found) {
-                    ok = false;
-                }
-            }
-
-            if (ok) {
-                goodWar = war;
-                break;
-            }
-        }
-
-        battle.setWar(goodWar);
-        battle.setPhasingOffensive(BooleanUtils.toBoolean(phasingOffensive));
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .limit(1)
+                .forEach(war -> {
+                    battle.setWar(war.getLeft());
+                    battle.setPhasingOffensive(BooleanUtils.toBoolean(war.getRight()));
+                });
     }
 
     /**
