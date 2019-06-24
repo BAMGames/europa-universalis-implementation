@@ -1,11 +1,13 @@
 package com.mkl.eu.service.service.domain.impl;
 
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
@@ -16,6 +18,7 @@ import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -199,7 +202,27 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 battle.setStatus(BattleStatusEnum.NEW);
                 battle.setGame(game);
 
+                List<CounterEntity> phasingCounters = game.getStacks().stream()
+                        .filter(s -> s.getMovePhase() == MovePhaseEnum.FIGHTING && StringUtils.equals(province, s.getProvince()))
+                        .flatMap(s -> s.getCounters().stream())
+                        .collect(Collectors.toList());
+                List<CounterEntity> nonPhasingCounters = game.getStacks().stream()
+                        .filter(s -> s.getMovePhase() != MovePhaseEnum.FIGHTING && StringUtils.equals(province, s.getProvince()))
+                        .flatMap(s -> s.getCounters().stream())
+                        .filter(c -> CounterUtil.isArmy(c.getType()))
+                        .collect(Collectors.toList());
+                Pair<WarEntity, Boolean> war = oeUtil.searchWar(phasingCounters, nonPhasingCounters, game);
+                battle.setWar(war.getLeft());
+                battle.setPhasingOffensive(war.getRight());
+
                 game.getBattles().add(battle);
+
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.BATTLE,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.NEW),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_WAR, war.getLeft().getId()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_OFFENSIVE, war.getRight())));
             }
 
             diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,

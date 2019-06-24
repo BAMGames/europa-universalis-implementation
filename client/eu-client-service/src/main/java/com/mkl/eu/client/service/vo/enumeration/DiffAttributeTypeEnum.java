@@ -172,6 +172,10 @@ public enum DiffAttributeTypeEnum {
     SIEGE_FORTRESS_FALLS,
     /** If the fortress suffers a breach. */
     SIEGE_BREACH,
+    /** Id of the war. */
+    ID_WAR,
+    /** To say if the phasing side is the offensive side. */
+    PHASING_OFFENSIVE,
 
 
 }
