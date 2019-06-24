@@ -9,8 +9,9 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -181,11 +182,12 @@ public interface IOEUtil {
     List<String> getEnemies(PlayableCountryEntity country, GameEntity game);
 
     /**
-     * @param battle the battle.
-     * @param game   the game.
-     * @return the war related to this battle.
+     * @param phasingCounters    the counters of the phasing countries.
+     * @param nonPhasingCounters the counters of the non phasing countries.
+     * @param game               the game.
+     * @return the war related to this battle and a flag saying if the phasing side is the offensive side of the war.
      */
-    void fillWarOfBattle(BattleEntity battle, GameEntity game);
+    Pair<WarEntity, Boolean> searchWar(List<CounterEntity> phasingCounters, List<CounterEntity> nonPhasingCounters, GameEntity game);
 
     /**
      * @param province the province.

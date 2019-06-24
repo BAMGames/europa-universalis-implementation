@@ -18,8 +18,6 @@ import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
-import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
-import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
@@ -2986,10 +2984,8 @@ public class OEUtilTest {
                         .addCountry("france", true, WarImplicationEnum.FULL)
                         .addCountry("spain", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("spain", false)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("spain", false)
                 .whenSearchWar(oeUtil)
                 .thenExpect(1L, true);
 
@@ -2998,10 +2994,8 @@ public class OEUtilTest {
                         .addCountry("france", true, WarImplicationEnum.FULL)
                         .addCountry("spain", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("spain", true)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("spain", true)
                 .whenSearchWar(oeUtil)
                 .thenExpectNothing();
 
@@ -3010,10 +3004,8 @@ public class OEUtilTest {
                         .addCountry("france", true, WarImplicationEnum.FULL)
                         .addCountry("spain", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", false)
-                        .addCounter("spain", true)
-                        .toBattle())
+                .addCounter("france", false)
+                .addCounter("spain", true)
                 .whenSearchWar(oeUtil)
                 .thenExpect(1L, false);
 
@@ -3023,10 +3015,8 @@ public class OEUtilTest {
                         .addCountry("spain", false, WarImplicationEnum.FULL)
                         .addCountry("austria", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("spain", false)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("spain", false)
                 .whenSearchWar(oeUtil)
                 .thenExpect(1L, true);
 
@@ -3036,11 +3026,9 @@ public class OEUtilTest {
                         .addCountry("spain", false, WarImplicationEnum.FULL)
                         .addCountry("austria", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("spain", false)
-                        .addCounter("austria", false)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("spain", false)
+                .addCounter("austria", false)
                 .whenSearchWar(oeUtil)
                 .thenExpect(1L, true);
 
@@ -3049,11 +3037,9 @@ public class OEUtilTest {
                         .addCountry("france", true, WarImplicationEnum.FULL)
                         .addCountry("spain", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("spain", false)
-                        .addCounter("austria", false)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("spain", false)
+                .addCounter("austria", false)
                 .whenSearchWar(oeUtil)
                 .thenExpectNothing();
 
@@ -3068,10 +3054,8 @@ public class OEUtilTest {
                         .addCountry("spain", true, WarImplicationEnum.FULL)
                         .addCountry("turkey", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("turkey", false)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("turkey", false)
                 .whenSearchWar(oeUtil)
                 .thenExpectNothing();
 
@@ -3090,10 +3074,8 @@ public class OEUtilTest {
                         .addCountry("france", true, WarImplicationEnum.FULL)
                         .addCountry("turkey", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("france", true)
-                        .addCounter("turkey", false)
-                        .toBattle())
+                .addCounter("france", true)
+                .addCounter("turkey", false)
                 .whenSearchWar(oeUtil)
                 .thenExpect(3L, true);
 
@@ -3112,17 +3094,17 @@ public class OEUtilTest {
                         .addCountry("france", true, WarImplicationEnum.FULL)
                         .addCountry("turkey", false, WarImplicationEnum.FULL)
                         .toWar())
-                .battle(BattleBuilder.create()
-                        .addCounter("turkey", true)
-                        .addCounter("france", false)
-                        .toBattle())
+                .addCounter("turkey", true)
+                .addCounter("france", false)
                 .whenSearchWar(oeUtil)
                 .thenExpect(3L, false);
     }
 
     private static class WarFromBattleBuilder {
         List<WarEntity> wars = new ArrayList<>();
-        BattleEntity battle;
+        List<CounterEntity> phasingCounters = new ArrayList<>();
+        List<CounterEntity> nonPhasingCounters = new ArrayList<>();
+        Pair<WarEntity, Boolean> war;
 
         static WarFromBattleBuilder create() {
             return new WarFromBattleBuilder();
@@ -3133,25 +3115,31 @@ public class OEUtilTest {
             return this;
         }
 
-        WarFromBattleBuilder battle(BattleEntity battle) {
-            this.battle = battle;
+        WarFromBattleBuilder addCounter(String country, boolean phasing) {
+            CounterEntity counter = new CounterEntity();
+            counter.setCountry(country);
+            if (phasing) {
+                phasingCounters.add(counter);
+            } else {
+                nonPhasingCounters.add(counter);
+            }
             return this;
         }
 
         WarFromBattleBuilder whenSearchWar(IOEUtil oeUtil) {
             GameEntity game = new GameEntity();
             game.getWars().addAll(wars);
-            oeUtil.fillWarOfBattle(battle, game);
+            war = oeUtil.searchWar(phasingCounters, nonPhasingCounters, game);
             return this;
         }
 
         WarFromBattleBuilder thenExpect(Long id, boolean phasingOffensive) {
             if (id == null) {
-                Assert.assertNull("No war was fitting this battle, but a war was found.", battle.getWar());
+                Assert.assertNull("No war was fitting this battle, but a war was found.", war);
             } else {
-                Assert.assertNotNull("A war was fitting this battle, but was not found.", battle.getWar());
-                Assert.assertEquals("The wrong war was retrieved.", id, battle.getWar().getId());
-                Assert.assertEquals("The wrong role (phasing = offensive) was retrieved.", phasingOffensive, battle.isPhasingOffensive());
+                Assert.assertNotNull("A war was fitting this battle, but was not found.", war);
+                Assert.assertEquals("The wrong war was retrieved.", id, war.getLeft().getId());
+                Assert.assertEquals("The wrong role (phasing = offensive) was retrieved.", phasingOffensive, war.getRight());
             }
             return this;
         }
@@ -3196,29 +3184,6 @@ public class OEUtilTest {
             war.setType(type);
             war.getCountries().addAll(countries);
             return war;
-        }
-    }
-
-    private static class BattleBuilder {
-        List<BattleCounterEntity> counters = new ArrayList<>();
-
-        static BattleBuilder create() {
-            return new BattleBuilder();
-        }
-
-        BattleBuilder addCounter(String country, boolean phasing) {
-            BattleCounterEntity counter = new BattleCounterEntity();
-            counter.setCounter(new CounterEntity());
-            counter.getCounter().setCountry(country);
-            counter.setPhasing(phasing);
-            counters.add(counter);
-            return this;
-        }
-
-        BattleEntity toBattle() {
-            BattleEntity battle = new BattleEntity();
-            battle.getCounters().addAll(counters);
-            return battle;
         }
     }
 }
