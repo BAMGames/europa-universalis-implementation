@@ -650,6 +650,15 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
+    public boolean isWarAlly(PlayableCountryEntity country, WarEntity war, boolean offensive) {
+        return war.getCountries().stream()
+                .anyMatch(c -> c.isOffensive() == offensive && StringUtils.equals(c.getCountry().getName(), country.getName()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getNaturalFortressLevel(AbstractProvinceEntity province, GameEntity game) {
         int level = 0;
         if (province instanceof EuropeanProvinceEntity) {

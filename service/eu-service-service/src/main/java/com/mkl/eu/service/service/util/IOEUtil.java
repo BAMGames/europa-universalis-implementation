@@ -190,6 +190,14 @@ public interface IOEUtil {
     Pair<WarEntity, Boolean> searchWar(List<CounterEntity> phasingCounters, List<CounterEntity> nonPhasingCounters, GameEntity game);
 
     /**
+     * @param country   the country.
+     * @param war       the war.
+     * @param offensive for the offensive side.
+     * @return if the country is in the offensive side of the war.
+     */
+    boolean isWarAlly(PlayableCountryEntity country, WarEntity war, boolean offensive);
+
+    /**
      * @param province the province.
      * @param game     the game.
      * @return the natural level of the fortress of the province.
