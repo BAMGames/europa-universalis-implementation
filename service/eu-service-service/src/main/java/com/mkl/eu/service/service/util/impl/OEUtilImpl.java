@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
@@ -595,18 +596,11 @@ public final class OEUtilImpl implements IOEUtil {
         List<String> countries = new ArrayList<>();
 
         game.getWars().stream()
-                .flatMap(war -> war.getCountries().stream())
-                .filter(warCountry -> warCountry.getImplication() == WarImplicationEnum.FULL &&
-                        StringUtils.equals(warCountry.getCountry().getName(), name))
-                .forEach(warCountry -> warCountry.getWar().getCountries().stream()
-                        .filter(otherCountry -> otherCountry.getImplication() == WarImplicationEnum.FULL &&
-                                (otherCountry.isOffensive() == warCountry.isOffensive() && allies ||
-                                        otherCountry.isOffensive() != warCountry.isOffensive() && !allies))
-                        .forEach(otherCountry -> {
-                            if (!countries.contains(otherCountry.getCountry().getName())) {
-                                countries.add(otherCountry.getCountry().getName());
-                            }
-                        }));
+                .forEach(war -> getCountriesInWar(name, war, allies, otherCountry -> {
+                    if (!countries.contains(otherCountry.getCountry().getName())) {
+                        countries.add(otherCountry.getCountry().getName());
+                    }
+                }));
 
         return countries;
     }
@@ -653,6 +647,57 @@ public final class OEUtilImpl implements IOEUtil {
     public boolean isWarAlly(PlayableCountryEntity country, WarEntity war, boolean offensive) {
         return war.getCountries().stream()
                 .anyMatch(c -> c.isOffensive() == offensive && StringUtils.equals(c.getCountry().getName(), country.getName()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getWarAllies(PlayableCountryEntity country, WarEntity war) {
+        List<String> countries = new ArrayList<>();
+
+        getCountriesInWar(country.getName(), war, true, otherCountry -> {
+            if (!countries.contains(otherCountry.getCountry().getName())) {
+                countries.add(otherCountry.getCountry().getName());
+            }
+        });
+
+        return countries;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getWarEnemies(PlayableCountryEntity country, WarEntity war) {
+        List<String> countries = new ArrayList<>();
+
+        getCountriesInWar(country.getName(), war, false, otherCountry -> {
+            if (!countries.contains(otherCountry.getCountry().getName())) {
+                countries.add(otherCountry.getCountry().getName());
+            }
+        });
+
+        return countries;
+    }
+
+    /**
+     * Retrieve all the countries with or against a specific country in a specific war and apply a specific consumer.
+     *
+     * @param name                     the specific country name.
+     * @param war                      the specific war.
+     * @param allies                   to know if we want the for or the against.
+     * @param whatToDoWithCountryFound the consumer.
+     */
+    private void getCountriesInWar(String name, WarEntity war, boolean allies, Consumer<CountryInWarEntity> whatToDoWithCountryFound) {
+        war.getCountries().stream()
+                .filter(warCountry -> warCountry.getImplication() == WarImplicationEnum.FULL &&
+                        StringUtils.equals(warCountry.getCountry().getName(), name))
+                .forEach(warCountry -> warCountry.getWar().getCountries().stream()
+                        .filter(otherCountry -> otherCountry.getImplication() == WarImplicationEnum.FULL &&
+                                (otherCountry.isOffensive() == warCountry.isOffensive() && allies ||
+                                        otherCountry.isOffensive() != warCountry.isOffensive() && !allies))
+                        .forEach(whatToDoWithCountryFound));
     }
 
     /**
