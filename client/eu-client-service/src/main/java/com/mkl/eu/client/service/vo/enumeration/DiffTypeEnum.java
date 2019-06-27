@@ -56,6 +56,16 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#PHASING_OFFENSIVE if the phasing side is the offensive side of the war</li>
      * </ul>
      * </li>
+     * </li>
+     * <li>DiffTypeObjectEnum#SIEGE in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#PROVINCE</li>
+     * <li>DiffAttributeTypeEnum#TURN</li>
+     * <li>DiffAttributeTypeEnum#STATUS</li>
+     * <li>DiffAttributeTypeEnum#ID_WAR the war related to this battle</li>
+     * <li>DiffAttributeTypeEnum#PHASING_OFFENSIVE if the phasing side is the offensive side of the war</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     ADD,

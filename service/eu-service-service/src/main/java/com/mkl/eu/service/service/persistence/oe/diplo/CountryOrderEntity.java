@@ -22,6 +22,7 @@ public class CountryOrderEntity {
     // FIXME add a 'fake' playable country in case of minor alone in war
     private PlayableCountryEntity country;
     /** Phase of the game concerned by the turn order. For military phases, it is MILITARY_MOVE. */
+    // FIXME check if useless and then remove.
     private GameStatusEnum gameStatus;
     /** Position of the country in the turn order. */
     private int position;

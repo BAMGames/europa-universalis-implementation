@@ -11,10 +11,13 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +43,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     /** OeUtil. */
     @Autowired
     private IOEUtil oeUtil;
+    /** Province Dao. */
+    private IProvinceDao provinceDao;
     /** Game DAO only for flush purpose because Hibernate poorly handles non technical ids. */
     @Autowired
     private IGameDao gameDao;
@@ -153,14 +159,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             }
         }
 
-        // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-        game.setStatus(GameStatusEnum.MILITARY_MOVE);
-
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
-        diffs.add(diff);
-
         diffs.addAll(nextRound(game, true));
 
         return diffs;
@@ -175,9 +173,24 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES && game.getBattles().stream().anyMatch(battle -> battle.getStatus() == BattleStatusEnum.NEW)) {
             return diffs;
         }
+        int currentPosition = game.getOrders().stream()
+                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .map(CountryOrderEntity::getPosition)
+                .findFirst()
+                .orElse(Integer.MAX_VALUE);
 
         // If we are in siege phase, are there still some siege left ?
         if (game.getStatus() == GameStatusEnum.MILITARY_SIEGES && game.getSieges().stream().anyMatch(siege -> siege.getStatus() == SiegeStatusEnum.NEW)) {
+            Integer activeSiege = game.getSieges().stream()
+                    .filter(siege -> siege.getStatus() == SiegeStatusEnum.NEW)
+                    .map(siege -> getActiveOrder(siege.getWar(), siege.isPhasingOffensive(), game))
+                    .filter(Objects::nonNull)
+                    .min(Comparator.<Integer>naturalOrder())
+                    .orElse(null);
+
+            if (activeSiege != currentPosition) {
+                diffs.add(changeActivePlayers(activeSiege, game));
+            }
             return diffs;
         }
 
@@ -191,9 +204,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             // Yes -> battle phase !
             game.setStatus(GameStatusEnum.MILITARY_BATTLES);
 
-            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_BATTLES));
-            diffs.add(diff);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_BATTLES)));
 
             for (String province : provincesAtWar) {
                 BattleEntity battle = new BattleEntity();
@@ -225,50 +237,21 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_OFFENSIVE, war.getRight())));
             }
 
-            diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
-            diffs.add(diff);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
             return diffs;
         }
 
         // Other cases: we check if there is another country in current phase of this round
-        int currentPosition = game.getOrders().stream()
-                .filter(o -> o.isActive() && o.getGameStatus() == game.getStatus())
-                .map(CountryOrderEntity::getPosition)
-                .findFirst()
-                .orElse(Integer.MAX_VALUE);
-
         Integer next = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == game.getStatus() &&
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                         o.getPosition() > currentPosition)
                 .map(CountryOrderEntity::getPosition)
                 .min(Comparator.naturalOrder())
                 .orElse(null);
 
         if (next != null) {
-            // There are other countries, proceed to next countries.
-            game.getOrders().stream()
-                    .filter(o -> o.getGameStatus() == game.getStatus())
-                    .forEach(o -> o.setReady(false));
-
-            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.TURN_ORDER,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, game.getStatus()));
-
-            diffs.add(diff);
-
-            game.getOrders().stream()
-                    .filter(o -> o.getGameStatus() == game.getStatus())
-                    .forEach(o -> o.setActive(false));
-            game.getOrders().stream()
-                    .filter(o -> o.getGameStatus() == game.getStatus() &&
-                            o.getPosition() == next)
-                    .forEach(o -> o.setActive(true));
-
-            diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, next));
-
-            diffs.add(diff);
-
+            diffs.add(changeActivePlayers(next, game));
             return diffs;
         } else {
             // There is no other country. If we are in move phase, check siege
@@ -282,25 +265,53 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     // Yes -> siege phase !
                     game.setStatus(GameStatusEnum.MILITARY_SIEGES);
 
-                    DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES));
-                    diffs.add(diff);
-
-
                     for (String province : provincesAtSiege) {
                         SiegeEntity siege = new SiegeEntity();
                         siege.setProvince(province);
                         siege.setTurn(game.getTurn());
+                        siege.setStatus(SiegeStatusEnum.NEW);
                         siege.setBreach(game.getSieges().stream()
                                 .anyMatch(sie -> sie.isBreach() && Objects.equals(sie.getTurn(), game.getTurn()) && StringUtils.equals(sie.getProvince(), province)));
                         siege.setGame(game);
 
+                        List<CounterEntity> phasingCounters = game.getStacks().stream()
+                                .filter(s -> (s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING) && StringUtils.equals(province, s.getProvince()))
+                                .flatMap(s -> s.getCounters().stream())
+                                .collect(Collectors.toList());
+                        List<CounterEntity> nonPhasingCounters = game.getStacks().stream()
+                                .filter(StackEntity::isBesieged)
+                                .flatMap(s -> s.getCounters().stream())
+                                .filter(c -> CounterUtil.isArmy(c.getType()))
+                                .collect(Collectors.toList());
+                        nonPhasingCounters.add(createFakeControl(province, game));
+                        Pair<WarEntity, Boolean> war = oeUtil.searchWar(phasingCounters, nonPhasingCounters, game);
+                        siege.setWar(war.getLeft());
+                        siege.setPhasingOffensive(war.getRight());
+
+                        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.SIEGE,
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.NEW),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_WAR, war.getLeft().getId()),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_OFFENSIVE, war.getRight())));
+
                         game.getSieges().add(siege);
                     }
+                    Integer activeSiege = game.getSieges().stream()
+                            .filter(siege -> siege.getStatus() == SiegeStatusEnum.NEW)
+                            .map(siege -> getActiveOrder(siege.getWar(), siege.isPhasingOffensive(), game))
+                            .filter(Objects::nonNull)
+                            .min(Comparator.<Integer>naturalOrder())
+                            .orElse(null);
 
-                    diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.SIEGE,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
-                    diffs.add(diff);
+                    diffs.add(changeActivePlayers(activeSiege, game));
+
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, activeSiege),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES)));
+
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.SIEGE,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
 
                     return diffs;
                 }
@@ -311,6 +322,68 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         }
 
         return diffs;
+    }
+
+    /**
+     * Change the active player in the military phase.
+     *
+     * @param position the new position of the active player in the military phase.
+     * @param game     the game.
+     * @return the diff created.
+     */
+    private DiffEntity changeActivePlayers(int position, GameEntity game) {
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .forEach(o -> o.setActive(false));
+        game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.getPosition() == position)
+                .forEach(o -> o.setActive(true));
+
+        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, position));
+    }
+
+    /**
+     * @param province the province.
+     * @param game     the game.
+     * @return a fake control counter owned by the controller of the province.
+     */
+    private CounterEntity createFakeControl(String province, GameEntity game) {
+        AbstractProvinceEntity fullProvince = provinceDao.getProvinceByName(province);
+        String controller = oeUtil.getController(fullProvince, game);
+        CounterEntity fakeControlCounter = new CounterEntity();
+        fakeControlCounter.setCountry(controller);
+        fakeControlCounter.setType(CounterFaceTypeEnum.CONTROL);
+        return fakeControlCounter;
+    }
+
+    /**
+     * @param war       the war.
+     * @param offensive the side.
+     * @param game      the game.
+     * @return the active order of the offensive side of the war in this turn.
+     */
+    private Integer getActiveOrder(WarEntity war, boolean offensive, GameEntity game) {
+        Predicate<CountryInWarEntity> filterPhasing;
+        if (offensive) {
+            filterPhasing = country -> country.isOffensive() && country.getImplication() == WarImplicationEnum.FULL;
+        } else {
+            filterPhasing = country -> !country.isOffensive() && country.getImplication() == WarImplicationEnum.FULL;
+        }
+        Function<CountryInWarEntity, Integer> toActiveOrder = country -> game.getOrders().stream()
+                .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        StringUtils.equals(country.getCountry().getName(), order.getCountry().getName()))
+                .map(CountryOrderEntity::getPosition)
+                .findAny()
+                .orElse(null);
+
+        return war.getCountries().stream()
+                .filter(filterPhasing)
+                .map(toActiveOrder)
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElse(null);
     }
 
     /** {@inheritDoc} */
@@ -393,44 +466,30 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     break;
                 default:
                     diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
+
+                    // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                    game.setStatus(GameStatusEnum.MILITARY_MOVE);
+
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                            // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+
+                    // Stacks move phase reset
+                    game.getStacks().stream()
+                            .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
+                            .forEach(stack -> {
+                                stack.setMove(0);
+                                stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                            });
+
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
+
+                    // set the order of position 0 active
+                    diffs.add(changeActivePlayers(0, game));
                     break;
             }
         }
-        // Stacks move phase reset
-        game.getStacks().stream()
-                .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
-                .forEach(stack -> {
-                    stack.setMove(0);
-                    stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
-                });
-
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED));
-
-        diffs.add(diff);
-
-        // Invalidate (set ready to false) to all orders
-        game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
-                .forEach(o -> o.setReady(false));
-        diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.TURN_ORDER,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
-
-        diffs.add(diff);
-
-        // set the order of position 0 active
-        game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
-                .forEach(o -> o.setActive(false));
-        game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.getPosition() == 0)
-                .forEach(o -> o.setActive(true));
-        diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, "0"),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE));
-
-        diffs.add(diff);
 
         return diffs;
     }
