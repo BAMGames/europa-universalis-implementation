@@ -71,15 +71,19 @@ public class StatusWorkflowDomainTest {
     private void checkDiffsForMilitary(GameEntity game) {
         List<DiffEntity> diffs = statusWorkflowDomain.computeEndMinorLogistics(game);
 
-        Assert.assertEquals(true, diffs.size() >= 1);
-        Assert.assertEquals(game.getId(), diffs.get(0).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(0).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(0).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(0).getTypeObject());
-        Assert.assertEquals(null, diffs.get(0).getIdObject());
-        Assert.assertEquals(1, diffs.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(0).getAttributes().get(0).getValue());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d != null && d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(game.getId(), diff.getIdGame());
+        Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diff.getTypeObject());
+        Assert.assertEquals(null, diff.getIdObject());
+        Assert.assertEquals(1, diff.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diff.getAttributes().get(0).getType());
+        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diff.getAttributes().get(0).getValue());
     }
 
     /**
@@ -1025,42 +1029,42 @@ public class StatusWorkflowDomainTest {
         end.setId(-1L);
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game)).thenReturn(end);
 
-        checkNextRound(game, "B_MR_END", 1, true, winter0);
+        checkNextRound(game, "B_MR_END", 1, true, winter0, false);
 
-        checkNextRound(game, "B_MR_END", 3, true, summer1);
+        checkNextRound(game, "B_MR_END", 3, true, summer1, false);
 
-        checkNextRound(game, "B_MR_END", 5, true, summer2);
+        checkNextRound(game, "B_MR_END", 5, true, summer2, false);
 
-        checkNextRound(game, "B_MR_END", 6, true, winter2);
+        checkNextRound(game, "B_MR_END", 6, true, winter2, false);
 
-        checkNextRound(game, "B_MR_W0", 1, false, summer1);
+        checkNextRound(game, "B_MR_W0", 1, false, summer1, false);
 
-        checkNextRound(game, "B_MR_S1", 7, false, summer2);
+        checkNextRound(game, "B_MR_S1", 7, false, summer2, false);
 
-        checkNextRound(game, "B_MR_S2", 4, false, winter2);
+        checkNextRound(game, "B_MR_S2", 4, false, winter2, false);
 
-        checkNextRound(game, "B_MR_W2", 8, false, winter3);
+        checkNextRound(game, "B_MR_W2", 8, false, winter3, false);
 
-        checkNextRound(game, "B_MR_W3", 10, false, summer5);
+        checkNextRound(game, "B_MR_W3", 10, false, summer5, false);
 
-        checkNextRound(game, "B_MR_W4", 2, false, summer5);
+        checkNextRound(game, "B_MR_W4", 2, false, summer5, false);
 
-        checkNextRound(game, "B_MR_W4", 8, false, winter5);
+        checkNextRound(game, "B_MR_W4", 8, false, winter5, false);
 
-        checkNextRound(game, "B_MR_W4", 9, false, end);
+        checkNextRound(game, "B_MR_W4", 9, false, end, true);
 
-        checkNextRound(game, "B_MR_S5", 5, false, winter5);
+        checkNextRound(game, "B_MR_S5", 5, false, winter5, false);
 
-        checkNextRound(game, "B_MR_S5", 6, false, end);
+        checkNextRound(game, "B_MR_S5", 6, false, end, true);
 
-        checkNextRound(game, "B_MR_W5", 1, false, end);
+        checkNextRound(game, "B_MR_W5", 1, false, end, true);
 
-        checkNextRound(game, "B_MR_W5", 8, false, end);
+        checkNextRound(game, "B_MR_W5", 8, false, end, true);
 
-        checkNextRound(game, "B_MR_W5", 10, false, end);
+        checkNextRound(game, "B_MR_W5", 10, false, end, true);
     }
 
-    private void checkNextRound(GameEntity game, String roundBefore, int die, boolean init, DiffEntity roundMove) {
+    private void checkNextRound(GameEntity game, String roundBefore, int die, boolean init, DiffEntity roundMove, boolean end) {
         game.getStacks().get(0).setProvince(roundBefore);
         when(oeUtil.rollDie(game, (PlayableCountryEntity) null)).thenReturn(die);
 
@@ -1085,38 +1089,43 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(0, activeNotZero);
         Assert.assertEquals(0, zeroNotActive);
 
-        Assert.assertEquals(4, diffs.size());
+        if (end) {
+            Assert.assertEquals(1, diffs.size());
 
-        Assert.assertEquals(roundMove, diffs.get(0));
+            Assert.assertEquals(roundMove, diffs.get(0));
+        } else {
 
-        Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffs.get(1).getTypeObject());
-        Assert.assertEquals(null, diffs.get(1).getIdObject());
-        Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffs.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals(MovePhaseEnum.NOT_MOVED.name(), diffs.get(1).getAttributes().get(0).getValue());
+            Assert.assertEquals(4, diffs.size());
 
-        Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffs.get(2).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(2).getTypeObject());
-        Assert.assertEquals(null, diffs.get(2).getIdObject());
-        Assert.assertEquals(1, diffs.get(2).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(2).getAttributes().get(0).getValue());
+            Assert.assertEquals(roundMove, diffs.get(0));
 
-        Assert.assertEquals(game.getId(), diffs.get(3).getIdGame());
-        Assert.assertEquals(game.getVersion(), diffs.get(3).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(3).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(3).getTypeObject());
-        Assert.assertEquals(null, diffs.get(3).getIdObject());
-        Assert.assertEquals(2, diffs.get(3).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffs.get(3).getAttributes().get(0).getType());
-        Assert.assertEquals("0", diffs.get(3).getAttributes().get(0).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(3).getAttributes().get(1).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(3).getAttributes().get(1).getValue());
+            Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
+            Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
+            Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
+            Assert.assertEquals(DiffTypeObjectEnum.STACK, diffs.get(1).getTypeObject());
+            Assert.assertEquals(null, diffs.get(1).getIdObject());
+            Assert.assertEquals(1, diffs.get(1).getAttributes().size());
+            Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffs.get(1).getAttributes().get(0).getType());
+            Assert.assertEquals(MovePhaseEnum.NOT_MOVED.name(), diffs.get(1).getAttributes().get(0).getValue());
+
+            Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
+            Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
+            Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(2).getType());
+            Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(2).getTypeObject());
+            Assert.assertEquals(null, diffs.get(2).getIdObject());
+            Assert.assertEquals(1, diffs.get(2).getAttributes().size());
+            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
+            Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(2).getAttributes().get(0).getValue());
+
+            Assert.assertEquals(game.getId(), diffs.get(3).getIdGame());
+            Assert.assertEquals(game.getVersion(), diffs.get(3).getVersionGame().longValue());
+            Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(3).getType());
+            Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(3).getTypeObject());
+            Assert.assertEquals(null, diffs.get(3).getIdObject());
+            Assert.assertEquals(1, diffs.get(3).getAttributes().size());
+            Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffs.get(3).getAttributes().get(0).getType());
+            Assert.assertEquals("0", diffs.get(3).getAttributes().get(0).getValue());
+        }
     }
 
     public void testEndRound() {

@@ -432,6 +432,27 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     break;
             }
             diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, round, game));
+
+            // Stacks move phase reset
+            game.getStacks().stream()
+                    .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
+                    .forEach(stack -> {
+                        stack.setMove(0);
+                        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                    });
+
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
+
+            // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+            game.setStatus(GameStatusEnum.MILITARY_MOVE);
+
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                    // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+
+            // set the order of position 0 active
+            diffs.add(changeActivePlayers(0, game));
         } else {
             String round = game.getStacks().stream()
                     .filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
@@ -467,13 +488,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 default:
                     diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
 
-                    // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                    game.setStatus(GameStatusEnum.MILITARY_MOVE);
-
-                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                            // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
-
                     // Stacks move phase reset
                     game.getStacks().stream()
                             .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
@@ -484,6 +498,13 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
 
                     diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
+
+                    // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                    game.setStatus(GameStatusEnum.MILITARY_MOVE);
+
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                            // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
                     // set the order of position 0 active
                     diffs.add(changeActivePlayers(0, game));

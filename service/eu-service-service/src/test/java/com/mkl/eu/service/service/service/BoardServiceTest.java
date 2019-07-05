@@ -30,6 +30,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -1292,211 +1293,21 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(false);
-        when(statusWorkflowDomain.endMilitaryPhase(game)).thenCallRealMethod();
+        DiffEntity endMilitaryPhase = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.TURN_ORDER);
+        when(statusWorkflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(endMilitaryPhase));
 
         simulateDiff();
 
         boardService.validateMilitaryRound(request);
 
-        Assert.assertFalse(game.getOrders().get(0).isReady());
-        Assert.assertFalse(game.getOrders().get(0).isActive());
-        Assert.assertFalse(game.getOrders().get(1).isActive());
-        Assert.assertTrue(game.getOrders().get(2).isActive());
-        Assert.assertTrue(game.getOrders().get(3).isActive());
-        Assert.assertFalse(game.getOrders().get(4).isActive());
-
         List<DiffEntity> diffEntities = retrieveDiffsCreated();
 
-        Assert.assertEquals(2, diffEntities.size());
+        Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(0).getIdObject());
         Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
-        Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(0).getAttributes().get(0).getType());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffEntities.get(0).getAttributes().get(0).getValue());
-        Assert.assertEquals(12L, diffEntities.get(1).getIdGame().longValue());
-        Assert.assertEquals(null, diffEntities.get(1).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(1).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntities.get(1).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(1).getTypeObject());
-        Assert.assertEquals(1, diffEntities.get(1).getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffEntities.get(1).getAttributes().get(0).getType());
-        Assert.assertEquals("4", diffEntities.get(1).getAttributes().get(0).getValue());
-    }
-
-    @Test
-    public void testValidateMilRoundSuccessComplexNextRound() throws FunctionalException {
-        testValidateMilRoundSuccessComplex(false, false);
-    }
-
-    @Test
-    public void testValidateMilRoundSuccessComplexNextBattle() throws FunctionalException {
-        testValidateMilRoundSuccessComplex(true, true);
-    }
-
-    @Test
-    public void testValidateMilRoundSuccessComplexNextSiege() throws FunctionalException {
-        testValidateMilRoundSuccessComplex(false, true);
-    }
-
-
-    private void testValidateMilRoundSuccessComplex(boolean battle, boolean siege) throws FunctionalException {
-        Request<ValidateRequest> request = new Request<>();
-        request.setAuthent(new AuthentInfo());
-        request.getAuthent().setUsername("MKL");
-        request.setGame(createGameInfo());
-        request.setRequest(new ValidateRequest());
-        request.getRequest().setValidate(true);
-        request.setIdCountry(13L);
-
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
-        game.setTurn(26);
-        game.getOrders().clear();
-        CountryOrderEntity order = new CountryOrderEntity();
-        order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
-        order.setCountry(new PlayableCountryEntity());
-        order.setPosition(5);
-        order.getCountry().setId(13L);
-        game.getOrders().add(order);
-        order = new CountryOrderEntity();
-        order.setActive(false);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
-        order.setCountry(new PlayableCountryEntity());
-        order.setPosition(2);
-        order.getCountry().setId(9L);
-        game.getOrders().add(order);
-        order = new CountryOrderEntity();
-        order.setActive(false);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
-        order.setCountry(new PlayableCountryEntity());
-        order.setPosition(4);
-        order.getCountry().setId(21L);
-        game.getOrders().add(order);
-        order = new CountryOrderEntity();
-        order.setActive(false);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
-        order.setCountry(new PlayableCountryEntity());
-        order.setPosition(4);
-        order.getCountry().setId(22L);
-        game.getOrders().add(order);
-        order = new CountryOrderEntity();
-        order.setActive(false);
-        order.setGameStatus(GameStatusEnum.DIPLOMACY);
-        order.setCountry(new PlayableCountryEntity());
-        order.setPosition(4);
-        order.getCountry().setId(21L);
-        game.getOrders().add(order);
-
-        game.setStatus(GameStatusEnum.MILITARY_MOVE);
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setId(13L);
-        game.getCountries().get(0).setName("france");
-        game.getCountries().get(0).setUsername("MKL");
-        game.getCountries().get(0).setReady(false);
-
-        StackEntity stack = new StackEntity();
-        stack.setProvince("caucase");
-        stack.setMovePhase(MovePhaseEnum.MOVED);
-        game.getStacks().add(stack);
-        if (battle) {
-            stack = new StackEntity();
-            stack.setProvince("idf");
-            stack.setMovePhase(MovePhaseEnum.FIGHTING);
-            game.getStacks().add(stack);
-            stack = new StackEntity();
-            stack.setProvince("pecs");
-            stack.setMovePhase(MovePhaseEnum.FIGHTING);
-            game.getStacks().add(stack);
-        }
-        if (siege) {
-            stack = new StackEntity();
-            stack.setProvince("poitou");
-            stack.setMovePhase(MovePhaseEnum.BESIEGING);
-            game.getStacks().add(stack);
-            stack = new StackEntity();
-            stack.setProvince("caux");
-            stack.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
-            game.getStacks().add(stack);
-        }
-
-        simulateDiff();
-
-        List<DiffEntity> diffsNextRound = new ArrayList<>();
-        diffsNextRound.add(createDiff(666L, game.getId(), game.getVersion()));
-        diffsNextRound.add(createDiff(667L, game.getId(), game.getVersion()));
-        when(statusWorkflowDomain.nextRound(game)).thenReturn(diffsNextRound);
-        when(statusWorkflowDomain.endMilitaryPhase(game)).thenCallRealMethod();
-
-        boardService.validateMilitaryRound(request);
-
-        List<DiffEntity> diffEntities = retrieveDiffsCreated();
-
-        if (battle) {
-            Assert.assertEquals(2, diffEntities.size());
-            Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
-            Assert.assertEquals(null, diffEntities.get(0).getIdObject());
-            Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntities.get(0).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(0).getTypeObject());
-            Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(0).getAttributes().get(0).getType());
-            Assert.assertEquals(GameStatusEnum.MILITARY_BATTLES.name(), diffEntities.get(0).getAttributes().get(0).getValue());
-            Assert.assertEquals(12L, diffEntities.get(1).getIdGame().longValue());
-            Assert.assertEquals(null, diffEntities.get(1).getIdObject());
-            Assert.assertEquals(5L, diffEntities.get(1).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(1).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.BATTLE, diffEntities.get(1).getTypeObject());
-            Assert.assertEquals(1, diffEntities.get(1).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntities.get(1).getAttributes().get(0).getType());
-            Assert.assertEquals(game.getTurn().toString(), diffEntities.get(1).getAttributes().get(0).getValue());
-
-            Assert.assertEquals(2, game.getBattles().size());
-            Assert.assertEquals(game.getTurn(), game.getBattles().get(0).getTurn());
-            Assert.assertEquals("idf", game.getBattles().get(0).getProvince());
-            Assert.assertEquals(game.getTurn(), game.getBattles().get(0).getTurn());
-            Assert.assertEquals(BattleStatusEnum.NEW, game.getBattles().get(0).getStatus());
-            Assert.assertEquals(game.getTurn(), game.getBattles().get(1).getTurn());
-            Assert.assertEquals("pecs", game.getBattles().get(1).getProvince());
-            Assert.assertEquals(game.getTurn(), game.getBattles().get(1).getTurn());
-            Assert.assertEquals(BattleStatusEnum.NEW, game.getBattles().get(1).getStatus());
-        } else if (siege) {
-            Assert.assertEquals(2, diffEntities.size());
-            Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
-            Assert.assertEquals(null, diffEntities.get(0).getIdObject());
-            Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntities.get(0).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(0).getTypeObject());
-            Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntities.get(0).getAttributes().get(0).getType());
-            Assert.assertEquals(GameStatusEnum.MILITARY_SIEGES.name(), diffEntities.get(0).getAttributes().get(0).getValue());
-            Assert.assertEquals(12L, diffEntities.get(1).getIdGame().longValue());
-            Assert.assertEquals(null, diffEntities.get(1).getIdObject());
-            Assert.assertEquals(5L, diffEntities.get(1).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(1).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.SIEGE, diffEntities.get(1).getTypeObject());
-            Assert.assertEquals(1, diffEntities.get(1).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntities.get(1).getAttributes().get(0).getType());
-            Assert.assertEquals(game.getTurn().toString(), diffEntities.get(1).getAttributes().get(0).getValue());
-
-            Assert.assertEquals(2, game.getSieges().size());
-            Assert.assertEquals(game.getTurn(), game.getSieges().get(0).getTurn());
-            Assert.assertEquals("poitou", game.getSieges().get(0).getProvince());
-            Assert.assertEquals(game.getTurn(), game.getSieges().get(1).getTurn());
-            Assert.assertEquals("caux", game.getSieges().get(1).getProvince());
-        } else {
-            Assert.assertEquals(diffsNextRound.size(), diffEntities.size());
-            Assert.assertEquals(diffsNextRound, diffEntities);
-        }
-    }
-
-    private DiffEntity createDiff(Long id, Long idGame, Long versionGame) {
-        DiffEntity diff = new DiffEntity();
-        diff.setId(id);
-        diff.setIdGame(idGame);
-        diff.setVersionGame(versionGame);
-        return diff;
+        Assert.assertEquals(0, diffEntities.get(0).getAttributes().size());
     }
 }
