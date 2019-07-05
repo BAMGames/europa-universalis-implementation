@@ -141,7 +141,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
 
-        List<String> allies = oeUtil.getAllies(country, game);
+        List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
 
         List<CounterEntity> attackerCounters = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
@@ -250,8 +250,8 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setParams(METHOD_SELECT_FORCES));
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
+        List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
         for (Long idCounter : request.getRequest().getForces()) {
-            List<String> allies = oeUtil.getAllies(country, game);
 
             CounterEntity counter = game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
@@ -288,7 +288,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .orElse(0d);
 
         if (alliedCounters.size() < 3 && armySize < 8) {
-            List<String> allies = oeUtil.getAllies(country, game);
             Double remainingMinSize = game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
                             allies.contains(stack.getCountry()))
@@ -490,7 +489,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     stack.setMovePhase(MovePhaseEnum.MOVED);
                     stack.setProvince(provinceTo);
                 };
-                List<String> allies = oeUtil.getAllies(country, game);
+                List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
@@ -714,7 +713,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .forEach(deleteCounter);
 
         AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
-        List<String> enemies = oeUtil.getEnemies(country, game);
+        List<String> enemies = oeUtil.getWarEnemies(country, siege.getWar());
         String owner = oeUtil.getOwner(province, game);
         CounterEntity control = presentCounters.stream()
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.CONTROL)
@@ -1446,13 +1445,9 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setParams(METHOD_CHOOSE_LOSSES, SiegeStatusEnum.CHOOSE_LOSS.name()));
 
         boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
-        List<String> allies = oeUtil.getAllies(country, game);
-        List<String> enemies = oeUtil.getEnemies(country, game);
-        boolean accessRight = !siege.getCounters().stream()
-                .anyMatch(sc -> sc.isPhasing() == playerPhasing && !allies.contains(sc.getCounter().getCountry()) ||
-                        sc.isPhasing() != playerPhasing && !enemies.contains(sc.getCounter().getCountry()));
-
         // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(),
+                playerPhasing && siege.isPhasingOffensive() || !playerPhasing && !siege.isPhasingOffensive());
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(accessRight)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
