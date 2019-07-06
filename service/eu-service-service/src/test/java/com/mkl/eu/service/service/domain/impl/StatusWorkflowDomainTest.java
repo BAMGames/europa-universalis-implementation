@@ -1321,16 +1321,27 @@ public class StatusWorkflowDomainTest {
         EndMilitaryPhaseBuilder.create()
                 .status(GameStatusEnum.MILITARY_SIEGES)
                 .pendingSiege()
+                .pendingOtherPlayerSiege()
                 .whenEndMilitaryPhase(statusWorkflowDomain, this)
                 .thenExpect(EndMilitaryPhaseResultBuilder.create()
                         .status(GameStatusEnum.MILITARY_SIEGES));
 
         EndMilitaryPhaseBuilder.create()
                 .status(GameStatusEnum.MILITARY_SIEGES)
+                .pendingOtherPlayerSiege()
                 .whenEndMilitaryPhase(statusWorkflowDomain, this)
                 .thenExpect(EndMilitaryPhaseResultBuilder.create()
                         .status(GameStatusEnum.MILITARY_SIEGES)
                         .changeActivePlayer());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_SIEGES)
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_MOVE)
+                        .changeStatus()
+                        .changeActivePlayer()
+                        .nextRound());
 
         EndMilitaryPhaseBuilder.create()
                 .status(GameStatusEnum.MILITARY_SIEGES)
@@ -1347,6 +1358,7 @@ public class StatusWorkflowDomainTest {
         boolean lastPlayerInTurnOrder;
         boolean pendingBattle;
         boolean pendingSiege;
+        boolean pendingOtherPlayerSiege;
         boolean futureBattle;
         boolean futureSiege;
         GameStatusEnum status;
@@ -1369,6 +1381,11 @@ public class StatusWorkflowDomainTest {
 
         EndMilitaryPhaseBuilder pendingSiege() {
             pendingSiege = true;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder pendingOtherPlayerSiege() {
+            pendingOtherPlayerSiege = true;
             return this;
         }
 
@@ -1457,6 +1474,14 @@ public class StatusWorkflowDomainTest {
                 siege.setBesiegingOffensive(!lastPlayerInTurnOrder);
                 game.getSieges().add(siege);
             }
+            if (pendingOtherPlayerSiege) {
+                siege = new SiegeEntity();
+                siege.setStatus(SiegeStatusEnum.NEW);
+                siege.setTurn(currentTurn);
+                siege.setWar(war);
+                siege.setBesiegingOffensive(lastPlayerInTurnOrder);
+                game.getSieges().add(siege);
+            }
             if (futureBattle) {
                 StackEntity stack = new StackEntity();
                 stack.setProvince("idf");
@@ -1533,7 +1558,7 @@ public class StatusWorkflowDomainTest {
             } else {
                 Assert.assertNull("A add siege order diff event was not expected.", addSiege);
             }
-            int expectedSieges = 1 + (pendingSiege ? 1 : 0) + (result.addSiege ? 1 : 0);
+            int expectedSieges = 1 + (pendingSiege ? 1 : 0) + (pendingOtherPlayerSiege ? 1 : 0) + (result.addSiege ? 1 : 0);
             Assert.assertEquals("The game has not the right number of sieges.", expectedSieges, game.getSieges().size());
             DiffEntity nextRound = diffs.stream()
                     .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER)

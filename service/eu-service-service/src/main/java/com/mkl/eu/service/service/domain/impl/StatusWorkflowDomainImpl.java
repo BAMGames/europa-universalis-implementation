@@ -253,13 +253,27 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 .orElse(null);
 
         if (next != null) {
-            if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
-                game.setStatus(GameStatusEnum.MILITARY_MOVE);
-                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+            if (game.getStatus() == GameStatusEnum.MILITARY_SIEGES) {
+                Integer activeSiege = game.getSieges().stream()
+                        .filter(siege -> Objects.equals(siege.getTurn(), game.getTurn()) && siege.getStatus() == SiegeStatusEnum.NEW)
+                        .map(siege -> getActiveOrder(siege.getWar(), siege.isBesiegingOffensive(), game))
+                        .filter(Objects::nonNull)
+                        .min(Comparator.<Integer>naturalOrder())
+                        .orElse(null);
+                if (activeSiege != null) {
+                    diffs.add(changeActivePlayers(activeSiege, game));
+                } else {
+                    diffs.addAll(nextRound(game));
+                }
+            } else {
+                if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
+                    game.setStatus(GameStatusEnum.MILITARY_MOVE);
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
+                }
+                diffs.add(changeActivePlayers(next, game));
             }
-            diffs.add(changeActivePlayers(next, game));
             return diffs;
         } else {
             // There is no other country. If we are in move phase, check siege
@@ -306,7 +320,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                         game.getSieges().add(siege);
                     }
                     Integer activeSiege = game.getSieges().stream()
-                            .filter(siege -> siege.getStatus() == SiegeStatusEnum.NEW)
+                            .filter(siege -> Objects.equals(siege.getTurn(), game.getTurn()) && siege.getStatus() == SiegeStatusEnum.NEW)
                             .map(siege -> getActiveOrder(siege.getWar(), siege.isBesiegingOffensive(), game))
                             .filter(Objects::nonNull)
                             .min(Comparator.<Integer>naturalOrder())
@@ -435,28 +449,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     round = "B_MR_S3";
                     break;
             }
-            diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, round, game));
-
-            // Stacks move phase reset
-            game.getStacks().stream()
-                    .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
-                    .forEach(stack -> {
-                        stack.setMove(0);
-                        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
-                    });
-
-            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
-
-            // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-            game.setStatus(GameStatusEnum.MILITARY_MOVE);
-
-            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                    // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
-
-            // set the order of position 0 active
-            diffs.add(changeActivePlayers(0, game));
+            diffs.addAll(initNewRound(round, game));
         } else {
             String round = game.getStacks().stream()
                     .filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
@@ -490,32 +483,39 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     diffs.addAll(endRound(game));
                     break;
                 default:
-                    diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
-
-                    // Stacks move phase reset
-                    game.getStacks().stream()
-                            .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
-                            .forEach(stack -> {
-                                stack.setMove(0);
-                                stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
-                            });
-
-                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
-
-                    // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                    game.setStatus(GameStatusEnum.MILITARY_MOVE);
-
-                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                            // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
-
-                    // set the order of position 0 active
-                    diffs.add(changeActivePlayers(0, game));
+                    diffs.addAll(initNewRound(nextRound, game));
                     break;
             }
         }
 
+        return diffs;
+    }
+
+    private List<DiffEntity> initNewRound(String nextRound, GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
+
+        // Stacks move phase reset
+        // FIXME handle besieging and besieged stacks
+        game.getStacks().stream()
+                .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
+                .forEach(stack -> {
+                    stack.setMove(0);
+                    stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                });
+
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
+
+        // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+
+        // set the order of position 0 active
+        diffs.add(changeActivePlayers(0, game));
         return diffs;
     }
 
