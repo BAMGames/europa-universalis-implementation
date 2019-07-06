@@ -170,7 +170,9 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         List<DiffEntity> diffs = new ArrayList<>();
 
         // If we are in battle phase, are there still some battle left ?
-        if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES && game.getBattles().stream().anyMatch(battle -> battle.getStatus() == BattleStatusEnum.NEW)) {
+        if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES &&
+                game.getBattles().stream().anyMatch(battle -> Objects.equals(battle.getTurn(), game.getTurn())
+                        && battle.getStatus() == BattleStatusEnum.NEW)) {
             return diffs;
         }
         int currentPosition = game.getOrders().stream()
@@ -180,10 +182,12 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 .orElse(Integer.MAX_VALUE);
 
         // If we are in siege phase, are there still some siege left ?
-        if (game.getStatus() == GameStatusEnum.MILITARY_SIEGES && game.getSieges().stream().anyMatch(siege -> siege.getStatus() == SiegeStatusEnum.NEW)) {
+        if (game.getStatus() == GameStatusEnum.MILITARY_SIEGES &&
+                game.getSieges().stream().anyMatch(siege -> Objects.equals(siege.getTurn(), game.getTurn())
+                        && siege.getStatus() == SiegeStatusEnum.NEW)) {
             Integer activeSiege = game.getSieges().stream()
-                    .filter(siege -> siege.getStatus() == SiegeStatusEnum.NEW)
-                    .map(siege -> getActiveOrder(siege.getWar(), siege.isPhasingOffensive(), game))
+                    .filter(siege -> Objects.equals(siege.getTurn(), game.getTurn()) && siege.getStatus() == SiegeStatusEnum.NEW)
+                    .map(siege -> getActiveOrder(siege.getWar(), siege.isBesiegingOffensive(), game))
                     .filter(Objects::nonNull)
                     .min(Comparator.<Integer>naturalOrder())
                     .orElse(null);
@@ -237,8 +241,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_OFFENSIVE, war.getRight())));
             }
 
-            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.BATTLE,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
             return diffs;
         }
 
@@ -251,11 +253,17 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 .orElse(null);
 
         if (next != null) {
+            if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
+                game.setStatus(GameStatusEnum.MILITARY_MOVE);
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+
+            }
             diffs.add(changeActivePlayers(next, game));
             return diffs;
         } else {
             // There is no other country. If we are in move phase, check siege
-            if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
+            if (game.getStatus() == GameStatusEnum.MILITARY_MOVE || game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
                 List<String> provincesAtSiege = game.getStacks().stream()
                         .filter(s -> s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING)
                         .map(StackEntity::getProvince)
@@ -274,19 +282,19 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                                 .anyMatch(sie -> sie.isBreach() && Objects.equals(sie.getTurn(), game.getTurn()) && StringUtils.equals(sie.getProvince(), province)));
                         siege.setGame(game);
 
-                        List<CounterEntity> phasingCounters = game.getStacks().stream()
+                        List<CounterEntity> besiegingCounters = game.getStacks().stream()
                                 .filter(s -> (s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING) && StringUtils.equals(province, s.getProvince()))
                                 .flatMap(s -> s.getCounters().stream())
                                 .collect(Collectors.toList());
-                        List<CounterEntity> nonPhasingCounters = game.getStacks().stream()
+                        List<CounterEntity> besiegedCounters = game.getStacks().stream()
                                 .filter(StackEntity::isBesieged)
                                 .flatMap(s -> s.getCounters().stream())
                                 .filter(c -> CounterUtil.isArmy(c.getType()))
                                 .collect(Collectors.toList());
-                        nonPhasingCounters.add(createFakeControl(province, game));
-                        Pair<WarEntity, Boolean> war = oeUtil.searchWar(phasingCounters, nonPhasingCounters, game);
+                        besiegedCounters.add(createFakeControl(province, game));
+                        Pair<WarEntity, Boolean> war = oeUtil.searchWar(besiegingCounters, besiegedCounters, game);
                         siege.setWar(war.getLeft());
-                        siege.setPhasingOffensive(war.getRight());
+                        siege.setBesiegingOffensive(war.getRight());
 
                         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.SIEGE,
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
@@ -299,19 +307,15 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     }
                     Integer activeSiege = game.getSieges().stream()
                             .filter(siege -> siege.getStatus() == SiegeStatusEnum.NEW)
-                            .map(siege -> getActiveOrder(siege.getWar(), siege.isPhasingOffensive(), game))
+                            .map(siege -> getActiveOrder(siege.getWar(), siege.isBesiegingOffensive(), game))
                             .filter(Objects::nonNull)
                             .min(Comparator.<Integer>naturalOrder())
                             .orElse(null);
 
-                    diffs.add(changeActivePlayers(activeSiege, game));
-
                     diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, activeSiege),
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES)));
 
-                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.SIEGE,
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
+                    diffs.add(changeActivePlayers(activeSiege, game));
 
                     return diffs;
                 }

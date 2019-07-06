@@ -78,6 +78,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Pair<Request<ChooseProvinceRequest>, GameEntity> pair = testCheckGame(siegeService::chooseSiege, "chooseSiege");
         Request<ChooseProvinceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(26L);
+        game.getCountries().add(country);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(0).setStatus(SiegeStatusEnum.SELECT_FORCES);
         game.getSieges().get(0).setProvince("pecs");
@@ -133,6 +136,16 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
             Assert.assertEquals("chooseSiege.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("lyonnais");
+
+        try {
+            siegeService.chooseSiege(request);
+            Assert.fail("Should break because country has no right to choose this siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("chooseSiege.request.idCountry", e.getParams()[0]);
         }
     }
 
@@ -218,6 +231,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             allies.add("turquie");
         }
         when(oeUtil.getWarAllies(game.getCountries().get(0), siege.getWar())).thenReturn(allies);
+        when(oeUtil.isWarAlly(game.getCountries().get(0), siege.getWar(), siege.isBesiegingOffensive())).thenReturn(true);
 
         simulateDiff();
 

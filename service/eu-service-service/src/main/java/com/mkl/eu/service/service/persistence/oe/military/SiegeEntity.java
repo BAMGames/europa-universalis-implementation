@@ -48,8 +48,8 @@ public class SiegeEntity implements IEntity, Serializable {
     private Set<SiegeCounterEntity> counters = new HashSet<>();
     /** War in which the siege occurs. */
     private WarEntity war;
-    /** If the phasing side of the siege is the offensive side of the war. */
-    private boolean phasingOffensive;
+    /** If the besieging side of the siege is the offensive side of the war. */
+    private boolean besiegingOffensive;
     /** Game in which the competition occurs. */
     private GameEntity game;
 
@@ -207,14 +207,14 @@ public class SiegeEntity implements IEntity, Serializable {
         this.war = war;
     }
 
-    /** @return the phasingOffensive. */
-    public boolean isPhasingOffensive() {
-        return phasingOffensive;
+    /** @return the besiegingOffensive. */
+    public boolean isBesiegingOffensive() {
+        return besiegingOffensive;
     }
 
-    /** @param phasingOffensive the phasingOffensive to set. */
-    public void setPhasingOffensive(boolean phasingOffensive) {
-        this.phasingOffensive = phasingOffensive;
+    /** @param besiegingOffensive the besiegingOffensive to set. */
+    public void setBesiegingOffensive(boolean besiegingOffensive) {
+        this.besiegingOffensive = besiegingOffensive;
     }
 
     /** @return the game. */

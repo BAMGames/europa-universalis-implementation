@@ -138,6 +138,14 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .findAny()
                 .orElse(null);
 
+        boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(),
+                siege.isBesiegingOffensive());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(accessRight)
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_CHOOSE_SIEGE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_CHOOSE_SIEGE, country.getName(), "complex"));
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
 
@@ -1447,7 +1455,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
         // TODO check that the player doing the request is leader of the stack and replace complex by this leader
         boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(),
-                playerPhasing && siege.isPhasingOffensive() || !playerPhasing && !siege.isPhasingOffensive());
+                playerPhasing && siege.isBesiegingOffensive() || !playerPhasing && !siege.isBesiegingOffensive());
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(accessRight)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)

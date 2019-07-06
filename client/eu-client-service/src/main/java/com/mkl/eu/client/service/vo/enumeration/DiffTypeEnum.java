@@ -63,7 +63,7 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#TURN</li>
      * <li>DiffAttributeTypeEnum#STATUS</li>
      * <li>DiffAttributeTypeEnum#ID_WAR the war related to this battle</li>
-     * <li>DiffAttributeTypeEnum#PHASING_OFFENSIVE if the phasing side is the offensive side of the war</li>
+     * <li>DiffAttributeTypeEnum#PHASING_OFFENSIVE if the besieging side is the offensive side of the war</li>
      * </ul>
      * </li>
      * </ul>
@@ -160,16 +160,6 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#STATUS to know which status the turn order is invalidated.</li>
      * <li>DiffAttributeTypeEnum#ID_COUNTRY to know which country turn order is invalidated.
      * Can be <code>null</code> in which case it means that all countries are invalidated.</li>
-     * </ul>
-     * </li>
-     * <li>DiffTypeObjectEnum#BATTLE in which case it will use:
-     * <ul>
-     * <li>DiffAttributeTypeEnum#TURN to know the turn of the battles that are validated.</li>
-     * </ul>
-     * </li>
-     * <li>DiffTypeObjectEnum#SIEGE in which case it will use:
-     * <ul>
-     * <li>DiffAttributeTypeEnum#TURN to know the turn of the sieges that are validated.</li>
      * </ul>
      * </li>
      * </ul>

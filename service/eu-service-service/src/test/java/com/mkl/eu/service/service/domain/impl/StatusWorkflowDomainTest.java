@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
@@ -11,8 +12,15 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
+import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +30,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static com.mkl.eu.service.service.service.AbstractGameServiceTest.getAttribute;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.when;
 
 /**
@@ -42,6 +53,9 @@ public class StatusWorkflowDomainTest {
 
     @Mock
     private IGameDao gameDao;
+
+    @Mock
+    private IProvinceDao provinceDao;
 
     @Test
     public void testComputeEndMinorLogisticsNoCountries() throws Exception {
@@ -1128,16 +1142,453 @@ public class StatusWorkflowDomainTest {
         }
     }
 
+    @Test
     public void testEndRound() {
         GameEntity game = new GameEntity();
 
         DiffEntity end = new DiffEntity();
         end.setId(1L);
-        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_END", game)).thenReturn(end);
+        when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game)).thenReturn(end);
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
 
         Assert.assertEquals(1, diffs.size());
         Assert.assertEquals(end, diffs.get(0));
+    }
+
+    @Test
+    public void testEndMilitaryPhaseStillBattle() {
+        int currentTurn = 12;
+        int notCurrentTurn = 11;
+        GameEntity game = new GameEntity();
+        game.setTurn(currentTurn);
+        game.setStatus(GameStatusEnum.MILITARY_BATTLES);
+        BattleEntity battle = new BattleEntity();
+        battle.setStatus(BattleStatusEnum.NEW);
+        battle.setTurn(currentTurn);
+        game.getBattles().add(battle);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setStatus(SiegeStatusEnum.NEW);
+        siege.setTurn(notCurrentTurn);
+        game.getSieges().add(siege);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endMilitaryPhase(game);
+
+        Assert.assertEquals(0, diffs.size());
+        Assert.assertEquals(GameStatusEnum.MILITARY_BATTLES, game.getStatus());
+    }
+
+    @Test
+    public void testEndMilitaryPhaseStillSiege() {
+        int currentTurn = 12;
+        int notCurrentTurn = 11;
+        GameEntity game = new GameEntity();
+        game.setTurn(currentTurn);
+        game.setStatus(GameStatusEnum.MILITARY_SIEGES);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setName("spain");
+        game.getCountries().add(spain);
+
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setCountry(france);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(0);
+        order.setActive(true);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setCountry(spain);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(1);
+        order.setActive(false);
+        game.getOrders().add(order);
+
+        WarEntity war = new WarEntity();
+        CountryInWarEntity countryWar = new CountryInWarEntity();
+        countryWar.setOffensive(true);
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName(france.getName());
+        war.getCountries().add(countryWar);
+        countryWar = new CountryInWarEntity();
+        countryWar.setOffensive(false);
+        countryWar.setImplication(WarImplicationEnum.FULL);
+        countryWar.setCountry(new CountryEntity());
+        countryWar.getCountry().setName(spain.getName());
+        war.getCountries().add(countryWar);
+        game.getWars().add(war);
+
+        BattleEntity battle = new BattleEntity();
+        battle.setStatus(BattleStatusEnum.NEW);
+        battle.setTurn(notCurrentTurn);
+        battle.setWar(war);
+        game.getBattles().add(battle);
+
+        SiegeEntity siege = new SiegeEntity();
+        siege.setStatus(SiegeStatusEnum.NEW);
+        siege.setTurn(currentTurn);
+        siege.setWar(war);
+        siege.setBesiegingOffensive(true);
+        game.getSieges().add(siege);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endMilitaryPhase(game);
+
+        Assert.assertEquals(0, diffs.size());
+        Assert.assertEquals(GameStatusEnum.MILITARY_SIEGES, game.getStatus());
+    }
+
+    @Test
+    public void testEndMilitaryPhase() {
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_MOVE)
+                .futureBattle()
+                .futureSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_BATTLES)
+                        .changeStatus()
+                        .addBattle());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_MOVE)
+                .futureSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_MOVE)
+                        .changeActivePlayer());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_MOVE)
+                .lastPlayerInTurnOrder()
+                .futureSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_SIEGES)
+                        .changeStatus()
+                        .changeActivePlayer()
+                        .addSiege());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_MOVE)
+                .lastPlayerInTurnOrder()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_MOVE)
+                        .changeStatus()
+                        .changeActivePlayer()
+                        .nextRound());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_BATTLES)
+                .pendingBattle()
+                .futureSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_BATTLES));
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_BATTLES)
+                .futureSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_MOVE)
+                        .changeStatus()
+                        .changeActivePlayer());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_BATTLES)
+                .lastPlayerInTurnOrder()
+                .futureSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_SIEGES)
+                        .changeStatus()
+                        .changeActivePlayer()
+                        .addSiege());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_BATTLES)
+                .lastPlayerInTurnOrder()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_MOVE)
+                        .changeStatus()
+                        .changeActivePlayer()
+                        .nextRound());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_SIEGES)
+                .pendingSiege()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_SIEGES));
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_SIEGES)
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_SIEGES)
+                        .changeActivePlayer());
+
+        EndMilitaryPhaseBuilder.create()
+                .status(GameStatusEnum.MILITARY_SIEGES)
+                .lastPlayerInTurnOrder()
+                .whenEndMilitaryPhase(statusWorkflowDomain, this)
+                .thenExpect(EndMilitaryPhaseResultBuilder.create()
+                        .status(GameStatusEnum.MILITARY_MOVE)
+                        .changeStatus()
+                        .changeActivePlayer()
+                        .nextRound());
+    }
+
+    static class EndMilitaryPhaseBuilder {
+        boolean lastPlayerInTurnOrder;
+        boolean pendingBattle;
+        boolean pendingSiege;
+        boolean futureBattle;
+        boolean futureSiege;
+        GameStatusEnum status;
+        GameEntity game;
+        List<DiffEntity> diffs;
+
+        static EndMilitaryPhaseBuilder create() {
+            return new EndMilitaryPhaseBuilder();
+        }
+
+        EndMilitaryPhaseBuilder lastPlayerInTurnOrder() {
+            lastPlayerInTurnOrder = true;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder pendingBattle() {
+            pendingBattle = true;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder pendingSiege() {
+            pendingSiege = true;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder futureBattle() {
+            futureBattle = true;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder futureSiege() {
+            futureSiege = true;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder status(GameStatusEnum status) {
+            this.status = status;
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder whenEndMilitaryPhase(IStatusWorkflowDomain statusWorkflowDomain, StatusWorkflowDomainTest testClass) {
+            int currentTurn = 12;
+            int notCurrentTurn = 11;
+            game = new GameEntity();
+            game.setTurn(currentTurn);
+            game.setStatus(status);
+            PlayableCountryEntity france = new PlayableCountryEntity();
+            france.setName("france");
+            game.getCountries().add(france);
+            PlayableCountryEntity spain = new PlayableCountryEntity();
+            spain.setName("spain");
+            game.getCountries().add(spain);
+
+            CountryOrderEntity order = new CountryOrderEntity();
+            order.setCountry(france);
+            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+            order.setPosition(0);
+            order.setActive(!lastPlayerInTurnOrder);
+            game.getOrders().add(order);
+            order = new CountryOrderEntity();
+            order.setCountry(spain);
+            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+            order.setPosition(1);
+            order.setActive(lastPlayerInTurnOrder);
+            game.getOrders().add(order);
+
+            WarEntity war = new WarEntity();
+            war.setId(666l);
+            CountryInWarEntity countryWar = new CountryInWarEntity();
+            countryWar.setOffensive(true);
+            countryWar.setImplication(WarImplicationEnum.FULL);
+            countryWar.setCountry(new CountryEntity());
+            countryWar.getCountry().setName(france.getName());
+            war.getCountries().add(countryWar);
+            countryWar = new CountryInWarEntity();
+            countryWar.setOffensive(false);
+            countryWar.setImplication(WarImplicationEnum.FULL);
+            countryWar.setCountry(new CountryEntity());
+            countryWar.getCountry().setName(spain.getName());
+            war.getCountries().add(countryWar);
+            game.getWars().add(war);
+
+            BattleEntity battle = new BattleEntity();
+            battle.setStatus(BattleStatusEnum.NEW);
+            battle.setTurn(notCurrentTurn);
+            battle.setWar(war);
+            game.getBattles().add(battle);
+
+            SiegeEntity siege = new SiegeEntity();
+            siege.setStatus(SiegeStatusEnum.NEW);
+            siege.setTurn(notCurrentTurn);
+            siege.setWar(war);
+            game.getSieges().add(siege);
+
+            if (pendingBattle) {
+                battle = new BattleEntity();
+                battle.setStatus(BattleStatusEnum.NEW);
+                battle.setTurn(currentTurn);
+                battle.setWar(war);
+                battle.setPhasingOffensive(!lastPlayerInTurnOrder);
+                game.getBattles().add(battle);
+            }
+            if (pendingSiege) {
+                siege = new SiegeEntity();
+                siege.setStatus(SiegeStatusEnum.NEW);
+                siege.setTurn(currentTurn);
+                siege.setWar(war);
+                siege.setBesiegingOffensive(!lastPlayerInTurnOrder);
+                game.getSieges().add(siege);
+            }
+            if (futureBattle) {
+                StackEntity stack = new StackEntity();
+                stack.setProvince("idf");
+                stack.setMovePhase(MovePhaseEnum.FIGHTING);
+                game.getStacks().add(stack);
+            }
+            if (futureSiege) {
+                StackEntity stack = new StackEntity();
+                stack.setProvince("idf");
+                stack.setMovePhase(MovePhaseEnum.BESIEGING);
+                game.getStacks().add(stack);
+            }
+
+            when(testClass.oeUtil.searchWar(anyList(), anyList(), any())).thenReturn(new ImmutablePair<>(war, false));
+            AbstractProvinceEntity idf = new EuropeanProvinceEntity();
+            when(testClass.provinceDao.getProvinceByName("idf")).thenReturn(idf);
+            when(testClass.oeUtil.getController(idf, game)).thenReturn(france.getName());
+            when(testClass.counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_W-1", game)).thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER));
+
+            diffs = statusWorkflowDomain.endMilitaryPhase(game);
+
+            return this;
+        }
+
+        EndMilitaryPhaseBuilder thenExpect(EndMilitaryPhaseResultBuilder result) {
+            Assert.assertEquals("The status of the game is not correct.", result.status, game.getStatus());
+            DiffEntity changeStatus = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .findAny()
+                    .orElse(null);
+            if (result.changeStatus) {
+                Assert.assertNotNull("A modify status diff event was expected.", changeStatus);
+                Assert.assertEquals("The modify status diff event has the wrong new status.", result.status.name(), getAttribute(changeStatus, DiffAttributeTypeEnum.STATUS));
+            } else {
+                Assert.assertNull("A modify status diff event was not expected.", changeStatus);
+            }
+            DiffEntity changeActivePlayer = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                    .findAny()
+                    .orElse(null);
+            if (result.changeActivePlayer) {
+                Assert.assertNotNull("A modify turn order diff event was expected.", changeActivePlayer);
+                Assert.assertEquals("The modify turn order diff event has the wrong new active player.", result.nextRound ? "0" : "1", getAttribute(changeActivePlayer, DiffAttributeTypeEnum.ACTIVE));
+            } else {
+                Assert.assertNull("A modify turn order diff event was not expected.", changeActivePlayer);
+            }
+            DiffEntity addBattle = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.ADD && diff.getTypeObject() == DiffTypeObjectEnum.BATTLE)
+                    .findAny()
+                    .orElse(null);
+            if (result.addBattle) {
+                Assert.assertNotNull("A add battle diff event was expected.", addBattle);
+                Assert.assertEquals("The add battle diff event has the wrong province.", "idf", getAttribute(addBattle, DiffAttributeTypeEnum.PROVINCE));
+                Assert.assertEquals("The add battle diff event has the wrong turn.", game.getTurn().toString(), getAttribute(addBattle, DiffAttributeTypeEnum.TURN));
+                Assert.assertEquals("The add battle diff event has the wrong status.", BattleStatusEnum.NEW.name(), getAttribute(addBattle, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals("The add battle diff event has the wrong war.", "666", getAttribute(addBattle, DiffAttributeTypeEnum.ID_WAR));
+                Assert.assertEquals("The add battle diff event has the wrong phasing offensive.", "false", getAttribute(addBattle, DiffAttributeTypeEnum.PHASING_OFFENSIVE));
+            } else {
+                Assert.assertNull("A add battle order diff event was not expected.", addBattle);
+            }
+            int expectedBattles = 1 + (pendingBattle ? 1 : 0) + (result.addBattle ? 1 : 0);
+            Assert.assertEquals("The game has not the right number of battles.", expectedBattles, game.getBattles().size());
+            DiffEntity addSiege = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.ADD && diff.getTypeObject() == DiffTypeObjectEnum.SIEGE)
+                    .findAny()
+                    .orElse(null);
+            if (result.addSiege) {
+                Assert.assertNotNull("A add siege diff event was expected.", addSiege);
+                Assert.assertEquals("The add siege diff event has the wrong province.", "idf", getAttribute(addSiege, DiffAttributeTypeEnum.PROVINCE));
+                Assert.assertEquals("The add siege diff event has the wrong turn.", game.getTurn().toString(), getAttribute(addSiege, DiffAttributeTypeEnum.TURN));
+                Assert.assertEquals("The add siege diff event has the wrong status.", SiegeStatusEnum.NEW.name(), getAttribute(addSiege, DiffAttributeTypeEnum.STATUS));
+                Assert.assertEquals("The add siege diff event has the wrong war.", "666", getAttribute(addSiege, DiffAttributeTypeEnum.ID_WAR));
+                Assert.assertEquals("The add siege diff event has the wrong phasing offensive.", "false", getAttribute(addSiege, DiffAttributeTypeEnum.PHASING_OFFENSIVE));
+            } else {
+                Assert.assertNull("A add siege order diff event was not expected.", addSiege);
+            }
+            int expectedSieges = 1 + (pendingSiege ? 1 : 0) + (result.addSiege ? 1 : 0);
+            Assert.assertEquals("The game has not the right number of sieges.", expectedSieges, game.getSieges().size());
+            DiffEntity nextRound = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                    .findAny()
+                    .orElse(null);
+            if (result.nextRound) {
+                Assert.assertNotNull("A next round diff event was expected.", nextRound);
+            } else {
+                Assert.assertNull("A next round diff event was not expected.", nextRound);
+            }
+
+            return this;
+        }
+    }
+
+    static class EndMilitaryPhaseResultBuilder {
+        boolean changeActivePlayer;
+        boolean changeStatus;
+        boolean addBattle;
+        boolean addSiege;
+        boolean nextRound;
+        GameStatusEnum status;
+
+        static EndMilitaryPhaseResultBuilder create() {
+            return new EndMilitaryPhaseResultBuilder();
+        }
+
+        EndMilitaryPhaseResultBuilder changeActivePlayer() {
+            changeActivePlayer = true;
+            return this;
+        }
+
+        EndMilitaryPhaseResultBuilder changeStatus() {
+            changeStatus = true;
+            return this;
+        }
+
+        EndMilitaryPhaseResultBuilder addBattle() {
+            addBattle = true;
+            return this;
+        }
+
+        EndMilitaryPhaseResultBuilder addSiege() {
+            addSiege = true;
+            return this;
+        }
+
+        EndMilitaryPhaseResultBuilder nextRound() {
+            nextRound = true;
+            return this;
+        }
+
+        EndMilitaryPhaseResultBuilder status(GameStatusEnum status) {
+            this.status = status;
+            return this;
+        }
     }
 }
