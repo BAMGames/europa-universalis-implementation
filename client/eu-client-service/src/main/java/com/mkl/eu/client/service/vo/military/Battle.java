@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.vo.military;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.diplo.War;
+import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.enumeration.BattleEndEnum;
 import com.mkl.eu.client.service.vo.enumeration.BattleStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.BattleWinnerEnum;
@@ -34,7 +34,7 @@ public class Battle extends EuObject {
     /** Counters involved in the battle. */
     private List<BattleCounter> counters = new ArrayList<>();
     /** War in which the battle occurs. */
-    private War war;
+    private WarLight war;
     /** If the phasing side of the battle is the offensive side of the war. */
     private boolean phasingOffensive;
 
@@ -119,12 +119,12 @@ public class Battle extends EuObject {
     }
 
     /** @return the war. */
-    public War getWar() {
+    public WarLight getWar() {
         return war;
     }
 
     /** @param war the war to set. */
-    public void setWar(War war) {
+    public void setWar(WarLight war) {
         this.war = war;
     }
 

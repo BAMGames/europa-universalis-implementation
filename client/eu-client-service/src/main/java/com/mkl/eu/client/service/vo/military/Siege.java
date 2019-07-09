@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.vo.military;
 
 import com.mkl.eu.client.service.vo.EuObject;
-import com.mkl.eu.client.service.vo.diplo.War;
+import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.enumeration.SiegeStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.SiegeUndermineResultEnum;
 
@@ -39,7 +39,7 @@ public class Siege extends EuObject {
     /** Counters involved in the battle. */
     private List<SiegeCounter> counters = new ArrayList<>();
     /** War in which the siege occurs. */
-    private War war;
+    private WarLight war;
     /** If the besieging side of the siege is the offensive side of the war. */
     private boolean besiegingOffensive;
 
@@ -164,12 +164,12 @@ public class Siege extends EuObject {
     }
 
     /** @return the war. */
-    public War getWar() {
+    public WarLight getWar() {
         return war;
     }
 
     /** @param war the war to set. */
-    public void setWar(War war) {
+    public void setWar(WarLight war) {
         this.war = war;
     }
 

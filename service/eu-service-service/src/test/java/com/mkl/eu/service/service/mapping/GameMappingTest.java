@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diplo.CountryInWar;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.diplo.War;
+import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.eco.*;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
@@ -184,9 +185,13 @@ public class GameMappingTest {
 
         object.setOrders(createCountryOrdersVos());
 
-        object.setBattles(createBattlesVos(object.getWars().get(0)));
+        WarLight war = new WarLight();
+        war.setId(object.getWars().get(0).getId());
+        war.setName(object.getWars().get(0).getName());
+        war.setType(object.getWars().get(0).getType());
+        object.setBattles(createBattlesVos(war));
 
-        object.setSieges(createSiegesVos(object.getWars().get(0)));
+        object.setSieges(createSiegesVos(war));
 
         return object;
     }
@@ -340,6 +345,7 @@ public class GameMappingTest {
 
         War object = new War();
         object.setId(1L);
+        object.setName("france vs persia");
         object.setType(WarTypeEnum.CLASSIC_WAR);
         CountryInWar country = new CountryInWar();
         country.setOffensive(true);
@@ -366,6 +372,7 @@ public class GameMappingTest {
         objects.add(object);
         object = new War();
         object.setId(2L);
+        object.setName("N/A");
         object.setType(WarTypeEnum.CIVIL_WAR);
         objects.add(object);
 
@@ -535,7 +542,7 @@ public class GameMappingTest {
         return game;
     }
 
-    private List<Battle> createBattlesVos(War war) {
+    private List<Battle> createBattlesVos(WarLight war) {
         List<Battle> objects = new ArrayList<>();
 
         Battle object = new Battle();
@@ -613,7 +620,7 @@ public class GameMappingTest {
         return objects;
     }
 
-    private List<Siege> createSiegesVos(War war) {
+    private List<Siege> createSiegesVos(WarLight war) {
         List<Siege> objects = new ArrayList<>();
 
         Siege object = new Siege();
@@ -866,6 +873,7 @@ public class GameMappingTest {
 
         WarEntity object = new WarEntity();
         object.setId(1L);
+        object.setName("france vs persia");
         object.setType(WarTypeEnum.CLASSIC_WAR);
         CountryInWarEntity country = new CountryInWarEntity();
         country.setOffensive(true);
@@ -892,6 +900,7 @@ public class GameMappingTest {
         objects.add(object);
         object = new WarEntity();
         object.setId(2L);
+        object.setName("N/A");
         object.setType(WarTypeEnum.CIVIL_WAR);
         objects.add(object);
 

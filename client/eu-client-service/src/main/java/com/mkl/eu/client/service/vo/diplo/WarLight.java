@@ -3,19 +3,14 @@ package com.mkl.eu.client.service.vo.diplo;
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.WarTypeEnum;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * VO that describes a War.
+ * Light VO that describes a War.
  *
  * @author MKL.
  */
-public class War extends EuObject {
+public class WarLight extends EuObject {
     /** Name of the war. */
     private String name;
-    /** List of countries in war (either side). */
-    private List<CountryInWar> countries = new ArrayList<>();
     /** Type of war. */
     private WarTypeEnum type;
 
@@ -27,16 +22,6 @@ public class War extends EuObject {
     /** @param name the name to set. */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /** @return the countries. */
-    public List<CountryInWar> getCountries() {
-        return countries;
-    }
-
-    /** @param countries the countries to set. */
-    public void setCountries(List<CountryInWar> countries) {
-        this.countries = countries;
     }
 
     /** @return the type. */

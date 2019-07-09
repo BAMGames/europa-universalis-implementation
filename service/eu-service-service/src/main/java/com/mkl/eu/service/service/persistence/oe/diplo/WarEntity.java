@@ -18,6 +18,8 @@ import java.util.List;
 public class WarEntity implements IEntity {
     /** Id. */
     private Long id;
+    /** Name of the war. */
+    private String name;
     /** List of countries in war (either side). */
     private List<CountryInWarEntity> countries = new ArrayList<>();
     /** Type of war. */
@@ -35,6 +37,16 @@ public class WarEntity implements IEntity {
     /** @param id the id to set. */
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /** @return the name. */
+    public String getName() {
+        return name;
+    }
+
+    /** @param name the name to set. */
+    public void setName(String name) {
+        this.name = name;
     }
 
     /** @return the countries. */

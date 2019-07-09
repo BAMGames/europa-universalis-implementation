@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.mapping.diplo;
 
 import com.mkl.eu.client.service.vo.diplo.CountryInWar;
 import com.mkl.eu.client.service.vo.diplo.War;
+import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.ref.country.CountryLight;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
@@ -60,7 +61,28 @@ public class WarMapping extends AbstractMapping {
         War target = new War();
 
         target.setId(source.getId());
+        target.setName(source.getName());
         target.setCountries(oesToVosCountries(source.getCountries(), objectsCreated));
+        target.setType(source.getType());
+
+        return target;
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public WarLight oeToVoLight(WarEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        WarLight target = new WarLight();
+
+        target.setId(source.getId());
+        target.setName(source.getName());
         target.setType(source.getType());
 
         return target;

@@ -2,7 +2,7 @@ package com.mkl.eu.service.service.mapping.military;
 
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.client.service.vo.diplo.War;
+import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.military.BattleDay;
 import com.mkl.eu.client.service.vo.military.Siege;
 import com.mkl.eu.client.service.vo.military.SiegeCounter;
@@ -88,7 +88,7 @@ public class SiegeMapping extends AbstractMapping {
         target.setCounters(oesToVosCountries(source.getCounters(), objectsCreated));
         target.setPhasing(oeToVo(source.getPhasing()));
         target.setNonPhasing(oeToVo(source.getNonPhasing()));
-        War war = storeVo(War.class, source.getWar(), objectsCreated, warMapping::oeToVo);
+        WarLight war = storeVo(WarLight.class, source.getWar(), objectsCreated, warMapping::oeToVoLight);
         target.setWar(war);
         target.setBesiegingOffensive(source.isBesiegingOffensive());
 
