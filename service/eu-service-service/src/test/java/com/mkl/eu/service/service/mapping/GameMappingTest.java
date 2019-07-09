@@ -120,6 +120,7 @@ public class GameMappingTest {
         Game vo = gameMapping.oeToVo(entity, null);
 
         // Sets are not sorted and we do not care how it is sorted, except in this test case. So we sort it.
+        Collections.sort(vo.getBattles().get(0).getCounters(), (o1, o2) -> o1.getCounter().getId().compareTo(o2.getCounter().getId()));
         Collections.sort(vo.getSieges().get(0).getCounters(), (o1, o2) -> o1.getCounter().getId().compareTo(o2.getCounter().getId()));
 
         ReflectionAssert.assertReflectionEquals(createGameVo(), vo);
