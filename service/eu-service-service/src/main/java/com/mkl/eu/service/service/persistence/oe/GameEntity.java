@@ -5,7 +5,6 @@ import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.CompetitionEntity;
@@ -34,8 +33,6 @@ public class GameEntity implements IEntity, Serializable {
     private Long id;
     /** Countries of the game. */
     private List<PlayableCountryEntity> countries = new ArrayList<>();
-    /** Relations between the countries. */
-    private List<RelationEntity> relations = new ArrayList<>();
     /** Events that have occured in the game. */
     private List<PoliticalEventEntity> events = new ArrayList<>();
     /** Stacks of counters of the game. */
@@ -104,17 +101,6 @@ public class GameEntity implements IEntity, Serializable {
     /** @param countries the countries to set. */
     public void setCountries(List<PlayableCountryEntity> countries) {
         this.countries = countries;
-    }
-
-    /** @return the relations. */
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<RelationEntity> getRelations() {
-        return relations;
-    }
-
-    /** @param relations the relations to set. */
-    public void setRelations(List<RelationEntity> relations) {
-        this.relations = relations;
     }
 
     /** @return the events. */

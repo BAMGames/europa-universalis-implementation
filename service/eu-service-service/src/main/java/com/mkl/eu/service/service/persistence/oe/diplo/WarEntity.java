@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.persistence.oe.diplo;
 
 import com.mkl.eu.client.service.vo.enumeration.WarTypeEnum;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "WAR")
-public class WarEntity {
+public class WarEntity implements IEntity {
     /** Id. */
     private Long id;
     /** List of countries in war (either side). */

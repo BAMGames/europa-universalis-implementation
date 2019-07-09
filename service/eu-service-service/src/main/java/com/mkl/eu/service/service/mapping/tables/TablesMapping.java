@@ -17,6 +17,7 @@ import java.util.Map;
  */
 @Component
 public class TablesMapping extends AbstractMapping {
+    /** Loss Mapping. */
     @Autowired
     private WithLossMapping withLossMapping;
 

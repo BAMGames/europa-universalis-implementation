@@ -1,6 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.ref.province;
 
-import com.mkl.eu.client.service.vo.enumeration.RelationTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.ResourceTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -20,7 +20,7 @@ public class ResourcesEntity implements IEntity, Serializable {
     /** Number of this type of counter. */
     private Integer number;
     /** Type of limit. */
-    private RelationTypeEnum type;
+    private ResourceTypeEnum type;
     /** Country owning these forces. */
     private RegionEntity region;
 
@@ -52,12 +52,12 @@ public class ResourcesEntity implements IEntity, Serializable {
     /** @return the type. */
     @Column(name = "TYPE")
     @Enumerated(EnumType.STRING)
-    public RelationTypeEnum getType() {
+    public ResourceTypeEnum getType() {
         return type;
     }
 
     /** @param type the type to set. */
-    public void setType(RelationTypeEnum type) {
+    public void setType(ResourceTypeEnum type) {
         this.type = type;
     }
 

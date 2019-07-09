@@ -2,17 +2,22 @@ package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.service.eco.AdministrativeActionCountry;
 import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
+import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Monarch;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
-import com.mkl.eu.client.service.vo.country.Relation;
+import com.mkl.eu.client.service.vo.diplo.CountryInWar;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.eco.*;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
+import com.mkl.eu.client.service.vo.military.*;
+import com.mkl.eu.client.service.vo.ref.country.CountryLight;
+import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -20,10 +25,13 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.country.RelationEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.*;
 import com.mkl.eu.service.service.persistence.oe.event.PoliticalEventEntity;
+import com.mkl.eu.service.service.persistence.oe.military.*;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +41,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.unitils.reflectionassert.ReflectionAssert;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -110,6 +119,9 @@ public class GameMappingTest {
 
         Game vo = gameMapping.oeToVo(entity, null);
 
+        // Sets are not sorted and we do not care how it is sorted, except in this test case. So we sort it.
+        Collections.sort(vo.getSieges().get(0).getCounters(), (o1, o2) -> o1.getCounter().getId().compareTo(o2.getCounter().getId()));
+
         ReflectionAssert.assertReflectionEquals(createGameVo(), vo);
 
         GameLight voLight = gameMapping.oeToVoLight(entity);
@@ -161,7 +173,7 @@ public class GameMappingTest {
 
         object.setEvents(createEventsVos());
 
-        object.setRelations(createRelationsVos(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
+        object.setWars(createWarsVos());
 
         object.setStacks(createStacksVos());
 
@@ -170,6 +182,10 @@ public class GameMappingTest {
         object.setCompetitions(createCompetitionsVos());
 
         object.setOrders(createCountryOrdersVos());
+
+        object.setBattles(createBattlesVos(object.getWars().get(0)));
+
+        object.setSieges(createSiegesVos(object.getWars().get(0)));
 
         return object;
     }
@@ -318,20 +334,38 @@ public class GameMappingTest {
         return objects;
     }
 
-    private List<Relation> createRelationsVos(PlayableCountry first, PlayableCountry second, PlayableCountry third) {
-        List<Relation> objects = new ArrayList<>();
+    private List<War> createWarsVos() {
+        List<War> objects = new ArrayList<>();
 
-        Relation object = new Relation();
+        War object = new War();
         object.setId(1L);
-        object.setType(RelationTypeEnum.ALLIANCE);
-        object.setFirst(first);
-        object.setSecond(second);
+        object.setType(WarTypeEnum.CLASSIC_WAR);
+        CountryInWar country = new CountryInWar();
+        country.setOffensive(true);
+        country.setImplication(WarImplicationEnum.FULL);
+        country.setCountry(new CountryLight());
+        country.getCountry().setId(101L);
+        country.getCountry().setName("france");
+        country.getCountry().setArmyClass(ArmyClassEnum.IV);
+        country.getCountry().setCulture(CultureEnum.LATIN);
+        country.getCountry().setReligion(ReligionEnum.CATHOLIC);
+        country.getCountry().setType(CountryTypeEnum.MAJOR);
+        object.getCountries().add(country);
+        country = new CountryInWar();
+        country.setOffensive(false);
+        country.setImplication(WarImplicationEnum.LIMITED);
+        country.setCountry(new CountryLight());
+        country.getCountry().setId(102L);
+        country.getCountry().setName("persia");
+        country.getCountry().setArmyClass(ArmyClassEnum.IIM);
+        country.getCountry().setCulture(CultureEnum.ISLAM);
+        country.getCountry().setReligion(ReligionEnum.SHIITE);
+        country.getCountry().setType(CountryTypeEnum.MINOR);
+        object.getCountries().add(country);
         objects.add(object);
-        object = new Relation();
+        object = new War();
         object.setId(2L);
-        object.setType(RelationTypeEnum.WAR);
-        object.setFirst(second);
-        object.setSecond(third);
+        object.setType(WarTypeEnum.CIVIL_WAR);
         objects.add(object);
 
         return objects;
@@ -500,6 +534,150 @@ public class GameMappingTest {
         return game;
     }
 
+    private List<Battle> createBattlesVos(War war) {
+        List<Battle> objects = new ArrayList<>();
+
+        Battle object = new Battle();
+        object.setId(1L);
+        object.setWinner(BattleWinnerEnum.NONE);
+        object.setStatus(BattleStatusEnum.DONE);
+        object.setPhasingOffensive(true);
+        object.setProvince("idf");
+        object.setWar(war);
+        object.setEnd(BattleEndEnum.END_OF_SECOND_DAY);
+        object.setTurn(12);
+        BattleCounter counter = new BattleCounter();
+        counter.setPhasing(true);
+        counter.setCounter(new Counter());
+        counter.getCounter().setId(101L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.getCounter().setCountry("france");
+        counter.getCounter().setVeterans(2d);
+        object.getCounters().add(counter);
+        counter = new BattleCounter();
+        counter.setPhasing(false);
+        counter.setCounter(new Counter());
+        counter.getCounter().setId(102L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.getCounter().setCountry("persia");
+        counter.getCounter().setVeterans(3d);
+        object.getCounters().add(counter);
+        object.setPhasing(new BattleSide());
+        object.getPhasing().setSize(2d);
+        object.getPhasing().setTech(Tech.ARQUEBUS);
+        object.getPhasing().setSizeDiff(-2);
+        object.getPhasing().setMoral(3);
+        object.getPhasing().setFireColumn("C");
+        object.getPhasing().setShockColumn("B");
+        object.getPhasing().setForces(true);
+        object.getPhasing().setPursuit(5);
+        object.getPhasing().setPursuitMod(3);
+        object.getPhasing().setLossesSelected(true);
+        object.getPhasing().setRetreatSelected(true);
+        object.getPhasing().setLosses(new AbstractWithLoss());
+        object.getPhasing().getLosses().setRoundLoss(1);
+        object.getPhasing().getLosses().setThirdLoss(2);
+        object.getPhasing().getLosses().setRoundLoss(2);
+        object.getPhasing().setFirstDay(new BattleDay());
+        object.getPhasing().getFirstDay().setFireMod(1);
+        object.getPhasing().getFirstDay().setFire(5);
+        object.getPhasing().getFirstDay().setShockMod(2);
+        object.getPhasing().getFirstDay().setShock(9);
+        object.getPhasing().setSecondDay(new BattleDay());
+        object.setNonPhasing(new BattleSide());
+        object.getNonPhasing().setSize(2d);
+        object.getNonPhasing().setTech(Tech.MEDIEVAL);
+        object.getNonPhasing().setSizeDiff(2);
+        object.getNonPhasing().setMoral(2);
+        object.getNonPhasing().setFireColumn("D");
+        object.getNonPhasing().setShockColumn("D");
+        object.getNonPhasing().setPursuitMod(1);
+        object.getNonPhasing().setRetreat(4);
+        object.getNonPhasing().setLosses(new AbstractWithLoss());
+        object.getNonPhasing().setFirstDay(new BattleDay());
+        object.getNonPhasing().setSecondDay(new BattleDay());
+        objects.add(object);
+        object = new Battle();
+        object.setId(2L);
+        object.setPhasing(new BattleSide());
+        object.getPhasing().setLosses(new AbstractWithLoss());
+        object.getPhasing().setFirstDay(new BattleDay());
+        object.getPhasing().setSecondDay(new BattleDay());
+        object.setNonPhasing(new BattleSide());
+        object.getNonPhasing().setLosses(new AbstractWithLoss());
+        object.getNonPhasing().setFirstDay(new BattleDay());
+        object.getNonPhasing().setSecondDay(new BattleDay());
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<Siege> createSiegesVos(War war) {
+        List<Siege> objects = new ArrayList<>();
+
+        Siege object = new Siege();
+        object.setId(1L);
+        object.setFortressFalls(true);
+        object.setStatus(SiegeStatusEnum.DONE);
+        object.setBesiegingOffensive(true);
+        object.setProvince("idf");
+        object.setWar(war);
+        object.setTurn(12);
+        object.setFortressLevel(2);
+        object.setBreach(true);
+        object.setBonus(5);
+        object.setUndermineDie(2);
+        object.setUndermineResult(SiegeUndermineResultEnum.SIEGE_WORK_PLUS);
+        SiegeCounter counter = new SiegeCounter();
+        counter.setPhasing(true);
+        counter.setCounter(new Counter());
+        counter.getCounter().setId(101L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.getCounter().setCountry("france");
+        counter.getCounter().setVeterans(2d);
+        object.getCounters().add(counter);
+        counter = new SiegeCounter();
+        counter.setPhasing(false);
+        counter.setCounter(new Counter());
+        counter.getCounter().setId(102L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.getCounter().setCountry("persia");
+        counter.getCounter().setVeterans(3d);
+        object.getCounters().add(counter);
+        object.setPhasing(new SiegeSide());
+        object.getPhasing().setSize(2d);
+        object.getPhasing().setTech(Tech.ARQUEBUS);
+        object.getPhasing().setMoral(3);
+        object.getPhasing().setLossesSelected(true);
+        object.getPhasing().setLosses(new AbstractWithLoss());
+        object.getPhasing().getLosses().setRoundLoss(1);
+        object.getPhasing().getLosses().setThirdLoss(2);
+        object.getPhasing().getLosses().setRoundLoss(2);
+        object.getPhasing().setModifiers(new BattleDay());
+        object.getPhasing().getModifiers().setFireMod(1);
+        object.getPhasing().getModifiers().setFire(5);
+        object.getPhasing().getModifiers().setShockMod(2);
+        object.getPhasing().getModifiers().setShock(9);
+        object.setNonPhasing(new SiegeSide());
+        object.getNonPhasing().setSize(2d);
+        object.getNonPhasing().setTech(Tech.MEDIEVAL);
+        object.getNonPhasing().setMoral(2);
+        object.getNonPhasing().setLosses(new AbstractWithLoss());
+        object.getNonPhasing().setModifiers(new BattleDay());
+        objects.add(object);
+        object = new Siege();
+        object.setId(2L);
+        object.setPhasing(new SiegeSide());
+        object.getPhasing().setLosses(new AbstractWithLoss());
+        object.getPhasing().setModifiers(new BattleDay());
+        object.setNonPhasing(new SiegeSide());
+        object.getNonPhasing().setLosses(new AbstractWithLoss());
+        object.getNonPhasing().setModifiers(new BattleDay());
+        objects.add(object);
+
+        return objects;
+    }
+
     private GameEntity createGameEntity() {
         GameEntity object = new GameEntity();
 
@@ -518,7 +696,7 @@ public class GameMappingTest {
 
         object.setEvents(createEventsEntities());
 
-        object.setRelations(createRelationsEntities(object.getCountries().get(0), object.getCountries().get(0), object.getCountries().get(1)));
+        object.setWars(createWarsEntities());
 
         object.setStacks(createStacksEntities());
 
@@ -527,6 +705,10 @@ public class GameMappingTest {
         object.setCompetitions(createCompetitionsEntities());
 
         object.setOrders(createCountryOrdersEntities());
+
+        object.setBattles(createBattlesEntities(object.getWars().get(0)));
+
+        object.setSieges(createSiegesEntities(object.getWars().get(0)));
 
         return object;
     }
@@ -678,20 +860,38 @@ public class GameMappingTest {
         return objects;
     }
 
-    private List<RelationEntity> createRelationsEntities(PlayableCountryEntity first, PlayableCountryEntity second, PlayableCountryEntity third) {
-        List<RelationEntity> objects = new ArrayList<>();
+    private List<WarEntity> createWarsEntities() {
+        List<WarEntity> objects = new ArrayList<>();
 
-        RelationEntity object = new RelationEntity();
+        WarEntity object = new WarEntity();
         object.setId(1L);
-        object.setType(RelationTypeEnum.ALLIANCE);
-        object.setFirst(first);
-        object.setSecond(second);
+        object.setType(WarTypeEnum.CLASSIC_WAR);
+        CountryInWarEntity country = new CountryInWarEntity();
+        country.setOffensive(true);
+        country.setImplication(WarImplicationEnum.FULL);
+        country.setCountry(new CountryEntity());
+        country.getCountry().setId(101L);
+        country.getCountry().setName("france");
+        country.getCountry().setArmyClass(ArmyClassEnum.IV);
+        country.getCountry().setCulture(CultureEnum.LATIN);
+        country.getCountry().setReligion(ReligionEnum.CATHOLIC);
+        country.getCountry().setType(CountryTypeEnum.MAJOR);
+        object.getCountries().add(country);
+        country = new CountryInWarEntity();
+        country.setOffensive(false);
+        country.setImplication(WarImplicationEnum.LIMITED);
+        country.setCountry(new CountryEntity());
+        country.getCountry().setId(102L);
+        country.getCountry().setName("persia");
+        country.getCountry().setArmyClass(ArmyClassEnum.IIM);
+        country.getCountry().setCulture(CultureEnum.ISLAM);
+        country.getCountry().setReligion(ReligionEnum.SHIITE);
+        country.getCountry().setType(CountryTypeEnum.MINOR);
+        object.getCountries().add(country);
         objects.add(object);
-        object = new RelationEntity();
+        object = new WarEntity();
         object.setId(2L);
-        object.setType(RelationTypeEnum.WAR);
-        object.setFirst(second);
-        object.setSecond(third);
+        object.setType(WarTypeEnum.CIVIL_WAR);
         objects.add(object);
 
         return objects;
@@ -845,6 +1045,142 @@ public class GameMappingTest {
         object.setGameStatus(GameStatusEnum.DIPLOMACY);
         object.setPosition(0);
         object.setActive(false);
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<BattleEntity> createBattlesEntities(WarEntity war) {
+        List<BattleEntity> objects = new ArrayList<>();
+
+        BattleEntity object = new BattleEntity();
+        object.setId(1L);
+        object.setWinner(BattleWinnerEnum.NONE);
+        object.setStatus(BattleStatusEnum.DONE);
+        object.setPhasingOffensive(true);
+        object.setProvince("idf");
+        object.setWar(war);
+        object.setEnd(BattleEndEnum.END_OF_SECOND_DAY);
+        object.setTurn(12);
+        BattleCounterEntity counter = new BattleCounterEntity();
+        counter.setPhasing(true);
+        counter.setCounter(new CounterEntity());
+        counter.getCounter().setId(101L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.getCounter().setCountry("france");
+        counter.getCounter().setVeterans(2d);
+        object.getCounters().add(counter);
+        counter = new BattleCounterEntity();
+        counter.setPhasing(false);
+        counter.setCounter(new CounterEntity());
+        counter.getCounter().setId(102L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.getCounter().setCountry("persia");
+        counter.getCounter().setVeterans(3d);
+        object.getCounters().add(counter);
+        object.setPhasing(new BattleSideEntity());
+        object.getPhasing().setSize(2d);
+        object.getPhasing().setTech(Tech.ARQUEBUS);
+        object.getPhasing().setSizeDiff(-2);
+        object.getPhasing().setMoral(3);
+        object.getPhasing().setFireColumn("C");
+        object.getPhasing().setShockColumn("B");
+        object.getPhasing().setForces(true);
+        object.getPhasing().setPursuit(5);
+        object.getPhasing().setPursuitMod(3);
+        object.getPhasing().setLossesSelected(true);
+        object.getPhasing().setRetreatSelected(true);
+        object.getPhasing().setLosses(new BattleLossesEntity());
+        object.getPhasing().getLosses().setRoundLoss(1);
+        object.getPhasing().getLosses().setThirdLoss(2);
+        object.getPhasing().getLosses().setRoundLoss(2);
+        object.getPhasing().setFirstDay(new BattleDayEntity());
+        object.getPhasing().getFirstDay().setFireMod(1);
+        object.getPhasing().getFirstDay().setFire(5);
+        object.getPhasing().getFirstDay().setShockMod(2);
+        object.getPhasing().getFirstDay().setShock(9);
+        object.getPhasing().setSecondDay(new BattleDayEntity());
+        object.setNonPhasing(new BattleSideEntity());
+        object.getNonPhasing().setSize(2d);
+        object.getNonPhasing().setTech(Tech.MEDIEVAL);
+        object.getNonPhasing().setSizeDiff(2);
+        object.getNonPhasing().setMoral(2);
+        object.getNonPhasing().setFireColumn("D");
+        object.getNonPhasing().setShockColumn("D");
+        object.getNonPhasing().setPursuitMod(1);
+        object.getNonPhasing().setRetreat(4);
+        object.getNonPhasing().setLosses(new BattleLossesEntity());
+        object.getNonPhasing().setFirstDay(new BattleDayEntity());
+        object.getNonPhasing().setSecondDay(new BattleDayEntity());
+        objects.add(object);
+        object = new BattleEntity();
+        object.setId(2L);
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<SiegeEntity> createSiegesEntities(WarEntity war) {
+        List<SiegeEntity> objects = new ArrayList<>();
+
+        SiegeEntity object = new SiegeEntity();
+        object.setId(1L);
+        object.setFortressFalls(true);
+        object.setStatus(SiegeStatusEnum.DONE);
+        object.setBesiegingOffensive(true);
+        object.setProvince("idf");
+        object.setWar(war);
+        object.setTurn(12);
+        object.setFortressLevel(2);
+        object.setBreach(true);
+        object.setBonus(5);
+        object.setUndermineDie(2);
+        object.setUndermineResult(SiegeUndermineResultEnum.SIEGE_WORK_PLUS);
+        SiegeCounterEntity counter = new SiegeCounterEntity();
+        counter.setPhasing(true);
+        counter.setCounter(new CounterEntity());
+        counter.getCounter().setId(101L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.getCounter().setCountry("france");
+        counter.getCounter().setVeterans(2d);
+        object.getCounters().add(counter);
+        counter = new SiegeCounterEntity();
+        counter.setPhasing(false);
+        counter.setCounter(new CounterEntity());
+        counter.getCounter().setId(102L);
+        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.getCounter().setCountry("persia");
+        counter.getCounter().setVeterans(3d);
+        object.getCounters().add(counter);
+        object.setPhasing(new SiegeSideEntity());
+        object.getPhasing().setSize(2d);
+        object.getPhasing().setTech(Tech.ARQUEBUS);
+        object.getPhasing().setMoral(3);
+        object.getPhasing().setLossesSelected(true);
+        object.getPhasing().setLosses(new BattleLossesEntity());
+        object.getPhasing().getLosses().setRoundLoss(1);
+        object.getPhasing().getLosses().setThirdLoss(2);
+        object.getPhasing().getLosses().setRoundLoss(2);
+        object.getPhasing().setModifiers(new BattleDayEntity());
+        object.getPhasing().getModifiers().setFireMod(1);
+        object.getPhasing().getModifiers().setFire(5);
+        object.getPhasing().getModifiers().setShockMod(2);
+        object.getPhasing().getModifiers().setShock(9);
+        object.setNonPhasing(new SiegeSideEntity());
+        object.getNonPhasing().setSize(2d);
+        object.getNonPhasing().setTech(Tech.MEDIEVAL);
+        object.getNonPhasing().setMoral(2);
+        object.getNonPhasing().setLosses(new BattleLossesEntity());
+        object.getNonPhasing().setModifiers(new BattleDayEntity());
+        objects.add(object);
+        object = new SiegeEntity();
+        object.setId(2L);
+        object.setPhasing(new SiegeSideEntity());
+        object.getPhasing().setLosses(new BattleLossesEntity());
+        object.getPhasing().setModifiers(new BattleDayEntity());
+        object.setNonPhasing(new SiegeSideEntity());
+        object.getNonPhasing().setLosses(new BattleLossesEntity());
+        object.getNonPhasing().setModifiers(new BattleDayEntity());
         objects.add(object);
 
         return objects;

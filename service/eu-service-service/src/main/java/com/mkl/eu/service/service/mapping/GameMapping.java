@@ -4,11 +4,13 @@ import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
 import com.mkl.eu.service.service.mapping.board.StackMapping;
 import com.mkl.eu.service.service.mapping.country.PlayableCountryMapping;
-import com.mkl.eu.service.service.mapping.country.RelationMapping;
 import com.mkl.eu.service.service.mapping.diplo.CountryOrderMapping;
+import com.mkl.eu.service.service.mapping.diplo.WarMapping;
 import com.mkl.eu.service.service.mapping.eco.CompetitionMapping;
 import com.mkl.eu.service.service.mapping.eco.TradeFleetMapping;
 import com.mkl.eu.service.service.mapping.event.PoliticalEventMapping;
+import com.mkl.eu.service.service.mapping.military.BattleMapping;
+import com.mkl.eu.service.service.mapping.military.SiegeMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,9 +31,9 @@ public class GameMapping {
     /** Mapping for political events. */
     @Autowired
     private PoliticalEventMapping politicalEventMapping;
-    /** Mapping for relations. */
+    /** Mapping for wars. */
     @Autowired
-    private RelationMapping relationMapping;
+    private WarMapping warMapping;
     /** Mapping for stacks. */
     @Autowired
     private StackMapping stackMapping;
@@ -44,6 +46,12 @@ public class GameMapping {
     /** Mapping for country orders. */
     @Autowired
     private CountryOrderMapping countryOrderMapping;
+    /** Mapping for battles. */
+    @Autowired
+    private BattleMapping battleMapping;
+    /** Mapping for sieges. */
+    @Autowired
+    private SiegeMapping siegeMapping;
 
     /**
      * OE to VO.
@@ -70,7 +78,7 @@ public class GameMapping {
 
         target.setEvents(politicalEventMapping.oesToVos(source.getEvents(), objectsCreated));
 
-        target.setRelations(relationMapping.oesToVos(source.getRelations(), objectsCreated));
+        target.setWars(warMapping.oesToVos(source.getWars(), objectsCreated));
 
         target.setStacks(stackMapping.oesToVos(source.getStacks(), objectsCreated));
 
@@ -79,6 +87,10 @@ public class GameMapping {
         target.setCompetitions(competitionMapping.oesToVos(source.getCompetitions(), objectsCreated));
 
         target.setOrders(countryOrderMapping.oesToVos(source.getOrders(), objectsCreated));
+
+        target.setBattles(battleMapping.oesToVos(source.getBattles(), objectsCreated));
+
+        target.setSieges(siegeMapping.oesToVos(source.getSieges(), objectsCreated));
 
         return target;
     }

@@ -45,6 +45,7 @@ public class ReferentialMapping {
 
         CountryReferential target = new CountryReferential();
 
+        target.setId(source.getId());
         target.setName(source.getName());
         target.setType(source.getType());
         target.setReligion(source.getReligion());

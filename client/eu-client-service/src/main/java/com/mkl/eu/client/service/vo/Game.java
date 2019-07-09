@@ -3,12 +3,14 @@ package com.mkl.eu.client.service.vo;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
-import com.mkl.eu.client.service.vo.country.Relation;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.event.PoliticalEvent;
+import com.mkl.eu.client.service.vo.military.Battle;
+import com.mkl.eu.client.service.vo.military.Siege;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +23,8 @@ import java.util.List;
 public class Game extends EuObject {
     /** Stacks of countries of the game. */
     private List<PlayableCountry> countries = new ArrayList<>();
-    /** Relations between the countries. */
-    private List<Relation> relations = new ArrayList<>();
+    /** Wars between the countries. */
+    private List<War> wars = new ArrayList<>();
     /** Events that have occured in the game. */
     private List<PoliticalEvent> events = new ArrayList<>();
     /** Stacks of counters of the game. */
@@ -33,6 +35,10 @@ public class Game extends EuObject {
     private List<Competition> competitions = new ArrayList<>();
     /** Orders of countries in phases. */
     private List<CountryOrder> orders = new ArrayList<>();
+    /** Battles of the game. */
+    private List<Battle> battles = new ArrayList<>();
+    /** Sieges of the game. */
+    private List<Siege> sieges = new ArrayList<>();
     /** All the chat-related stuff. */
     private Chat chat;
     /** Turn of the game. */
@@ -52,14 +58,14 @@ public class Game extends EuObject {
         this.countries = countries;
     }
 
-    /** @return the relations. */
-    public List<Relation> getRelations() {
-        return relations;
+    /** @return the wars. */
+    public List<War> getWars() {
+        return wars;
     }
 
-    /** @param relations the relations to set. */
-    public void setRelations(List<Relation> relations) {
-        this.relations = relations;
+    /** @param wars the wars to set. */
+    public void setWars(List<War> wars) {
+        this.wars = wars;
     }
 
     /** @return the events. */
@@ -110,6 +116,26 @@ public class Game extends EuObject {
     /** @param orders the orders to set. */
     public void setOrders(List<CountryOrder> orders) {
         this.orders = orders;
+    }
+
+    /** @return the battles. */
+    public List<Battle> getBattles() {
+        return battles;
+    }
+
+    /** @param battles the battles to set. */
+    public void setBattles(List<Battle> battles) {
+        this.battles = battles;
+    }
+
+    /** @return the sieges. */
+    public List<Siege> getSieges() {
+        return sieges;
+    }
+
+    /** @param sieges the sieges to set. */
+    public void setSieges(List<Siege> sieges) {
+        this.sieges = sieges;
     }
 
     /** @return the chat. */
