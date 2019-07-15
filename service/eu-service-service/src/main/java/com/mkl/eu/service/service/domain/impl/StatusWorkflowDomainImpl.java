@@ -44,6 +44,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     @Autowired
     private IOEUtil oeUtil;
     /** Province Dao. */
+    @Autowired
     private IProvinceDao provinceDao;
     /** Game DAO only for flush purpose because Hibernate poorly handles non technical ids. */
     @Autowired
@@ -202,6 +203,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         List<String> provincesAtWar = game.getStacks().stream()
                 .filter(s -> s.getMovePhase() == MovePhaseEnum.FIGHTING)
                 .map(StackEntity::getProvince)
+                .distinct()
                 .collect(Collectors.toList());
 
         if (!provincesAtWar.isEmpty()) {
@@ -281,6 +283,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 List<String> provincesAtSiege = game.getStacks().stream()
                         .filter(s -> s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING)
                         .map(StackEntity::getProvince)
+                        .distinct()
                         .collect(Collectors.toList());
 
                 if (!provincesAtSiege.isEmpty()) {
@@ -359,7 +362,8 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 .forEach(o -> o.setActive(true));
 
         return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, position));
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, position),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE.name()));
     }
 
     /**
