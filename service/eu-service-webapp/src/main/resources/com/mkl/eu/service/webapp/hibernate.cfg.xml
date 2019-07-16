@@ -11,6 +11,7 @@
         <property name="hibernate.jdbc.fetch_size">100</property>
         <property name="hibernate.jdbc.batch_size">30</property>
         <property name="hbm2ddl.auto">validate</property>
+        <property name="hibernate.create_empty_composites.enabled">true</property>
 
         <!-- Configuration TimeZones joda-time -->
         <property name="jadira.usertype.autoRegisterUserTypes">true</property>
