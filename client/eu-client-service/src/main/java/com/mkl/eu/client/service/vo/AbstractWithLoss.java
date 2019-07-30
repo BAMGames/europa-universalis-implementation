@@ -105,4 +105,18 @@ public class AbstractWithLoss extends EuObject implements Losses {
             setMoraleLoss(moralLoss);
         }
     }
+
+    /**
+     * Creates a Loss entity.
+     * If third are more than 3, then it will creates the round losses accordingly.
+     *
+     * @param third number of third of the losses.
+     * @return the loss entity created.
+     */
+    public static AbstractWithLoss create(Integer third) {
+        AbstractWithLoss result = new AbstractWithLoss();
+        result.setRoundLoss(third / 3);
+        result.setThirdLoss(third % 3);
+        return result;
+    }
 }

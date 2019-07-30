@@ -20,6 +20,17 @@ public class RetreatAfterBattleRequest {
     public RetreatAfterBattleRequest() {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param retreatInFortress the retreatInFortress.
+     * @param provinceTo        the provinceTo;
+     */
+    public RetreatAfterBattleRequest(List<Long> retreatInFortress, String provinceTo) {
+        this.retreatInFortress = retreatInFortress;
+        this.provinceTo = provinceTo;
+    }
+
     /** @return the retreatInFortress. */
     public List<Long> getRetreatInFortress() {
         return retreatInFortress;

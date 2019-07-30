@@ -31,7 +31,6 @@ import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.marker.CounterMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
-import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -45,8 +44,6 @@ import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -68,8 +65,6 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 @Component
 @Scope(value = "prototype")
 public class AdminActionsWindow extends AbstractDiffListenerContainer {
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdminActionsWindow.class);
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
@@ -79,15 +74,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
-    /** Component holding the authentication information. */
-    @Autowired
-    private AuthentHolder authentHolder;
     /** Game. */
     private Game game;
     /** Markers of the loaded game. */
     private List<IMapMarker> markers;
-    /** Game configuration. */
-    private GameConfiguration gameConfig;
     /** Global node. */
     private TabPane tabPane;
 
@@ -169,9 +159,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @param gameConfig the gameConfig to set.
      */
     public AdminActionsWindow(Game game, List<IMapMarker> markers, GameConfiguration gameConfig) {
+        super(gameConfig);
         this.game = game;
         this.markers = markers;
-        this.gameConfig = gameConfig;
     }
 
     /** @return the tabPane. */

@@ -18,6 +18,15 @@ public class SelectForcesRequest {
     public SelectForcesRequest() {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param forces the forces.
+     */
+    public SelectForcesRequest(List<Long> forces) {
+        this.forces = forces;
+    }
+
     /** @return the forces. */
     public List<Long> getForces() {
         return forces;

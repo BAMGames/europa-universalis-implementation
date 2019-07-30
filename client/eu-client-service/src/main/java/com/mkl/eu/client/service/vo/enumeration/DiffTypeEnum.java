@@ -244,8 +244,6 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#NON_PHASING_READY to know which if the defender has selected its forces.</li>
      * <li>DiffAttributeTypeEnum#PHASING_COUNTER_ADD the attacking counter added to this battle.</li>
      * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this battle.</li>
-     * <li>DiffAttributeTypeEnum#PHASING_COUNTER_REMOVE the attacking counter removed to this battle.</li>
-     * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_REMOVE the defending counter removed to this battle.</li>
      * <li>DiffAttributeTypeEnum#END the cause of ending of this battle.</li>
      * <li>DiffAttributeTypeEnum#WINNER the winner of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the phasing forces of this battle.</li>

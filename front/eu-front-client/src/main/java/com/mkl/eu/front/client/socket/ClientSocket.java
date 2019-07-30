@@ -5,11 +5,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
-import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.application.Platform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -28,15 +24,8 @@ import java.net.SocketTimeoutException;
 @Component
 @Scope(value = "prototype")
 public class ClientSocket extends AbstractDiffListenerContainer implements Runnable {
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientSocket.class);
-    /** Component holding the authentication information. */
-    @Autowired
-    private AuthentHolder authentHolder;
     /** Socket to communicate with server. */
     private Socket socket;
-    /** Configuration of the game. */
-    private GameConfiguration gameConfig;
     /** Terminate this process. */
     private boolean terminate;
 
@@ -46,7 +35,7 @@ public class ClientSocket extends AbstractDiffListenerContainer implements Runna
      * @param gameConfig the gameConfig to set.
      */
     public ClientSocket(GameConfiguration gameConfig) {
-        this.gameConfig = gameConfig;
+        super(gameConfig);
     }
 
     /**

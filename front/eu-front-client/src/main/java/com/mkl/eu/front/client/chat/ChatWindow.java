@@ -19,7 +19,6 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
-import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,8 +31,6 @@ import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -63,8 +60,6 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 @Component
 @Scope(value = "prototype")
 public class ChatWindow extends AbstractDiffListenerContainer {
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatWindow.class);
     /** Chat service. */
     @Autowired
     private IChatService chatService;
@@ -77,15 +72,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
-    /** Component holding the authentication information. */
-    @Autowired
-    private AuthentHolder authentHolder;
     /** Chat containing rooms and global messages. */
     private Chat chat;
     /** Countries in the game. */
     private List<PlayableCountry> countries;
-    /** Game configuration. */
-    private GameConfiguration gameConfig;
     /** The TabPane to update it later. */
     private TabPane tabPane;
 
@@ -97,9 +87,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
      * @param gameConfig the gameConfig to set.
      */
     public ChatWindow(Chat chat, List<PlayableCountry> countries, GameConfiguration gameConfig) {
+        super(gameConfig);
         this.chat = chat;
         this.countries = countries;
-        this.gameConfig = gameConfig;
     }
 
     /** @return the tabPane. */

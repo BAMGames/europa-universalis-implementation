@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.persistence;
 import com.mkl.eu.client.service.service.game.FindGamesRequest;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 
 import java.util.List;
@@ -44,4 +45,14 @@ public interface IGameDao extends IGenericDao<GameEntity, Long> {
      * @return the turn order.
      */
     List<CountryOrderEntity> findTurnOrder(Long idGame, GameStatusEnum gameStatus);
+
+    /**
+     * Persists an entity of any kind.
+     * Is used to retrieve the id immediatly so that we can propagate it in the diffs.
+     *
+     * @param entity the entity to persist.
+     * @param <T>    the type of the entity.
+     * @return the entity persisted.
+     */
+    <T extends IEntity> T persist(T entity);
 }

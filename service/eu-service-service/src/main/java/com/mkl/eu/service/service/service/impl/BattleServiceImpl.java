@@ -170,7 +170,9 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setPhasing(true);
                 comp.setBattle(battle);
-                comp.setCounter(counter);
+                comp.setCounter(counter.getId());
+                comp.setCountry(counter.getCountry());
+                comp.setType(counter.getType());
                 battle.getCounters().add(comp);
 
                 DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId());
@@ -191,7 +193,9 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             defenderCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setBattle(battle);
-                comp.setCounter(counter);
+                comp.setCounter(counter.getId());
+                comp.setCountry(counter.getCountry());
+                comp.setType(counter.getType());
                 battle.getCounters().add(comp);
 
                 DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId());
@@ -292,7 +296,9 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             BattleCounterEntity comp = new BattleCounterEntity();
             comp.setPhasing(phasing);
             comp.setBattle(battle);
-            comp.setCounter(counter);
+            comp.setCounter(counter.getId());
+            comp.setCountry(counter.getCountry());
+            comp.setType(counter.getType());
             battle.getCounters().add(comp);
 
             attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_COUNTER_ADD : DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD,
@@ -301,10 +307,10 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         List<Long> alliedCounters = battle.getCounters().stream()
                 .filter(bc -> bc.isPhasing() == phasing)
-                .map(bc -> bc.getCounter().getId())
+                .map(BattleCounterEntity::getCounter)
                 .collect(Collectors.toList());
         Double armySize = battle.getCounters().stream()
-                .map(bc -> CounterUtil.getSizeFromType(bc.getCounter().getType()))
+                .map(bc -> CounterUtil.getSizeFromType(bc.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
 
@@ -327,6 +333,13 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                     .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_VALIDATE)
                     .setParams(METHOD_SELECT_FORCES, phasing));
         }
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(alliedCounters.size() > 3 || armySize > 8)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_BIG)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES, alliedCounters.size(), armySize));
 
         if (phasing) {
             battle.getPhasing().setForces(true);
@@ -428,7 +441,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
             double stackSize = battle.getCounters().stream()
                     .filter(BattleCounterEntity::isNotPhasing)
-                    .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType())));
+                    .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
             boolean canRetreat = oeUtil.canRetreat(province, province == provinceFrom, stackSize, country, game);
 
             failIfFalse(new CheckForThrow<Boolean>()
@@ -529,13 +542,24 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         battle.getPhasing().setPursuitMod(0);
         battle.getNonPhasing().setPursuitMod(0);
 
-        List<CounterEntity> countersPhasing = battle.getCounters().stream()
+        List<Long> countersPhasingId = battle.getCounters().stream()
                 .filter(BattleCounterEntity::isPhasing)
                 .map(BattleCounterEntity::getCounter)
                 .collect(Collectors.toList());
-        List<CounterEntity> countersNotPhasing = battle.getCounters().stream()
+        List<Long> countersNotPhasingId = battle.getCounters().stream()
                 .filter(BattleCounterEntity::isNotPhasing)
                 .map(BattleCounterEntity::getCounter)
+                .collect(Collectors.toList());
+
+        List<CounterEntity> countersPhasing = battle.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersPhasingId.contains(counter.getId()))
+                .collect(Collectors.toList());
+        List<CounterEntity> countersNotPhasing = battle.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersNotPhasingId.contains(counter.getId()))
                 .collect(Collectors.toList());
 
         battle.getPhasing().setSize(countersPhasing.stream()
@@ -762,8 +786,8 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
             List<String> enemies = oeUtil.getWarEnemies(country, battle.getWar());
             ok = !battle.getCounters().stream()
-                    .anyMatch(bc -> bc.isPhasing() == playerPhasing && !allies.contains(bc.getCounter().getCountry()) ||
-                            bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCounter().getCountry()));
+                    .anyMatch(bc -> bc.isPhasing() == playerPhasing && !allies.contains(bc.getCountry()) ||
+                            bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCountry()));
         }
 
         // TODO check that the player doing the request is leader of the stack and replace complex by this leader
@@ -1205,14 +1229,16 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         if (battle.getPhasing().getLosses().isGreaterThanSize(battle.getPhasing().getSize())) {
             battle.getCounters().stream()
                     .filter(BattleCounterEntity::isPhasing)
-                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter().getId(), battle.getGame())));
-            battle.getCounters().removeIf(BattleCounterEntity::isPhasing);
+                    .forEach(counter -> {
+                        diffs.add(counterDomain.removeCounter(counter.getCounter(), battle.getGame()));
+                    });
         }
         if (battle.getNonPhasing().getLosses().isGreaterThanSize(battle.getNonPhasing().getSize())) {
             battle.getCounters().stream()
                     .filter(BattleCounterEntity::isNotPhasing)
-                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter().getId(), battle.getGame())));
-            battle.getCounters().removeIf(BattleCounterEntity::isNotPhasing);
+                    .forEach(counter -> {
+                        diffs.add(counterDomain.removeCounter(counter.getCounter(), battle.getGame()));
+                    });
         }
 
         if (!phasingLossesAuto || !nonPhasingLossesAuto) {
@@ -1269,8 +1295,34 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
      * @return eventual other diffs.
      */
     private List<DiffEntity> cleanUpBattle(BattleEntity battle) {
-        battle.getCounters().clear();
-        return statusWorkflowDomain.endMilitaryPhase(battle.getGame());
+        List<DiffEntity> diffs = new ArrayList<>();
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
+        String controller = oeUtil.getController(province, battle.getGame());
+
+        List<Long> countersId = battle.getCounters().stream()
+                .map(BattleCounterEntity::getCounter)
+                .collect(Collectors.toList());
+
+        battle.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && stack.getMovePhase() == MovePhaseEnum.FIGHTING)
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersId.contains(counter.getId()))
+                .map(CounterEntity::getOwner)
+                .distinct()
+                .forEach(stack -> {
+                    List<String> enemies = oeUtil.getEnemies(stack.getCountry(), battle.getGame());
+                    MovePhaseEnum movePhase;
+                    if (enemies.contains(controller)) {
+                        movePhase = MovePhaseEnum.BESIEGING;
+                    } else {
+                        movePhase = MovePhaseEnum.MOVED;
+                    }
+                    stack.setMovePhase(movePhase);
+                    diffs.add(DiffUtil.createDiff(battle.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase)));
+                });
+        diffs.addAll(statusWorkflowDomain.endMilitaryPhase(battle.getGame()));
+        return diffs;
     }
 
     /**
@@ -1410,14 +1462,20 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         List<DiffEntity> newDiffs = new ArrayList<>();
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         long thirdBefore = battle.getCounters().stream()
-                .filter(bc -> bc.isPhasing() == playerPhasing && CounterUtil.isExploration(bc.getCounter().getType()))
+                .filter(bc -> bc.isPhasing() == playerPhasing && CounterUtil.isExploration(bc.getType()))
                 .count();
         int thirdDiff = 0;
 
         for (ChooseLossesRequest.UnitLoss loss : request.getRequest().getLosses()) {
-            CounterEntity counter = battle.getCounters().stream()
-                    .filter(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter().getId()))
+            Long counterId = battle.getCounters().stream()
+                    .filter(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter()))
                     .map(BattleCounterEntity::getCounter)
+                    .findAny()
+                    .orElse(null);
+            CounterEntity counter = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(count -> Objects.equals(counterId, count.getId()))
                     .findAny()
                     .orElse(null);
 
@@ -1439,7 +1497,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
             if (lossMax - lossSize <= EPSILON) {
                 newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
-                battle.getCounters().removeIf(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter().getId()));
                 thirdDiff -= loss.getThirdLosses();
             } else {
                 List<CounterFaceTypeEnum> faces = new ArrayList<>();
@@ -1466,8 +1523,8 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 faces.removeIf(o -> o == null);
                 if (faces.isEmpty()) {
                     newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
-                    battle.getCounters().removeIf(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter().getId()));
                 } else {
+                    // FIXME veterans
                     newDiffs.addAll(faces.stream()
                             .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
                             .collect(Collectors.toList()));
@@ -1483,16 +1540,19 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES));
 
+        DiffAttributeTypeEnum type;
         if (playerPhasing) {
             battle.getPhasing().setLossesSelected(true);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
+            type = DiffAttributeTypeEnum.PHASING_READY;
         } else {
             battle.getNonPhasing().setLossesSelected(true);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
+            type = DiffAttributeTypeEnum.NON_PHASING_READY;
         }
 
         if (BooleanUtils.isTrue(battle.getPhasing().isLossesSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isLossesSelected())) {
             newDiffs.addAll(prepareRetreat(battle, attributes));
+        } else {
+            attributes.add(DiffUtil.createDiffAttributes(type, true));
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
@@ -1649,18 +1709,21 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                     .forEach(retreatStack);
         }
 
+        DiffAttributeTypeEnum type;
         if (playerPhasing) {
             battle.getPhasing().setRetreatSelected(true);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
+            type = DiffAttributeTypeEnum.PHASING_READY;
         } else {
             battle.getNonPhasing().setRetreatSelected(true);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
+            type = DiffAttributeTypeEnum.NON_PHASING_READY;
         }
 
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
             newDiffs.addAll(cleanUpBattle(battle));
+        } else {
+            attributes.add(DiffUtil.createDiffAttributes(type, true));
         }
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),

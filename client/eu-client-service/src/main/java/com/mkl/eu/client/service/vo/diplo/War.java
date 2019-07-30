@@ -48,4 +48,17 @@ public class War extends EuObject {
     public void setType(WarTypeEnum type) {
         this.type = type;
     }
+
+    /**
+     * @return the light object of this instance.
+     */
+    public WarLight toLight() {
+        WarLight light = new WarLight();
+
+        light.setId(getId());
+        light.setType(getType());
+        light.setName(getName());
+
+        return light;
+    }
 }

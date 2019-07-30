@@ -723,6 +723,21 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when validating forces in a battle that would lead to a stack of size more than 8 or more than 3 counters..
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: Number of counters selected</li>
+     * <li>2: Size of counters selected</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_FORCES_TOO_BIG = "exception.eu.military.battle_forces_too_big";
+
+    /**
+     * <p>
      * Exception thrown when validating forces in a battle that could have other forces to select.
      * </p>
      * <p>

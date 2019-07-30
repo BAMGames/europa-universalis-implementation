@@ -33,4 +33,27 @@ public class WarLight extends EuObject {
     public void setType(WarTypeEnum type) {
         this.type = type;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WarLight warLight = (WarLight) o;
+
+        if (!getId().equals(warLight.getId())) return false;
+        if (!getName().equals(warLight.getName())) return false;
+        return getType() == warLight.getType();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        int result = getName().hashCode();
+        result = 31 * result + getType().hashCode();
+        result = 31 * result + getId().hashCode();
+        return result;
+    }
 }

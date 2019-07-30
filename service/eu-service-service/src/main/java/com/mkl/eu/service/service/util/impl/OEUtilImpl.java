@@ -583,7 +583,15 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public List<String> getEnemies(PlayableCountryEntity country, GameEntity game) {
-        return getCountries(country.getName(), game, false);
+        return getEnemies(country.getName(), game);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getEnemies(String country, GameEntity game) {
+        return getCountries(country, game, false);
     }
 
     /**

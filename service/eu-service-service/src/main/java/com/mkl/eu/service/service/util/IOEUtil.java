@@ -182,6 +182,13 @@ public interface IOEUtil {
     List<String> getEnemies(PlayableCountryEntity country, GameEntity game);
 
     /**
+     * @param country the name of the country.
+     * @param game    the game.
+     * @return the enemies of the country.
+     */
+    List<String> getEnemies(String country, GameEntity game);
+
+    /**
      * @param phasingCounters    the counters of the phasing countries.
      * @param nonPhasingCounters the counters of the non phasing countries.
      * @param game               the game.

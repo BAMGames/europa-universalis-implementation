@@ -15,8 +15,6 @@ import java.util.List;
  * @author MKL.
  */
 public class Battle extends EuObject {
-    /** Id. */
-    private Long id;
     /** Province where the battle occurs. */
     private String province;
     /** Turn of the game when the battle occurred. */
@@ -28,9 +26,9 @@ public class Battle extends EuObject {
     /** Winner of battle. */
     private BattleWinnerEnum winner;
     /** Phasing side. */
-    private BattleSide phasing;
+    private BattleSide phasing = new BattleSide();
     /** Non phasing side. */
-    private BattleSide nonPhasing;
+    private BattleSide nonPhasing = new BattleSide();
     /** Counters involved in the battle. */
     private List<BattleCounter> counters = new ArrayList<>();
     /** War in which the battle occurs. */

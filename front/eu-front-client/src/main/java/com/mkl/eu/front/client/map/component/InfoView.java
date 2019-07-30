@@ -24,8 +24,6 @@ import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -42,8 +40,6 @@ import processing.core.PGraphics;
 @Component
 @Scope(value = "prototype")
 public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IMenuContainer {
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(InfoView.class);
     /** Board Service. */
     @Autowired
     private IBoardService boardService;
@@ -70,9 +66,6 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
-    /** Component holding the authentication information. */
-    @Autowired
-    private AuthentHolder authentHolder;
     /** The counter being dragged. */
     private CounterMarker dragged;
     /** The new location of the dragged object. */
@@ -89,8 +82,6 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     private Object contextualized;
     /** Contextual menu. */
     private ContextualMenu menu;
-    /** Game configuration. */
-    private GameConfiguration gameConfig;
 
     /**
      * Constructor.
@@ -100,9 +91,9 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
      * @param gameConfig    the gameConfig to set.
      */
     public InfoView(PApplet pApplet, MyMarkerManager markerManager, GameConfiguration gameConfig) {
+        super(gameConfig);
         this.pApplet = pApplet;
         this.markerManager = markerManager;
-        this.gameConfig = gameConfig;
     }
 
     /**

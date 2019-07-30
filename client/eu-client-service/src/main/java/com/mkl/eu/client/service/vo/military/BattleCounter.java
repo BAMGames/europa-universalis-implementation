@@ -28,6 +28,11 @@ public class BattleCounter {
         return phasing;
     }
 
+    /** @return the not phasing. */
+    public boolean isNotPhasing() {
+        return !phasing;
+    }
+
     /** @param phasing the phasing to set. */
     public void setPhasing(boolean phasing) {
         this.phasing = phasing;

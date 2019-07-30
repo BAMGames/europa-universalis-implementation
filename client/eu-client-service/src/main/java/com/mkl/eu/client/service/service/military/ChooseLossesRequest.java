@@ -18,6 +18,15 @@ public class ChooseLossesRequest {
     public ChooseLossesRequest() {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param losses the losses.
+     */
+    public ChooseLossesRequest(List<UnitLoss> losses) {
+        this.losses = losses;
+    }
+
     /** @return the losses. */
     public List<UnitLoss> getLosses() {
         return losses;

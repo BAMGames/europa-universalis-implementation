@@ -98,8 +98,11 @@ public class CounterDomainImpl implements ICounterDomain {
 
         level = computeLevel(counterEntity, province, level, game);
 
+        // We want the id to be generated immediately so that we can put it in the diff event.
+        counterDao.create(counterEntity);
+
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, counterEntity.getId(),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, stack.getProvince()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, country),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, stack.getId().toString()),

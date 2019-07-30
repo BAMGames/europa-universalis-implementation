@@ -17,7 +17,6 @@ import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
-import com.mkl.eu.front.client.vo.AuthentHolder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
@@ -27,8 +26,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -49,8 +46,6 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 @Component
 @Scope(value = "prototype")
 public class EcoWindow extends AbstractDiffListenerContainer {
-    /** Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(EcoWindow.class);
     /** Table config for sheet B. */
     private static final List<TableConfig<EconomicalSheet>> config;
     /** Economic service. */
@@ -62,15 +57,10 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
-    /** Component holding the authentication information. */
-    @Autowired
-    private AuthentHolder authentHolder;
     /** Countries in the game. */
     private List<PlayableCountry> countries;
     /** Trade fleets in the game. */
     private List<TradeFleet> tradeFleets;
-    /** Game configuration. */
-    private GameConfiguration gameConfig;
     /** Flag saying that a trading fleet has changed and that trade fleet tab should be updated. */
     private boolean tradeFleetModified;
     /** ChoiceBox for the countries for sheet B. */
@@ -147,9 +137,9 @@ public class EcoWindow extends AbstractDiffListenerContainer {
      * @param gameConfig  the gameConfig to set.
      */
     public EcoWindow(List<PlayableCountry> countries, List<TradeFleet> tradeFleets, GameConfiguration gameConfig) {
+        super(gameConfig);
         this.countries = countries;
         this.tradeFleets = tradeFleets;
-        this.gameConfig = gameConfig;
     }
 
     /** @return the tabPane. */

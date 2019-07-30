@@ -45,6 +45,7 @@ import processing.opengl.PSurfaceJOGLFixed;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
@@ -417,9 +418,16 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             LOGGER.error("Missing stack in the game.");
             return;
         }
-        StackMarker stackMarker = new StackMarker(stackVO, province);
+        StackMarker stackMarker = province.getStacks().stream()
+                .filter(stack -> Objects.equals(stack.getId(), stackVO.getId()))
+                .findAny()
+                .orElseGet(() -> {
+                    StackMarker newStack = new StackMarker(stackVO, province);
+                    province.addStack(newStack);
+                    return newStack;
+                });
+
         stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, MarkerUtils.getImageFromCounter(nameCountry, type.name(), this)));
-        province.addStack(stackMarker);
     }
 
     /**

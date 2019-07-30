@@ -164,19 +164,35 @@ public final class MarkerUtils {
     public static PImage getImageFromCounter(String nameCountry, String type, InteractiveMap pApplet) {
         PImage image = getImageFromCache(nameCountry, type);
         if (image == null && pApplet.isInit()) {
-            // TODO configure externalization
-            StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
-            if (nameCountry != null) {
-                path.append(nameCountry)
-                        .append("/").append(nameCountry).append("_");
-            }
-            path.append(type).append(".png");
-
-            image = pApplet.loadImage(path.toString());
+            image = pApplet.loadImage(getImagePath(nameCountry, type));
             putImageInCache(nameCountry, type, image);
         }
 
         return image;
+    }
+
+    /**
+     * @param counter the counter.
+     * @return the image path of the counter.
+     */
+    public static String getImagePath(Counter counter) {
+        return getImagePath(counter.getCountry(), counter.getType().name());
+    }
+
+    /**
+     * @param country of the counter.
+     * @param type    of the counter.
+     * @return the image path of the counter.
+     */
+    public static String getImagePath(String country, String type) {
+        // TODO configure externalization
+        StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
+        if (country != null) {
+            path.append(country)
+                    .append("/").append(country).append("_");
+        }
+        path.append(type).append(".png");
+        return path.toString();
     }
 
     /**

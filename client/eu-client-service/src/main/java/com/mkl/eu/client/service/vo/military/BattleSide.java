@@ -25,15 +25,15 @@ public class BattleSide {
     /** Moral of the side. */
     private Integer moral;
     /** First day modifiers. */
-    private BattleDay firstDay;
+    private BattleDay firstDay = new BattleDay();
     /** Second day modifiers. */
-    private BattleDay secondDay;
+    private BattleDay secondDay = new BattleDay();
     /** Modifier for the pursuit phase. */
     private int pursuitMod;
     /** Unmodified die roll for the pursuit phase. */
     private Integer pursuit;
     /** Losses. */
-    private AbstractWithLoss losses;
+    private AbstractWithLoss losses = new AbstractWithLoss();
     /** Size diff. */
     private Integer sizeDiff;
     /** Unmodified die roll for the retreat. */

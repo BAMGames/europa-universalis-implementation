@@ -291,7 +291,7 @@ public abstract class AbstractService implements INameConstants {
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)
                         .setMsgFormat(MSG_INVALID_STATUS)
                         .setName(param, PARAMETER_REQUEST)
-                        .setParams(method, game.getStatus(), status));
+                        .setParams(method, game.getStatus().name(), status.name()));
                 break;
             default:
                 break;

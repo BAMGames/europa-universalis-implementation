@@ -76,10 +76,6 @@ public enum DiffAttributeTypeEnum {
     PHASING_COUNTER_ADD,
     /** Counter to add as defender. */
     NON_PHASING_COUNTER_ADD,
-    /** Counter to remove as attacker. */
-    PHASING_COUNTER_REMOVE,
-    /** Counter to remove as defender. */
-    NON_PHASING_COUNTER_REMOVE,
     /** Cause of end. */
     END,
     /** Who is the winner. */

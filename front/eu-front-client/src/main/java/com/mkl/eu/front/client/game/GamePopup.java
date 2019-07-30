@@ -23,10 +23,14 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.diplo.War;
+import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.military.Battle;
+import com.mkl.eu.client.service.vo.military.BattleCounter;
 import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
@@ -39,6 +43,7 @@ import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.MarkerUtils;
+import com.mkl.eu.front.client.military.MilitaryWindow;
 import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.marker.Marker;
@@ -71,10 +76,9 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
@@ -121,6 +125,8 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private EcoWindow ecoWindow;
     /** Window containing the administrative actions. */
     private AdminActionsWindow adminActionsWindow;
+    /** Window containing the battles. */
+    private MilitaryWindow militaryWindow;
     /** Socket listening to server diff on this game. */
     private ClientSocket client;
     /** Component holding the authentication information. */
@@ -159,7 +165,12 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         initMap(markers);
         initUI();
         initChat();
-        initEco(markers);
+        List<IMapMarker> mapMarkers = markers.values().stream()
+                .filter(marker -> marker instanceof IMapMarker)
+                .map(marker -> (IMapMarker) marker)
+                .collect(Collectors.toList());
+        initEco(mapMarkers);
+        initMilitary(mapMarkers);
     }
 
     /**
@@ -218,9 +229,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     /**
      * Initialize the eco window.
      *
-     * @param markers displayed on the map.
+     * @param mapMarkers displayed on the map.
      */
-    private void initEco(Map<String, Marker> markers) {
+    private void initEco(List<IMapMarker> mapMarkers) {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
         Tab tab = new Tab(message.getMessage("eco.title", null, globalConfiguration.getLocale()));
@@ -228,12 +239,23 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         tab.setContent(ecoWindow.getTabPane());
         content.getTabs().add(tab);
 
-        List<IMapMarker> mapMarkers = markers.values().stream().filter(marker -> marker instanceof IMapMarker).map(marker -> (IMapMarker) marker).collect(Collectors.toList());
         adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
         tab = new Tab(message.getMessage("admin_action.title", null, globalConfiguration.getLocale()));
         tab.setClosable(false);
         tab.setContent(adminActionsWindow.getTabPane());
+        content.getTabs().add(tab);
+    }
+
+    /**
+     * Initialize the battle window.
+     */
+    private void initMilitary(List<IMapMarker> mapMarkers) {
+        militaryWindow = context.getBean(MilitaryWindow.class, game, mapMarkers, gameConfig);
+        militaryWindow.addDiffListener(this);
+        Tab tab = new Tab(message.getMessage("military.title", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+        tab.setContent(militaryWindow.getTabPane());
         content.getTabs().add(tab);
     }
 
@@ -342,7 +364,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                             HBox hBox = new HBox();
                             Text text = new Text(order.getCountry().getName());
                             hBox.getChildren().add(text);
-                            if (order.isActive()) {
+                            if (order.isActive() && !order.isReady()) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);
@@ -350,7 +372,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                                 } catch (FileNotFoundException e) {
                                     LOGGER.error("Image located at data/img/cross.png not found.", e);
                                 }
-                            } else if (order.getPosition() < activePosition) {
+                            } else if (order.getPosition() < activePosition || order.isActive() && order.isReady()) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/check.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);
@@ -406,6 +428,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                     case TURN_ORDER:
                         updateTurnOrder(game, diff);
                         break;
+                    case BATTLE:
+                        updateBattle(game, diff);
+                        break;
                     default:
                         LOGGER.error("Unknown diff " + diff);
                         break;
@@ -414,6 +439,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 chatWindow.update(diff);
                 ecoWindow.update(diff);
                 adminActionsWindow.update(diff);
+                militaryWindow.update(diff);
             }
             ecoWindow.updateComplete();
 
@@ -1424,11 +1450,267 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
 
         game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == gameStatus)
-                .forEach(o -> o.setActive(false));
+                .forEach(o -> {
+                    o.setActive(false);
+                    o.setReady(false);
+                });
         game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == gameStatus &&
                         o.getPosition() == position)
                 .forEach(o -> o.setActive(true));
+    }
+
+    /**
+     * Process a battle diff event.
+     *
+     * @param game to update.
+     * @param diff involving a battle.
+     */
+    private void updateBattle(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                addBattle(game, diff);
+                break;
+            case MODIFY:
+                modifyBattle(game, diff);
+                break;
+            default:
+                LOGGER.error("Unknown diff " + diff);
+                break;
+        }
+    }
+
+    /**
+     * Process the add battle diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add battle.
+     */
+    private void addBattle(Game game, Diff diff) {
+        Battle battle = new Battle();
+        game.getBattles().add(battle);
+        battle.setId(diff.getIdObject());
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        if (attribute != null) {
+            battle.setProvince(attribute.getValue());
+        } else {
+            LOGGER.error("Missing province in battle add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TURN);
+        if (attribute != null) {
+            Integer turn = Integer.parseInt(attribute.getValue());
+            battle.setTurn(turn);
+        } else {
+            LOGGER.error("Missing turn in battle add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (attribute != null) {
+            battle.setStatus(BattleStatusEnum.valueOf(attribute.getValue()));
+        } else {
+            LOGGER.error("Missing status in battle add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_WAR);
+        if (attribute != null) {
+            Long idWar = Long.parseLong(attribute.getValue());
+            WarLight war = game.getWars().stream()
+                    .filter(w -> Objects.equals(w.getId(), idWar))
+                    .map(War::toLight)
+                    .findAny()
+                    .orElse(null);
+            battle.setWar(war);
+        } else {
+            LOGGER.error("Missing war in battle add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_OFFENSIVE);
+        if (attribute != null) {
+            battle.setPhasingOffensive(Boolean.valueOf(attribute.getValue()));
+        } else {
+            LOGGER.error("Missing phasing offensive in battle add event.");
+        }
+    }
+
+    /**
+     * Process the modify battle diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify battle.
+     */
+    private void modifyBattle(Game game, Diff diff) {
+        Battle battle = game.getBattles().stream()
+                .filter(b -> Objects.equals(b.getId(), diff.getIdObject()))
+                .findAny()
+                .orElse(null);
+        if (battle == null) {
+            LOGGER.error("Missing battle in battle modify event.");
+            return;
+        }
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (attribute != null) {
+            battle.setStatus(BattleStatusEnum.valueOf(attribute.getValue()));
+        }
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_READY);
+        if (attribute != null) {
+            boolean ready = Boolean.valueOf(attribute.getValue());
+            switch (battle.getStatus()) {
+                case SELECT_FORCES:
+                    battle.getPhasing().setForces(ready);
+                    break;
+                case CHOOSE_LOSS:
+                    battle.getPhasing().setLossesSelected(ready);
+                    break;
+                case RETREAT:
+                    battle.getPhasing().setRetreatSelected(ready);
+                    break;
+            }
+        }
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.NON_PHASING_READY);
+        if (attribute != null) {
+            boolean ready = Boolean.valueOf(attribute.getValue());
+            switch (battle.getStatus()) {
+                case SELECT_FORCES:
+                    battle.getNonPhasing().setForces(ready);
+                    break;
+                case CHOOSE_LOSS:
+                    battle.getNonPhasing().setLossesSelected(ready);
+                    break;
+                case RETREAT:
+                    battle.getNonPhasing().setRetreatSelected(ready);
+                    break;
+            }
+        }
+        Function<Boolean, Consumer<DiffAttributes>> addCounter = phasing -> attr -> {
+            Long idCounter = Long.parseLong(attr.getValue());
+            Counter counter = game.getStacks().stream()
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(c -> Objects.equals(c.getId(), idCounter))
+                    .findAny()
+                    .orElse(null);
+            if (counter == null) {
+                LOGGER.error("Counter does not exist in modify battle phasing counter add diff event.");
+            } else {
+                BattleCounter battleCounter = new BattleCounter();
+                battleCounter.setPhasing(phasing);
+                battleCounter.setCounter(counter);
+                battle.getCounters().add(battleCounter);
+            }
+        };
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD)
+                .forEach(addCounter.apply(true));
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD)
+                .forEach(addCounter.apply(false));
+
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.END, battle::setEnd, BattleEndEnum.class);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.WINNER, battle::setWinner, BattleWinnerEnum.class);
+
+        doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, value -> battle.getPhasing().setSize(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_TECH, value -> battle.getPhasing().setTech(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRE_COL, value -> battle.getPhasing().setFireColumn(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SHOCK_COL, value -> battle.getPhasing().setShockColumn(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_MORAL, value -> battle.getPhasing().setMoral(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT_MOD, value -> battle.getPhasing().setPursuitMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT, value -> battle.getPhasing().setPursuit(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SIZE_DIFF, value -> battle.getPhasing().setSizeDiff(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_RETREAT, value -> battle.getPhasing().setRetreat(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS, value -> battle.getPhasing().getLosses().setRoundLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS, value -> battle.getPhasing().getLosses().setThirdLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS, value -> battle.getPhasing().getLosses().setMoraleLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE_MOD, value -> battle.getPhasing().getFirstDay().setFireMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE, value -> battle.getPhasing().getFirstDay().setFire(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK_MOD, value -> battle.getPhasing().getFirstDay().setShockMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK, value -> battle.getPhasing().getFirstDay().setShock(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD, value -> battle.getPhasing().getSecondDay().setFireMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE, value -> battle.getPhasing().getSecondDay().setFire(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD, value -> battle.getPhasing().getSecondDay().setShockMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK, value -> battle.getPhasing().getSecondDay().setShock(value));
+
+        doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE, value -> battle.getNonPhasing().setSize(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_TECH, value -> battle.getNonPhasing().setTech(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRE_COL, value -> battle.getNonPhasing().setFireColumn(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SHOCK_COL, value -> battle.getNonPhasing().setShockColumn(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORAL, value -> battle.getNonPhasing().setMoral(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT_MOD, value -> battle.getNonPhasing().setPursuitMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT, value -> battle.getNonPhasing().setPursuit(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE_DIFF, value -> battle.getNonPhasing().setSizeDiff(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_RETREAT, value -> battle.getNonPhasing().setRetreat(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS, value -> battle.getNonPhasing().getLosses().setRoundLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS, value -> battle.getNonPhasing().getLosses().setThirdLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS, value -> battle.getNonPhasing().getLosses().setMoraleLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD, value -> battle.getNonPhasing().getFirstDay().setFireMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE, value -> battle.getNonPhasing().getFirstDay().setFire(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, value -> battle.getNonPhasing().getFirstDay().setShockMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK, value -> battle.getNonPhasing().getFirstDay().setShock(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD, value -> battle.getNonPhasing().getSecondDay().setFireMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE, value -> battle.getNonPhasing().getSecondDay().setFire(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD, value -> battle.getNonPhasing().getSecondDay().setShockMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK, value -> battle.getNonPhasing().getSecondDay().setShock(value));
+    }
+
+    /**
+     * Apply a consumer to a retrieved diff attribute.
+     *
+     * @param diff     the global diff.
+     * @param type     the type of diff attribute we want.
+     * @param setValue the consumer.
+     */
+    private void doIfAttribute(Diff diff, DiffAttributeTypeEnum type, Consumer<String> setValue) {
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == type)
+                .map(DiffAttributes::getValue)
+                .forEach(setValue);
+    }
+
+    /**
+     * Apply a consumer to a retrieved diff attribute after transforming it to an Integer.
+     *
+     * @param diff     the global diff.
+     * @param type     the type of diff attribute we want.
+     * @param setValue the consumer.
+     */
+    private void doIfAttributeInteger(Diff diff, DiffAttributeTypeEnum type, Consumer<Integer> setValue) {
+        doIfAttribute(diff, type, attribute -> {
+            if (!StringUtils.isEmpty(attribute)) {
+                setValue.accept(Integer.parseInt(attribute));
+            }
+        });
+    }
+
+    /**
+     * Apply a consumer to a retrieved diff attribute after transforming it to a Double.
+     *
+     * @param diff     the global diff.
+     * @param type     the type of diff attribute we want.
+     * @param setValue the consumer.
+     */
+    private void doIfAttributeDouble(Diff diff, DiffAttributeTypeEnum type, Consumer<Double> setValue) {
+        doIfAttribute(diff, type, attribute -> {
+            if (!StringUtils.isEmpty(attribute)) {
+                setValue.accept(Double.parseDouble(attribute));
+            }
+        });
+    }
+
+    /**
+     * Apply a consumer to a retrieved diff attribute after transforming it to an Enum.
+     *
+     * @param diff      the global diff.
+     * @param type      the type of diff attribute we want.
+     * @param setValue  the consumer.
+     * @param enumClass class of the Enum.
+     */
+    private <T extends Enum<T>> void doIfAttributeEnum(Diff diff, DiffAttributeTypeEnum type, Consumer<T> setValue, Class<T> enumClass) {
+        doIfAttribute(diff, type, attribute -> {
+            if (!StringUtils.isEmpty(attribute)) {
+                setValue.accept(Enum.valueOf(enumClass, attribute));
+            }
+        });
     }
 
     /** {@inheritDoc} */

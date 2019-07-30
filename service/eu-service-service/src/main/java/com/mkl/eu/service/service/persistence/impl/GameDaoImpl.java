@@ -1,13 +1,17 @@
 package com.mkl.eu.service.service.persistence.impl;
 
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.service.service.game.FindGamesRequest;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.criterion.Restrictions;
@@ -78,5 +82,17 @@ public class GameDaoImpl extends GenericDaoImpl<GameEntity, Long> implements IGa
 
         //noinspection unchecked
         return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends IEntity> T persist(T entity) {
+        try {
+            getSession().save(entity);
+        } catch (HibernateException e) {
+            LOG.error("Error during create :" + e.getMessage());
+            throw new TechnicalException(IConstantsCommonException.ERROR_CREATION, "An error occurred during the insertion in database", e, entity.getId());
+        }
+        return entity;
     }
 }

@@ -46,7 +46,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     /** Province Dao. */
     @Autowired
     private IProvinceDao provinceDao;
-    /** Game DAO only for flush purpose because Hibernate poorly handles non technical ids. */
+    /** Game DAO only for flush purpose because Hibernate poorly handles non technical ids and also to retrieve ids of created entities. */
     @Autowired
     private IGameDao gameDao;
 
@@ -232,10 +232,11 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 Pair<WarEntity, Boolean> war = oeUtil.searchWar(phasingCounters, nonPhasingCounters, game);
                 battle.setWar(war.getLeft());
                 battle.setPhasingOffensive(war.getRight());
+                gameDao.persist(battle);
 
                 game.getBattles().add(battle);
 
-                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.BATTLE,
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.BATTLE, battle.getId(),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.NEW),
@@ -312,8 +313,9 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                         Pair<WarEntity, Boolean> war = oeUtil.searchWar(besiegingCounters, besiegedCounters, game);
                         siege.setWar(war.getLeft());
                         siege.setBesiegingOffensive(war.getRight());
+                        gameDao.persist(siege);
 
-                        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.SIEGE,
+                        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.SIEGE, siege.getId(),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.NEW),
@@ -355,7 +357,10 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     private DiffEntity changeActivePlayers(int position, GameEntity game) {
         game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
-                .forEach(o -> o.setActive(false));
+                .forEach(o -> {
+                    o.setActive(false);
+                    o.setReady(false);
+                });
         game.getOrders().stream()
                 .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                         o.getPosition() == position)

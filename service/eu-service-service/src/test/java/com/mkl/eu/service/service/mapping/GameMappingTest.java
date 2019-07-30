@@ -520,6 +520,7 @@ public class GameMappingTest {
         object.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         object.setPosition(0);
         object.setActive(true);
+        object.setReady(true);
         objects.add(object);
 
         object = new CountryOrder();
@@ -527,6 +528,7 @@ public class GameMappingTest {
         object.setGameStatus(GameStatusEnum.DIPLOMACY);
         object.setPosition(0);
         object.setActive(false);
+        object.setReady(false);
         objects.add(object);
 
         return objects;
@@ -560,7 +562,6 @@ public class GameMappingTest {
         counter.getCounter().setId(101L);
         counter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
         counter.getCounter().setCountry("france");
-        counter.getCounter().setVeterans(2d);
         object.getCounters().add(counter);
         counter = new BattleCounter();
         counter.setPhasing(false);
@@ -568,9 +569,7 @@ public class GameMappingTest {
         counter.getCounter().setId(102L);
         counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
         counter.getCounter().setCountry("persia");
-        counter.getCounter().setVeterans(3d);
         object.getCounters().add(counter);
-        object.setPhasing(new BattleSide());
         object.getPhasing().setSize(2d);
         object.getPhasing().setTech(Tech.ARQUEBUS);
         object.getPhasing().setSizeDiff(-2);
@@ -582,17 +581,13 @@ public class GameMappingTest {
         object.getPhasing().setPursuitMod(3);
         object.getPhasing().setLossesSelected(true);
         object.getPhasing().setRetreatSelected(true);
-        object.getPhasing().setLosses(new AbstractWithLoss());
         object.getPhasing().getLosses().setRoundLoss(1);
         object.getPhasing().getLosses().setThirdLoss(2);
         object.getPhasing().getLosses().setRoundLoss(2);
-        object.getPhasing().setFirstDay(new BattleDay());
         object.getPhasing().getFirstDay().setFireMod(1);
         object.getPhasing().getFirstDay().setFire(5);
         object.getPhasing().getFirstDay().setShockMod(2);
         object.getPhasing().getFirstDay().setShock(9);
-        object.getPhasing().setSecondDay(new BattleDay());
-        object.setNonPhasing(new BattleSide());
         object.getNonPhasing().setSize(2d);
         object.getNonPhasing().setTech(Tech.MEDIEVAL);
         object.getNonPhasing().setSizeDiff(2);
@@ -601,20 +596,9 @@ public class GameMappingTest {
         object.getNonPhasing().setShockColumn("D");
         object.getNonPhasing().setPursuitMod(1);
         object.getNonPhasing().setRetreat(4);
-        object.getNonPhasing().setLosses(new AbstractWithLoss());
-        object.getNonPhasing().setFirstDay(new BattleDay());
-        object.getNonPhasing().setSecondDay(new BattleDay());
         objects.add(object);
         object = new Battle();
         object.setId(2L);
-        object.setPhasing(new BattleSide());
-        object.getPhasing().setLosses(new AbstractWithLoss());
-        object.getPhasing().setFirstDay(new BattleDay());
-        object.getPhasing().setSecondDay(new BattleDay());
-        object.setNonPhasing(new BattleSide());
-        object.getNonPhasing().setLosses(new AbstractWithLoss());
-        object.getNonPhasing().setFirstDay(new BattleDay());
-        object.getNonPhasing().setSecondDay(new BattleDay());
         objects.add(object);
 
         return objects;
@@ -1048,6 +1032,7 @@ public class GameMappingTest {
         object.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         object.setPosition(0);
         object.setActive(true);
+        object.setReady(true);
         objects.add(object);
 
         object = new CountryOrderEntity();
@@ -1055,6 +1040,7 @@ public class GameMappingTest {
         object.setGameStatus(GameStatusEnum.DIPLOMACY);
         object.setPosition(0);
         object.setActive(false);
+        object.setReady(false);
         objects.add(object);
 
         return objects;
@@ -1074,21 +1060,16 @@ public class GameMappingTest {
         object.setTurn(12);
         BattleCounterEntity counter = new BattleCounterEntity();
         counter.setPhasing(true);
-        counter.setCounter(new CounterEntity());
-        counter.getCounter().setId(101L);
-        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
-        counter.getCounter().setCountry("france");
-        counter.getCounter().setVeterans(2d);
+        counter.setCounter(101L);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setCountry("france");
         object.getCounters().add(counter);
         counter = new BattleCounterEntity();
         counter.setPhasing(false);
-        counter.setCounter(new CounterEntity());
-        counter.getCounter().setId(102L);
-        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
-        counter.getCounter().setCountry("persia");
-        counter.getCounter().setVeterans(3d);
+        counter.setCounter(102L);
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.setCountry("persia");
         object.getCounters().add(counter);
-        object.setPhasing(new BattleSideEntity());
         object.getPhasing().setSize(2d);
         object.getPhasing().setTech(Tech.ARQUEBUS);
         object.getPhasing().setSizeDiff(-2);
@@ -1100,17 +1081,13 @@ public class GameMappingTest {
         object.getPhasing().setPursuitMod(3);
         object.getPhasing().setLossesSelected(true);
         object.getPhasing().setRetreatSelected(true);
-        object.getPhasing().setLosses(new BattleLossesEntity());
         object.getPhasing().getLosses().setRoundLoss(1);
         object.getPhasing().getLosses().setThirdLoss(2);
         object.getPhasing().getLosses().setRoundLoss(2);
-        object.getPhasing().setFirstDay(new BattleDayEntity());
         object.getPhasing().getFirstDay().setFireMod(1);
         object.getPhasing().getFirstDay().setFire(5);
         object.getPhasing().getFirstDay().setShockMod(2);
         object.getPhasing().getFirstDay().setShock(9);
-        object.getPhasing().setSecondDay(new BattleDayEntity());
-        object.setNonPhasing(new BattleSideEntity());
         object.getNonPhasing().setSize(2d);
         object.getNonPhasing().setTech(Tech.MEDIEVAL);
         object.getNonPhasing().setSizeDiff(2);
@@ -1119,9 +1096,6 @@ public class GameMappingTest {
         object.getNonPhasing().setShockColumn("D");
         object.getNonPhasing().setPursuitMod(1);
         object.getNonPhasing().setRetreat(4);
-        object.getNonPhasing().setLosses(new BattleLossesEntity());
-        object.getNonPhasing().setFirstDay(new BattleDayEntity());
-        object.getNonPhasing().setSecondDay(new BattleDayEntity());
         objects.add(object);
         object = new BattleEntity();
         object.setId(2L);

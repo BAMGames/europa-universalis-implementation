@@ -64,6 +64,7 @@ public class CountryOrderMapping extends AbstractMapping {
         target.setGameStatus(source.getGameStatus());
         target.setPosition(source.getPosition());
         target.setActive(source.isActive());
+        target.setReady(source.isReady());
 
         return target;
     }

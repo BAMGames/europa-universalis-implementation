@@ -18,6 +18,9 @@
     <jaxws:endpoint id="economicService"
                     implementor="com.mkl.eu.service.service.ws.impl.EconomicWsServiceImpl"
                     address="/EconomicService"/>
+    <jaxws:endpoint id="battleService"
+                    implementor="com.mkl.eu.service.service.ws.impl.BattleWsServiceImpl"
+                    address="/BattleService"/>
     <jaxws:endpoint id="tablesService"
                     implementor="com.mkl.eu.service.service.ws.impl.TablesWsServiceImpl"
                     address="/TablesService"/>

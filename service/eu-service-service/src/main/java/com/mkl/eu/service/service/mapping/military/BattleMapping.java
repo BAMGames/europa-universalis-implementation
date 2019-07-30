@@ -81,7 +81,7 @@ public class BattleMapping extends AbstractMapping {
         target.setStatus(source.getStatus());
         target.setTurn(source.getTurn());
         target.setWinner(source.getWinner());
-        target.setCounters(oesToVosCountries(source.getCounters(), objectsCreated));
+        target.setCounters(oesToVosCountries(source.getCounters()));
         target.setPhasing(oeToVo(source.getPhasing()));
         target.setNonPhasing(oeToVo(source.getNonPhasing()));
         WarLight war = storeVo(WarLight.class, source.getWar(), objectsCreated, warMapping::oeToVoLight);
@@ -95,10 +95,9 @@ public class BattleMapping extends AbstractMapping {
      * OEs to VOs.
      *
      * @param sources        object source.
-     * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    private List<BattleCounter> oesToVosCountries(Set<BattleCounterEntity> sources, Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    private List<BattleCounter> oesToVosCountries(Set<BattleCounterEntity> sources) {
         if (sources == null) {
             return null;
         }
@@ -106,7 +105,7 @@ public class BattleMapping extends AbstractMapping {
         List<BattleCounter> targets = new ArrayList<>();
 
         for (BattleCounterEntity source : sources) {
-            BattleCounter target = oeToVo(source, objectsCreated);
+            BattleCounter target = oeToVo(source);
             if (target != null) {
                 targets.add(target);
             }
@@ -119,10 +118,9 @@ public class BattleMapping extends AbstractMapping {
      * OE to VO.
      *
      * @param source         object source.
-     * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    private BattleCounter oeToVo(BattleCounterEntity source, Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    private BattleCounter oeToVo(BattleCounterEntity source) {
         if (source == null) {
             return null;
         }
@@ -130,7 +128,10 @@ public class BattleMapping extends AbstractMapping {
         BattleCounter target = new BattleCounter();
 
         target.setPhasing(source.isPhasing());
-        Counter counter = storeVo(Counter.class, source.getCounter(), objectsCreated, (source1 -> counterMapping.oeToVo(source1, null)));
+        Counter counter = new Counter();
+        counter.setId(source.getCounter());
+        counter.setCountry(source.getCountry());
+        counter.setType(source.getType());
         target.setCounter(counter);
 
         return target;

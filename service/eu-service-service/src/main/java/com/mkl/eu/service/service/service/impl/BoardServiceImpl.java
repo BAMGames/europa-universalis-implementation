@@ -248,6 +248,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         stack.setProvince(provinceTo);
         stack.setMove(stack.getMove() + movePoints);
+        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
         gameDao.update(game, false);
 
         DiffResponse response = new DiffResponse();
