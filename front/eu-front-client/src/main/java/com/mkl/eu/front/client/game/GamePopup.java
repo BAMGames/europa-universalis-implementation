@@ -798,6 +798,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private void updateStack(Game game, Diff diff) {
         switch (diff.getType()) {
             case ADD:
+                addStack(game, diff);
                 break;
             case MOVE:
                 moveStack(game, diff);
@@ -811,6 +812,23 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 LOGGER.error("Unknown diff " + diff);
                 break;
         }
+    }
+
+    /**
+     * Process the add stack diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add stack.
+     */
+    private void addStack(Game game, Diff diff) {
+        Stack stack = new Stack();
+        stack.setId(diff.getIdObject());
+        doIfAttribute(diff, DiffAttributeTypeEnum.PROVINCE, stack::setProvince);
+        doIfAttribute(diff, DiffAttributeTypeEnum.COUNTRY, stack::setCountry);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.MOVE_PHASE, stack::setMovePhase, MovePhaseEnum.class);
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.BESIEGED, stack::setBesieged);
+
+        game.getStacks().add(stack);
     }
 
     /**
@@ -844,15 +862,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
             LOGGER.error("Missing province to in stack move event.");
         }
 
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_POINTS);
-        if (attribute != null) {
-            stack.setMove(Integer.parseInt(attribute.getValue()));
-        }
-
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE);
-        if (attribute != null) {
-            stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
-        }
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.MOVE_POINTS, stack::setMove);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.MOVE_PHASE, stack::setMovePhase, MovePhaseEnum.class);
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.BESIEGED, stack::setBesieged);
     }
 
     /**
@@ -868,14 +880,8 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         if (idStack != null) {
             stack = findFirst(game.getStacks(), stack1 -> idStack.equals(stack1.getId()));
             if (stack != null) {
-                if (attribute != null) {
-                    stack.setMovePhase(MovePhaseEnum.valueOf(attribute.getValue()));
-                }
-
-                attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY);
-                if (attribute != null) {
-                    stack.setCountry(attribute.getValue());
-                }
+                doIfAttributeEnum(diff, DiffAttributeTypeEnum.MOVE_PHASE, stack::setMovePhase, MovePhaseEnum.class);
+                doIfAttribute(diff, DiffAttributeTypeEnum.COUNTRY, stack::setCountry);
             }
         } else if (attribute != null && StringUtils.equals(attribute.getValue(), MovePhaseEnum.NOT_MOVED.name())) {
             // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.
@@ -1709,6 +1715,21 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         doIfAttribute(diff, type, attribute -> {
             if (!StringUtils.isEmpty(attribute)) {
                 setValue.accept(Enum.valueOf(enumClass, attribute));
+            }
+        });
+    }
+
+    /**
+     * Apply a consumer to a retrieved diff attribute after transforming it to a Boolean.
+     *
+     * @param diff     the global diff.
+     * @param type     the type of diff attribute we want.
+     * @param setValue the consumer.
+     */
+    private void doIfAttributeBoolean(Diff diff, DiffAttributeTypeEnum type, Consumer<Boolean> setValue) {
+        doIfAttribute(diff, type, attribute -> {
+            if (!StringUtils.isEmpty(attribute)) {
+                setValue.accept(Boolean.parseBoolean(attribute));
             }
         });
     }

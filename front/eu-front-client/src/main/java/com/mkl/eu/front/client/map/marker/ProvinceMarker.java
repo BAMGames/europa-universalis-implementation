@@ -385,7 +385,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             stack.getProvince().removeStack(stack);
         }
 
-        if (getFortressLocation() != null && isFortressStack(stack)) {
+        if (getFortressLocation() != null && isFortressStack(stack) || stack.getStack().isBesieged()) {
             stacksFortress.add(stack);
         } else if (getPortLocation() != null && isPortStack(stack)) {
             stacksPort.add(stack);

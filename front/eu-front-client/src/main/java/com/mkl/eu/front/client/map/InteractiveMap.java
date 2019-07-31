@@ -601,6 +601,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     private void updateStack(Diff diff) {
         switch (diff.getType()) {
             case ADD:
+                addStack(diff);
                 break;
             case MOVE:
                 moveStack(diff);
@@ -613,9 +614,39 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     }
 
     /**
+     * Process the add stack diff event.
+     *
+     * @param diff involving a add stack.
+     */
+    private void addStack(Diff diff) {
+        Stack stackVO = game.getStacks().stream()
+                .filter(stack -> Objects.equals(stack.getId(), diff.getIdObject()))
+                .findAny()
+                .orElse(null);
+        if (stackVO == null) {
+            LOGGER.error("Missing stack in the game.");
+            return;
+        }
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        if (attribute == null) {
+            LOGGER.error("Missing province in stack add event.");
+            return;
+        }
+        Marker prov = countryMarkers.get(attribute.getValue());
+        if (!(prov instanceof IMapMarker)) {
+            LOGGER.error("province is not a IMapMarker.");
+            return;
+        }
+        IMapMarker province = (IMapMarker) prov;
+        StackMarker newStack = new StackMarker(stackVO, province);
+        province.addStack(newStack);
+    }
+
+    /**
      * Process the move stack diff event.
      *
-     * @param diff involving a add counter.
+     * @param diff involving a move stack.
      */
     private void moveStack(Diff diff) {
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE_FROM);

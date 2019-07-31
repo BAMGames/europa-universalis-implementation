@@ -350,10 +350,10 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 }
             } else if (battle.getStatus() == BattleStatusEnum.RETREAT) {
                 if (BooleanUtils.isNotTrue(battle.getPhasing().isRetreatSelected())) {
-                    phasingNode.getChildren().add(createBattleRetreat(battle.getProvince()));
+                    phasingNode.getChildren().add(createBattleRetreat(battle, true));
                 }
                 if (BooleanUtils.isNotTrue(battle.getNonPhasing().isRetreatSelected())) {
-                    nonPhasingNode.getChildren().add(createBattleRetreat(battle.getProvince()));
+                    nonPhasingNode.getChildren().add(createBattleRetreat(battle, false));
                 }
             }
 
@@ -539,7 +539,24 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
      */
     private Node createBattleSelectForces(Battle battle, boolean phasing) {
         HBox hBox = new HBox();
+        List<Long> selectedCounters = new ArrayList<>();
 
+        Node counters = createMultiSelectCounterNode(battle, phasing, "military.battle.counters", selectedCounters);
+        Button withdraw = new Button(message.getMessage("military.battle.select", null, globalConfiguration.getLocale()));
+        withdraw.setOnAction(callService(battleService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the battle."));
+
+        hBox.getChildren().addAll(counters, withdraw);
+
+        return hBox;
+    }
+
+    /**
+     * @param battle           the battle.
+     * @param phasing          the side.
+     * @param selectedCounters the list of selected counters in the checkboxes (sort of callback).
+     * @return a multi check box node that contains all the counters of a side of a battle.
+     */
+    private Node createMultiSelectCounterNode(Battle battle, boolean phasing, String key, List<Long> selectedCounters) {
         War war = game.getWars().stream()
                 .filter(w -> Objects.equals(w.getId(), battle.getWar().getId()))
                 .findAny()
@@ -554,9 +571,8 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> allies.contains(counter.getCountry()))
                 .collect(Collectors.toList());
-        List<Long> selectedCounters = new ArrayList<>();
 
-        MenuButton counters = new MenuButton("test");
+        MenuButton counters = new MenuButton(message.getMessage(key, null, globalConfiguration.getLocale()));
         for (Counter counter : counterList) {
             CheckBox check = new CheckBox();
             try {
@@ -579,12 +595,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             item.setHideOnClick(false);
             counters.getItems().add(item);
         }
-        Button withdraw = new Button(message.getMessage("military.battle.select", null, globalConfiguration.getLocale()));
-        withdraw.setOnAction(callService(battleService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the battle."));
-
-        hBox.getChildren().addAll(counters, withdraw);
-
-        return hBox;
+        return counters;
     }
 
     /**
@@ -650,28 +661,33 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * @param battleProvince where the battle occurs.
+     * @param battle the battle.
      * @return the node for retreating at the end of a battle.
      */
-    private Node createBattleRetreat(String battleProvince) {
+    private Node createBattleRetreat(Battle battle, boolean phasing) {
         HBox hBox = new HBox();
 
         ChoiceBox<String> provinces = new ChoiceBox<>();
         IMapMarker marker = markers.stream()
-                .filter(m -> StringUtils.equals(m.getId(), battleProvince))
+                .filter(m -> StringUtils.equals(m.getId(), battle.getProvince()))
                 .findAny()
                 .orElse(null);
         provinces.setItems(FXCollections.observableList(marker.getNeighbours().stream()
                 .map(BorderMarker::getProvince)
                 .map(IMapMarker::getId)
                 .collect(Collectors.toList())));
+        List<Long> selectedCounters = new ArrayList<>();
+
+        Node counters = createMultiSelectCounterNode(battle, phasing, "military.battle.retreat_in_fortress", selectedCounters);
+
+
         Button withdraw = new Button(message.getMessage("military.battle.retreat", null, globalConfiguration.getLocale()));
         withdraw.setOnAction(callService(battleService::retreatAfterBattle, () -> {
             String province = provinces.getSelectionModel().getSelectedItem();
-            return new RetreatAfterBattleRequest(null, province);
+            return new RetreatAfterBattleRequest(selectedCounters, province);
         }, "Error when retreating at the end of the battle."));
 
-        hBox.getChildren().addAll(provinces, withdraw);
+        hBox.getChildren().addAll(counters, provinces, withdraw);
 
         return hBox;
     }
