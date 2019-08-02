@@ -240,8 +240,8 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#BATTLE in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STATUS to know which is the new status of the battle.</li>
-     * <li>DiffAttributeTypeEnum#PHASING_READY to know which if the attacker has selected its forces.</li>
-     * <li>DiffAttributeTypeEnum#NON_PHASING_READY to know which if the defender has selected its forces.</li>
+     * <li>DiffAttributeTypeEnum#PHASING_READY to know if the phasing forces are ready for current battle status.</li>
+     * <li>DiffAttributeTypeEnum#NON_PHASING_READY to know if the non phasing forces are ready for current battle status.</li>
      * <li>DiffAttributeTypeEnum#PHASING_COUNTER_ADD the attacking counter added to this battle.</li>
      * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this battle.</li>
      * <li>DiffAttributeTypeEnum#END the cause of ending of this battle.</li>
@@ -291,6 +291,8 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#SIEGE in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STATUS to know which is the new status of the this.</li>
+     * <li>DiffAttributeTypeEnum#PHASING_READY to know if the besieger is ready for current siege status.</li>
+     * <li>DiffAttributeTypeEnum#NON_PHASING_READY to know if the besieged is ready for current siege status.</li>
      * <li>DiffAttributeTypeEnum#PHASING_COUNTER_ADD the attacking counter added to this this.</li>
      * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this this.</li>
      * <li>DiffAttributeTypeEnum#LEVEL the level of the besieged fortress.</li>
@@ -298,6 +300,27 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#SIEGE_UNDERMINE_DIE the unmodified die roll for undermining to this siege.</li>
      * <li>DiffAttributeTypeEnum#SIEGE_UNDERMINE_RESULT the result of the undermining to this siege.</li>
      * <li>DiffAttributeTypeEnum#SIEGE_FORTRESS_FALLS if the fortress fell due to this siege.</li>
+     * <li>DiffAttributeTypeEnum#SIEGE_BREACH if a breach was just done.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORAL the moral of the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_FIRE_MOD the fire modifier of the besieger forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_FIRE the fire unmodified die roll of the besieger forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_SHOCK_MOD the shock modifier of the besieger forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRST_DAY_SHOCK the shock unmodified die roll of the besieger forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_ROUND_LOSS the round losses taken by the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_THIRD_LOSS the third losses taken by the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORALE_LOSS the morale losses taken by the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_MORAL the moral of the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD the fire modifier of the besieged forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_FIRE the fire unmodified die roll of the besieged forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD the shock modifier of the besieged forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRST_DAY_SHOCK the shock unmodified die roll of the besieged forces in the first day of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_ROUND_LOSS the round losses taken by the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_THIRD_LOSS the third losses taken by the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_MORALE_LOSS the morale losses taken by the besieged forces of this siege.</li>
      * </ul>
      * </li>
      * </ul>

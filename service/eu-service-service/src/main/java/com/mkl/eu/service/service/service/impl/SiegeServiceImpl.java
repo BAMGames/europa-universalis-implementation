@@ -1020,8 +1020,24 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         } else {
             diffs.addAll(areLossesAuto(siege, country, attributes));
         }
+        attributes.addAll(getLossesAttributes(siege));
 
         return diffs;
+    }
+
+    /**
+     * @param siege the siege.
+     * @return the diff attributes of the losses of both side of the siege.
+     */
+    private List<DiffAttributesEntity> getLossesAttributes(SiegeEntity siege) {
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS, siege.getNonPhasing().getLosses().getRoundLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS, siege.getNonPhasing().getLosses().getThirdLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS, siege.getNonPhasing().getLosses().getMoraleLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS, siege.getPhasing().getLosses().getRoundLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS, siege.getPhasing().getLosses().getThirdLoss()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS, siege.getPhasing().getLosses().getMoraleLoss()));
+        return attributes;
     }
 
     /**

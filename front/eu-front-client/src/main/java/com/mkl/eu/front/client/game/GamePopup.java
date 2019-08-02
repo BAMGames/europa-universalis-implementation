@@ -31,6 +31,8 @@ import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.military.Battle;
 import com.mkl.eu.client.service.vo.military.BattleCounter;
+import com.mkl.eu.client.service.vo.military.Siege;
+import com.mkl.eu.client.service.vo.military.SiegeCounter;
 import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
@@ -430,6 +432,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                         break;
                     case BATTLE:
                         updateBattle(game, diff);
+                        break;
+                    case SIEGE:
+                        updateSiege(game, diff);
                         break;
                     default:
                         LOGGER.error("Unknown diff " + diff);
@@ -1556,11 +1561,8 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
             return;
         }
 
-        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
-        if (attribute != null) {
-            battle.setStatus(BattleStatusEnum.valueOf(attribute.getValue()));
-        }
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_READY);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.STATUS, battle::setStatus, BattleStatusEnum.class);
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_READY);
         if (attribute != null) {
             boolean ready = Boolean.valueOf(attribute.getValue());
             switch (battle.getStatus()) {
@@ -1657,6 +1659,152 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE, value -> battle.getNonPhasing().getSecondDay().setFire(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD, value -> battle.getNonPhasing().getSecondDay().setShockMod(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK, value -> battle.getNonPhasing().getSecondDay().setShock(value));
+    }
+
+    /**
+     * Process a siege diff event.
+     *
+     * @param game to update.
+     * @param diff involving a siege.
+     */
+    private void updateSiege(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+                addSiege(game, diff);
+                break;
+            case MODIFY:
+                modifySiege(game, diff);
+                break;
+            default:
+                LOGGER.error("Unknown diff " + diff);
+                break;
+        }
+    }
+
+    /**
+     * Process the add siege diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add siege.
+     */
+    private void addSiege(Game game, Diff diff) {
+        Siege siege = new Siege();
+        game.getSieges().add(siege);
+        siege.setId(diff.getIdObject());
+
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE);
+        if (attribute != null) {
+            siege.setProvince(attribute.getValue());
+        } else {
+            LOGGER.error("Missing province in siege add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TURN);
+        if (attribute != null) {
+            Integer turn = Integer.parseInt(attribute.getValue());
+            siege.setTurn(turn);
+        } else {
+            LOGGER.error("Missing turn in siege add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (attribute != null) {
+            siege.setStatus(SiegeStatusEnum.valueOf(attribute.getValue()));
+        } else {
+            LOGGER.error("Missing status in siege add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_WAR);
+        if (attribute != null) {
+            Long idWar = Long.parseLong(attribute.getValue());
+            WarLight war = game.getWars().stream()
+                    .filter(w -> Objects.equals(w.getId(), idWar))
+                    .map(War::toLight)
+                    .findAny()
+                    .orElse(null);
+            siege.setWar(war);
+        } else {
+            LOGGER.error("Missing war in siege add event.");
+        }
+
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_OFFENSIVE);
+        if (attribute != null) {
+            siege.setBesiegingOffensive(Boolean.valueOf(attribute.getValue()));
+        } else {
+            LOGGER.error("Missing phasing offensive in siege add event.");
+        }
+    }
+
+    /**
+     * Process the modify siege diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify siege.
+     */
+    private void modifySiege(Game game, Diff diff) {
+        Siege siege = game.getSieges().stream()
+                .filter(b -> Objects.equals(b.getId(), diff.getIdObject()))
+                .findAny()
+                .orElse(null);
+        if (siege == null) {
+            LOGGER.error("Missing siege in siege modify event.");
+            return;
+        }
+
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.STATUS, siege::setStatus, SiegeStatusEnum.class);
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.PHASING_READY, value -> siege.getPhasing().setLossesSelected(value));
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.NON_PHASING_READY, value -> siege.getNonPhasing().setLossesSelected(value));
+        Function<Boolean, Consumer<DiffAttributes>> addCounter = phasing -> attr -> {
+            Long idCounter = Long.parseLong(attr.getValue());
+            Counter counter = game.getStacks().stream()
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(c -> Objects.equals(c.getId(), idCounter))
+                    .findAny()
+                    .orElse(null);
+            if (counter == null) {
+                LOGGER.error("Counter does not exist in modify battle phasing counter add diff event.");
+            } else {
+                SiegeCounter siegeCounter = new SiegeCounter();
+                siegeCounter.setPhasing(phasing);
+                siegeCounter.setCounter(counter);
+                siege.getCounters().add(siegeCounter);
+            }
+        };
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD)
+                .forEach(addCounter.apply(true));
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD)
+                .forEach(addCounter.apply(false));
+
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.LEVEL, siege::setFortressLevel);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BONUS, siege::setBonus);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.SIEGE_UNDERMINE_DIE, siege::setUndermineDie);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT, siege::setUndermineResult, SiegeUndermineResultEnum.class);
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS, siege::setFortressFalls);
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.SIEGE_BREACH, siege::setBreach);
+
+        doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, value -> siege.getPhasing().setSize(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_TECH, value -> siege.getPhasing().setTech(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_MORAL, value -> siege.getPhasing().setMoral(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_ROUND_LOSS, value -> siege.getPhasing().getLosses().setRoundLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_THIRD_LOSS, value -> siege.getPhasing().getLosses().setThirdLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_MORALE_LOSS, value -> siege.getPhasing().getLosses().setMoraleLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE_MOD, value -> siege.getPhasing().getModifiers().setFireMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE, value -> siege.getPhasing().getModifiers().setFire(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK_MOD, value -> siege.getPhasing().getModifiers().setShockMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK, value -> siege.getPhasing().getModifiers().setShock(value));
+
+        doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE, value -> siege.getNonPhasing().setSize(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_TECH, value -> siege.getNonPhasing().setTech(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORAL, value -> siege.getNonPhasing().setMoral(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_ROUND_LOSS, value -> siege.getNonPhasing().getLosses().setRoundLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS, value -> siege.getNonPhasing().getLosses().setThirdLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS, value -> siege.getNonPhasing().getLosses().setMoraleLoss(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE_MOD, value -> siege.getNonPhasing().getModifiers().setFireMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE, value -> siege.getNonPhasing().getModifiers().setFire(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, value -> siege.getNonPhasing().getModifiers().setShockMod(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK, value -> siege.getNonPhasing().getModifiers().setShock(value));
     }
 
     /**
