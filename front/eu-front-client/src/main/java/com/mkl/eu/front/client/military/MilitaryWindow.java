@@ -788,6 +788,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
      */
     public void update(Diff diff) {
         switch (diff.getTypeObject()) {
+            case STATUS:
             case TURN_ORDER:
                 updateInfoPanel();
                 break;
@@ -813,7 +814,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         private ChoiceBox<Integer> round = new ChoiceBox<>();
         /** Choice box to select the number of third losses to take on the counter. */
         private ChoiceBox<Integer> third = new ChoiceBox<>();
-        /** A button. It can be a Add button to add a new Line or a Revemo button to remove current line. */
+        /** A button. It can be a Add button to add a new Line or a Remove button to remove current line. */
         private Button button;
 
         /**
