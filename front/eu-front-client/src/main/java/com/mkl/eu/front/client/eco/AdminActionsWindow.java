@@ -1,7 +1,6 @@
 package com.mkl.eu.front.client.eco;
 
 import com.mkl.eu.client.common.util.CommonUtil;
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IEconomicService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
@@ -14,7 +13,6 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.eco.CompetitionRound;
@@ -25,8 +23,6 @@ import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
-import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.marker.CounterMarker;
@@ -306,22 +302,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             AdminActionTypeEnum type = choiceType.getSelectionModel().getSelectedItem();
             CounterFaceTypeEnum toCounter = toCounterChoice.getSelectionModel().getSelectedItem();
 
-            Request<AddAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), type, counter.getId(), toCounter));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.addAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating administrative action.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, counter.getId(), toCounter), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(maintenanceCountersChoice, choiceType, toCounterChoice, btn);
@@ -556,22 +537,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             IMapMarker province = purchaseProvincesChoice.getSelectionModel().getSelectedItem();
             CounterFaceTypeEnum type = purchaseTypeChoice.getSelectionModel().getSelectedItem();
 
-            Request<AddAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.PU, province.getId(), type));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.addAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating administrative action.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.PU, province.getId(), type), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(purchaseProvincesChoice, purchaseTypeChoice, btn);
@@ -769,22 +735,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            Request<AddAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), investment));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.addAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating administrative action.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(provincesChoice, investChoice, btn);
@@ -949,29 +900,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         btn.setOnAction(event -> {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
-            String provinceName = null;
-            if (province != null) {
-                provinceName = province.getId();
-            }
+            String provinceName = province != null ? province.getId() : null;
             CounterFaceTypeEnum face = faceChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            Request<AddAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), type, provinceName, face, investment));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.addAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating administrative action.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, provinceName, face, investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(typesChoice, provincesChoice, faceChoice, investChoice, btn);
@@ -1072,28 +1005,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         btn.setOnAction(event -> {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
-            String provinceName = null;
-            if (province != null) {
-                provinceName = province.getId();
-            }
+            String provinceName = province != null ? province.getId() : null;
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            Request<AddAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), type, provinceName, investment));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.addAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating administrative action.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, provinceName, investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(typesChoice, provincesChoice, investChoice, btn);
@@ -1191,22 +1106,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            Request<AddAdminActionRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new AddAdminActionRequest(country.getId(), type, investment));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.addAdminAction(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when creating administrative action.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(typesChoice, investChoice, btn);
@@ -1252,22 +1152,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @param param the administrative action to remove.
      */
     private void removeAdminAction(AdministrativeAction param) {
-        Request<RemoveAdminActionRequest> request = new Request<>();
-        authentHolder.fillAuthentInfo(request);
-        gameConfig.fillGameInfo(request);
-        gameConfig.fillChatInfo(request);
-        request.setRequest(new RemoveAdminActionRequest(param.getId()));
-        Long idGame = gameConfig.getIdGame();
-        try {
-            DiffResponse response = economicService.removeAdminAction(request);
-
-            DiffEvent diff = new DiffEvent(response, idGame);
-            processDiffEvent(diff);
-        } catch (Exception e) {
-            LOGGER.error("Error when creating administrative action.", e);
-
-            processExceptionEvent(new ExceptionEvent(e));
-        }
+        callService(economicService::removeAdminAction, () -> new RemoveAdminActionRequest(param.getId()), "Error when creating administrative action.");
     }
 
     /**
@@ -1277,47 +1162,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         HBox actions = new HBox();
 
         Button validation = new Button(message.getMessage("validate", null, globalConfiguration.getLocale()));
-        validation.setOnAction(event -> {
-
-            Request<ValidateRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new ValidateRequest(true));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.validateAdminActions(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when validating administrative actions.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-        });
+        validation.setOnAction(event -> callService(economicService::validateAdminActions, () -> new ValidateRequest(true), "Error when validating administrative actions."));
         actions.getChildren().add(validation);
 
         Button invalidation = new Button(message.getMessage("invalidate", null, globalConfiguration.getLocale()));
-        invalidation.setOnAction(event -> {
-
-            Request<ValidateRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new ValidateRequest(false));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.validateAdminActions(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when invalidating administrative actions.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-        });
+        invalidation.setOnAction(event -> callService(economicService::validateAdminActions, () -> new ValidateRequest(false), "Error when invalidating administrative actions."));
         actions.getChildren().add(invalidation);
 
         return actions;
