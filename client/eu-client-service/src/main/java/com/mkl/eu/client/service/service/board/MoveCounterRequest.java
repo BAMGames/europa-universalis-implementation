@@ -20,10 +20,12 @@ public class MoveCounterRequest {
     /**
      * Constructor.
      *
-     * @param idCounter   the idCounter to set.
+     * @param idCounter the idCounter to set.
+     * @param idStack   the idStack to set.
      */
-    public MoveCounterRequest(Long idCounter) {
+    public MoveCounterRequest(Long idCounter, Long idStack) {
         this.idCounter = idCounter;
+        this.idStack = idStack;
     }
 
     /** @return the idCounter. */

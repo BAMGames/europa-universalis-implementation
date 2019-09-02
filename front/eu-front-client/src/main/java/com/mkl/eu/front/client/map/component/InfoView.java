@@ -1,10 +1,8 @@
 package com.mkl.eu.front.client.map.component;
 
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
@@ -324,24 +322,8 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
 
 
                     if (drop != dragged.getOwner()) {
-                        Long idGame = gameConfig.getIdGame();
-                        try {
-                            Request<MoveCounterRequest> request = new Request<>();
-                            authentHolder.fillAuthentInfo(request);
-                            gameConfig.fillGameInfo(request);
-                            gameConfig.fillChatInfo(request);
-                            request.setRequest(new MoveCounterRequest(dragged.getId()));
-                            if (drop != null) {
-                                request.getRequest().setIdStack(drop.getId());
-                            }
-                            DiffResponse response = boardService.moveCounter(request);
-                            DiffEvent diff = new DiffEvent(response, idGame);
-                            processDiffEvent(diff);
-                        } catch (Exception e) {
-                            LOGGER.error("Error when moving stack.", e);
-
-                            processExceptionEvent(new ExceptionEvent(e));
-                        }
+                        Long idStack = drop != null ? drop.getId() : null;
+                        callService(boardService::moveCounter, () -> new MoveCounterRequest(dragged.getId(), idStack), "Error when moving stack.");
                     }
 
                     setDragged(null);

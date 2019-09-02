@@ -1,7 +1,6 @@
 package com.mkl.eu.front.client.chat;
 
 import com.mkl.eu.client.common.util.CommonUtil;
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IChatService;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.service.chat.*;
@@ -12,11 +11,8 @@ import com.mkl.eu.client.service.vo.chat.Room;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
-import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.application.Platform;
@@ -124,27 +120,12 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                 long unreadMsg = messages.getItems().stream().filter(message1 -> message1.getDateRead() == null).count();
 
                                 if (unreadMsg > 0) {
+                                    Long id = idRoom;
                                     Long maxId = messages.getItems().stream().max((o1, o2) -> Long.compare(o1.getId(), o2.getId())).get().getId();
-                                    Request<ReadRoomRequest> request = new Request<>();
-                                    authentHolder.fillAuthentInfo(request);
-                                    gameConfig.fillGameInfo(request);
-                                    gameConfig.fillChatInfo(request);
-                                    request.setRequest(new ReadRoomRequest(idRoom, maxId));
-                                    Long idGame = gameConfig.getIdGame();
-                                    try {
-                                        DiffResponse response = chatService.readRoom(request);
-
+                                    callService(chatService::readRoom, () -> new ReadRoomRequest(id, maxId), "Error when creating room.", () -> {
                                         messages.getItems().stream().forEach(message1 -> message1.setDateRead(ZonedDateTime.now()));
-
-                                        updateRoomName(newValue, idRoom);
-
-                                        DiffEvent diff = new DiffEvent(response, idGame);
-                                        processDiffEvent(diff);
-                                    } catch (Exception e) {
-                                        LOGGER.error("Error when creating room.", e);
-
-                                        processExceptionEvent(new ExceptionEvent(e));
-                                    }
+                                        updateRoomName(newValue, id);
+                                    }, null);
                                 }
                             }
                         }
@@ -166,21 +147,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
                                 Optional<String> result = dialog.showAndWait();
                                 if (result.isPresent()) {
-                                    Request<CreateRoomRequest> request = new Request<>();
-                                    authentHolder.fillAuthentInfo(request);
-                                    gameConfig.fillGameInfo(request);
-                                    gameConfig.fillChatInfo(request);
-                                    request.setRequest(new CreateRoomRequest(result.get()));
-                                    Long idGame = gameConfig.getIdGame();
-                                    try {
-                                        DiffResponse response = chatService.createRoom(request);
-                                        DiffEvent diff = new DiffEvent(response, idGame);
-                                        processDiffEvent(diff);
-                                    } catch (Exception e) {
-                                        LOGGER.error("Error when creating room.", e);
-
-                                        processExceptionEvent(new ExceptionEvent(e));
-                                    }
+                                    callService(chatService::createRoom, () -> new CreateRoomRequest(result.get()), "Error when creating room.");
                                 }
                             }
                         }
@@ -212,24 +179,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                 Optional<CustomSelect<Room>> result = dialog.showAndWait();
                                 if (result.isPresent()) {
                                     Room room = result.get().getObj();
-                                    Request<ToggleRoomRequest> request = new Request<>();
-                                    authentHolder.fillAuthentInfo(request);
-                                    gameConfig.fillGameInfo(request);
-                                    gameConfig.fillChatInfo(request);
-                                    request.setRequest(new ToggleRoomRequest(room.getId(), true));
-                                    Long idGame = gameConfig.getIdGame();
-                                    try {
-                                        DiffResponse response = chatService.toggleRoom(request);
-                                        DiffEvent diff = new DiffEvent(response, idGame);
-                                        processDiffEvent(diff);
-
+                                    callService(chatService::toggleRoom, () -> new ToggleRoomRequest(room.getId(), true), "Error when toggling room.", () -> {
                                         room.setVisible(true);
                                         tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()));
-                                    } catch (Exception e) {
-                                        LOGGER.error("Error when toggling room.", e);
-
-                                        processExceptionEvent(new ExceptionEvent(e));
-                                    }
+                                    }, null);
                                 }
                             }
                         }
@@ -237,21 +190,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
         tabPane.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.U) {
-                Request<Void> request = new Request<>();
-                authentHolder.fillAuthentInfo(request);
-                gameConfig.fillGameInfo(request);
-                gameConfig.fillChatInfo(request);
-                Long idGame = gameConfig.getIdGame();
-                try {
-                    DiffResponse response = gameService.updateGame(request);
-                    DiffEvent diff = new DiffEvent(response, idGame);
-                    processDiffEvent(diff);
-
-                } catch (Exception e) {
-                    LOGGER.error("Error when toggling room.", e);
-
-                    processExceptionEvent(new ExceptionEvent(e));
-                }
+                callService(gameService::updateGame, () -> null, "Error when updating game.");
             }
         });
     }
@@ -274,25 +213,8 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             id = Long.toString(idRoom);
             tab.setOnCloseRequest(event1 -> {
                 Room room = CommonUtil.findFirst(chat.getRooms(), room1 -> idRoom.equals(room1.getId()));
-                Request<ToggleRoomRequest> request = new Request<>();
-                authentHolder.fillAuthentInfo(request);
-                gameConfig.fillGameInfo(request);
-                gameConfig.fillChatInfo(request);
-                request.setRequest(new ToggleRoomRequest(room.getId(), false));
-                Long idGame = gameConfig.getIdGame();
-                try {
-                    DiffResponse response = chatService.toggleRoom(request);
-                    DiffEvent diff = new DiffEvent(response, idGame);
-                    processDiffEvent(diff);
-
-                    room.setVisible(false);
-                } catch (Exception e) {
-                    LOGGER.error("Error when toggling room.", e);
-                    // if it fails, we keep the tab open
-                    event1.consume();
-
-                    processExceptionEvent(new ExceptionEvent(e));
-                }
+                // if it fails, we keep the tab open
+                callService(chatService::toggleRoom, () -> new ToggleRoomRequest(room.getId(), false), "Error when toggling room.", () -> room.setVisible(false), event1::consume);
             });
         } else {
             tab.setClosable(false);
@@ -341,21 +263,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 itemKick.setOnAction(event -> {
                     PlayableCountry country = cell.getItem();
                     if (country != null) {
-                        Request<InviteKickRoomRequest> request = new Request<>();
-                        authentHolder.fillAuthentInfo(request);
-                        gameConfig.fillGameInfo(request);
-                        gameConfig.fillChatInfo(request);
-                        request.setRequest(new InviteKickRoomRequest(idRoom, false, cell.getItem().getId()));
-                        Long idGame = gameConfig.getIdGame();
-                        try {
-                            DiffResponse response = chatService.inviteKickRoom(request);
-                            DiffEvent diff = new DiffEvent(response, idGame);
-                            processDiffEvent(diff);
-                        } catch (Exception e) {
-                            LOGGER.error("Error when speaking in room.", e);
-
-                            processExceptionEvent(new ExceptionEvent(e));
-                        }
+                        callService(chatService::inviteKickRoom, () -> new InviteKickRoomRequest(idRoom, false, cell.getItem().getId()), "Error when kicking in room.");
                     }
                 });
                 MenuItem itemInvite = new MenuItem(message.getMessage("chat.room.invite", null, globalConfiguration.getLocale()));
@@ -368,21 +276,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
 
                     Optional<CustomSelect<PlayableCountry>> result = dialog.showAndWait();
                     if (result.isPresent()) {
-                        Request<InviteKickRoomRequest> request = new Request<>();
-                        authentHolder.fillAuthentInfo(request);
-                        gameConfig.fillGameInfo(request);
-                        gameConfig.fillChatInfo(request);
-                        request.setRequest(new InviteKickRoomRequest(idRoom, true, result.get().getObj().getId()));
-                        Long idGame = gameConfig.getIdGame();
-                        try {
-                            DiffResponse response = chatService.inviteKickRoom(request);
-                            DiffEvent diff = new DiffEvent(response, idGame);
-                            processDiffEvent(diff);
-                        } catch (Exception e) {
-                            LOGGER.error("Error when speaking in room.", e);
-
-                            processExceptionEvent(new ExceptionEvent(e));
-                        }
+                        callService(chatService::inviteKickRoom, () -> new InviteKickRoomRequest(idRoom, true, result.get().getObj().getId()), "Error when inviting in room.");
                     }
                 });
                 ContextMenu menu = new ContextMenu(itemKick, itemInvite);
@@ -406,22 +300,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         });
         submitBtn.setOnAction(event -> {
             String msg = input.getText();
-            Request<SpeakInRoomRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new SpeakInRoomRequest(idRoom, msg));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = chatService.speakInRoom(request);
-                input.clear();
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when speaking in room.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
+            callService(chatService::speakInRoom, () -> new SpeakInRoomRequest(idRoom, msg), "Error when speaking in room.", input::clear, null);
             input.requestFocus();
         });
         hbox.getChildren().add(submitBtn);
