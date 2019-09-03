@@ -1,27 +1,20 @@
 package com.mkl.eu.front.client.event;
 
-import com.mkl.eu.client.common.exception.FunctionalException;
-import com.mkl.eu.client.common.exception.TechnicalException;
-import com.mkl.eu.client.common.vo.Request;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Description of file.
  *
  * @author MKL.
  */
-public class AbstractDiffListenerContainer implements IDiffListenerContainer {
+public class AbstractDiffListenerContainer implements IDiffListenerContainer, IServiceCaller {
     /** Logger. */
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
     /** Listeners for diffs event. */
@@ -32,8 +25,25 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer {
     @Autowired
     protected AuthentHolder authentHolder;
 
+    /**
+     * Constructor.
+     *
+     * @param gameConfig the gameConfig to set.
+     */
     public AbstractDiffListenerContainer(GameConfiguration gameConfig) {
         this.gameConfig = gameConfig;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GameConfiguration getGameConfig() {
+        return gameConfig;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AuthentHolder getAuthentHolder() {
+        return authentHolder;
     }
 
     /** {@inheritDoc} */
@@ -58,65 +68,5 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer {
         for (IDiffListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
-    }
-
-    /**
-     * Create an event handler to give to an actionHandler that will call a back end service.
-     *
-     * @param service         the service to call.
-     * @param requestSupplier the supplier that will create the request.
-     * @param errorMessage    the error message to display if it fails.
-     * @param <T>             the class of the request.
-     * @return the event handler.
-     */
-    protected <T> EventHandler<ActionEvent> callService(IService<T> service, Supplier<T> requestSupplier, String errorMessage) {
-        return callService(service, requestSupplier, errorMessage, null, null);
-    }
-
-    /**
-     * Create an event handler to give to an actionHandler that will call a back end service.
-     *
-     * @param service         the service to call.
-     * @param requestSupplier the supplier that will create the request.
-     * @param errorMessage    the error message to display if it fails.
-     * @param doIfSuccess     code to execute if service is successful.
-     * @param doIfFailure     code to execute if service is in failure.
-     * @param <T>             the class of the request.
-     * @return the event handler.
-     */
-    protected <T> EventHandler<ActionEvent> callService(IService<T> service, Supplier<T> requestSupplier, String errorMessage, Runnable doIfSuccess, Runnable doIfFailure) {
-        return event -> {
-            Request<T> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(requestSupplier.get());
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = service.run(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                if (doIfSuccess != null) {
-                    doIfSuccess.run();
-                }
-                processDiffEvent(diff);
-            } catch (FunctionalException e) {
-                LOGGER.error(errorMessage, e);
-
-                if (doIfFailure != null) {
-                    doIfFailure.run();
-                }
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-        };
-    }
-
-    /**
-     * Interface that matches all back end services.
-     *
-     * @param <V> the type of the request.
-     */
-    protected interface IService<V> {
-        DiffResponse run(Request<V> request) throws TechnicalException, FunctionalException;
     }
 }

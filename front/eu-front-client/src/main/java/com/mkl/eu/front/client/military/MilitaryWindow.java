@@ -1,8 +1,6 @@
 package com.mkl.eu.front.client.military;
 
-import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.util.CommonUtil;
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
@@ -11,7 +9,6 @@ import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.diff.Diff;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.diplo.WarLight;
@@ -24,8 +21,6 @@ import com.mkl.eu.client.service.vo.military.BattleSide;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
-import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
@@ -150,24 +145,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         VBox vBox = new VBox();
         tab.setContent(vBox);
 
-        Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> event -> {
-            Request<ValidateRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new ValidateRequest(validate));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = boardService.validateMilitaryRound(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (FunctionalException e) {
-                LOGGER.error("Error when validating the military round.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-        };
+        Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> event -> callService(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
 
         validateMilitaryPhase = new Button(message.getMessage("military.info.validate", null, globalConfiguration.getLocale()));
         validateMilitaryPhase.setOnAction(endMilitaryPhase.apply(true));
@@ -194,24 +172,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             }
         });
         choiceBattle.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> chooseBattle.setDisable(newValue == null));
-        chooseBattle.setOnAction(event -> {
-            Request<ChooseProvinceRequest> request = new Request<>();
-            authentHolder.fillAuthentInfo(request);
-            gameConfig.fillGameInfo(request);
-            gameConfig.fillChatInfo(request);
-            request.setRequest(new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()));
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = battleService.chooseBattle(request);
-
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (FunctionalException e) {
-                LOGGER.error("Error when choosing the battle to proceed.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-        });
+        chooseBattle.setOnAction(event -> callService(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the battle to proceed."));
         hBox = new HBox();
         hBox.getChildren().addAll(choiceBattle, chooseBattle);
         vBox.getChildren().add(hBox);

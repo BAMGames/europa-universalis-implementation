@@ -1,6 +1,5 @@
 package com.mkl.eu.front.client.map.component;
 
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
@@ -197,23 +196,7 @@ public final class MenuHelper {
                 continue;
             }
             String countryName = UIUtil.getCountryName(country, container.getMessage(), container.getGlobalConfiguration());
-            control.addMenuItem(ContextualMenuItem.createMenuItem(countryName, event -> {
-                Long idGame = container.getGameConfig().getIdGame();
-                try {
-                    Request<TakeStackControlRequest> request = new Request<>();
-                    container.getAuthentHolder().fillAuthentInfo(request);
-                    container.getGameConfig().fillGameInfo(request);
-                    container.getGameConfig().fillChatInfo(request);
-                    request.setRequest(new TakeStackControlRequest(stack.getId(), country));
-                    DiffResponse response = boardService.takeStackControl(request);
-                    DiffEvent diff = new DiffEvent(response, idGame);
-                    container.processDiffEvent(diff);
-                } catch (Exception e) {
-                    LOGGER.error("Error when taking control of stack.", e);
-
-                    container.processExceptionEvent(new ExceptionEvent(e));
-                }
-            }));
+            control.addMenuItem(ContextualMenuItem.createMenuItem(countryName, event -> container.callService(boardService::takeStackControl, () -> new TakeStackControlRequest(stack.getId(), country), "Error when taking control of stack.")));
         }
         menu.addMenuItem(control);
         ContextualMenu move = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.stack.move", null, container.getGlobalConfiguration().getLocale()));
@@ -222,42 +205,13 @@ public final class MenuHelper {
             if (border.getType() != null) {
                 label.append(" (").append(container.getMessage().getMessage("border." + border.getType().getCode(), null, container.getGlobalConfiguration().getLocale())).append(")");
             }
-            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> {
-                Long idGame = container.getGameConfig().getIdGame();
-                try {
-                    Request<MoveStackRequest> request = new Request<>();
-                    container.getAuthentHolder().fillAuthentInfo(request);
-                    container.getGameConfig().fillGameInfo(request);
-                    container.getGameConfig().fillChatInfo(request);
-                    request.setRequest(new MoveStackRequest(stack.getId(), border.getProvince().getId()));
-                    DiffResponse response = boardService.moveStack(request);
-                    DiffEvent diff = new DiffEvent(response, idGame);
-                    container.processDiffEvent(diff);
-                } catch (Exception e) {
-                    LOGGER.error("Error when moving stack.", e);
-
-                    container.processExceptionEvent(new ExceptionEvent(e));
-                }
-            }));
+            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> container.callService(boardService::moveStack, () -> new MoveStackRequest(stack.getId(), border.getProvince().getId()), "Error when moving stack.")));
         }
         menu.addMenuItem(move);
         menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.stack.end_move", null, container.getGlobalConfiguration().getLocale()),
                 event -> {
                     Long idGame = container.getGameConfig().getIdGame();
-                    try {
-                        Request<EndMoveStackRequest> request = new Request<>();
-                        container.getAuthentHolder().fillAuthentInfo(request);
-                        container.getGameConfig().fillGameInfo(request);
-                        container.getGameConfig().fillChatInfo(request);
-                        request.setRequest(new EndMoveStackRequest(stack.getId()));
-                        DiffResponse response = boardService.endMoveStack(request);
-                        DiffEvent diff = new DiffEvent(response, idGame);
-                        container.processDiffEvent(diff);
-                    } catch (Exception e) {
-                        LOGGER.error("Error when ending movement of stack.", e);
-
-                        container.processExceptionEvent(new ExceptionEvent(e));
-                    }
+                    container.callService(boardService::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.");
                 }));
 
         return menu;
@@ -285,7 +239,7 @@ public final class MenuHelper {
                 DiffEvent diff = new DiffEvent(response, idGame);
                 container.processDiffEvent(diff);
             } catch (Exception e) {
-                LOGGER.error("Error when moving stack.", e);
+                LOGGER.error("Error when deleting counter.", e);
 
                 container.processExceptionEvent(new ExceptionEvent(e));
             }

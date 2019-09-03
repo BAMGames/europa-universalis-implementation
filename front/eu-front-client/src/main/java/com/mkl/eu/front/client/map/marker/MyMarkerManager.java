@@ -1,10 +1,8 @@
 package com.mkl.eu.front.client.map.marker;
 
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
@@ -335,21 +333,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     IMapMarker drop = getDrop(dragEvent.getX(), dragEvent.getY());
 
                     if (isNeighbour(dragged.getProvince(), drop)) {
-                        Long idGame = gameConfig.getIdGame();
-                        try {
-                            Request<MoveStackRequest> request = new Request<>();
-                            authentHolder.fillAuthentInfo(request);
-                            gameConfig.fillGameInfo(request);
-                            gameConfig.fillChatInfo(request);
-                            request.setRequest(new MoveStackRequest(dragged.getId(), drop.getId()));
-                            DiffResponse response = boardService.moveStack(request);
-                            DiffEvent diff = new DiffEvent(response, idGame);
-                            processDiffEvent(diff);
-                        } catch (Exception e) {
-                            LOGGER.error("Error when moving stack.", e);
-
-                            processExceptionEvent(new ExceptionEvent(e));
-                        }
+                        callService(boardService::moveStack, () -> new MoveStackRequest(dragged.getId(), drop.getId()), "Error when moving stack.");
                     }
 
                     setDragged(null);

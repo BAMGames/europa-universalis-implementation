@@ -299,9 +299,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             }
         });
         submitBtn.setOnAction(event -> {
-            String msg = input.getText();
-            callService(chatService::speakInRoom, () -> new SpeakInRoomRequest(idRoom, msg), "Error when speaking in room.", input::clear, null);
-            input.requestFocus();
+            callService(chatService::speakInRoom, () -> new SpeakInRoomRequest(idRoom, input.getText()), "Error when speaking in room.", () -> {
+                input.clear();
+                input.requestFocus();
+            }, input::requestFocus);
         });
         hbox.getChildren().add(submitBtn);
 

@@ -1,12 +1,10 @@
 package com.mkl.eu.front.client.map.handler.keyboard;
 
-import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffListener;
-import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.event.IServiceCaller;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -22,7 +20,7 @@ import java.util.List;
 /**
  * @author MKL
  */
-public class MapKeyboardHandler extends KeyboardHandler implements IDiffListenerContainer {
+public class MapKeyboardHandler extends KeyboardHandler implements IServiceCaller {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MapKeyboardHandler.class);
     /** Listeners for diffs event. */
@@ -71,20 +69,20 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
             }
         } else if (keyCode == 85) {
             // 'u' key
-            Long idGame = gameConfig.getIdGame();
-            try {
-                Request<Void> request = new Request<>();
-                authentHolder.fillAuthentInfo(request);
-                gameConfig.fillGameInfo(request);
-                gameConfig.fillChatInfo(request);
-                DiffResponse response = gameService.updateGame(request);
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when updating game.", e);
-                // TODO exception handling
-            }
+            callService(gameService::updateGame, () -> null, "Error when updating game.");
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GameConfiguration getGameConfig() {
+        return gameConfig;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AuthentHolder getAuthentHolder() {
+        return authentHolder;
     }
 
     /** {@inheritDoc} */
@@ -106,6 +104,8 @@ public class MapKeyboardHandler extends KeyboardHandler implements IDiffListener
     /** {@inheritDoc} */
     @Override
     public void processExceptionEvent(ExceptionEvent event) {
-
+        for (IDiffListener diffListener : diffListeners) {
+            diffListener.handleException(event);
+        }
     }
 }
