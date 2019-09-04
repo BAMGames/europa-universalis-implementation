@@ -122,7 +122,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                 if (unreadMsg > 0) {
                                     Long id = idRoom;
                                     Long maxId = messages.getItems().stream().max((o1, o2) -> Long.compare(o1.getId(), o2.getId())).get().getId();
-                                    callService(chatService::readRoom, () -> new ReadRoomRequest(id, maxId), "Error when creating room.", () -> {
+                                    callService(chatService::readRoom, () -> new ReadRoomRequest(id, maxId), "Error when reading room.", () -> {
                                         messages.getItems().stream().forEach(message1 -> message1.setDateRead(ZonedDateTime.now()));
                                         updateRoomName(newValue, id);
                                     }, null);
@@ -298,12 +298,10 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                 submitBtn.fire();
             }
         });
-        submitBtn.setOnAction(event -> {
-            callService(chatService::speakInRoom, () -> new SpeakInRoomRequest(idRoom, input.getText()), "Error when speaking in room.", () -> {
+        submitBtn.setOnAction(callServiceAsEvent(chatService::speakInRoom, () -> new SpeakInRoomRequest(idRoom, input.getText()), "Error when speaking in room.", () -> {
                 input.clear();
                 input.requestFocus();
-            }, input::requestFocus);
-        });
+        }, input::requestFocus));
         hbox.getChildren().add(submitBtn);
 
         layout.setBottom(hbox);

@@ -145,7 +145,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         VBox vBox = new VBox();
         tab.setContent(vBox);
 
-        Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> event -> callService(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
+        Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> event -> callServiceAsEvent(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
 
         validateMilitaryPhase = new Button(message.getMessage("military.info.validate", null, globalConfiguration.getLocale()));
         validateMilitaryPhase.setOnAction(endMilitaryPhase.apply(true));
@@ -172,7 +172,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             }
         });
         choiceBattle.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> chooseBattle.setDisable(newValue == null));
-        chooseBattle.setOnAction(event -> callService(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the battle to proceed."));
+        chooseBattle.setOnAction(event -> callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the battle to proceed."));
         hBox = new HBox();
         hBox.getChildren().addAll(choiceBattle, chooseBattle);
         vBox.getChildren().add(hBox);
@@ -504,7 +504,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
 
         Node counters = createMultiSelectCounterNode(battle, phasing, "military.battle.counters", selectedCounters);
         Button withdraw = new Button(message.getMessage("military.battle.select", null, globalConfiguration.getLocale()));
-        withdraw.setOnAction(callService(battleService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the battle."));
+        withdraw.setOnAction(callServiceAsEvent(battleService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the battle."));
 
         hBox.getChildren().addAll(counters, withdraw);
 
@@ -577,7 +577,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 .collect(Collectors.toList())));
         provinces.getItems().add(0, null);
         Button withdraw = new Button(message.getMessage("military.battle.withdraw", null, globalConfiguration.getLocale()));
-        withdraw.setOnAction(callService(battleService::withdrawBeforeBattle, () -> {
+        withdraw.setOnAction(callServiceAsEvent(battleService::withdrawBeforeBattle, () -> {
             String province = provinces.getSelectionModel().getSelectedItem();
             return new WithdrawBeforeBattleRequest(StringUtils.isNotEmpty(province), province);
         }, "Error when withdrawing from the current battle."));
@@ -611,7 +611,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             }
         });
         Button retreat = new Button(message.getMessage("military.battle.retreat_first_day", null, globalConfiguration.getLocale()));
-        retreat.setOnAction(callService(battleService::retreatFirstDay, () -> {
+        retreat.setOnAction(callServiceAsEvent(battleService::retreatFirstDay, () -> {
             Boolean choice = choices.getSelectionModel().getSelectedItem();
             return new ValidateRequest(choice);
         }, "Error when withdrawing from the current battle."));
@@ -643,7 +643,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
 
 
         Button withdraw = new Button(message.getMessage("military.battle.retreat", null, globalConfiguration.getLocale()));
-        withdraw.setOnAction(callService(battleService::retreatAfterBattle, () -> {
+        withdraw.setOnAction(callServiceAsEvent(battleService::retreatAfterBattle, () -> {
             String province = provinces.getSelectionModel().getSelectedItem();
             return new RetreatAfterBattleRequest(selectedCounters, province);
         }, "Error when retreating at the end of the battle."));
@@ -695,7 +695,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             lines.add(newLine);
         });
         Button chooseLoss = new Button(message.getMessage("military.battle.choose_losses", null, globalConfiguration.getLocale()));
-        chooseLoss.setOnAction(callService(battleService::chooseLossesFromBattle, () -> {
+        chooseLoss.setOnAction(callServiceAsEvent(battleService::chooseLossesFromBattle, () -> {
             List<ChooseLossesRequest.UnitLoss> losses = new ArrayList<>();
             for (ChooseLossLine clLine : lines) {
                 ChooseLossesRequest.UnitLoss loss = new ChooseLossesRequest.UnitLoss();

@@ -41,8 +41,20 @@ public interface IServiceCaller extends IDiffListenerContainer {
      * @param <T>             the class of the request.
      * @return the event handler.
      */
-    default <T> EventHandler<ActionEvent> callService(IServiceCaller.IService<T> service, Supplier<T> requestSupplier, String errorMessage) {
-        return callService(service, requestSupplier, errorMessage, null, null);
+    default <T> EventHandler<ActionEvent> callServiceAsEvent(IServiceCaller.IService<T> service, Supplier<T> requestSupplier, String errorMessage) {
+        return callServiceAsEvent(service, requestSupplier, errorMessage, null, null);
+    }
+
+    /**
+     * Call a back end service.
+     *
+     * @param service         the service to call.
+     * @param requestSupplier the supplier that will create the request.
+     * @param errorMessage    the error message to display if it fails.
+     * @param <T>             the class of the request.
+     */
+    default <T> void callService(IServiceCaller.IService<T> service, Supplier<T> requestSupplier, String errorMessage) {
+        callService(service, requestSupplier, errorMessage, null, null);
     }
 
     /**
@@ -56,8 +68,21 @@ public interface IServiceCaller extends IDiffListenerContainer {
      * @param <T>             the class of the request.
      * @return the event handler.
      */
-    default <T> EventHandler<ActionEvent> callService(IService<T> service, Supplier<T> requestSupplier, String errorMessage, Runnable doIfSuccess, Runnable doIfFailure) {
-        return event -> {
+    default <T> EventHandler<ActionEvent> callServiceAsEvent(IService<T> service, Supplier<T> requestSupplier, String errorMessage, Runnable doIfSuccess, Runnable doIfFailure) {
+        return event -> callService(service, requestSupplier, errorMessage, doIfSuccess, doIfFailure);
+    }
+
+    /**
+     * Call a back end service.
+     *
+     * @param service         the service to call.
+     * @param requestSupplier the supplier that will create the request.
+     * @param errorMessage    the error message to display if it fails.
+     * @param doIfSuccess     code to execute if service is successful.
+     * @param doIfFailure     code to execute if service is in failure.
+     * @param <T>             the class of the request.
+     */
+    default <T> void callService(IService<T> service, Supplier<T> requestSupplier, String errorMessage, Runnable doIfSuccess, Runnable doIfFailure) {
             Request<T> request = new Request<>();
             getAuthentHolder().fillAuthentInfo(request);
             getGameConfig().fillGameInfo(request);
@@ -80,7 +105,6 @@ public interface IServiceCaller extends IDiffListenerContainer {
                 }
                 processExceptionEvent(new ExceptionEvent(e));
             }
-        };
     }
 
     /**

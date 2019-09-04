@@ -333,7 +333,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
                     IMapMarker drop = getDrop(dragEvent.getX(), dragEvent.getY());
 
                     if (isNeighbour(dragged.getProvince(), drop)) {
-                        callService(boardService::moveStack, () -> new MoveStackRequest(dragged.getId(), drop.getId()), "Error when moving stack.");
+                        callServiceAsEvent(boardService::moveStack, () -> new MoveStackRequest(dragged.getId(), drop.getId()), "Error when moving stack.");
                     }
 
                     setDragged(null);

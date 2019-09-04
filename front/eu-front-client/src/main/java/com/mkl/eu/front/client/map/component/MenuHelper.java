@@ -196,7 +196,7 @@ public final class MenuHelper {
                 continue;
             }
             String countryName = UIUtil.getCountryName(country, container.getMessage(), container.getGlobalConfiguration());
-            control.addMenuItem(ContextualMenuItem.createMenuItem(countryName, event -> container.callService(boardService::takeStackControl, () -> new TakeStackControlRequest(stack.getId(), country), "Error when taking control of stack.")));
+            control.addMenuItem(ContextualMenuItem.createMenuItem(countryName, event -> container.callServiceAsEvent(boardService::takeStackControl, () -> new TakeStackControlRequest(stack.getId(), country), "Error when taking control of stack.")));
         }
         menu.addMenuItem(control);
         ContextualMenu move = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.stack.move", null, container.getGlobalConfiguration().getLocale()));
@@ -205,13 +205,13 @@ public final class MenuHelper {
             if (border.getType() != null) {
                 label.append(" (").append(container.getMessage().getMessage("border." + border.getType().getCode(), null, container.getGlobalConfiguration().getLocale())).append(")");
             }
-            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> container.callService(boardService::moveStack, () -> new MoveStackRequest(stack.getId(), border.getProvince().getId()), "Error when moving stack.")));
+            move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), event -> container.callServiceAsEvent(boardService::moveStack, () -> new MoveStackRequest(stack.getId(), border.getProvince().getId()), "Error when moving stack.")));
         }
         menu.addMenuItem(move);
         menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.stack.end_move", null, container.getGlobalConfiguration().getLocale()),
                 event -> {
                     Long idGame = container.getGameConfig().getIdGame();
-                    container.callService(boardService::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.");
+                    container.callServiceAsEvent(boardService::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.");
                 }));
 
         return menu;
