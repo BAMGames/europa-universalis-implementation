@@ -302,7 +302,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             AdminActionTypeEnum type = choiceType.getSelectionModel().getSelectedItem();
             CounterFaceTypeEnum toCounter = toCounterChoice.getSelectionModel().getSelectedItem();
 
-            callServiceAsEvent(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, counter.getId(), toCounter), "Error when creating administrative action.");
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, counter.getId(), toCounter), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(maintenanceCountersChoice, choiceType, toCounterChoice, btn);
@@ -537,7 +537,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             IMapMarker province = purchaseProvincesChoice.getSelectionModel().getSelectedItem();
             CounterFaceTypeEnum type = purchaseTypeChoice.getSelectionModel().getSelectedItem();
 
-            callServiceAsEvent(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.PU, province.getId(), type), "Error when creating administrative action.");
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.PU, province.getId(), type), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(purchaseProvincesChoice, purchaseTypeChoice, btn);
@@ -735,7 +735,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            callServiceAsEvent(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), investment), "Error when creating administrative action.");
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), AdminActionTypeEnum.TFI, province.getId(), investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(provincesChoice, investChoice, btn);
@@ -904,7 +904,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             CounterFaceTypeEnum face = faceChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            callServiceAsEvent(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, provinceName, face, investment), "Error when creating administrative action.");
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, provinceName, face, investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(typesChoice, provincesChoice, faceChoice, investChoice, btn);
@@ -1008,7 +1008,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             String provinceName = province != null ? province.getId() : null;
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            callServiceAsEvent(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, provinceName, investment), "Error when creating administrative action.");
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, provinceName, investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(typesChoice, provincesChoice, investChoice, btn);
@@ -1106,7 +1106,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
 
-            callServiceAsEvent(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, investment), "Error when creating administrative action.");
+            callService(economicService::addAdminAction, () -> new AddAdminActionRequest(country.getId(), type, investment), "Error when creating administrative action.");
         });
 
         hBox.getChildren().addAll(typesChoice, investChoice, btn);
@@ -1152,7 +1152,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
      * @param param the administrative action to remove.
      */
     private void removeAdminAction(AdministrativeAction param) {
-        callServiceAsEvent(economicService::removeAdminAction, () -> new RemoveAdminActionRequest(param.getId()), "Error when creating administrative action.");
+        callService(economicService::removeAdminAction, () -> new RemoveAdminActionRequest(param.getId()), "Error when creating administrative action.");
     }
 
     /**
@@ -1162,11 +1162,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         HBox actions = new HBox();
 
         Button validation = new Button(message.getMessage("validate", null, globalConfiguration.getLocale()));
-        validation.setOnAction(event -> callServiceAsEvent(economicService::validateAdminActions, () -> new ValidateRequest(true), "Error when validating administrative actions."));
+        validation.setOnAction(callServiceAsEvent(economicService::validateAdminActions, () -> new ValidateRequest(true), "Error when validating administrative actions."));
         actions.getChildren().add(validation);
 
         Button invalidation = new Button(message.getMessage("invalidate", null, globalConfiguration.getLocale()));
-        invalidation.setOnAction(event -> callServiceAsEvent(economicService::validateAdminActions, () -> new ValidateRequest(false), "Error when invalidating administrative actions."));
+        invalidation.setOnAction(callServiceAsEvent(economicService::validateAdminActions, () -> new ValidateRequest(false), "Error when invalidating administrative actions."));
         actions.getChildren().add(invalidation);
 
         return actions;
