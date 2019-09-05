@@ -69,7 +69,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
             }
         } else if (keyCode == 85) {
             // 'u' key
-            callServiceAsEvent(gameService::updateGame, () -> null, "Error when updating game.");
+            callService(gameService::updateGame, () -> null, "Error when updating game.");
         }
     }
 

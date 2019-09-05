@@ -323,7 +323,7 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
 
                     if (drop != dragged.getOwner()) {
                         Long idStack = drop != null ? drop.getId() : null;
-                        callServiceAsEvent(boardService::moveCounter, () -> new MoveCounterRequest(dragged.getId(), idStack), "Error when moving stack.");
+                        callService(boardService::moveCounter, () -> new MoveCounterRequest(dragged.getId(), idStack), "Error when moving stack.");
                     }
 
                     setDragged(null);
