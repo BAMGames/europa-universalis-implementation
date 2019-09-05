@@ -145,7 +145,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         VBox vBox = new VBox();
         tab.setContent(vBox);
 
-        Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> event -> callServiceAsEvent(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
+        Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> callServiceAsEvent(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
 
         validateMilitaryPhase = new Button(message.getMessage("military.info.validate", null, globalConfiguration.getLocale()));
         validateMilitaryPhase.setOnAction(endMilitaryPhase.apply(true));
@@ -172,7 +172,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             }
         });
         choiceBattle.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> chooseBattle.setDisable(newValue == null));
-        chooseBattle.setOnAction(event -> callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the battle to proceed."));
+        chooseBattle.setOnAction(callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the battle to proceed."));
         hBox = new HBox();
         hBox.getChildren().addAll(choiceBattle, chooseBattle);
         vBox.getChildren().add(hBox);
