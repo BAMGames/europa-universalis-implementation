@@ -1,20 +1,11 @@
 package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.client.service.service.IBoardService;
-import com.mkl.eu.client.service.service.IGameAdminService;
-import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
-import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
+import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.util.CounterUtil;
-import com.mkl.eu.client.service.vo.board.CounterForCreation;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CountryTypeEnum;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
-import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.ExceptionEvent;
-import com.mkl.eu.front.client.event.IDiffListenerContainer;
-import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.MapConfiguration;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
@@ -52,18 +43,18 @@ public final class MenuHelper {
     /**
      * Create a Contextual Menu for a Province.
      *
-     * @param province            where the contextual menu is.
-     * @param gameAdminService    service for game administration.
-     * @param container           container to call back when services are called.
+     * @param province     where the contextual menu is.
+     * @param boardService service for board manipulation.
+     * @param container    container to call back when services are called.
      * @return a Contextual Menu for a Province.
      */
-    public static ContextualMenu createMenuProvince(final IMapMarker province, IGameAdminService gameAdminService,
+    public static ContextualMenu createMenuProvince(final IMapMarker province, IBoardService boardService,
                                                     IMenuContainer container) {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage(province.getId(), null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
-        menu.addAllMenuItems(createAdminMenu(province, gameAdminService, container));
+        menu.addAllMenuItems(createAdminMenu(province, boardService, container));
 
         ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.province.neighbors", null, container.getGlobalConfiguration().getLocale()));
         for (final BorderMarker border : province.getNeighbours()) {
@@ -92,7 +83,7 @@ public final class MenuHelper {
         return menu;
     }
 
-    private static List<ContextualMenuItem> createAdminMenu(IMapMarker province, IGameAdminService gameAdminService, IMenuContainer container) {
+    private static List<ContextualMenuItem> createAdminMenu(IMapMarker province, IBoardService boardService, IMenuContainer container) {
         List<ContextualMenuItem> menus = new ArrayList<>();
         ContextualMenu admin = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.admin", null, container.getGlobalConfiguration().getLocale()));
         Map<CountryTypeEnum, ContextualMenu> countryMenus = new HashMap<>();
@@ -135,7 +126,7 @@ public final class MenuHelper {
                     menu = trashMenu;
                 }
 
-                menu.addMenuItem(ContextualMenuItem.createMenuItem(counter.toString(), event -> createStack(counter, country.getName(), province, container.getGameConfig(), gameAdminService, container)));
+                menu.addMenuItem(ContextualMenuItem.createMenuItem(counter.toString(), container.callServiceAsEvent(boardService::createCounter, () -> new CreateCounterRequest(province.getId(), counter, country.getName()), "Error when creating counter.")));
             }
         }
 
@@ -145,37 +136,11 @@ public final class MenuHelper {
     }
 
     /**
-     * Creates a French stack of one counter on the province.
-     *
-     * @param type             of the counter to create.
-     * @param province         where the stack should be created.
-     * @param gameConfig       Game configuration.
-     * @param gameAdminService service for game administration.
-     * @param container        container to call back when services are called.
-     */
-    private static void createStack(CounterFaceTypeEnum type, String country, IMapMarker province, GameConfiguration gameConfig,
-                                    IGameAdminService gameAdminService, IDiffListenerContainer container) {
-        CounterForCreation counter = new CounterForCreation();
-        counter.setCountry(country);
-        counter.setType(type);
-        Long idGame = gameConfig.getIdGame();
-        try {
-            DiffResponse response = gameAdminService.createCounter(idGame, gameConfig.getVersionGame(), counter, province.getId());
-            DiffEvent event = new DiffEvent(response, idGame);
-            container.processDiffEvent(event);
-        } catch (Exception e) {
-            LOGGER.error("Error when creating counter.", e);
-
-            container.processExceptionEvent(new ExceptionEvent(e));
-        }
-    }
-
-    /**
      * Create a Contextual Menu for a Stack.
      *
-     * @param stack               where the contextual menu is.
-     * @param boardService        service for board actions.
-     * @param container           container to call back when services are called.
+     * @param stack        where the contextual menu is.
+     * @param boardService service for board actions.
+     * @param container    container to call back when services are called.
      * @return a Contextual Menu for a Stack.
      */
     public static ContextualMenu createMenuStack(final StackMarker stack, IBoardService boardService,
@@ -217,30 +182,19 @@ public final class MenuHelper {
     /**
      * Create a Contextual Menu for a Counter.
      *
-     * @param counter             where the contextual menu is.
-     * @param gameAdminService    service for game administration.
-     * @param container           container to call back when services are called.
+     * @param counter      where the contextual menu is.
+     * @param boardService service for board manipulation.
+     * @param container    container to call back when services are called.
      * @return a Contextual Menu for a Counter.
      */
-    public static ContextualMenu createMenuCounter(final CounterMarker counter, IGameAdminService gameAdminService,
+    public static ContextualMenu createMenuCounter(final CounterMarker counter, IBoardService boardService,
                                                    IMenuContainer container) {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.counter.disband", null, container.getGlobalConfiguration().getLocale()), event -> {
-            Long idGame = container.getGameConfig().getIdGame();
-            try {
-                DiffResponse response = gameAdminService.removeCounter(idGame, container.getGameConfig().getVersionGame(),
-                        counter.getId());
-                DiffEvent diff = new DiffEvent(response, idGame);
-                container.processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when deleting counter.", e);
-
-                container.processExceptionEvent(new ExceptionEvent(e));
-            }
-        }));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.counter.disband", null, container.getGlobalConfiguration().getLocale()),
+                container.callServiceAsEvent(boardService::removeCounter, () -> new RemoveCounterRequest(counter.getId()), "Error when deleting counter.")));
 
         return menu;
     }

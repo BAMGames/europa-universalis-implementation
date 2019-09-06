@@ -6,10 +6,7 @@ import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
-import com.mkl.eu.client.service.service.board.MoveCounterRequest;
-import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
+import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -26,8 +23,10 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
 import com.mkl.eu.service.service.util.DiffUtil;
@@ -68,6 +67,9 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private IProvinceDao provinceDao;
+
+    @Mock
+    private ICountryDao countryDao;
 
     @Mock
     private ICounterDao counterDao;
@@ -1309,5 +1311,141 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
         Assert.assertEquals(0, diffEntities.get(0).getAttributes().size());
+    }
+
+    @Test
+    public void testCreateCounterFailSimple() {
+        Pair<Request<CreateCounterRequest>, GameEntity> pair = testCheckGame(boardService::createCounter, "createCounter");
+        Request<CreateCounterRequest> request = pair.getLeft();
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new CreateCounterRequest());
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request.province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("toto");
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request.type is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.type", e.getParams()[0]);
+        }
+
+        request.getRequest().setType(CounterFaceTypeEnum.ARMY_MINUS);
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request.country is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.country", e.getParams()[0]);
+        }
+
+        request.getRequest().setCountry("FRA");
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request.country does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.country", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testCreateCounterSuccess() throws Exception {
+        Pair<Request<CreateCounterRequest>, GameEntity> pair = testCheckGame(boardService::createCounter, "createCounter");
+        Request<CreateCounterRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        request.setRequest(new CreateCounterRequest());
+        request.getRequest().setProvince("IdF");
+        request.getRequest().setType(CounterFaceTypeEnum.ARMY_MINUS);
+        request.getRequest().setCountry("FRA");
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(257L);
+        idf.setName("IdF");
+
+        when(countryDao.getCountryByName("FRA")).thenReturn(new CountryEntity());
+        when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
+
+        DiffEntity diffCreate = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER);
+        when(counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "FRA", "IdF", null, game)).thenReturn(diffCreate);
+
+        simulateDiff();
+
+        boardService.createCounter(request);
+
+        DiffEntity diff = retrieveDiffCreated();
+
+        Assert.assertEquals(diff, diffCreate);
+    }
+
+    @Test
+    public void testRemoveCounterFailSimple() {
+        Pair<Request<RemoveCounterRequest>, GameEntity> pair = testCheckGame(boardService::removeCounter, "removeCounter");
+        Request<RemoveCounterRequest> request = pair.getLeft();
+
+        try {
+            boardService.removeCounter(request);
+            Assert.fail("Should break because removeCounter.request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("removeCounter.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new RemoveCounterRequest());
+
+        try {
+            boardService.removeCounter(request);
+            Assert.fail("Should break because removeCounter.request.idCounter is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("removeCounter.request.idCounter", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCounter(25L);
+
+        try {
+            boardService.removeCounter(request);
+            Assert.fail("Should break because counter does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("removeCounter.request.idCounter", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testRemoveCounterSuccess() throws Exception {
+        Pair<Request<RemoveCounterRequest>, GameEntity> pair = testCheckGame(boardService::removeCounter, "removeCounter");
+        Request<RemoveCounterRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        request.setRequest(new RemoveCounterRequest());
+        request.getRequest().setIdCounter(25L);
+
+        DiffEntity diffRemove = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER);
+        when(counterDomain.removeCounter(25L, game)).thenReturn(diffRemove);
+
+        simulateDiff();
+
+        boardService.removeCounter(request);
+
+        DiffEntity diff = retrieveDiffCreated();
+        Assert.assertEquals(diff, diffRemove);
     }
 }

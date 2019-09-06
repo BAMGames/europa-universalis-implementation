@@ -1,7 +1,6 @@
 package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.client.service.service.IBoardService;
-import com.mkl.eu.client.service.service.IGameAdminService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
@@ -41,9 +40,6 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     /** Board Service. */
     @Autowired
     private IBoardService boardService;
-    /** Game Admin Service. */
-    @Autowired
-    private IGameAdminService gameAdminService;
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -267,13 +263,13 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof CounterMarker) {
-            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, gameAdminService, this);
+            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, boardService, this);
         } else if (contextualized instanceof StackMarker) {
             menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
         } else {
             Marker marker = markerManager.getSelectedMarker();
             if (marker instanceof IMapMarker) {
-                menu = MenuHelper.createMenuProvince((IMapMarker) marker, gameAdminService, this);
+                menu = MenuHelper.createMenuProvince((IMapMarker) marker, boardService, this);
             }
         }
 

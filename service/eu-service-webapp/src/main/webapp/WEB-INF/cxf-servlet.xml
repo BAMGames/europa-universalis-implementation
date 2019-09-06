@@ -9,9 +9,6 @@
     <jaxws:endpoint id="boardService"
                     implementor="com.mkl.eu.service.service.ws.impl.BoardWsServiceImpl"
                     address="/BoardService"/>
-    <jaxws:endpoint id="gameAdminService"
-                    implementor="com.mkl.eu.service.service.ws.impl.GameAdminWsServiceImpl"
-                    address="/GameAdminService"/>
     <jaxws:endpoint id="chatService"
                     implementor="com.mkl.eu.service.service.ws.impl.ChatWsServiceImpl"
                     address="/ChatService"/>

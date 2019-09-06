@@ -14,10 +14,6 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
                   serviceClass="com.mkl.eu.client.service.service.IBoardService"
                   address="http://localhost:8080/eu/services/BoardService?wsdl"/>
 
-    <jaxws:client id="gameAdminClient"
-                  serviceClass="com.mkl.eu.client.service.service.IGameAdminService"
-                  address="http://localhost:8080/eu/services/GameAdminService?wsdl"/>
-
     <jaxws:client id="chatClient"
                   serviceClass="com.mkl.eu.client.service.service.IChatService"
                   address="http://localhost:8080/eu/services/ChatService?wsdl"/>

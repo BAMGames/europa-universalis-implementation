@@ -4,10 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
-import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
-import com.mkl.eu.client.service.service.board.MoveCounterRequest;
-import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
+import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +53,17 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
     @Override
     public DiffResponse validateMilitaryRound(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
         return boardService.validateMilitaryRound(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse createCounter(Request<CreateCounterRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.createCounter(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse removeCounter(Request<RemoveCounterRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.removeCounter(request);
     }
 }

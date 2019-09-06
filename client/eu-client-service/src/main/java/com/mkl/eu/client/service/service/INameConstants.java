@@ -36,6 +36,10 @@ public interface INameConstants {
     String PARAMETER_MOVE_COUNTER = "moveCounter";
     /** Name of the parameter validateMilitaryRound. */
     String PARAMETER_VALIDATE_MIL_ROUND = "validateMilitaryRound";
+    /** Name of the parameter createCounter. */
+    String PARAMETER_CREATE_COUNTER = "createCounter";
+    /** Name of the parameter removeCounter. */
+    String PARAMETER_REMOVE_COUNTER = "removeCounter";
     /** Name of the parameter createRoom. */
     String PARAMETER_CREATE_ROOM = "createRoom";
     /** Name of the parameter createRoom. */

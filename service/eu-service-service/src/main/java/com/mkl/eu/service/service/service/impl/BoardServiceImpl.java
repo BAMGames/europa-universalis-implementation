@@ -7,10 +7,7 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
-import com.mkl.eu.client.service.service.board.EndMoveStackRequest;
-import com.mkl.eu.client.service.service.board.MoveCounterRequest;
-import com.mkl.eu.client.service.service.board.MoveStackRequest;
-import com.mkl.eu.client.service.service.board.TakeStackControlRequest;
+import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -25,7 +22,9 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
@@ -61,6 +60,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
+    /** Country DAO. */
+    @Autowired
+    private ICountryDao countryDao;
     /** OeUtil. */
     @Autowired
     private IOEUtil oeUtil;
@@ -704,5 +706,80 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         response.setMessages(getMessagesSince(request));
 
         return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse createCounter(Request<CreateCounterRequest> request) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CREATE_COUNTER)
+                .setParams(METHOD_CREATE_COUNTER));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CREATE_COUNTER, PARAMETER_CREATE_COUNTER);
+        GameEntity game = gameDiffs.getGame();
+        // TODO authorization ADMIN
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST)
+                .setParams(METHOD_CREATE_COUNTER));
+
+        failIfEmpty(new CheckForThrow<String>().setTest(request.getRequest().getProvince()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER));
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getType()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_CREATE_COUNTER));
+        failIfEmpty(new CheckForThrow<String>().setTest(request.getRequest().getCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_COUNTRY).setParams(METHOD_CREATE_COUNTER));
+
+        CountryEntity country = countryDao.getCountryByName(request.getRequest().getCountry());
+
+        failIfNull(new CheckForThrow<>().setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_COUNTRY)
+                .setParams(METHOD_CREATE_COUNTER, request.getRequest().getCountry()));
+
+        AbstractProvinceEntity prov = provinceDao.getProvinceByName(request.getRequest().getProvince());
+
+        failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, request.getRequest().getProvince()));
+
+        DiffEntity diff = counterDomain.createCounter(request.getRequest().getType(), request.getRequest().getCountry(), request.getRequest().getProvince(), null, game);
+        gameDao.update(game, true);
+
+        return createDiff(diff, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse removeCounter(Request<RemoveCounterRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_REMOVE_COUNTER)
+                .setParams(METHOD_REMOVE_COUNTER));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_REMOVE_COUNTER, PARAMETER_REMOVE_COUNTER);
+        GameEntity game = gameDiffs.getGame();
+        // TODO authorization ADMIN
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_REMOVE_COUNTER, PARAMETER_REQUEST)
+                .setParams(METHOD_REMOVE_COUNTER));
+
+        failIfNull(new CheckForThrow<>().setTest(request.getRequest().getIdCounter()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_REMOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER));
+
+        DiffEntity diff = counterDomain.removeCounter(request.getRequest().getIdCounter(), game);
+
+        failIfNull(new CheckForThrow<>().setTest(diff).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_REMOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER, request.getRequest().getIdCounter()));
+
+        return createDiff(diff, gameDiffs, request);
     }
 }
