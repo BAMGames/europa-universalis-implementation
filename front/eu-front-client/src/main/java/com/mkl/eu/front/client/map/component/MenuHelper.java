@@ -203,13 +203,9 @@ public final class MenuHelper {
         List<ContextualMenuItem> menus = new ArrayList<>();
         ContextualMenu menu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.map", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.map.color", null, container.getGlobalConfiguration().getLocale()),
-                event -> {
-                    MapConfiguration.switchColor();
-                }));
+                event -> MapConfiguration.switchColor()));
         menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.map.moving_stack", null, container.getGlobalConfiguration().getLocale()),
-                event -> {
-                    MapConfiguration.switchStacksMovePhase();
-                }));
+                event -> MapConfiguration.switchStacksMovePhase()));
 
         menus.add(menu);
         menus.add(ContextualMenuItem.createMenuSeparator());

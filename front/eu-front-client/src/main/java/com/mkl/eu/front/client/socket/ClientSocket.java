@@ -1,11 +1,13 @@
 package com.mkl.eu.front.client.socket;
 
 import com.mkl.eu.client.common.vo.SocketInfo;
+import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import javafx.application.Platform;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +16,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.SocketException;
 
 /**
  * Socket for the server client side.
@@ -24,10 +26,17 @@ import java.net.SocketTimeoutException;
 @Component
 @Scope(value = "prototype")
 public class ClientSocket extends AbstractDiffListenerContainer implements Runnable {
+    /** Delays between two unsuccessful tries to reconnect to the socket. */
+    private final static long[] delays = new long[]{5000l, 10000l, 30000l, 60000l};
     /** Socket to communicate with server. */
     private Socket socket;
     /** Terminate this process. */
     private boolean terminate;
+    /** Flag saying the client is currently connected to the server. */
+    private boolean connected;
+    /** Game service to update current game after a disconnection. */
+    @Autowired
+    private IGameService gameService;
 
     /**
      * Constructor.
@@ -54,6 +63,7 @@ public class ClientSocket extends AbstractDiffListenerContainer implements Runna
 
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(info);
+            connected = true;
         } catch (Exception e) {
             LOGGER.error("Error when initializing with server.", e);
         }
@@ -71,15 +81,35 @@ public class ClientSocket extends AbstractDiffListenerContainer implements Runna
                 DiffEvent event = new DiffEvent(response, gameConfig.getIdGame());
                 Platform.runLater(() -> processDiffEvent(event));
             }
-        } catch (SocketTimeoutException e) {
-            setTerminate(terminate);
-            init();
-            run();
+        } catch (SocketException e) {
+            connected = false;
+            tryToReconnect();
         } catch (Exception e) {
             if (!terminate) {
                 LOGGER.error("Error when communicating with server.", e);
             }
         }
+    }
+
+    /**
+     * If the connection to the server was lost, then we try to reconnect it.
+     */
+    private void tryToReconnect() {
+        setTerminate(terminate);
+        int nbRetry = 0;
+        while (!connected) {
+            long delay = nbRetry >= delays.length ? delays[delays.length - 1] : delays[nbRetry];
+            LOGGER.debug("Trying to reconnect for the " + (nbRetry + 1) + " times in " + delay + " ms.");
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            init();
+            nbRetry++;
+        }
+        callService(gameService::updateGame, () -> null, "Error when updating the game.");
+        run();
     }
 
     /** @param terminate the terminate to set. */
