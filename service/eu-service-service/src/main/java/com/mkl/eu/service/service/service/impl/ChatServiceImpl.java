@@ -47,7 +47,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_ROOM).setParams(METHOD_CREATE_ROOM));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CREATE_ROOM, PARAMETER_CREATE_ROOM);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsReader(request.getGame(), METHOD_CREATE_ROOM, PARAMETER_CREATE_ROOM);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_ROOM, PARAMETER_REQUEST).setParams(METHOD_CREATE_ROOM));
@@ -109,7 +109,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_SPEAK_IN_ROOM).setParams(METHOD_SPEAK_IN_ROOM));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SPEAK_IN_ROOM, PARAMETER_SPEAK_IN_ROOM);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsReader(request.getGame(), METHOD_SPEAK_IN_ROOM, PARAMETER_SPEAK_IN_ROOM);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_REQUEST).setParams(METHOD_SPEAK_IN_ROOM));
@@ -189,7 +189,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM).setParams(METHOD_TOGGLE_ROOM));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_TOGGLE_ROOM, PARAMETER_TOGGLE_ROOM);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsReader(request.getGame(), METHOD_TOGGLE_ROOM, PARAMETER_TOGGLE_ROOM);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST).setParams(METHOD_TOGGLE_ROOM));
@@ -235,7 +235,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM).setParams(METHOD_INVITE_KICK_ROOM));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_INVITE_KICK_ROOM, PARAMETER_INVITE_KICK_ROOM);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsReader(request.getGame(), METHOD_INVITE_KICK_ROOM, PARAMETER_INVITE_KICK_ROOM);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_REQUEST).setParams(METHOD_INVITE_KICK_ROOM));
@@ -336,7 +336,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_READ_ROOM).setParams(METHOD_READ_ROOM));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_READ_ROOM, PARAMETER_READ_ROOM);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsReader(request.getGame(), METHOD_READ_ROOM, PARAMETER_READ_ROOM);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_READ_ROOM, PARAMETER_REQUEST).setParams(METHOD_READ_ROOM));

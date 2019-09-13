@@ -80,7 +80,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_SIEGE)
                 .setParams(METHOD_CHOOSE_SIEGE));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
         GameEntity game = gameDiffs.getGame();
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
@@ -210,7 +210,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_SELECT_FORCES)
                 .setParams(METHOD_SELECT_FORCES));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
@@ -397,7 +397,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_MODE)
                 .setParams(METHOD_CHOOSE_MODE));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
         GameEntity game = gameDiffs.getGame();
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
@@ -794,7 +794,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_MAN)
                 .setParams(METHOD_CHOOSE_MAN));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
         GameEntity game = gameDiffs.getGame();
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
@@ -905,7 +905,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_BREACH)
                 .setParams(METHOD_CHOOSE_BREACH));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
         GameEntity game = gameDiffs.getGame();
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
@@ -1282,7 +1282,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_REDEPLOY)
                 .setParams(METHOD_REDEPLOY));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_REDEPLOY, PARAMETER_REDEPLOY);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_REDEPLOY, PARAMETER_REDEPLOY);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_REDEPLOY, PARAMETER_REDEPLOY);
@@ -1438,7 +1438,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);

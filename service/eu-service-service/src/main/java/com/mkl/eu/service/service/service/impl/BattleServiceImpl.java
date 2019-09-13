@@ -79,7 +79,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_CHOOSE_BATTLE)
                 .setParams(METHOD_CHOOSE_BATTLE));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
         GameEntity game = gameDiffs.getGame();
 
         checkGameStatus(game, GameStatusEnum.MILITARY_BATTLES, request.getIdCountry(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
@@ -224,7 +224,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_SELECT_FORCES)
                 .setParams(METHOD_SELECT_FORCES));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
@@ -369,7 +369,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE)
                 .setParams(METHOD_WITHDRAW_BEFORE_BATTLE));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_WITHDRAW_BEFORE_BATTLE, PARAMETER_WITHDRAW_BEFORE_BATTLE);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_WITHDRAW_BEFORE_BATTLE, PARAMETER_WITHDRAW_BEFORE_BATTLE);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_WITHDRAW_BEFORE_BATTLE, PARAMETER_WITHDRAW_BEFORE_BATTLE);
@@ -740,7 +740,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_RETREAT_FIRST_DAY)
                 .setParams(METHOD_RETREAT_FIRST_DAY));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_RETREAT_FIRST_DAY, PARAMETER_RETREAT_FIRST_DAY);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_RETREAT_FIRST_DAY, PARAMETER_RETREAT_FIRST_DAY);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_RETREAT_FIRST_DAY, PARAMETER_RETREAT_FIRST_DAY);
@@ -1372,7 +1372,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_CHOOSE_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
@@ -1571,7 +1571,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_RETREAT_AFTER_BATTLE)
                 .setParams(METHOD_RETREAT_AFTER_BATTLE));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_RETREAT_AFTER_BATTLE, PARAMETER_RETREAT_AFTER_BATTLE);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_RETREAT_AFTER_BATTLE, PARAMETER_RETREAT_AFTER_BATTLE);
         GameEntity game = gameDiffs.getGame();
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_RETREAT_AFTER_BATTLE, PARAMETER_RETREAT_AFTER_BATTLE);

@@ -77,7 +77,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK)
                 .setParams(METHOD_MOVE_STACK));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
@@ -272,7 +272,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_TAKE_STACK_CONTROL)
                 .setParams(METHOD_TAKE_STACK_CONTROL));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
         GameEntity game = gameDiffs.getGame();
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
 
@@ -374,7 +374,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_END_MOVE_STACK)
                 .setParams(METHOD_END_MOVE_STACK));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
 
@@ -472,7 +472,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER)
                 .setParams(METHOD_MOVE_COUNTER));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
 
@@ -621,7 +621,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_VALIDATE_MIL_ROUND)
                 .setParams(METHOD_VALIDATE_MIL_ROUND));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
         GameEntity game = gameDiffs.getGame();
 
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
@@ -717,7 +717,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_CREATE_COUNTER)
                 .setParams(METHOD_CREATE_COUNTER));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_CREATE_COUNTER, PARAMETER_CREATE_COUNTER);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CREATE_COUNTER, PARAMETER_CREATE_COUNTER);
         GameEntity game = gameDiffs.getGame();
         // TODO authorization ADMIN
 
@@ -761,7 +761,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_REMOVE_COUNTER)
                 .setParams(METHOD_REMOVE_COUNTER));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_REMOVE_COUNTER, PARAMETER_REMOVE_COUNTER);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_REMOVE_COUNTER, PARAMETER_REMOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
         // TODO authorization ADMIN
 

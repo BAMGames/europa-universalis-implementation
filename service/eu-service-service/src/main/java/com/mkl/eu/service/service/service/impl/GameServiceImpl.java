@@ -142,7 +142,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
         failIfNull(new CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_UPDATE_GAME).setParams(METHOD_UPDATE_GAME));
 
-        GameDiffsInfo gameDiffs = checkGameAndGetDiffs(request.getGame(), METHOD_UPDATE_GAME, PARAMETER_UPDATE_GAME);
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsReader(request.getGame(), METHOD_UPDATE_GAME, PARAMETER_UPDATE_GAME);
 
         List<DiffEntity> diffs = gameDiffs.getDiffs();
         List<Diff> diffVos = diffMapping.oesToVos(diffs);

@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -202,6 +203,7 @@ public abstract class AbstractService implements INameConstants {
 
     /**
      * Check that game info are properly assigned, retrieve the game and its diffs and return it.
+     * Does not lock the game.
      *
      * @param gameInfo to check.
      * @param method   calling this. For logging purpose.
@@ -209,7 +211,35 @@ public abstract class AbstractService implements INameConstants {
      * @return the game and its diffs.
      * @throws FunctionalException functional exception.
      */
-    protected GameDiffsInfo checkGameAndGetDiffs(GameInfo gameInfo, String method, String param) throws FunctionalException {
+    protected GameDiffsInfo checkGameAndGetDiffsAsReader(GameInfo gameInfo, String method, String param) throws FunctionalException {
+        return checkGameAndGetDiffs(gameInfo, method, param, gameDao::load);
+    }
+
+    /**
+     * Check that game info are properly assigned, retrieve the game and its diffs and return it.
+     * Lock the game until the end of the transaction.
+     *
+     * @param gameInfo to check.
+     * @param method   calling this. For logging purpose.
+     * @param param    name of the param holding the gameInfo. For logging purpose.
+     * @return the game and its diffs.
+     * @throws FunctionalException functional exception.
+     */
+    protected GameDiffsInfo checkGameAndGetDiffsAsWriter(GameInfo gameInfo, String method, String param) throws FunctionalException {
+        return checkGameAndGetDiffs(gameInfo, method, param, gameDao::lock);
+    }
+
+    /**
+     * Check that game info are properly assigned, retrieve the game and its diffs and return it.
+     *
+     * @param gameInfo      to check.
+     * @param method        calling this. For logging purpose.
+     * @param param         name of the param holding the gameInfo. For logging purpose.
+     * @param gameRetriever the dao function to call to retrieve the game.
+     * @return the game and its diffs.
+     * @throws FunctionalException functional exception.
+     */
+    protected GameDiffsInfo checkGameAndGetDiffs(GameInfo gameInfo, String method, String param, Function<Long, GameEntity> gameRetriever) throws FunctionalException {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(gameInfo).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME).setParams(method));
 
@@ -221,11 +251,11 @@ public abstract class AbstractService implements INameConstants {
         failIfNull(new CheckForThrow<>().setTest(versionGame).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method));
 
-        GameEntity game = gameDao.lock(idGame);
+        GameEntity game = gameRetriever.apply(idGame);
 
         failIfNull(new CheckForThrow<>().setTest(game).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(param, PARAMETER_GAME, PARAMETER_ID_GAME).setParams(method, idGame));
-        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame < game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+        failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame <= game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_VERSION_INCORRECT).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method, versionGame, game.getVersion()));
 
         List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
