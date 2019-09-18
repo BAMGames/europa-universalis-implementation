@@ -1,10 +1,13 @@
 package com.mkl.eu.front.client.map.component;
 
+import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.board.*;
+import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.CountryTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.MapConfiguration;
@@ -48,7 +51,7 @@ public final class MenuHelper {
      * @param container    container to call back when services are called.
      * @return a Contextual Menu for a Province.
      */
-    public static ContextualMenu createMenuProvince(final IMapMarker province, IBoardService boardService,
+    public static ContextualMenu createMenuProvince(final IMapMarker province, IBoardService boardService, IBattleService battleService,
                                                     IMenuContainer container) {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage(province.getId(), null, container.getGlobalConfiguration().getLocale())));
@@ -65,20 +68,8 @@ public final class MenuHelper {
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
-        ContextualMenu subMenu1 = ContextualMenuItem.createMenuSubMenu("Test");
-        ContextualMenu subMenu2 = ContextualMenuItem.createMenuSubMenu("Sous menu !");
-        subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("action", null));
-        subMenu2.addMenuItem(ContextualMenuItem.createMenuLabel("text"));
-        subMenu2.addMenuItem(ContextualMenuItem.createMenuItem("reaction", null));
-        subMenu1.addMenuItem(subMenu2);
-        subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Amen", null));
-        subMenu1.addMenuItem(ContextualMenuItem.createMenuLabel("Upide"));
-        ContextualMenu subMenu3 = ContextualMenuItem.createMenuSubMenu("Un autre");
-        subMenu3.addMenuItem(ContextualMenuItem.createMenuLabel("OK"));
-        subMenu3.addMenuItem(ContextualMenuItem.createMenuItem("Ou pas", null));
-        subMenu1.addMenuItem(subMenu3);
-        subMenu1.addMenuItem(ContextualMenuItem.createMenuItem("Icule", null));
-        menu.addMenuItem(subMenu1);
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.province.choose_battle", null, container.getGlobalConfiguration().getLocale()),
+                container.callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing battle.")));
 
         return menu;
     }
@@ -173,8 +164,10 @@ public final class MenuHelper {
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), container.callServiceAsEvent(boardService::moveStack, () -> new MoveStackRequest(stack.getId(), border.getProvince().getId()), "Error when moving stack.")));
         }
         menu.addMenuItem(move);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.stack.end_move", null, container.getGlobalConfiguration().getLocale()),
-                container.callServiceAsEvent(boardService::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.")));
+        if (stack.getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.stack.end_move", null, container.getGlobalConfiguration().getLocale()),
+                    container.callServiceAsEvent(boardService::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.")));
+        }
 
         return menu;
     }
