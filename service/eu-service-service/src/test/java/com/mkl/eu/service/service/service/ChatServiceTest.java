@@ -153,7 +153,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, diffMapping);
 
-        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, "Title");
         inOrder.verify(chatDao).create(anyObject());
@@ -267,7 +267,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
 
-        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoomGlobal(12L);
         inOrder.verify(chatDao).createMessage((MessageGlobalEntity) anyObject());
@@ -360,7 +360,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
 
-        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         //noinspection unchecked
@@ -519,7 +519,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
 
-        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
@@ -726,7 +726,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
 
-        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         if (presentBefore == presentAfter) {
@@ -822,7 +822,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
 
-        inOrder.verify(gameDao).lock(12L);
+        inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         inOrder.verify(chatDao).createPresent(anyObject());

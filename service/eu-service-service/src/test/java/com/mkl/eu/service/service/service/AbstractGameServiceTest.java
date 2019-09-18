@@ -80,6 +80,7 @@ public abstract class AbstractGameServiceTest {
         game.setId(GAME_ID);
         game.setVersion(5L);
         when(gameDao.lock(GAME_ID)).thenReturn(game);
+        when(gameDao.load(GAME_ID)).thenReturn(game);
 
         return game;
     }
@@ -131,6 +132,7 @@ public abstract class AbstractGameServiceTest {
 
     public <V> Pair<Request<V>, GameEntity> testCheckGame(IServiceWithCheckGame<V> service, String method) {
         when(gameDao.lock(GAME_ID)).thenReturn(null);
+        when(gameDao.load(GAME_ID)).thenReturn(null);
 
         try {
             service.run(null);
@@ -185,6 +187,7 @@ public abstract class AbstractGameServiceTest {
         game.setId(GAME_ID);
 
         when(gameDao.lock(GAME_ID)).thenReturn(game);
+        when(gameDao.load(GAME_ID)).thenReturn(game);
 
         try {
             service.run(request);

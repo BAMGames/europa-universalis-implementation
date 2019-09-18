@@ -387,7 +387,7 @@ public class GameServiceTest {
         game.setId(12L);
         game.setVersion(5L);
 
-        when(gameDao.lock(anyLong())).thenReturn(game);
+        when(gameDao.load(anyLong())).thenReturn(game);
 
         when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffs);
 
