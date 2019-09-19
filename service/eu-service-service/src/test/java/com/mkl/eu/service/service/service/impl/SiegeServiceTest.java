@@ -1138,9 +1138,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(siege.getId(), diffEntity.getIdObject());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
-        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(2, diffEntity.getAttributes().size());
         Assert.assertEquals(SiegeStatusEnum.REDEPLOY.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         Assert.assertEquals(SiegeStatusEnum.REDEPLOY, siege.getStatus());
+        Assert.assertEquals(SiegeUndermineResultEnum.WAR_HONOUR.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+        Assert.assertEquals(SiegeUndermineResultEnum.WAR_HONOUR, siege.getUndermineResult());
     }
 
     @Test
@@ -1184,9 +1186,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(siege.getId(), diffEntity.getIdObject());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
-        Assert.assertEquals(1, diffEntity.getAttributes().size());
+        Assert.assertEquals(2, diffEntity.getAttributes().size());
         Assert.assertEquals(SiegeStatusEnum.DONE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         Assert.assertEquals(SiegeStatusEnum.DONE, siege.getStatus());
+        Assert.assertEquals(SiegeUndermineResultEnum.BREACH_NOT_TAKEN.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+        Assert.assertEquals(SiegeUndermineResultEnum.BREACH_NOT_TAKEN, siege.getUndermineResult());
     }
 
     @Test
@@ -2829,6 +2833,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
             Assert.assertEquals(result.status != null ? result.status.name() : null, getAttribute(diffSiege, DiffAttributeTypeEnum.STATUS));
             Assert.assertEquals(result.status, siege.getStatus());
+            if (breach) {
+                Assert.assertEquals(SiegeUndermineResultEnum.BREACH_TAKEN.name(), getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+                Assert.assertEquals(SiegeUndermineResultEnum.BREACH_TAKEN, siege.getUndermineResult());
+            }
             DiffEntity removeFortress = diffs.stream()
                     .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 101L)
                     .findAny()

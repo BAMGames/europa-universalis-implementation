@@ -957,17 +957,21 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         switch (request.getRequest().getChoice()) {
             case BREACH:
+                siege.setUndermineResult(SiegeUndermineResultEnum.BREACH_TAKEN);
                 diffs.addAll(computeAssault(siege, country, true, attributes));
                 break;
             case WAR_HONORS:
+                siege.setUndermineResult(SiegeUndermineResultEnum.WAR_HONOUR);
                 siege.setStatus(SiegeStatusEnum.REDEPLOY);
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.REDEPLOY));
                 break;
             case NOTHING:
+                siege.setUndermineResult(SiegeUndermineResultEnum.BREACH_NOT_TAKEN);
                 diffs.addAll(cleanUpSiege(siege, attributes));
                 break;
         }
 
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT, siege.getUndermineResult()));
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));
         diffs.add(diff);
