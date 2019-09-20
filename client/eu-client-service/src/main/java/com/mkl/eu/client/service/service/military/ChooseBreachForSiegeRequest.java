@@ -1,7 +1,7 @@
 package com.mkl.eu.client.service.service.military;
 
 /**
- * Request for chooseMan service.
+ * Request for chooseBreach service.
  *
  * @author MKL.
  */
@@ -12,6 +12,15 @@ public class ChooseBreachForSiegeRequest {
      * Constructor for jaxb.
      */
     public ChooseBreachForSiegeRequest() {
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param choice the choice to set.
+     */
+    public ChooseBreachForSiegeRequest(ChoiceBreachEnum choice) {
+        this.choice = choice;
     }
 
     /** @return the choice. */
