@@ -366,7 +366,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                             HBox hBox = new HBox();
                             Text text = new Text(order.getCountry().getName());
                             hBox.getChildren().add(text);
-                            if (order.isActive() && !order.isReady()) {
+                            if (order.isActive() && (game.getStatus() != GameStatusEnum.MILITARY_MOVE || !order.isReady())) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);
@@ -374,7 +374,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                                 } catch (FileNotFoundException e) {
                                     LOGGER.error("Image located at data/img/cross.png not found.", e);
                                 }
-                            } else if (order.getPosition() < activePosition || order.isActive() && order.isReady()) {
+                            } else if (order.getPosition() < activePosition || order.isActive()) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/check.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);
