@@ -3,6 +3,7 @@ package com.mkl.eu.front.client.military;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
@@ -12,14 +13,14 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.diplo.WarLight;
-import com.mkl.eu.client.service.vo.enumeration.BattleStatusEnum;
-import com.mkl.eu.client.service.vo.enumeration.BattleWinnerEnum;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
-import com.mkl.eu.client.service.vo.military.Battle;
-import com.mkl.eu.client.service.vo.military.BattleCounter;
-import com.mkl.eu.client.service.vo.military.BattleSide;
+import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.military.*;
+import com.mkl.eu.client.service.vo.tables.AssaultResult;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Tech;
+import com.mkl.eu.front.client.common.CounterConverter;
+import com.mkl.eu.front.client.common.EnumConverter;
+import com.mkl.eu.front.client.common.RedeployLine;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
@@ -70,6 +71,9 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
     /** Battle service. */
     @Autowired
     private IBattleService battleService;
+    /** Siege service. */
+    @Autowired
+    private ISiegeService siegeService;
     /** Internationalisation. */
     @Autowired
     private MessageSource message;
@@ -94,12 +98,22 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
     private ChoiceBox<Battle> choiceBattle;
     /** The choose battle button. */
     private Button chooseBattle;
+    /** The selected siege. */
+    private ChoiceBox<Siege> choiceSiege;
+    /** The choose siege button. */
+    private Button chooseSiege;
 
     /********************************************/
     /**         Nodes about battles             */
     /********************************************/
     /** The selected turn. */
     private ChoiceBox<Integer> choiceBattleTurn;
+
+    /********************************************/
+    /**         Nodes about sieges             */
+    /********************************************/
+    /** The selected turn. */
+    private ChoiceBox<Integer> choiceSiegeTurn;
 
 
     /**
@@ -127,13 +141,20 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         tabPane = new TabPane();
         tabPane.getTabs().add(createInfoTab());
         tabPane.getTabs().add(createBattles());
+        tabPane.getTabs().add(createSieges());
 
         updateBattles();
+        updateSieges();
         Integer maxTurn = choiceBattleTurn.getItems().stream()
                 .filter(Objects::nonNull)
                 .max(Comparator.<Integer>naturalOrder())
                 .orElse(null);
         choiceBattleTurn.getSelectionModel().select(maxTurn);
+        maxTurn = choiceSiegeTurn.getItems().stream()
+                .filter(Objects::nonNull)
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(null);
+        choiceSiegeTurn.getSelectionModel().select(maxTurn);
     }
 
     /**
@@ -177,6 +198,28 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         hBox.getChildren().addAll(choiceBattle, chooseBattle);
         vBox.getChildren().add(hBox);
 
+        choiceSiege = new ChoiceBox<>();
+        chooseSiege = new Button(message.getMessage("military.info.choose_siege", null, globalConfiguration.getLocale()));
+        choiceSiege.converterProperty().set(new StringConverter<Siege>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(Siege object) {
+                String province = message.getMessage(object.getProvince(), null, globalConfiguration.getLocale());
+                return province;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Siege fromString(String string) {
+                return null;
+            }
+        });
+        choiceSiege.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> chooseSiege.setDisable(newValue == null));
+        chooseSiege.setOnAction(callServiceAsEvent(siegeService::chooseSiege, () -> new ChooseProvinceRequest(choiceSiege.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the siege to proceed."));
+        hBox = new HBox();
+        hBox.getChildren().addAll(choiceSiege, chooseSiege);
+        vBox.getChildren().add(hBox);
+
         updateInfoPanel();
 
         return tab;
@@ -193,6 +236,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         validateMilitaryPhase.setDisable(true);
         invalidateMilitaryPhase.setDisable(true);
         chooseBattle.setDisable(true);
+        chooseSiege.setDisable(true);
 
         if (countryOrder != null && countryOrder.isActive()) {
             if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
@@ -201,6 +245,9 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             } else if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES &&
                     game.getBattles().stream().noneMatch(battle -> battle.getStatus() != BattleStatusEnum.NEW && battle.getStatus() != BattleStatusEnum.DONE)) {
                 chooseBattle.setDisable(false);
+            } else if (game.getStatus() == GameStatusEnum.MILITARY_SIEGES &&
+                    game.getSieges().stream().noneMatch(siege -> siege.getStatus() != SiegeStatusEnum.NEW && siege.getStatus() != SiegeStatusEnum.DONE)) {
+                chooseSiege.setDisable(false);
             }
         }
     }
@@ -527,8 +574,18 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 .filter(c -> c.isOffensive() == offensive)
                 .map(c -> c.getCountry().getName())
                 .collect(Collectors.toList());
+        return createMultiSelectCounterNode(allies, battle.getProvince(), key, selectedCounters);
+    }
+
+    /**
+     * @param allies           the white list of countries.
+     * @param province         the province.
+     * @param selectedCounters the list of selected counters in the checkboxes (sort of callback).
+     * @return a multi check box node that contains all the counters that matches the country and the province.
+     */
+    private Node createMultiSelectCounterNode(List<String> allies, String province, String key, List<Long> selectedCounters) {
         List<Counter> counterList = game.getStacks().stream()
-                .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                .filter(stack -> StringUtils.equals(stack.getProvince(), province))
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> allies.contains(counter.getCountry()))
                 .collect(Collectors.toList());
@@ -659,34 +716,31 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
      * @return the node for choosing losses at the end of a battle.
      */
     private Node createBattleChooseLosses(Battle battle, boolean phasing) {
-        StringConverter<Counter> counterConverter = new StringConverter<Counter>() {
-            /** {@inheritDoc} */
-            @Override
-            public String toString(Counter object) {
-                return object.getType() + " - " + object.getCountry();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Counter fromString(String string) {
-                return null;
-            }
-        };
         List<Counter> counterList = battle.getCounters().stream()
                 .filter(bc -> bc.isPhasing() == phasing)
                 .map(BattleCounter::getCounter)
                 .collect(Collectors.toList());
         int maxRound = CommonUtil.add(phasing ? battle.getPhasing().getLosses().getRoundLoss() : battle.getNonPhasing().getLosses().getRoundLoss(), 1);
+        return createChooseLosses(counterList, maxRound, battleService::chooseLossesFromBattle);
+    }
+
+    /**
+     * @param counterList the list of counters elligible for losses.
+     * @param maxRound    the max number of round losses.
+     * @param service     the service to call to choose losses.
+     * @return the node for choosing losses at the end of a battle.
+     */
+    private Node createChooseLosses(List<Counter> counterList, int maxRound, IService<ChooseLossesRequest> service) {
         List<Integer> rounds = Stream.iterate(0, t -> t + 1).limit(maxRound).collect(Collectors.toList());
         List<Integer> thirds = Stream.iterate(0, t -> t + 1).limit(3).collect(Collectors.toList());
         List<ChooseLossLine> lines = new ArrayList<>();
 
         VBox vBox = new VBox();
-        ChooseLossLine line = new ChooseLossLine(counterConverter, counterList, rounds, thirds, "add");
+        ChooseLossLine line = new ChooseLossLine(counterList, rounds, thirds, "add");
         lines.add(line);
         vBox.getChildren().add(line.node);
         line.buttonBehavior(addEvent -> {
-            ChooseLossLine newLine = new ChooseLossLine(counterConverter, counterList, rounds, thirds, "delete");
+            ChooseLossLine newLine = new ChooseLossLine(counterList, rounds, thirds, "delete");
             newLine.buttonBehavior(delEvent -> {
                 vBox.getChildren().remove(newLine.node);
                 lines.remove(newLine);
@@ -695,7 +749,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             lines.add(newLine);
         });
         Button chooseLoss = new Button(message.getMessage("military.battle.choose_losses", null, globalConfiguration.getLocale()));
-        chooseLoss.setOnAction(callServiceAsEvent(battleService::chooseLossesFromBattle, () -> {
+        chooseLoss.setOnAction(callServiceAsEvent(service, () -> {
             List<ChooseLossesRequest.UnitLoss> losses = new ArrayList<>();
             for (ChooseLossLine clLine : lines) {
                 ChooseLossesRequest.UnitLoss loss = new ChooseLossesRequest.UnitLoss();
@@ -711,9 +765,377 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 losses.add(loss);
             }
             return new ChooseLossesRequest(losses);
-        }, "Error when choosing losses from the current battle."));
+        }, "Error when choosing losses."));
 
         lines.get(0).node.getChildren().add(chooseLoss);
+
+        return vBox;
+    }
+
+    /**
+     * Creates the tab for the sieges.
+     *
+     * @return the tab for the sieges.
+     */
+    private Tab createSieges() {
+        Tab tab = new Tab(message.getMessage("military.siege.title", null, globalConfiguration.getLocale()));
+        tab.setClosable(false);
+
+        choiceSiegeTurn = new ChoiceBox<>();
+
+
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(choiceSiegeTurn);
+
+        tab.setContent(vBox);
+
+        choiceSiegeTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                vBox.getChildren().removeIf(node -> node != choiceSiegeTurn);
+            } else {
+                vBox.getChildren().removeIf(node -> node != choiceSiegeTurn);
+                Map<WarLight, List<Siege>> siegesByWar = game.getSieges().stream()
+                        .filter(siege -> siege.getTurn().equals(newValue))
+                        .collect(Collectors.groupingBy(Siege::getWar));
+                for (Map.Entry<WarLight, List<Siege>> entry : siegesByWar.entrySet()) {
+                    vBox.getChildren().add(addSiegesFromWar(entry.getKey(), entry.getValue()));
+                }
+            }
+        });
+
+        return tab;
+    }
+
+    /**
+     * @param war    the war.
+     * @param sieges the sieges of the war.
+     * @return a node representing all the battles of a war in a given turn.
+     */
+    private Node addSiegesFromWar(WarLight war, List<Siege> sieges) {
+        VBox vBox = new VBox();
+        Collections.sort(sieges, (o1, o2) -> o2.getId().compareTo(o1.getId()));
+        for (Siege siege : sieges) {
+            SplitPane splitBattle = new SplitPane();
+            VBox phasingNode = new VBox();
+            VBox nonPhasingNode = new VBox();
+            splitBattle.getItems().addAll(phasingNode, nonPhasingNode);
+
+            HBox phasingCounters = new HBox();
+            HBox nonPhasingCounters = new HBox();
+            siege.getCounters().stream()
+                    .forEach(counter -> {
+                        try {
+                            FileInputStream fis = new FileInputStream(MarkerUtils.getImagePath(counter.getCounter()));
+                            ImageView image = new ImageView(new Image(fis, 40, 40, true, false));
+                            if (counter.isPhasing()) {
+                                phasingCounters.getChildren().add(image);
+                            } else {
+                                nonPhasingCounters.getChildren().add(image);
+                            }
+                        } catch (FileNotFoundException e) {
+                            LOGGER.error("Can't load image of counter " + counter);
+                        }
+                    });
+            phasingCounters.getChildren().add(createSiegeTooltip(siege.getPhasing()));
+            nonPhasingCounters.getChildren().add(createSiegeTooltip(siege.getNonPhasing()));
+            try {
+                ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/victory.png"))));
+                if (siege.isFortressFalls()) {
+                    nonPhasingCounters.getChildren().add(img);
+                } else {
+                    phasingCounters.getChildren().add(img);
+                }
+            } catch (FileNotFoundException e) {
+                LOGGER.error("Cannot find victory icon.");
+            }
+
+            boolean breach = siege.getUndermineResult() == SiegeUndermineResultEnum.BREACH_TAKEN;
+            phasingNode.getChildren().addAll(phasingCounters, createSiegeModifiers(siege.getPhasing()),
+                    createSiegeLosses(siege.getPhasing(), siege.getNonPhasing(), true, breach));
+            nonPhasingNode.getChildren().addAll(nonPhasingCounters, createSiegeModifiers(siege.getNonPhasing()),
+                    createSiegeLosses(siege.getNonPhasing(), siege.getPhasing(), false, breach));
+
+
+            if (siege.getStatus() == SiegeStatusEnum.SELECT_FORCES) {
+                phasingNode.getChildren().add(createSiegeSelectForces(siege));
+            } else if (siege.getStatus() == SiegeStatusEnum.CHOOSE_MODE) {
+                phasingNode.getChildren().add(createSiegeChooseMode(siege));
+            } else if (siege.getStatus() == SiegeStatusEnum.CHOOSE_BREACH) {
+                phasingNode.getChildren().add(createSiegeChooseBreach());
+            } else if (siege.getStatus() == SiegeStatusEnum.CHOOSE_MAN) {
+                phasingNode.getChildren().add(createSiegeChooseMan(siege));
+            } else if (siege.getStatus() == SiegeStatusEnum.CHOOSE_LOSS) {
+                if (BooleanUtils.isNotTrue(siege.getPhasing().isLossesSelected())) {
+                    phasingNode.getChildren().add(createSiegeChooseLosses(siege, true));
+                }
+                if (BooleanUtils.isNotTrue(siege.getNonPhasing().isLossesSelected())) {
+                    nonPhasingNode.getChildren().add(createSiegeChooseLosses(siege, false));
+                }
+            } else if (siege.getStatus() == SiegeStatusEnum.REDEPLOY) {
+                nonPhasingNode.getChildren().add(createSiegeRedeploy(siege));
+            }
+
+            TitledPane battleNode = new TitledPane(message.getMessage(siege.getProvince(), null, globalConfiguration.getLocale()) + " - " + siege.getStatus(), splitBattle);
+            vBox.getChildren().add(battleNode);
+        }
+
+        return new TitledPane(war.getName(), vBox);
+    }
+
+    /**
+     * @param side of the siege.
+     * @return The help tooltip about the siege.
+     */
+    private Node createSiegeTooltip(SiegeSide side) {
+        try {
+            ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
+            Tooltip tooltip = new Tooltip(message.getMessage("military.siege.info",
+                    new Object[]{side.getTech(), side.getMoral(), side.getSize()},
+                    globalConfiguration.getLocale()));
+            Tooltip.install(img, tooltip);
+            patchTooltipUntilMigrationJava9(tooltip);
+            return img;
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Cannot find help icon.");
+            return null;
+        }
+    }
+
+    /**
+     * @param side of the siege.
+     * @return the node displaying the modifiers of a siege side.
+     */
+    private Label createSiegeModifiers(SiegeSide side) {
+        return new Label(side.getModifiers().getFireMod() + " / " + side.getModifiers().getShockMod());
+    }
+
+    /**
+     * @param side    of the siege.
+     * @param against side against of the siege.
+     * @return the node displaying the damages of a siege side (only relevant for an assault).
+     */
+    private Label createSiegeLosses(SiegeSide side, SiegeSide against, boolean besieger, boolean breach) {
+        Label label = new Label(getDamage(against.getLosses()));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getSequenceDamage("military.siege.fire", side.getModifiers().getFire(), side.getModifiers().getFireMod(), true, besieger, breach && !besieger));
+        sb.append("\n");
+        sb.append(getSequenceDamage("military.siege.shock", side.getModifiers().getShock(), side.getModifiers().getShockMod(), false, besieger, breach && !besieger));
+        Tooltip tooltip = new Tooltip(sb.toString());
+        patchTooltipUntilMigrationJava9(tooltip);
+        label.setTooltip(tooltip);
+
+        return label;
+    }
+
+    /**
+     * @param key      of the sequence of the damage.
+     * @param die      the unmodified roll die of the damage.
+     * @param modifier the bonus on the roll die of the damage.
+     * @param fire     if it is the fire sequence.
+     * @param besieger if it is the besieger side.
+     * @param breach   if the fortress was just breached.
+     * @return a text displaying all damage info for a given sequence.
+     */
+    private String getSequenceDamage(String key, Integer die, int modifier, boolean fire, boolean besieger, boolean breach) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(message.getMessage(key, null, globalConfiguration.getLocale()));
+        sb.append(" : ");
+        if (die != null) {
+            int min = globalConfiguration.getTables().getAssaultResults().stream()
+                    .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach)
+                    .map(AssaultResult::getDice)
+                    .min(Comparator.naturalOrder())
+                    .orElse(3);
+            int max = globalConfiguration.getTables().getAssaultResults().stream()
+                    .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach)
+                    .map(AssaultResult::getDice)
+                    .max(Comparator.naturalOrder())
+                    .orElse(12);
+            int modifiedDie = die + modifier < min ? min : die + modifier > max ? max : die + modifier;
+            AssaultResult result = globalConfiguration.getTables().getAssaultResults().stream()
+                    .filter(cr -> cr.isFire() == fire && cr.isBesieger() == besieger && cr.isBreach() == breach && cr.getDice() == modifiedDie)
+                    .findAny()
+                    .orElse(null);
+            String localDamage = getDamage(result);
+            sb.append(message.getMessage("military.battle.damage",
+                    new Object[]{die, modifier, localDamage}, globalConfiguration.getLocale()));
+        } else {
+            sb.append(message.getMessage("military.battle.no_damage", null, globalConfiguration.getLocale()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * @param siege the siege.
+     * @return the node for selecting forces at that start of the siege.
+     */
+    private Node createSiegeSelectForces(Siege siege) {
+        HBox hBox = new HBox();
+        List<Long> selectedCounters = new ArrayList<>();
+
+        War war = game.getWars().stream()
+                .filter(w -> Objects.equals(w.getId(), siege.getWar().getId()))
+                .findAny()
+                .orElse(null);
+        boolean offensive = siege.isBesiegingOffensive();
+        List<String> allies = war.getCountries().stream()
+                .filter(c -> c.isOffensive() == offensive)
+                .map(c -> c.getCountry().getName())
+                .collect(Collectors.toList());
+        Node counters = createMultiSelectCounterNode(allies, siege.getProvince(), "military.siege.counters", selectedCounters);
+        Button select = new Button(message.getMessage("military.siege.select", null, globalConfiguration.getLocale()));
+        select.setOnAction(callServiceAsEvent(siegeService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the siege."));
+
+        hBox.getChildren().addAll(counters, select);
+
+        return hBox;
+    }
+
+    /**
+     * @return the node for selecting the mode (undermine or assault) of the siege.
+     */
+    private Node createSiegeChooseMode(Siege siege) {
+        HBox hBox = new HBox();
+
+        ChoiceBox<SiegeModeEnum> mode = new ChoiceBox<>();
+        mode.converterProperty().set(new EnumConverter<>(message, globalConfiguration));
+        mode.setItems(FXCollections.observableArrayList(SiegeModeEnum.values()));
+        ChoiceBox<String> provinces = new ChoiceBox<>();
+        IMapMarker marker = markers.stream()
+                .filter(m -> StringUtils.equals(m.getId(), siege.getProvince()))
+                .findAny()
+                .orElse(null);
+        provinces.setItems(FXCollections.observableList(marker.getNeighbours().stream()
+                .map(BorderMarker::getProvince)
+                .map(IMapMarker::getId)
+                .collect(Collectors.toList())));
+        provinces.setDisable(true);
+
+        mode.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            provinces.setDisable(newValue != SiegeModeEnum.REDEPLOY);
+        });
+
+        Button choose = new Button(message.getMessage("military.siege.choose_mode", null, globalConfiguration.getLocale()));
+        choose.setOnAction(callServiceAsEvent(siegeService::chooseMode, () -> new ChooseModeForSiegeRequest(mode.getValue(), provinces.getValue()), "Error when choosing mode of the siege."));
+
+        hBox.getChildren().addAll(mode, provinces, choose);
+
+        return hBox;
+    }
+
+    /**
+     * @return the node for selecting to take the breach or not after an undermine.
+     */
+    private Node createSiegeChooseBreach() {
+        HBox hBox = new HBox();
+
+        ChoiceBox<ChooseBreachForSiegeRequest.ChoiceBreachEnum> breach = new ChoiceBox<>();
+        breach.converterProperty().set(new EnumConverter<>(message, globalConfiguration));
+        breach.setItems(FXCollections.observableArrayList(ChooseBreachForSiegeRequest.ChoiceBreachEnum.values()));
+
+        Button choose = new Button(message.getMessage("military.siege.choose_breach", null, globalConfiguration.getLocale()));
+        choose.setOnAction(callServiceAsEvent(siegeService::chooseBreach, () -> new ChooseBreachForSiegeRequest(breach.getValue()), "Error when choosing to take the breach of the siege."));
+
+        hBox.getChildren().addAll(breach, choose);
+
+        return hBox;
+    }
+
+    /**
+     * @return the node for choosing to man a fortress after taking it.
+     */
+    private Node createSiegeChooseMan(Siege siege) {
+        HBox hBox = new HBox();
+
+        War war = game.getWars().stream()
+                .filter(w -> Objects.equals(w.getId(), siege.getWar().getId()))
+                .findAny()
+                .orElse(null);
+        boolean offensive = siege.isBesiegingOffensive();
+        List<String> allies = war.getCountries().stream()
+                .filter(c -> c.isOffensive() == offensive)
+                .map(c -> c.getCountry().getName())
+                .collect(Collectors.toList());
+        List<Counter> counterList = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> allies.contains(counter.getCountry()))
+                .collect(Collectors.toList());
+        counterList.add(0, null);
+        ChoiceBox<Counter> counter = new ChoiceBox<>();
+        counter.converterProperty().set(new CounterConverter());
+        counter.setItems(FXCollections.observableArrayList(counterList));
+
+        Button choose = new Button(message.getMessage("military.siege.choose_man", null, globalConfiguration.getLocale()));
+        choose.setOnAction(callServiceAsEvent(siegeService::chooseMan, () -> new ChooseManForSiegeRequest(counter.getValue() != null, counter.getValue() != null ? counter.getValue().getId() : null), "Error when choosing to man the fortress."));
+
+        hBox.getChildren().addAll(counter, choose);
+
+        return hBox;
+    }
+
+    /**
+     * @param siege   the siege.
+     * @param phasing player.
+     * @return the node for choosing losses at the end of a siege.
+     */
+    private Node createSiegeChooseLosses(Siege siege, boolean phasing) {
+        List<Counter> counterList = siege.getCounters().stream()
+                .filter(bc -> bc.isPhasing() == phasing)
+                .map(SiegeCounter::getCounter)
+                .collect(Collectors.toList());
+        int maxRound = CommonUtil.add(phasing ? siege.getPhasing().getLosses().getRoundLoss() : siege.getNonPhasing().getLosses().getRoundLoss(), 1);
+        return createChooseLosses(counterList, maxRound, siegeService::chooseLossesAfterAssault);
+    }
+
+    /**
+     * @return the node for choosing to man a fortress after taking it.
+     */
+    private Node createSiegeRedeploy(Siege siege) {
+        List<Counter> counterList = siege.getCounters().stream()
+                .filter(bc -> !bc.isPhasing())
+                .map(SiegeCounter::getCounter)
+                .collect(Collectors.toList());
+        List<CounterFaceTypeEnum> faces = new ArrayList<>();
+        faces.add(CounterFaceTypeEnum.LAND_DETACHMENT);
+        War war = game.getWars().stream()
+                .filter(w -> Objects.equals(w.getId(), siege.getWar().getId()))
+                .findAny()
+                .orElse(null);
+        boolean offensive = siege.isBesiegingOffensive();
+        List<String> allies = war.getCountries().stream()
+                .filter(c -> c.isOffensive() == offensive)
+                .map(c -> c.getCountry().getName())
+                .collect(Collectors.toList());
+        List<String> provinces = markers.stream()
+                .filter(province -> allies.contains(province.getController()))
+                .map(IMapMarker::getId)
+                .collect(Collectors.toList());
+        String controller = markers.stream()
+                .filter(province -> StringUtils.equals(province.getId(), siege.getProvince()))
+                .map(IMapMarker::getController)
+                .findAny()
+                .orElse(null);
+
+        List<RedeployLine> lines = new ArrayList<>();
+
+        VBox vBox = new VBox();
+        new RedeployLine(counterList, faces, provinces, (line, add) -> {
+            if (add) {
+                lines.add(line);
+                vBox.getChildren().add(line.getNode());
+            } else {
+                lines.remove(line);
+                vBox.getChildren().remove(line.getNode());
+            }
+        });
+
+
+        Button redeploy = new Button(message.getMessage("military.siege.redeploy", null, globalConfiguration.getLocale()));
+        redeploy.setOnAction(callServiceAsEvent(siegeService::redeploy, () -> RedeployLine.toRequest(lines, controller), "Error when redeploying forces."));
+
+        lines.get(0).getNode().getChildren().add(redeploy);
 
         return vBox;
     }
@@ -743,6 +1165,30 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * Update the list of sieges.
+     */
+    private void updateSieges() {
+        Integer turn = choiceSiegeTurn.getSelectionModel().getSelectedItem();
+
+        List<Integer> turns = game.getSieges().stream()
+                .map(Siege::getTurn)
+                .distinct()
+                .sorted(Comparator.<Integer>reverseOrder())
+                .collect(Collectors.toList());
+        turns.add(0, null);
+        choiceSiegeTurn.setItems(FXCollections.observableArrayList(turns));
+
+        if (turn != null) {
+            choiceSiegeTurn.getSelectionModel().select(turn);
+        }
+
+        List<Battle> battles = game.getBattles().stream()
+                .filter(battle -> battle.getTurn().equals(game.getTurn()) && battle.getStatus() == BattleStatusEnum.NEW)
+                .collect(Collectors.toList());
+        choiceBattle.setItems(FXCollections.observableArrayList(battles));
+    }
+
+    /**
      * Update the window given the diff.
      *
      * @param diff that will update the window.
@@ -755,6 +1201,9 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 break;
             case BATTLE:
                 updateBattles();
+                break;
+            case SIEGE:
+                updateSieges();
                 break;
             default:
                 break;
@@ -781,14 +1230,13 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         /**
          * Constructor.
          *
-         * @param counterConverter converter to apply to the choice box to select the counter.
-         * @param counterList      the list of counters that can be selected.
-         * @param rounds           the list of rounds losses that can be selected.
-         * @param thirds           the list of thirds losses that can be selected.
-         * @param buttonKey        the key message for the button.
+         * @param counterList the list of counters that can be selected.
+         * @param rounds      the list of rounds losses that can be selected.
+         * @param thirds      the list of thirds losses that can be selected.
+         * @param buttonKey   the key message for the button.
          */
-        private ChooseLossLine(StringConverter<Counter> counterConverter, List<Counter> counterList, List<Integer> rounds, List<Integer> thirds, String buttonKey) {
-            counters.converterProperty().set(counterConverter);
+        private ChooseLossLine(List<Counter> counterList, List<Integer> rounds, List<Integer> thirds, String buttonKey) {
+            counters.converterProperty().set(new CounterConverter());
             counters.setItems(FXCollections.observableList(counterList));
             round.setItems(FXCollections.observableList(rounds));
             third.setItems(FXCollections.observableList(thirds));

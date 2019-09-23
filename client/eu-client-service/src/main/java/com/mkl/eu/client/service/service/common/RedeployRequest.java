@@ -20,6 +20,15 @@ public class RedeployRequest {
     public RedeployRequest() {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param redeploys the redeploys to set.
+     */
+    public RedeployRequest(List<ProvinceRedeploy> redeploys) {
+        this.redeploys = redeploys;
+    }
+
     /** @return the redeploys. */
     public List<ProvinceRedeploy> getRedeploys() {
         return redeploys;
@@ -35,6 +44,22 @@ public class RedeployRequest {
         private String province;
         /** List of units to redeploy there. */
         private List<Unit> units = new ArrayList<>();
+
+        /**
+         * Constructor for jaxb.
+         */
+        public ProvinceRedeploy() {
+
+        }
+
+        /**
+         * Constructor.
+         *
+         * @param province the province to set.
+         */
+        public ProvinceRedeploy(String province) {
+            this.province = province;
+        }
 
         /** @return the province. */
         public String getProvince() {
