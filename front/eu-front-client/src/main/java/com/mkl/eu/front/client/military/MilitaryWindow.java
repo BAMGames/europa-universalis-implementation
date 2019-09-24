@@ -53,6 +53,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -736,36 +737,17 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         List<ChooseLossLine> lines = new ArrayList<>();
 
         VBox vBox = new VBox();
-        ChooseLossLine line = new ChooseLossLine(counterList, rounds, thirds, "add");
-        lines.add(line);
-        vBox.getChildren().add(line.node);
-        line.buttonBehavior(addEvent -> {
-            ChooseLossLine newLine = new ChooseLossLine(counterList, rounds, thirds, "delete");
-            newLine.buttonBehavior(delEvent -> {
+        ChooseLossLine line = new ChooseLossLine(counterList, rounds, thirds, (newLine, add) -> {
+            if (add) {
+                lines.add(newLine);
+                vBox.getChildren().add(newLine.node);
+            } else {
                 vBox.getChildren().remove(newLine.node);
                 lines.remove(newLine);
-            });
-            vBox.getChildren().add(newLine.node);
-            lines.add(newLine);
+            }
         });
         Button chooseLoss = new Button(message.getMessage("military.battle.choose_losses", null, globalConfiguration.getLocale()));
-        chooseLoss.setOnAction(callServiceAsEvent(service, () -> {
-            List<ChooseLossesRequest.UnitLoss> losses = new ArrayList<>();
-            for (ChooseLossLine clLine : lines) {
-                ChooseLossesRequest.UnitLoss loss = new ChooseLossesRequest.UnitLoss();
-                if (clLine.counters.getSelectionModel().getSelectedItem() != null) {
-                    loss.setIdCounter(clLine.counters.getSelectionModel().getSelectedItem().getId());
-                }
-                if (clLine.round.getSelectionModel().getSelectedItem() != null) {
-                    loss.setRoundLosses(clLine.round.getSelectionModel().getSelectedItem());
-                }
-                if (clLine.third.getSelectionModel().getSelectedItem() != null) {
-                    loss.setThirdLosses(clLine.third.getSelectionModel().getSelectedItem());
-                }
-                losses.add(loss);
-            }
-            return new ChooseLossesRequest(losses);
-        }, "Error when choosing losses."));
+        chooseLoss.setOnAction(callServiceAsEvent(service, () -> line.toRequest(lines), "Error when choosing losses."));
 
         lines.get(0).node.getChildren().add(chooseLoss);
 
@@ -1233,25 +1215,48 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
          * @param counterList the list of counters that can be selected.
          * @param rounds      the list of rounds losses that can be selected.
          * @param thirds      the list of thirds losses that can be selected.
-         * @param buttonKey   the key message for the button.
+         * @param listener    the listener to get the add and remove redeploy line events.
          */
-        private ChooseLossLine(List<Counter> counterList, List<Integer> rounds, List<Integer> thirds, String buttonKey) {
+        private ChooseLossLine(List<Counter> counterList, List<Integer> rounds, List<Integer> thirds, BiConsumer<ChooseLossLine, Boolean> listener) {
             counters.converterProperty().set(new CounterConverter());
             counters.setItems(FXCollections.observableList(counterList));
             round.setItems(FXCollections.observableList(rounds));
             third.setItems(FXCollections.observableList(thirds));
-            button = new Button(message.getMessage(buttonKey, null, globalConfiguration.getLocale()));
+            button = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+            button.setOnAction(event -> {
+                        ChooseLossLine newLine = new ChooseLossLine(counterList, rounds, thirds, listener);
+                        newLine.button.setText(message.getMessage("delete", null, globalConfiguration.getLocale()));
+                        newLine.button.setOnAction(delEvent -> listener.accept(newLine, false));
+                        listener.accept(newLine, true);
+                    }
+            );
 
             node.getChildren().addAll(counters, round, third, button);
+            listener.accept(this, true);
         }
 
         /**
-         * Apply a behavior to the button.
+         * Transform a list of ChooseLossLine into a ChooseLossesRequest.
          *
-         * @param buttonBehavior the behavior to set to the button.
+         * @param lines   the list of ChooseLossLine.
+         * @return a ChooseLossesRequest.
          */
-        private void buttonBehavior(EventHandler<ActionEvent> buttonBehavior) {
-            button.setOnAction(buttonBehavior);
+        public ChooseLossesRequest toRequest(List<ChooseLossLine> lines) {
+            List<ChooseLossesRequest.UnitLoss> losses = new ArrayList<>();
+            for (ChooseLossLine clLine : lines) {
+                ChooseLossesRequest.UnitLoss loss = new ChooseLossesRequest.UnitLoss();
+                if (clLine.counters.getSelectionModel().getSelectedItem() != null) {
+                    loss.setIdCounter(clLine.counters.getSelectionModel().getSelectedItem().getId());
+                }
+                if (clLine.round.getSelectionModel().getSelectedItem() != null) {
+                    loss.setRoundLosses(clLine.round.getSelectionModel().getSelectedItem());
+                }
+                if (clLine.third.getSelectionModel().getSelectedItem() != null) {
+                    loss.setThirdLosses(clLine.third.getSelectionModel().getSelectedItem());
+                }
+                losses.add(loss);
+            }
+            return new ChooseLossesRequest(losses);
         }
     }
 }
