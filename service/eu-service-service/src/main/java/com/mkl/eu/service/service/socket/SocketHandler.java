@@ -3,9 +3,10 @@ package com.mkl.eu.service.service.socket;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,7 +21,7 @@ import java.util.Map;
  * @author MKL.
  */
 @Component
-public class SocketHandler {
+public class SocketHandler implements ApplicationListener<ContextRefreshedEvent> {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketHandler.class);
     /** Map of active clients by id game. */
@@ -29,9 +30,24 @@ public class SocketHandler {
     private boolean terminate;
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        /**
+         * There is 2 application context created : a main one and one with cxf.
+         * The one with cxf has the main one has parent.
+         * Here, we want the socket server to be created after all web services have been created.
+         * Hence, we wait for the applicationContext with cxf to be initialized to init the socket server.
+         */
+        if (event.getApplicationContext().getParent() != null) {
+            init();
+        }
+    }
+
+    /**
      * Initialize the server socket.
      */
-    @PostConstruct
     public void init() {
         try {
             ServerSocket server = new ServerSocket(2009);
