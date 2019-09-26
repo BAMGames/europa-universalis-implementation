@@ -1668,14 +1668,23 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         }
 
         if (StringUtils.isEmpty(request.getRequest().getProvinceTo())) {
-            boolean remainingCounters = game.getStacks().stream()
-                    .anyMatch(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()));
-            failIfTrue(new CheckForThrow<Boolean>()
-                    .setTest(remainingCounters)
-                    .setCodeError(IConstantsServiceException.BATTLE_RETREAT_NEEDED)
-                    .setMsgFormat("{1}: {0} There are still some units that need to be retreated..")
-                    .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
-                    .setParams(METHOD_RETREAT_AFTER_BATTLE));
+            if (request.getRequest().isDisbandRemaining()) {
+                List<DiffEntity> deleteCounters = game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
+                        .flatMap(stack -> stack.getCounters().stream())
+                        .map(counter -> counterDomain.removeCounter(counter.getId(), game))
+                        .collect(Collectors.toList());
+                newDiffs.addAll(deleteCounters);
+            } else {
+                boolean remainingCounters = game.getStacks().stream()
+                        .anyMatch(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()));
+                failIfTrue(new CheckForThrow<Boolean>()
+                        .setTest(remainingCounters)
+                        .setCodeError(IConstantsServiceException.BATTLE_RETREAT_NEEDED)
+                        .setMsgFormat("{1}: {0} There are still some units that need to be retreated..")
+                        .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_PROVINCE_TO)
+                        .setParams(METHOD_RETREAT_AFTER_BATTLE));
+            }
         } else {
             String provinceTo = request.getRequest().getProvinceTo();
             AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceTo);

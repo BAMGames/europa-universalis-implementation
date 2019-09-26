@@ -3219,7 +3219,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testRetreatAfterBattle() {
+    public void testRetreatAfterBattleFail() {
         Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(battleService::retreatAfterBattle, "retreatAfterBattle");
         Request<RetreatAfterBattleRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
@@ -3728,5 +3728,146 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_FROM));
         Assert.assertEquals("orleans", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
         Assert.assertEquals("MOVED", getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+    }
+
+    @Test
+    public void testRetreatAfterBattleInFortressAndDisbandSuccess() throws FunctionalException {
+        Pair<Request<RetreatAfterBattleRequest>, GameEntity> pair = testCheckGame(battleService::retreatAfterBattle, "retreatAfterBattle");
+        Request<RetreatAfterBattleRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(27L);
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(26L);
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        StackEntity stackPhasing = new StackEntity();
+        stackPhasing.setId(1L);
+        stackPhasing.setCountry("france");
+        stackPhasing.setProvince("idf");
+        stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
+        stackPhasing.getCounters().add(createCounter(2L, "savoie", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
+        game.getStacks().add(stackPhasing);
+        StackEntity stackNonPhasing = new StackEntity();
+        stackNonPhasing.setId(2L);
+        stackNonPhasing.setCountry("spain");
+        stackNonPhasing.setProvince("idf");
+        stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        stackNonPhasing.getCounters().add(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        game.getStacks().add(stackNonPhasing);
+        StackEntity stackNonPhasingNonMoving = new StackEntity();
+        stackNonPhasingNonMoving.setId(3L);
+        stackNonPhasingNonMoving.setCountry("spain");
+        stackNonPhasingNonMoving.setProvince("idf");
+        stackNonPhasingNonMoving.getCounters().add(createCounter(5L, "spain", CounterFaceTypeEnum.MNU_ART_MINUS, stackNonPhasingNonMoving));
+        game.getStacks().add(stackNonPhasingNonMoving);
+        game.getBattles().add(new BattleEntity());
+        BattleEntity battle = game.getBattles().get(0);
+        battle.setGame(game);
+        battle.setStatus(BattleStatusEnum.RETREAT);
+        battle.setProvince("idf");
+        BattleCounterEntity bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(1L);
+        bc.setCountry("france");
+        bc.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(true);
+        bc.setCounter(2L);
+        bc.setCountry("savoie");
+        bc.setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(3L);
+        bc.setCountry("spain");
+        bc.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        battle.getCounters().add(bc);
+        bc = new BattleCounterEntity();
+        bc.setPhasing(false);
+        bc.setCounter(4L);
+        bc.setCountry("austria");
+        bc.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        battle.getCounters().add(bc);
+        game.getBattles().add(new BattleEntity());
+        game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
+        game.getBattles().get(1).setProvince("lyonnais");
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setActive(true);
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setCountry(france);
+        game.getOrders().add(order);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(1L);
+        idf.setName("idf");
+        EuropeanProvinceEntity orleans = new EuropeanProvinceEntity();
+        orleans.setId(2L);
+        orleans.setName("orleans");
+        BorderEntity border = new BorderEntity();
+        border.setProvinceFrom(idf);
+        border.setProvinceTo(orleans);
+        idf.getBorders().add(border);
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(provinceDao.getProvinceByName("orleans")).thenReturn(orleans);
+        testCheckStatus(pair.getRight(), request, battleService::retreatAfterBattle, "retreatAfterBattle", GameStatusEnum.MILITARY_BATTLES);
+        request.setIdCountry(26L);
+        when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
+        when(oeUtil.isMobile(stackNonPhasing)).thenReturn(true);
+        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.isWarAlly(spain, battle.getWar(), true)).thenReturn(true);
+
+        request.setRequest(new RetreatAfterBattleRequest());
+        request.getRequest().getRetreatInFortress().add(3L);
+        request.getRequest().setDisbandRemaining(true);
+        when(oeUtil.canRetreat(idf, true, 2, spain, game)).thenReturn(true);
+        when(counterDomain.removeCounter(4L, game)).thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, 4L));
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenAnswer(invocation -> {
+            CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+            StackEntity stack = counter.getOwner();
+            stack.getCounters().remove(counter);
+            if (stack.getCounters().isEmpty()) {
+                game.getStacks().remove(stack);
+            }
+            return DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId());
+        });
+
+        simulateDiff();
+
+        battleService.retreatAfterBattle(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(4, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(1, diff.getAttributes().size());
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_READY));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(4, diff.getAttributes().size());
+        Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE));
+        Assert.assertEquals("spain", getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
+        Assert.assertEquals("true", getAttribute(diff, DiffAttributeTypeEnum.BESIEGED));
+        Assert.assertEquals("MOVED", getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 3L))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(d.getIdObject(), 4L))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
     }
 }
