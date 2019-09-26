@@ -1669,12 +1669,14 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         if (StringUtils.isEmpty(request.getRequest().getProvinceTo())) {
             if (request.getRequest().isDisbandRemaining()) {
-                List<DiffEntity> deleteCounters = game.getStacks().stream()
+                List<CounterEntity> deleteCounters = game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .flatMap(stack -> stack.getCounters().stream())
+                        .collect(Collectors.toList());
+                List<DiffEntity> deleteDiffs = deleteCounters.stream()
                         .map(counter -> counterDomain.removeCounter(counter.getId(), game))
                         .collect(Collectors.toList());
-                newDiffs.addAll(deleteCounters);
+                newDiffs.addAll(deleteDiffs);
             } else {
                 boolean remainingCounters = game.getStacks().stream()
                         .anyMatch(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()));
