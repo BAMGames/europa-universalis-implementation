@@ -21,4 +21,7 @@
     <jaxws:endpoint id="tablesService"
                     implementor="com.mkl.eu.service.service.ws.impl.TablesWsServiceImpl"
                     address="/TablesService"/>
+    <jaxws:endpoint id="testService"
+                    implementor="com.mkl.eu.service.service.ws.impl.TestWsServiceImpl"
+                    address="/TestService"/>
 </beans>
