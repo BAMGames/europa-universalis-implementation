@@ -97,7 +97,7 @@ public interface IServiceCaller extends IDiffListenerContainer {
                     doIfSuccess.run();
                 }
                 processDiffEvent(diff);
-            } catch (FunctionalException e) {
+            } catch (Exception e) {
                 LOGGER.error(errorMessage, e);
 
                 if (doIfFailure != null) {

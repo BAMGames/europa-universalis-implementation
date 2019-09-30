@@ -17,9 +17,9 @@ public class SiegeSide {
     /** Moral of the side. */
     private Integer moral;
     /** Modifiers. */
-    private BattleDay modifiers;
+    private BattleDay modifiers = new BattleDay();
     /** Losses. */
-    private AbstractWithLoss losses;
+    private AbstractWithLoss losses = new AbstractWithLoss();
 
     /** @return the size. */
     public double getSize() {

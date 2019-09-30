@@ -305,7 +305,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                                 .flatMap(s -> s.getCounters().stream())
                                 .collect(Collectors.toList());
                         List<CounterEntity> besiegedCounters = game.getStacks().stream()
-                                .filter(StackEntity::isBesieged)
+                                .filter(s -> s.isBesieged() && StringUtils.equals(province, s.getProvince()))
                                 .flatMap(s -> s.getCounters().stream())
                                 .filter(c -> CounterUtil.isArmy(c.getType()))
                                 .collect(Collectors.toList());

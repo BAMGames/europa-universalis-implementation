@@ -33,9 +33,9 @@ public class Siege extends EuObject {
     /** Flag saying that the fortress has fallen to the besieger. */
     private boolean fortressFalls;
     /** Phasing side for a possible assault. */
-    private SiegeSide phasing;
+    private SiegeSide phasing = new SiegeSide();
     /** Non phasing side for a possible assault. */
-    private SiegeSide nonPhasing;
+    private SiegeSide nonPhasing = new SiegeSide();
     /** Counters involved in the battle. */
     private List<SiegeCounter> counters = new ArrayList<>();
     /** War in which the siege occurs. */

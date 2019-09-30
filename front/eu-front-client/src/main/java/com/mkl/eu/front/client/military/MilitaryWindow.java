@@ -691,10 +691,12 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 .filter(m -> StringUtils.equals(m.getId(), battle.getProvince()))
                 .findAny()
                 .orElse(null);
-        provinces.setItems(FXCollections.observableList(marker.getNeighbours().stream()
+        List<String> neighbors = marker.getNeighbours().stream()
                 .map(BorderMarker::getProvince)
                 .map(IMapMarker::getId)
-                .collect(Collectors.toList())));
+                .collect(Collectors.toList());
+        neighbors.add(0, "disband");
+        provinces.setItems(FXCollections.observableList(neighbors));
         List<Long> selectedCounters = new ArrayList<>();
 
         Node counters = createMultiSelectCounterNode(battle, phasing, "military.battle.retreat_in_fortress", selectedCounters);
@@ -703,7 +705,8 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         Button withdraw = new Button(message.getMessage("military.battle.retreat", null, globalConfiguration.getLocale()));
         withdraw.setOnAction(callServiceAsEvent(battleService::retreatAfterBattle, () -> {
             String province = provinces.getSelectionModel().getSelectedItem();
-            return new RetreatAfterBattleRequest(selectedCounters, province);
+            boolean disband = StringUtils.equals("disband", province);
+            return new RetreatAfterBattleRequest(selectedCounters, disband ? null : province, disband);
         }, "Error when retreating at the end of the battle."));
 
         hBox.getChildren().addAll(counters, provinces, withdraw);
@@ -823,9 +826,9 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             try {
                 ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/victory.png"))));
                 if (siege.isFortressFalls()) {
-                    nonPhasingCounters.getChildren().add(img);
-                } else {
                     phasingCounters.getChildren().add(img);
+                } else if (siege.getStatus() == SiegeStatusEnum.DONE) {
+                    nonPhasingCounters.getChildren().add(img);
                 }
             } catch (FileNotFoundException e) {
                 LOGGER.error("Cannot find victory icon.");
@@ -965,8 +968,8 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 .filter(c -> c.isOffensive() == offensive)
                 .map(c -> c.getCountry().getName())
                 .collect(Collectors.toList());
-        Node counters = createMultiSelectCounterNode(allies, siege.getProvince(), "military.siege.counters", selectedCounters);
-        Button select = new Button(message.getMessage("military.siege.select", null, globalConfiguration.getLocale()));
+        Node counters = createMultiSelectCounterNode(allies, siege.getProvince(), "military.battle.counters", selectedCounters);
+        Button select = new Button(message.getMessage("military.battle.select", null, globalConfiguration.getLocale()));
         select.setOnAction(callServiceAsEvent(siegeService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the siege."));
 
         hBox.getChildren().addAll(counters, select);
@@ -1051,6 +1054,14 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
 
         Button choose = new Button(message.getMessage("military.siege.choose_man", null, globalConfiguration.getLocale()));
         choose.setOnAction(callServiceAsEvent(siegeService::chooseMan, () -> new ChooseManForSiegeRequest(counter.getValue() != null, counter.getValue() != null ? counter.getValue().getId() : null), "Error when choosing to man the fortress."));
+
+        counter.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            String key = "military.siege.choose_man";
+            if (newValue == null) {
+                key = "military.siege.choose_no_man";
+            }
+            choose.setText(message.getMessage(key, null, globalConfiguration.getLocale()));
+        });
 
         hBox.getChildren().addAll(counter, choose);
 
@@ -1164,10 +1175,10 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             choiceSiegeTurn.getSelectionModel().select(turn);
         }
 
-        List<Battle> battles = game.getBattles().stream()
-                .filter(battle -> battle.getTurn().equals(game.getTurn()) && battle.getStatus() == BattleStatusEnum.NEW)
+        List<Siege> sieges = game.getSieges().stream()
+                .filter(siege -> siege.getTurn().equals(game.getTurn()) && siege.getStatus() == SiegeStatusEnum.NEW)
                 .collect(Collectors.toList());
-        choiceBattle.setItems(FXCollections.observableArrayList(battles));
+        choiceSiege.setItems(FXCollections.observableArrayList(sieges));
     }
 
     /**
