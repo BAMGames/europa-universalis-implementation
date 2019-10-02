@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.event.DiffEvent;
@@ -44,6 +45,9 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     /** Battle Service. */
     @Autowired
     private IBattleService battleService;
+    /** Siege Service. */
+    @Autowired
+    private ISiegeService siegeService;
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -273,7 +277,7 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
         } else {
             Marker marker = markerManager.getSelectedMarker();
             if (marker instanceof IMapMarker) {
-                menu = MenuHelper.createMenuProvince((IMapMarker) marker, boardService, battleService, this);
+                menu = MenuHelper.createMenuProvince((IMapMarker) marker, boardService, battleService, siegeService, this);
             }
         }
 

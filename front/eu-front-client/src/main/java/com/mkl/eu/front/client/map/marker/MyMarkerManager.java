@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffEvent;
@@ -52,6 +53,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Battle Service. */
     @Autowired
     private IBattleService battleService;
+    /** Siege Service. */
+    @Autowired
+    private ISiegeService siegeService;
     /** Internationalisation. */
     @Autowired
     private MessageSource message;
@@ -210,7 +214,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof IMapMarker) {
-            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, boardService, battleService, this);
+            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, boardService, battleService, siegeService, this);
         } else if (contextualized instanceof StackMarker) {
             menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
         }

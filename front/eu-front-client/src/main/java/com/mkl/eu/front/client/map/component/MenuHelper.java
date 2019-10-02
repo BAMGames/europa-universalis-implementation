@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
@@ -48,10 +49,12 @@ public final class MenuHelper {
      *
      * @param province     where the contextual menu is.
      * @param boardService service for board manipulation.
+     * @param battleService service for battles.
+     * @param siegeService service for sieges.
      * @param container    container to call back when services are called.
      * @return a Contextual Menu for a Province.
      */
-    public static ContextualMenu createMenuProvince(final IMapMarker province, IBoardService boardService, IBattleService battleService,
+    public static ContextualMenu createMenuProvince(final IMapMarker province, IBoardService boardService, IBattleService battleService, ISiegeService siegeService,
                                                     IMenuContainer container) {
         ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage(province.getId(), null, container.getGlobalConfiguration().getLocale())));
@@ -68,8 +71,16 @@ public final class MenuHelper {
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.province.choose_battle", null, container.getGlobalConfiguration().getLocale()),
-                container.callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing battle.")));
+        if (province.getStacks().stream()
+                .anyMatch(stack -> stack.getStack().getMovePhase() == MovePhaseEnum.FIGHTING)) {
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.province.choose_battle", null, container.getGlobalConfiguration().getLocale()),
+                    container.callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing battle.")));
+        }
+        if (province.getStacks().stream()
+                .anyMatch(stack -> stack.getStack().getMovePhase() == MovePhaseEnum.BESIEGING || stack.getStack().getMovePhase() == MovePhaseEnum.STILL_BESIEGING)) {
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.province.choose_siege", null, container.getGlobalConfiguration().getLocale()),
+                    container.callServiceAsEvent(siegeService::chooseSiege, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing siege.")));
+        }
 
         return menu;
     }

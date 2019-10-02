@@ -14,13 +14,13 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import javax.jws.WebService;
 
 /**
- * Separation from MilitaryService because cxf can't handle @Transactional.
+ * Separation from BattleService because cxf can't handle @Transactional.
  *
  * @author MKL.
  */
 @WebService(endpointInterface = "com.mkl.eu.client.service.service.IBattleService")
 public class BattleWsServiceImpl extends SpringBeanAutowiringSupport implements IBattleService {
-    /** Military Service. */
+    /** Battle Service. */
     @Autowired
     @Qualifier(value = "battleServiceImpl")
     private IBattleService battleService;

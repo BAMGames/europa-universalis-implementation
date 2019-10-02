@@ -9,6 +9,7 @@ import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.diplo.War;
@@ -83,6 +84,8 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
     private GlobalConfiguration globalConfiguration;
     /** Game. */
     private Game game;
+    /** Name of the playing country. */
+    private String countryName;
     /** Markers of the loaded game. */
     private List<IMapMarker> markers;
     /** Global node. */
@@ -127,6 +130,11 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         super(gameConfig);
         this.game = game;
         this.markers = markers;
+        countryName = game.getCountries().stream()
+                .filter(country -> Objects.equals(country.getId(), gameConfig.getIdCountry()))
+                .map(PlayableCountry::getName)
+                .findAny()
+                .orElse(null);
     }
 
     /** @return the tabPane. */
@@ -1175,8 +1183,18 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
             choiceSiegeTurn.getSelectionModel().select(turn);
         }
 
+        List<Long> offensiveWars = game.getWars().stream()
+                .filter(war -> war.getCountries().stream().anyMatch(country -> country.isOffensive() && StringUtils.equals(country.getCountry().getName(), countryName)))
+                .map(War::getId)
+                .collect(Collectors.toList());
+        List<Long> defensiveWars = game.getWars().stream()
+                .filter(war -> war.getCountries().stream().anyMatch(country -> !country.isOffensive() && StringUtils.equals(country.getCountry().getName(), countryName)))
+                .map(War::getId)
+                .collect(Collectors.toList());
+
         List<Siege> sieges = game.getSieges().stream()
-                .filter(siege -> siege.getTurn().equals(game.getTurn()) && siege.getStatus() == SiegeStatusEnum.NEW)
+                .filter(siege -> siege.getTurn().equals(game.getTurn()) && siege.getStatus() == SiegeStatusEnum.NEW &&
+                        (siege.isBesiegingOffensive() && offensiveWars.contains(siege.getWar().getId()) || !siege.isBesiegingOffensive() && defensiveWars.contains(siege.getWar().getId())))
                 .collect(Collectors.toList());
         choiceSiege.setItems(FXCollections.observableArrayList(sieges));
     }
