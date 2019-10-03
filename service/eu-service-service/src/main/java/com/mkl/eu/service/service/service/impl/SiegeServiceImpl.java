@@ -1078,7 +1078,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 true, getReferential(), getTables(), siege.getGame());
         siege.getPhasing().setTech(techPhasing);
 
-        String techNotPhasing = oeUtil.getTechnology(countersNotPhasing,
+        String techNotPhasing = oeUtil.getTechnology(Collections.singletonList(createFakeFortress(siege.getProvince(), siege.getFortressLevel(), siege.getGame())),
                 true, getReferential(), getTables(), siege.getGame());
         siege.getNonPhasing().setTech(techNotPhasing);
 
@@ -1139,6 +1139,20 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, siege.getNonPhasing().getModifiers().getShockMod()));
 
         return attributes;
+    }
+
+    /**
+     * @param province the province.
+     * @param game     the game.
+     * @return a fake fortress counter owned by the controller of the province.
+     */
+    private CounterEntity createFakeFortress(String province, int level, GameEntity game) {
+        AbstractProvinceEntity fullProvince = provinceDao.getProvinceByName(province);
+        String controller = oeUtil.getController(fullProvince, game);
+        CounterEntity fakeControlCounter = new CounterEntity();
+        fakeControlCounter.setCountry(controller);
+        fakeControlCounter.setType(CounterUtil.getFortressesFromLevel(level, false));
+        return fakeControlCounter;
     }
 
     /**
