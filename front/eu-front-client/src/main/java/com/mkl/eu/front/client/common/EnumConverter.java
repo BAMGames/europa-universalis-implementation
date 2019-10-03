@@ -23,15 +23,25 @@ public class EnumConverter<T extends Enum<T>> extends StringConverter<T> {
     /** {@inheritDoc} */
     @Override
     public String toString(T object) {
-        if (object == null) {
-            return null;
-        }
-        return message.getMessage(object.getClass().getSimpleName() + "." + object.name(), null, globalConfiguration.getLocale());
+        return getEnumTranslated(object, message, globalConfiguration);
     }
 
     /** {@inheritDoc} */
     @Override
     public T fromString(String string) {
         return null;
+    }
+
+    /**
+     * @param object              the enum to translate.
+     * @param message             the message source.
+     * @param globalConfiguration the configuration containing the locale.
+     * @return the enum translated in the client langage.
+     */
+    public static String getEnumTranslated(Enum object, MessageSource message, GlobalConfiguration globalConfiguration) {
+        if (object == null) {
+            return null;
+        }
+        return message.getMessage(object.getClass().getSimpleName() + "." + object.name(), null, globalConfiguration.getLocale());
     }
 }

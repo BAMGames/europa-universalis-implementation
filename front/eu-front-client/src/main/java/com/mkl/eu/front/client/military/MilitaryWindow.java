@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -815,6 +816,18 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
 
             HBox phasingCounters = new HBox();
             HBox nonPhasingCounters = new HBox();
+            String controller = markers.stream()
+                    .filter(marker -> StringUtils.equals(marker.getId(), siege.getProvince()))
+                    .map(IMapMarker::getController)
+                    .findAny()
+                    .orElse(null);
+            try {
+                FileInputStream fis = new FileInputStream(MarkerUtils.getImagePath(controller, CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false).name()));
+                ImageView image = new ImageView(new Image(fis, 40, 40, true, false));
+                nonPhasingCounters.getChildren().add(image);
+            } catch (FileNotFoundException e) {
+                LOGGER.error("Can't load image of fortress counter.");
+            }
             siege.getCounters().stream()
                     .forEach(counter -> {
                         try {
@@ -829,8 +842,6 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                             LOGGER.error("Can't load image of counter " + counter);
                         }
                     });
-            phasingCounters.getChildren().add(createSiegeTooltip(siege.getPhasing()));
-            nonPhasingCounters.getChildren().add(createSiegeTooltip(siege.getNonPhasing()));
             try {
                 ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/victory.png"))));
                 if (siege.isFortressFalls()) {
@@ -842,12 +853,15 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
                 LOGGER.error("Cannot find victory icon.");
             }
 
-            boolean breach = siege.getUndermineResult() == SiegeUndermineResultEnum.BREACH_TAKEN;
-            phasingNode.getChildren().addAll(phasingCounters, createSiegeModifiers(siege.getPhasing()),
-                    createSiegeLosses(siege.getPhasing(), siege.getNonPhasing(), true, breach));
-            nonPhasingNode.getChildren().addAll(nonPhasingCounters, createSiegeModifiers(siege.getNonPhasing()),
-                    createSiegeLosses(siege.getNonPhasing(), siege.getPhasing(), false, breach));
-
+            phasingNode.getChildren().addAll(phasingCounters, createSiegeUndermine(siege));
+            nonPhasingNode.getChildren().addAll(nonPhasingCounters, new Label());
+            if (siege.getNonPhasing().getModifiers().getFire() != null) {
+                boolean breach = siege.getUndermineResult() == SiegeUndermineResultEnum.BREACH_TAKEN;
+                phasingNode.getChildren().addAll(createSiegeModifiers(siege.getPhasing()),
+                        createSiegeLosses(siege.getPhasing(), siege.getNonPhasing(), true, breach));
+                nonPhasingNode.getChildren().addAll(createSiegeModifiers(siege.getNonPhasing()),
+                        createSiegeLosses(siege.getNonPhasing(), siege.getPhasing(), false, breach));
+            }
 
             if (siege.getStatus() == SiegeStatusEnum.SELECT_FORCES) {
                 phasingNode.getChildren().add(createSiegeSelectForces(siege));
@@ -895,11 +909,31 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
     }
 
     /**
+     * @param siege the siege.
+     * @return the node displaying the undermining information.
+     */
+    private Label createSiegeUndermine(Siege siege) {
+
+        if (siege.getUndermineDie() == 0) {
+            return new Label(message.getMessage("military.siege.undermine_not_done", new Object[]{siege.getBonus()}, globalConfiguration.getLocale()));
+        }
+
+        String result = EnumConverter.getEnumTranslated(siege.getUndermineResult(), message, globalConfiguration);
+        if (result == null) {
+            result = message.getMessage("nothing", null, globalConfiguration.getLocale());
+        }
+        return new Label(message.getMessage("military.siege.undermine_done", new Object[]{siege.getUndermineDie(), siege.getBonus(), result}, globalConfiguration.getLocale()));
+    }
+
+    /**
      * @param side of the siege.
      * @return the node displaying the modifiers of a siege side.
      */
-    private Label createSiegeModifiers(SiegeSide side) {
-        return new Label(side.getModifiers().getFireMod() + " / " + side.getModifiers().getShockMod());
+    private Node createSiegeModifiers(SiegeSide side) {
+        HBox hBox = new HBox();
+        hBox.getChildren().addAll(new Label(side.getModifiers().getFireMod() + " / " + side.getModifiers().getShockMod()),
+                createSiegeTooltip(side));
+        return hBox;
     }
 
     /**
@@ -1267,7 +1301,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         /**
          * Transform a list of ChooseLossLine into a ChooseLossesRequest.
          *
-         * @param lines   the list of ChooseLossLine.
+         * @param lines the list of ChooseLossLine.
          * @return a ChooseLossesRequest.
          */
         public ChooseLossesRequest toRequest(List<ChooseLossLine> lines) {
