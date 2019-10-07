@@ -256,7 +256,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         if (withBesieged) {
             Assert.assertEquals("5", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD));
             SiegeCounterEntity counterSpa = siege.getCounters().stream()
-                    .filter(c -> c.getCounter().getId().equals(5L))
+                    .filter(c -> c.getCounter().equals(5L))
                     .findAny()
                     .orElse(null);
             Assert.assertNotNull(counterSpa);
@@ -269,7 +269,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE, siege.getStatus());
             Assert.assertEquals(1 + (withBesieged ? 1 : 0), siege.getCounters().size());
             SiegeCounterEntity counterFra = siege.getCounters().stream()
-                    .filter(c -> c.getCounter().getId().equals(1L))
+                    .filter(c -> c.getCounter().equals(1L))
                     .findAny()
                     .orElse(null);
             Assert.assertNotNull(counterFra);
@@ -661,7 +661,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             }
             for (CounterFaceTypeEnum defender : besieged) {
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
-                siegeCounter.setCounter(createCounter(null, null, defender));
+                siegeCounter.setType(defender);
                 siege.getCounters().add(siegeCounter);
             }
             AbstractProvinceEntity idf;
@@ -872,13 +872,17 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         stack1.getCounters().forEach(counter -> {
             SiegeCounterEntity sc = new SiegeCounterEntity();
             sc.setPhasing(false);
-            sc.setCounter(counter);
+            sc.setCounter(counter.getId());
+            sc.setType(counter.getType());
+            sc.setCountry(counter.getCountry());
             siege.getCounters().add(sc);
         });
         stack2.getCounters().forEach(counter -> {
             SiegeCounterEntity sc = new SiegeCounterEntity();
             sc.setPhasing(true);
-            sc.setCounter(counter);
+            sc.setCounter(counter.getId());
+            sc.setType(counter.getType());
+            sc.setCountry(counter.getCountry());
             siege.getCounters().add(sc);
         });
         game.getSieges().add(siege);
@@ -959,6 +963,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
+        StackEntity stack = new StackEntity();
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         request.setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseMan, "chooseMan", GameStatusEnum.MILITARY_SIEGES);
 
@@ -1001,8 +1008,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
 
+        CounterEntity counter = createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        stack.getCounters().add(counter);
         SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
-        siegeCounter.setCounter(createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        siegeCounter.setCounter(counter.getId());
         siege.getCounters().add(siegeCounter);
 
         try {
@@ -1023,14 +1032,14 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseMan.request.idCounter", e.getParams()[0]);
         }
 
-        siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
         SiegeCounterEntity otherSiegeCounter = new SiegeCounterEntity();
         otherSiegeCounter.setPhasing(true);
-        otherSiegeCounter.setCounter(createCounter(13l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        otherSiegeCounter.setCounter(13L);
         siege.getCounters().add(otherSiegeCounter);
         otherSiegeCounter = new SiegeCounterEntity();
         otherSiegeCounter.setPhasing(true);
-        otherSiegeCounter.setCounter(createCounter(14l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        otherSiegeCounter.setCounter(14L);
         siege.getCounters().add(otherSiegeCounter);
 
         try {
@@ -1543,25 +1552,39 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
             siege.setProvince("pecs");
             siege.setBonus(bonus);
+
+            stack = new StackEntity();
+            stack.setId(2l);
+            stack.setProvince("pecs");
+            game.getStacks().add(stack);
+            CounterEntity counter = new CounterEntity();
+            counter.setId(12l);
+            counter.setCountry(Camp.SELF.name);
+            counter.setType(fortress != null && fortress >= 3 ? CounterFaceTypeEnum.ARMY_PLUS : CounterFaceTypeEnum.ARMY_MINUS);
+            counter.setOwner(stack);
+            stack.getCounters().add(counter);
+
             SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
             siegeCounter.setSiege(siege);
             siegeCounter.setPhasing(true);
-            siegeCounter.setCounter(new CounterEntity());
-            siegeCounter.getCounter().setId(12l);
-            siegeCounter.getCounter().setCountry(Camp.SELF.name);
-            siegeCounter.getCounter().setType(fortress != null && fortress >= 3 ? CounterFaceTypeEnum.ARMY_PLUS : CounterFaceTypeEnum.ARMY_MINUS);
-            siegeCounter.getCounter().setOwner(new StackEntity());
-            siegeCounter.getCounter().getOwner().setId(2l);
+            siegeCounter.setCounter(counter.getId());
+            siegeCounter.setType(counter.getType());
+            siegeCounter.setCountry(counter.getCountry());
             siege.getCounters().add(siegeCounter);
+
+            counter = new CounterEntity();
+            counter.setId(13L);
+            counter.setCountry(Camp.SELF.name);
+            counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+            counter.setOwner(stack);
+            stack.getCounters().add(counter);
+
             siegeCounter = new SiegeCounterEntity();
             siegeCounter.setSiege(siege);
             siegeCounter.setPhasing(true);
-            siegeCounter.setCounter(new CounterEntity());
-            siegeCounter.getCounter().setId(13l);
-            siegeCounter.getCounter().setCountry(Camp.SELF.name);
-            siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
-            siegeCounter.getCounter().setOwner(new StackEntity());
-            siegeCounter.getCounter().getOwner().setId(2l);
+            siegeCounter.setCounter(counter.getId());
+            siegeCounter.setType(counter.getType());
+            siegeCounter.setCountry(counter.getCountry());
             siege.getCounters().add(siegeCounter);
             siege.getPhasing().setSize(fortress != null && fortress >= 3 ? 5 : 3);
             game.getSieges().add(siege);
@@ -1874,6 +1897,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
+        StackEntity stack = new StackEntity();
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
         request.setIdCountry(12L);
 
@@ -2029,12 +2055,20 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("redeploy.request.redeploy.unit.idCounter", e.getParams()[0]);
         }
 
+        CounterEntity counter = createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        stack.getCounters().add(counter);
         SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
-        siegeCounter.setCounter(createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        siegeCounter.setCounter(counter.getId());
+        siegeCounter.setType(counter.getType());
+        siegeCounter.setCountry(counter.getCountry());
         siegeCounter.setPhasing(true);
         siege.getCounters().add(siegeCounter);
+        counter = createCounter(21l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        stack.getCounters().add(counter);
         siegeCounter = new SiegeCounterEntity();
-        siegeCounter.setCounter(createCounter(21l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION));
+        siegeCounter.setCounter(counter.getId());
+        siegeCounter.setType(counter.getType());
+        siegeCounter.setCountry(counter.getCountry());
         siegeCounter.setPhasing(true);
         siege.getCounters().add(siegeCounter);
 
@@ -2067,6 +2101,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
+        StackEntity stack = new StackEntity();
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
 
         request.setIdCountry(12L);
@@ -2103,16 +2140,31 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.getController(pecs, game)).thenReturn("spain");
 
+        CounterEntity counter = createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
         SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
-        siegeCounter.setCounter(createCounter(12l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siegeCounter.setCounter(counter.getId());
+        siegeCounter.setType(counter.getType());
+        siegeCounter.setCountry(counter.getCountry());
         siege.getCounters().add(siegeCounter);
+
+        counter = createCounter(21l, "france", CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
         siegeCounter = new SiegeCounterEntity();
-        siegeCounter.setCounter(createCounter(21l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siegeCounter.setCounter(counter.getId());
+        siegeCounter.setType(counter.getType());
+        siegeCounter.setCountry(counter.getCountry());
         siege.getCounters().add(siegeCounter);
+
+        counter = createCounter(30l, "turquie", CounterFaceTypeEnum.LAND_DETACHMENT);
+        stack.getCounters().add(counter);
         siegeCounter = new SiegeCounterEntity();
-        siegeCounter.setCounter(createCounter(30l, "turquie", CounterFaceTypeEnum.LAND_DETACHMENT));
+        siegeCounter.setCounter(counter.getId());
+        siegeCounter.setType(counter.getType());
+        siegeCounter.setCountry(counter.getCountry());
         siegeCounter.setPhasing(true);
         siege.getCounters().add(siegeCounter);
+
         siege.getNonPhasing().setSize(2);
         siege.getPhasing().setSize(1);
 
@@ -2624,83 +2676,115 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             }
             siege.setProvince("pecs");
             long cpt = 11l;
+            stack = new StackEntity();
+            stack.setId(2l);
+            stack.setProvince("pecs");
+            game.getStacks().add(stack);
             if (phasing.hasArmy) {
+                CounterEntity counter = new CounterEntity();
+                counter.setId(cpt++);
+                counter.setCountry(Camp.SELF.name);
+                counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+                counter.setOwner(stack);
+                stack.getCounters().add(counter);
+
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
                 siegeCounter.setSiege(siege);
                 siegeCounter.setPhasing(true);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setId(cpt++);
-                siegeCounter.getCounter().setCountry(Camp.SELF.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
-                siegeCounter.getCounter().setOwner(new StackEntity());
-                siegeCounter.getCounter().getOwner().setId(2l);
+                siegeCounter.setCounter(counter.getId());
+                siegeCounter.setType(counter.getType());
+                siegeCounter.setCountry(counter.getCountry());
                 siege.getCounters().add(siegeCounter);
-                phasing.counters.add(siegeCounter.getCounter());
+                phasing.counters.add(counter);
             }
             for (int i = (phasing.hasArmy ? 2 : 0); i < (int) phasing.size; i++) {
+                CounterEntity counter = new CounterEntity();
+                counter.setId(cpt++);
+                counter.setCountry(Camp.SELF.name);
+                counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+                counter.setOwner(stack);
+                stack.getCounters().add(counter);
+
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
                 siegeCounter.setSiege(siege);
                 siegeCounter.setPhasing(true);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setId(cpt++);
-                siegeCounter.getCounter().setCountry(Camp.SELF.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
-                siegeCounter.getCounter().setOwner(new StackEntity());
-                siegeCounter.getCounter().getOwner().setId(2l);
+                siegeCounter.setCounter(counter.getId());
+                siegeCounter.setType(counter.getType());
+                siegeCounter.setCountry(counter.getCountry());
                 siege.getCounters().add(siegeCounter);
-                phasing.counters.add(siegeCounter.getCounter());
+                phasing.counters.add(counter);
             }
             for (int i = 0; i < (phasing.size - (int) phasing.size) / THIRD; i++) {
+                CounterEntity counter = new CounterEntity();
+                counter.setId(cpt++);
+                counter.setCountry(Camp.SELF.name);
+                counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+                counter.setOwner(stack);
+                stack.getCounters().add(counter);
+
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
                 siegeCounter.setSiege(siege);
                 siegeCounter.setPhasing(true);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setId(cpt++);
-                siegeCounter.getCounter().setCountry(Camp.SELF.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
-                siegeCounter.getCounter().setOwner(new StackEntity());
-                siegeCounter.getCounter().getOwner().setId(2l);
+                siegeCounter.setCounter(counter.getId());
+                siegeCounter.setType(counter.getType());
+                siegeCounter.setCountry(counter.getCountry());
                 siege.getCounters().add(siegeCounter);
-                phasing.counters.add(siegeCounter.getCounter());
+                phasing.counters.add(counter);
             }
             when(testClass.oeUtil.isStackVeteran(any())).thenReturn(phasing.veteran);
             when(testClass.oeUtil.getAssaultBonus(any(), any(), any())).thenReturn(phasing.hasAssaultBonus);
             cpt = 21l;
+            stack = new StackEntity();
+            stack.setId(2l);
+            stack.setProvince("pecs");
+            game.getStacks().add(stack);
             if (notPhasing.hasArmy) {
+                CounterEntity counter = new CounterEntity();
+                counter.setId(cpt++);
+                counter.setCountry(Camp.ENEMY.name);
+                counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+                counter.setOwner(stack);
+                stack.getCounters().add(counter);
+
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
                 siegeCounter.setSiege(siege);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setId(cpt++);
-                siegeCounter.getCounter().setCountry(Camp.ENEMY.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.ARMY_MINUS);
-                siegeCounter.getCounter().setOwner(new StackEntity());
-                siegeCounter.getCounter().getOwner().setId(3l);
+                siegeCounter.setCounter(counter.getId());
+                siegeCounter.setType(counter.getType());
+                siegeCounter.setCountry(counter.getCountry());
                 siege.getCounters().add(siegeCounter);
-                notPhasing.counters.add(siegeCounter.getCounter());
+                notPhasing.counters.add(counter);
             }
             for (int i = (notPhasing.hasArmy ? 2 : 0); i < (int) notPhasing.size; i++) {
+                CounterEntity counter = new CounterEntity();
+                counter.setId(cpt++);
+                counter.setCountry(Camp.ENEMY.name);
+                counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+                counter.setOwner(stack);
+                stack.getCounters().add(counter);
+
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
                 siegeCounter.setSiege(siege);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setId(cpt++);
-                siegeCounter.getCounter().setCountry(Camp.ENEMY.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT);
-                siegeCounter.getCounter().setOwner(new StackEntity());
-                siegeCounter.getCounter().getOwner().setId(3l);
+                siegeCounter.setCounter(counter.getId());
+                siegeCounter.setType(counter.getType());
+                siegeCounter.setCountry(counter.getCountry());
                 siege.getCounters().add(siegeCounter);
-                notPhasing.counters.add(siegeCounter.getCounter());
+                notPhasing.counters.add(counter);
             }
             for (int i = 0; i < (notPhasing.size - (int) notPhasing.size) / THIRD; i++) {
+                CounterEntity counter = new CounterEntity();
+                counter.setId(cpt++);
+                counter.setCountry(Camp.ENEMY.name);
+                counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+                counter.setOwner(stack);
+                stack.getCounters().add(counter);
+
                 SiegeCounterEntity siegeCounter = new SiegeCounterEntity();
                 siegeCounter.setSiege(siege);
-                siegeCounter.setCounter(new CounterEntity());
-                siegeCounter.getCounter().setId(cpt++);
-                siegeCounter.getCounter().setCountry(Camp.ENEMY.name);
-                siegeCounter.getCounter().setType(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
-                siegeCounter.getCounter().setOwner(new StackEntity());
-                siegeCounter.getCounter().getOwner().setId(3l);
+                siegeCounter.setCounter(counter.getId());
+                siegeCounter.setType(counter.getType());
+                siegeCounter.setCountry(counter.getCountry());
                 siege.getCounters().add(siegeCounter);
-                notPhasing.counters.add(siegeCounter.getCounter());
+                notPhasing.counters.add(counter);
             }
             when(testClass.oeUtil.getTechnology(any(), anyBoolean(), any(), any(), any())).thenReturn(phasing.tech, notPhasing.tech);
 
@@ -3118,21 +3202,41 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeEntity siege = game.getSieges().get(0);
         siege.setStatus(SiegeStatusEnum.SELECT_FORCES);
         siege.setProvince("idf");
+        StackEntity stack = new StackEntity();
+        stack.setId(1L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         SiegeCounterEntity bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS, 1L));
+        CounterEntity counter = createCounter(1l, "france", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 1L));
+        counter = createCounter(2l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        siege.getCounters().add(bc);
+        stack = new StackEntity();
+        stack.setId(2L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
+        bc = new SiegeCounterEntity();
+        bc.setPhasing(false);
+        counter = createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(false);
-        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 2L));
-        siege.getCounters().add(bc);
-        bc = new SiegeCounterEntity();
-        bc.setPhasing(false);
-        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 2L));
+        counter = createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
@@ -3328,21 +3432,49 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeEntity siege = game.getSieges().get(0);
         siege.setStatus(SiegeStatusEnum.CHOOSE_LOSS);
         siege.setProvince("idf");
+        StackEntity stack = new StackEntity();
+        stack.setId(10L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         SiegeCounterEntity bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, 10L));
+        CounterEntity counter = createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        bc.setType(counter.getType());
+        bc.setCountry(counter.getCountry());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
+        counter = createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        bc.setType(counter.getType());
+        bc.setCountry(counter.getCountry());
+        siege.getCounters().add(bc);
+        stack = new StackEntity();
+        stack.setId(20L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
+        bc = new SiegeCounterEntity();
+        bc.setPhasing(false);
+        counter = createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        bc.setType(counter.getType());
+        bc.setCountry(counter.getCountry());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(false);
-        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        siege.getCounters().add(bc);
-        bc = new SiegeCounterEntity();
-        bc.setPhasing(false);
-        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
+        counter = createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        bc.setType(counter.getType());
+        bc.setCountry(counter.getCountry());
         siege.getCounters().add(bc);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
@@ -3391,21 +3523,42 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeEntity siege = game.getSieges().get(0);
         siege.setStatus(SiegeStatusEnum.CHOOSE_LOSS);
         siege.setProvince("idf");
+
+        StackEntity stack = new StackEntity();
+        stack.setId(10L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         SiegeCounterEntity bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, 10L));
+        CounterEntity counter = createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
+        counter = createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        siege.getCounters().add(bc);
+        stack = new StackEntity();
+        stack.setId(20L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
+        bc = new SiegeCounterEntity();
+        bc.setPhasing(false);
+        counter = createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(false);
-        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_MINUS, 20L));
-        siege.getCounters().add(bc);
-        bc = new SiegeCounterEntity();
-        bc.setPhasing(false);
-        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
+        counter = createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
@@ -3511,21 +3664,41 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeEntity siege = game.getSieges().get(0);
         siege.setStatus(SiegeStatusEnum.CHOOSE_LOSS);
         siege.setProvince("idf");
+        StackEntity stack = new StackEntity();
+        stack.setId(10L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
         SiegeCounterEntity bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, 10L));
+        CounterEntity counter = createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(true);
-        bc.setCounter(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
+        counter = createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
+        siege.getCounters().add(bc);
+        stack = new StackEntity();
+        stack.setId(20L);
+        stack.setProvince(siege.getProvince());
+        game.getStacks().add(stack);
+        bc = new SiegeCounterEntity();
+        bc.setPhasing(false);
+        counter = createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         bc = new SiegeCounterEntity();
         bc.setPhasing(false);
-        bc.setCounter(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, 20L));
-        siege.getCounters().add(bc);
-        bc = new SiegeCounterEntity();
-        bc.setPhasing(false);
-        bc.setCounter(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, 20L));
+        counter = createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setOwner(stack);
+        stack.getCounters().add(counter);
+        bc.setCounter(counter.getId());
         siege.getCounters().add(bc);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);

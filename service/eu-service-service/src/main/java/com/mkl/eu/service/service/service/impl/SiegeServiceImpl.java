@@ -166,7 +166,9 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             attackerCounters.forEach(counter -> {
                 SiegeCounterEntity comp = new SiegeCounterEntity();
                 comp.setSiege(siege);
-                comp.setCounter(counter);
+                comp.setCounter(counter.getId());
+                comp.setCountry(counter.getCountry());
+                comp.setType(counter.getType());
                 comp.setPhasing(true);
                 siege.getCounters().add(comp);
 
@@ -187,7 +189,9 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         defenderCounters.forEach(counter -> {
             SiegeCounterEntity comp = new SiegeCounterEntity();
             comp.setSiege(siege);
-            comp.setCounter(counter);
+            comp.setCounter(counter.getId());
+            comp.setCountry(counter.getCountry());
+            comp.setType(counter.getType());
             comp.setPhasing(false);
             siege.getCounters().add(comp);
 
@@ -280,7 +284,9 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             SiegeCounterEntity comp = new SiegeCounterEntity();
             comp.setPhasing(phasing);
             comp.setSiege(siege);
-            comp.setCounter(counter);
+            comp.setCounter(counter.getId());
+            comp.setCountry(counter.getCountry());
+            comp.setType(counter.getType());
             siege.getCounters().add(comp);
 
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId()));
@@ -288,10 +294,10 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         List<Long> alliedCounters = siege.getCounters().stream()
                 .filter(bc -> bc.isPhasing() == phasing)
-                .map(bc -> bc.getCounter().getId())
+                .map(SiegeCounterEntity::getCounter)
                 .collect(Collectors.toList());
         Double armySize = siege.getCounters().stream()
-                .map(bc -> CounterUtil.getSizeFromType(bc.getCounter().getType()))
+                .map(bc -> CounterUtil.getSizeFromType(bc.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
 
@@ -336,10 +342,19 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         int fortress = oeUtil.getFortressLevel(province, game);
         siege.setFortressLevel(fortress);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEVEL, fortress));
-        int artilleries = oeUtil.getArtilleryBonus(siege.getCounters().stream()
+
+        List<Long> countersPhasingId = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
                 .map(SiegeCounterEntity::getCounter)
-                .collect(Collectors.toList()), getReferential(), getTables(), game);
+                .collect(Collectors.toList());
+
+        List<CounterEntity> countersPhasing = siege.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersPhasingId.contains(counter.getId()))
+                .collect(Collectors.toList());
+
+        int artilleries = oeUtil.getArtilleryBonus(countersPhasing, getReferential(), getTables(), game);
         int artilleryBonus = getTables().getArtillerySieges().stream()
                 .filter(as -> as.getFortress() == fortress && as.getArtillery() <= artilleries)
                 .map(ArtillerySiege::getBonus)
@@ -376,7 +391,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         // TODO siege bonus of leaders
         int besiegingBonus = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isNotPhasing)
-                .map(SiegeCounterEntity::getCounter)
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2 ? 3 : 1)
                 .max(Comparator.<Integer>naturalOrder())
                 .orElse(0);
@@ -437,7 +451,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         double size = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
-                .collect(Collectors.summingDouble(c -> CounterUtil.getSizeFromType(c.getCounter().getType())));
+                .collect(Collectors.summingDouble(c -> CounterUtil.getSizeFromType(c.getType())));
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         List<DiffEntity> diffs = new ArrayList<>();
         switch (request.getRequest().getMode()) {
@@ -648,14 +662,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         if (siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize())) {
             siege.getCounters().stream()
                     .filter(SiegeCounterEntity::isPhasing)
-                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter().getId(), siege.getGame())));
-            siege.getCounters().removeIf(SiegeCounterEntity::isPhasing);
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter(), siege.getGame())));
         }
         if (siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize())) {
             siege.getCounters().stream()
                     .filter(SiegeCounterEntity::isNotPhasing)
-                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter().getId(), siege.getGame())));
-            siege.getCounters().removeIf(SiegeCounterEntity::isNotPhasing);
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter(), siege.getGame())));
         }
 
         if (!phasingLossesAuto || !nonPhasingLossesAuto) {
@@ -683,7 +695,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
     private List<DiffEntity> isFortressMan(SiegeEntity siege, PlayableCountryEntity country, List<DiffAttributesEntity> attributes) {
         boolean manPossible = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
-                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getCounter().getType()))) >= 1 && siege.getFortressLevel() > 1;
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType()))) >= 1 && siege.getFortressLevel() > 1;
         if (manPossible && siege.getFortressLevel() == 2) {
             AbstractProvinceEntity province = provinceDao.getProvinceByName(siege.getProvince());
             int naturalFortress = oeUtil.getNaturalFortressLevel(province, siege.getGame());
@@ -781,7 +793,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         siege.setStatus(SiegeStatusEnum.DONE);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.DONE));
 
-        siege.getCounters().clear();
         return statusWorkflowDomain.endMilitaryPhase(siege.getGame());
     }
 
@@ -836,10 +847,15 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .setName(PARAMETER_CHOOSE_MAN, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                     .setParams(METHOD_CHOOSE_MAN));
 
-            CounterEntity counter = siege.getCounters().stream()
-                    .filter(SiegeCounterEntity::isPhasing)
+            Long counterId = siege.getCounters().stream()
+                    .filter(bc -> bc.isPhasing() && Objects.equals(request.getRequest().getIdCounter(), bc.getCounter()))
                     .map(SiegeCounterEntity::getCounter)
-                    .filter(c -> Objects.equals(request.getRequest().getIdCounter(), c.getId()))
+                    .findAny()
+                    .orElse(null);
+            CounterEntity counter = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(count -> Objects.equals(counterId, count.getId()))
                     .findAny()
                     .orElse(null);
 
@@ -1060,13 +1076,24 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         siege.getPhasing().getModifiers().clear();
         siege.getNonPhasing().getModifiers().clear();
 
-        List<CounterEntity> countersPhasing = siege.getCounters().stream()
+        List<Long> countersPhasingId = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
                 .map(SiegeCounterEntity::getCounter)
                 .collect(Collectors.toList());
-        List<CounterEntity> countersNotPhasing = siege.getCounters().stream()
+        List<Long> countersNotPhasingId = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isNotPhasing)
                 .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.toList());
+
+        List<CounterEntity> countersPhasing = siege.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersPhasingId.contains(counter.getId()))
+                .collect(Collectors.toList());
+        List<CounterEntity> countersNotPhasing = siege.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersNotPhasingId.contains(counter.getId()))
                 .collect(Collectors.toList());
 
         siege.getPhasing().setSize(countersPhasing.stream()
@@ -1248,7 +1275,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         }
         List<CounterEntity> besiegerCounters = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isPhasing)
-                .map(SiegeCounterEntity::getCounter)
+                .map(counter -> {
+                    CounterEntity fakeCounter = new CounterEntity();
+                    fakeCounter.setType(counter.getType());
+                    fakeCounter.setCountry(counter.getCountry());
+                    return fakeCounter;
+                })
                 .collect(Collectors.toList());
         if (!besiegerCounters.stream()
                 .anyMatch(counter -> CounterUtil.isArmyCounter(counter.getType()))) {
@@ -1276,10 +1308,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .filter(resistance -> resistance.isBreach() == breach && resistance.getFortress() == siege.getFortressLevel())
                 .findAny()
                 .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "fortresssResistances", siege.getFortressLevel() + " - " + breach));
-        double counterSize = siege.getCounters().stream()
-                .filter(SiegeCounterEntity::isNotPhasing)
-                .map(SiegeCounterEntity::getCounter)
-                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
+        double counterSize = siege.getNonPhasing().getSize();
 
         double size = 2 * fortressResistance.getSize() + counterSize;
 
@@ -1419,10 +1448,15 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                             .setParams(METHOD_REDEPLOY, unit.getCountry()));
                     diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, unit.getCountry(), province.getName(), null, game));
                 } else {
-                    CounterEntity counter = siege.getCounters().stream()
-                            .filter(SiegeCounterEntity::isNotPhasing)
+                    Long counterId = siege.getCounters().stream()
+                            .filter(bc -> bc.isNotPhasing() && Objects.equals(unit.getIdCounter(), bc.getCounter()))
                             .map(SiegeCounterEntity::getCounter)
-                            .filter(c -> Objects.equals(unit.getIdCounter(), c.getId()))
+                            .findAny()
+                            .orElse(null);
+                    CounterEntity counter = game.getStacks().stream()
+                            .filter(stac -> StringUtils.equals(stac.getProvince(), siege.getProvince()))
+                            .flatMap(stac -> stac.getCounters().stream())
+                            .filter(count -> Objects.equals(counterId, count.getId()))
                             .findAny()
                             .orElse(null);
 
@@ -1545,14 +1579,20 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         List<DiffEntity> diffs = new ArrayList<>();
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         long thirdBefore = siege.getCounters().stream()
-                .filter(sc -> sc.isPhasing() == playerPhasing && CounterUtil.isExploration(sc.getCounter().getType()))
+                .filter(sc -> sc.isPhasing() == playerPhasing && CounterUtil.isExploration(sc.getType()))
                 .count();
         int thirdDiff = 0;
 
         for (ChooseLossesRequest.UnitLoss loss : request.getRequest().getLosses()) {
-            CounterEntity counter = siege.getCounters().stream()
-                    .filter(sc -> sc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), sc.getCounter().getId()))
+            Long counterId = siege.getCounters().stream()
+                    .filter(bc -> bc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), bc.getCounter()))
                     .map(SiegeCounterEntity::getCounter)
+                    .findAny()
+                    .orElse(null);
+            CounterEntity counter = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(count -> Objects.equals(counterId, count.getId()))
                     .findAny()
                     .orElse(null);
 
@@ -1574,7 +1614,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
             if (lossMax - lossSize <= EPSILON) {
                 diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
-                siege.getCounters().removeIf(sc -> sc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), sc.getCounter().getId()));
                 thirdDiff -= loss.getThirdLosses();
             } else {
                 List<CounterFaceTypeEnum> faces = new ArrayList<>();
@@ -1601,7 +1640,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 faces.removeIf(o -> o == null);
                 if (faces.isEmpty()) {
                     diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
-                    siege.getCounters().removeIf(sc -> sc.isPhasing() == playerPhasing && Objects.equals(loss.getIdCounter(), sc.getCounter().getId()));
                 } else {
                     diffs.addAll(faces.stream()
                             .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))

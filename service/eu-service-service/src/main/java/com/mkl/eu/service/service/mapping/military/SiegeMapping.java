@@ -9,7 +9,6 @@ import com.mkl.eu.client.service.vo.military.SiegeCounter;
 import com.mkl.eu.client.service.vo.military.SiegeSide;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.WithLossMapping;
-import com.mkl.eu.service.service.mapping.board.CounterMapping;
 import com.mkl.eu.service.service.mapping.diplo.WarMapping;
 import com.mkl.eu.service.service.persistence.oe.military.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,6 @@ import java.util.Set;
  */
 @Component
 public class SiegeMapping extends AbstractMapping {
-    /** Counter Mapping. */
-    @Autowired
-    private CounterMapping counterMapping;
     /** War Mapping. */
     @Autowired
     private WarMapping warMapping;
@@ -110,7 +106,7 @@ public class SiegeMapping extends AbstractMapping {
         List<SiegeCounter> targets = new ArrayList<>();
 
         for (SiegeCounterEntity source : sources) {
-            SiegeCounter target = oeToVo(source, objectsCreated);
+            SiegeCounter target = oeToVo(source);
             if (target != null) {
                 targets.add(target);
             }
@@ -123,10 +119,9 @@ public class SiegeMapping extends AbstractMapping {
      * OE to VO.
      *
      * @param source         object source.
-     * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    private SiegeCounter oeToVo(SiegeCounterEntity source, Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    private SiegeCounter oeToVo(SiegeCounterEntity source) {
         if (source == null) {
             return null;
         }
@@ -134,7 +129,10 @@ public class SiegeMapping extends AbstractMapping {
         SiegeCounter target = new SiegeCounter();
 
         target.setPhasing(source.isPhasing());
-        Counter counter = storeVo(Counter.class, source.getCounter(), objectsCreated, (source1 -> counterMapping.oeToVo(source1, null)));
+        Counter counter = new Counter();
+        counter.setId(source.getCounter());
+        counter.setCountry(source.getCountry());
+        counter.setType(source.getType());
         target.setCounter(counter);
 
         return target;

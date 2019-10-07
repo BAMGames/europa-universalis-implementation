@@ -9,7 +9,6 @@ import com.mkl.eu.client.service.vo.military.BattleDay;
 import com.mkl.eu.client.service.vo.military.BattleSide;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.WithLossMapping;
-import com.mkl.eu.service.service.mapping.board.CounterMapping;
 import com.mkl.eu.service.service.mapping.diplo.WarMapping;
 import com.mkl.eu.service.service.persistence.oe.military.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,6 @@ import java.util.Set;
  */
 @Component
 public class BattleMapping extends AbstractMapping {
-    /** Counter Mapping. */
-    @Autowired
-    private CounterMapping counterMapping;
     /** War Mapping. */
     @Autowired
     private WarMapping warMapping;

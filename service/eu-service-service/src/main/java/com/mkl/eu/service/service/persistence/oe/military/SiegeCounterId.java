@@ -1,7 +1,5 @@
 package com.mkl.eu.service.service.persistence.oe.military;
 
-import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
-
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
@@ -16,7 +14,25 @@ public class SiegeCounterId implements Serializable {
     /** The battle key. */
     private SiegeEntity siege;
     /** The counter key. */
-    private CounterEntity counter;
+    private Long counter;
+
+    /**
+     * Default constructor.
+     */
+    public SiegeCounterId() {
+
+    }
+
+    /**
+     * Constructor with all keys.
+     *
+     * @param siege   the siege.
+     * @param counter the counter.
+     */
+    public SiegeCounterId(SiegeEntity siege, Long counter) {
+        this.siege = siege;
+        this.counter = counter;
+    }
 
     /** @return the battle. */
     @ManyToOne
@@ -30,13 +46,33 @@ public class SiegeCounterId implements Serializable {
     }
 
     /** @return the counter. */
-    @ManyToOne
-    public CounterEntity getCounter() {
+    public Long getCounter() {
         return counter;
     }
 
     /** @param counter the counter to set. */
-    public void setCounter(CounterEntity counter) {
+    public void setCounter(Long counter) {
         this.counter = counter;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SiegeCounterId that = (SiegeCounterId) o;
+
+        if (!getSiege().equals(that.getSiege())) return false;
+        return getCounter().equals(that.getCounter());
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        int result = getSiege().hashCode();
+        result = 31 * result + getCounter().hashCode();
+        return result;
     }
 }
