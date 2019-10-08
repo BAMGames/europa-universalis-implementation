@@ -25,11 +25,13 @@ import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
+import com.mkl.eu.service.service.socket.AfterCommitTransaction;
 import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -447,7 +449,7 @@ public abstract class AbstractService implements INameConstants {
         response.getDiffs().addAll(diffs);
         response.setVersionGame(versionGame);
 
-        socketHandler.push(idGame, response, null);
+        TransactionSynchronizationManager.registerSynchronization((AfterCommitTransaction) () -> socketHandler.push(idGame, response, null));
     }
 
     /**
@@ -461,7 +463,7 @@ public abstract class AbstractService implements INameConstants {
         DiffResponse response = new DiffResponse();
         response.getMessages().add(message);
 
-        socketHandler.push(idGame, response, idCountries);
+        TransactionSynchronizationManager.registerSynchronization((AfterCommitTransaction) () -> socketHandler.push(idGame, response, idCountries));
     }
 
     /**
