@@ -41,6 +41,16 @@ public final class UIUtil {
         return message.getMessage(countryCode, null, globalConfiguration.getLocale());
     }
 
+    public static void doInJavaFx(Runnable runnable) {
+        // With Platform.runLater, this dialog can be displayed
+        // even in non-javaFX component (the map)
+        if (Platform.isFxApplicationThread()) {
+            runnable.run();
+        } else {
+            Platform.runLater(runnable);
+        }
+    }
+
     /**
      * Display an alert dialog displaying the exception.
      *
@@ -49,49 +59,57 @@ public final class UIUtil {
      * @param message             message source containing the internationalization.
      */
     public static void showException(Exception ex, GlobalConfiguration globalConfiguration, MessageSource message) {
-        // With Platform.runLater, this dialog can be displayed
-        // even in non-javaFX component (the map)
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(message.getMessage("exception.dialog.title", null, globalConfiguration.getLocale()));
-            alert.setHeaderText(message.getMessage("exception.dialog.header", null, globalConfiguration.getLocale()));
+        doInJavaFx(() -> showExceptionInternal(ex, globalConfiguration, message));
+    }
 
-            String code = "exception.unknown";
-            Object[] params = null;
-            if (ex instanceof TechnicalException) {
-                code = ((TechnicalException) ex).getCode();
-                params = ((TechnicalException) ex).getParams();
-            } else if (ex instanceof FunctionalException) {
-                code = ((FunctionalException) ex).getCode();
-                params = ((FunctionalException) ex).getParams();
-            }
-            alert.setContentText(message.getMessage(code, params, globalConfiguration.getLocale()));
+    /**
+     * Display an alert dialog displaying the exception.
+     *
+     * @param ex                  the exception.
+     * @param globalConfiguration global configuration containing the Locale.
+     * @param message             message source containing the internationalization.
+     */
+    private static void showExceptionInternal(Exception ex, GlobalConfiguration globalConfiguration, MessageSource message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(message.getMessage("exception.dialog.title", null, globalConfiguration.getLocale()));
+        alert.setHeaderText(message.getMessage("exception.dialog.header", null, globalConfiguration.getLocale()));
+
+        String code = "exception.unknown";
+        Object[] params = null;
+        if (ex instanceof TechnicalException) {
+            code = ((TechnicalException) ex).getCode();
+            params = ((TechnicalException) ex).getParams();
+        } else if (ex instanceof FunctionalException) {
+            code = ((FunctionalException) ex).getCode();
+            params = ((FunctionalException) ex).getParams();
+        }
+        alert.setContentText(message.getMessage(code, params, globalConfiguration.getLocale()));
 
 
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            ex.printStackTrace(pw);
-            String exceptionText = sw.toString();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        String exceptionText = sw.toString();
 
-            Label label = new Label(message.getMessage("exception.dialog.stacktrace", null, globalConfiguration.getLocale()));
+        Label label = new Label(message.getMessage("exception.dialog.stacktrace", null, globalConfiguration.getLocale()));
 
-            TextArea textArea = new TextArea(exceptionText);
-            textArea.setEditable(false);
-            textArea.setWrapText(true);
+        TextArea textArea = new TextArea(exceptionText);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
 
-            textArea.setMaxWidth(Double.MAX_VALUE);
-            textArea.setMaxHeight(Double.MAX_VALUE);
-            GridPane.setVgrow(textArea, Priority.ALWAYS);
-            GridPane.setHgrow(textArea, Priority.ALWAYS);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
 
-            GridPane expContent = new GridPane();
-            expContent.setMaxWidth(Double.MAX_VALUE);
-            expContent.add(label, 0, 0);
-            expContent.add(textArea, 0, 1);
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(label, 0, 0);
+        expContent.add(textArea, 0, 1);
 
-            alert.getDialogPane().setExpandableContent(expContent);
+        alert.getDialogPane().setExpandableContent(expContent);
 
-            alert.showAndWait();
-        });
+        alert.showAndWait();
+
     }
 }

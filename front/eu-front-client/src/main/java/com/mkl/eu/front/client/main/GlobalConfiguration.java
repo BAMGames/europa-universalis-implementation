@@ -2,6 +2,8 @@ package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
@@ -19,6 +21,9 @@ public class GlobalConfiguration {
     private Tables tables;
     /** Referential. */
     private Referential referential;
+    @Autowired
+    /** Internationalisation. */
+    private MessageSource message;
 
     /** @return the locale. */
     public Locale getLocale() {
@@ -48,5 +53,27 @@ public class GlobalConfiguration {
     /** @param referential the referential to set. */
     public void setReferential(Referential referential) {
         this.referential = referential;
+    }
+
+    /**
+     * Proxy of MessageSource#getMessage
+     *
+     * @param code the code of the message.
+     * @param args the arguments of the message.
+     * @return the resolved message.
+     */
+    public String getMessage(String code, Object... args) {
+        return message.getMessage(code, args, getLocale());
+    }
+
+    /**
+     * @param object the enum to translate.
+     * @return the enum translated in the client language.
+     */
+    public String getMessage(Enum object) {
+        if (object == null) {
+            return null;
+        }
+        return getMessage(object.getClass().getSimpleName() + "." + object.name());
     }
 }

@@ -49,7 +49,6 @@ import com.mkl.eu.front.client.military.MilitaryWindow;
 import com.mkl.eu.front.client.socket.ClientSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import de.fhpotsdam.unfolding.marker.Marker;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -401,11 +400,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     /** {@inheritDoc} */
     @Override
     public synchronized void update(DiffEvent event) {
-        if (Platform.isFxApplicationThread()) {
-            internalUpdate(event);
-        } else {
-            Platform.runLater(() -> internalUpdate(event));
-        }
+        UIUtil.doInJavaFx(() -> internalUpdate(event));
     }
 
     /**

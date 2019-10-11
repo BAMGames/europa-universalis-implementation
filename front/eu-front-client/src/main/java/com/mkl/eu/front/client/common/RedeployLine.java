@@ -7,10 +7,9 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,16 +21,10 @@ import java.util.function.BiConsumer;
  * This line can be duplicated or deleted.
  */
 public class RedeployLine {
-    /** Internationalisation. */
-    @Autowired
-    private MessageSource message;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** The global node of a line. */
     private HBox node = new HBox();
     /** Choice box to select a counter. */
-    private ChoiceBox<Counter> counter = new ChoiceBox<>();
+    private ComboBox<Counter> counter = new ComboBox<>();
     /** Choice box to select the face of a new counter. */
     private ChoiceBox<CounterFaceTypeEnum> face = new ChoiceBox<>();
     /** Choice box to select the province. */
@@ -42,24 +35,25 @@ public class RedeployLine {
     /**
      * Constructor.
      *
-     * @param counterList the list of counters that can be selected.
-     * @param faces       the list of faces that can be selected.
-     * @param provinces   the list of provinces that can be selected.
-     * @param listener    the listener to get the add and remove redeploy line events.
+     * @param counterList         the list of counters that can be selected.
+     * @param faces               the list of faces that can be selected.
+     * @param provinces           the list of provinces that can be selected.
+     * @param listener            the listener to get the add and remove redeploy line events.
+     * @param globalConfiguration the global configuration for internationalisation.
      */
-    public RedeployLine(List<Counter> counterList, List<CounterFaceTypeEnum> faces, List<String> provinces, BiConsumer<RedeployLine, Boolean> listener) {
-        counter.converterProperty().set(new CounterConverter());
+    public RedeployLine(List<Counter> counterList, List<CounterFaceTypeEnum> faces, List<String> provinces, BiConsumer<RedeployLine, Boolean> listener, GlobalConfiguration globalConfiguration) {
+        counter.converterProperty().set(new CounterConverter(globalConfiguration));
+        counter.setCellFactory(new CounterCellFactory());
         counter.setItems(FXCollections.observableList(counterList));
         face.setItems(FXCollections.observableList(faces));
         province.setItems(FXCollections.observableList(provinces));
-        button = new Button(message.getMessage("add", null, globalConfiguration.getLocale()));
+        button = new Button(globalConfiguration.getMessage("add"));
 
-        counter.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> face.setDisable(newValue != null));
+        face.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> counter.setDisable(newValue != null));
         button.setOnAction(event -> {
-                    RedeployLine newLine = new RedeployLine(counterList, faces, provinces, listener);
-                    newLine.button.setText(message.getMessage("delete", null, globalConfiguration.getLocale()));
+                    RedeployLine newLine = new RedeployLine(counterList, faces, provinces, listener, globalConfiguration);
+                    newLine.button.setText(globalConfiguration.getMessage("delete"));
                     newLine.button.setOnAction(delEvent -> listener.accept(newLine, false));
-                    listener.accept(newLine, true);
                 }
         );
 
@@ -91,7 +85,7 @@ public class RedeployLine {
                         return red;
                     });
             RedeployRequest.Unit unit = new RedeployRequest.Unit();
-            if (line.counter.getSelectionModel().getSelectedItem() != null) {
+            if (line.face.getSelectionModel().getSelectedItem() == null && line.counter.getSelectionModel().getSelectedItem() != null) {
                 unit.setIdCounter(line.counter.getSelectionModel().getSelectedItem().getId());
             }
             if (line.face.getSelectionModel().getSelectedItem() != null) {
