@@ -69,7 +69,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
@@ -102,9 +101,6 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private boolean closed;
     /** Spring application context. */
     private ApplicationContext context;
-    /** Internationalisation. */
-    @Autowired
-    private MessageSource message;
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
@@ -222,7 +218,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private void initChat() {
         chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
         chatWindow.addDiffListener(this);
-        Tab tab = new Tab(message.getMessage("chat.title", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("game.popup.chat"));
         tab.setClosable(false);
         tab.setContent(chatWindow.getTabPane());
         content.getTabs().add(tab);
@@ -236,14 +232,14 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private void initEco(List<IMapMarker> mapMarkers) {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
-        Tab tab = new Tab(message.getMessage("eco.title", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("game.popup.eco"));
         tab.setClosable(false);
         tab.setContent(ecoWindow.getTabPane());
         content.getTabs().add(tab);
 
         adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
-        tab = new Tab(message.getMessage("admin_action.title", null, globalConfiguration.getLocale()));
+        tab = new Tab(globalConfiguration.getMessage("game.popup.admin_actions"));
         tab.setClosable(false);
         tab.setContent(adminActionsWindow.getTabPane());
         content.getTabs().add(tab);
@@ -255,7 +251,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private void initMilitary(List<IMapMarker> mapMarkers) {
         militaryWindow = context.getBean(MilitaryWindow.class, game, mapMarkers, gameConfig);
         militaryWindow.addDiffListener(this);
-        Tab tab = new Tab(message.getMessage("military.title", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("military.title"));
         tab.setClosable(false);
         tab.setContent(militaryWindow.getTabPane());
         content.getTabs().add(tab);
@@ -277,7 +273,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
 
         grid.add(activeCountries, 1, 0, 1, 5);
 
-        Button mapBtn = new Button(message.getMessage("game.popup.map", null, globalConfiguration.getLocale()));
+        Button mapBtn = new Button(globalConfiguration.getMessage("game.popup.map"));
         mapBtn.setOnAction(event -> {
             if (!mapInit) {
                 PApplet.runSketch(new String[]{"InteractiveMap"}, map);
@@ -292,7 +288,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         });
         grid.add(mapBtn, 0, 1, 1, 1);
 
-        Tab tab = new Tab(message.getMessage("game.popup.global", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("game.popup.global"));
         tab.setClosable(false);
         tab.setContent(grid);
         content.getTabs().add(tab);
@@ -301,10 +297,10 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     private void updateTitle() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(message.getMessage("game.popup.turn", new Object[]{game.getTurn()}, globalConfiguration.getLocale()));
+        sb.append(globalConfiguration.getMessage("game.popup.turn", game.getTurn()));
         sb.append("\n");
-        String statusText = message.getMessage("game.status." + game.getStatus(), null, globalConfiguration.getLocale());
-        sb.append(message.getMessage("game.popup.info_phase", new Object[]{statusText}, globalConfiguration.getLocale()));
+        String statusText = globalConfiguration.getMessage(game.getStatus());
+        sb.append(globalConfiguration.getMessage("game.popup.info_phase", statusText));
 
         info.setText(sb.toString());
     }
@@ -394,7 +390,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     /** {@inheritDoc} */
     @Override
     public void handleException(ExceptionEvent event) {
-        UIUtil.showException(event.getException(), globalConfiguration, message);
+        UIUtil.showException(event.getException(), globalConfiguration);
     }
 
     /** {@inheritDoc} */

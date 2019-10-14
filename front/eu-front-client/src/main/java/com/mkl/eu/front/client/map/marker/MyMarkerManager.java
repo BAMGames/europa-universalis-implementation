@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PConstants;
@@ -56,9 +55,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Siege Service. */
     @Autowired
     private ISiegeService siegeService;
-    /** Internationalisation. */
-    @Autowired
-    private MessageSource message;
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
@@ -406,12 +402,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         for (IDiffListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public MessageSource getMessage() {
-        return message;
     }
 
     /** {@inheritDoc} */

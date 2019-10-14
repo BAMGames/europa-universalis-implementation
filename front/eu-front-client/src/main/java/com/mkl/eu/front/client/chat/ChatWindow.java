@@ -28,7 +28,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -62,9 +61,6 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     /** Game service. */
     @Autowired
     private IGameService gameService;
-    /** Internationalisation. */
-    @Autowired
-    private MessageSource message;
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
@@ -100,7 +96,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
     public void init() {
         tabPane = new TabPane();
 
-        tabPane.getTabs().add(createRoom(null, message.getMessage("chat.global", null, globalConfiguration.getLocale()),
+        tabPane.getTabs().add(createRoom(null, globalConfiguration.getMessage("chat.global"),
                 chat.getGlobalMessages(), null, true));
         chat.getRooms().stream().filter(Room::isVisible).forEach(
                 room -> tabPane.getTabs().add(createRoom(room.getId(), room.getName(), room.getMessages(), room.getCountries(), room.isPresent()))
@@ -141,9 +137,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                 tabPane.getSelectionModel()
                                         .select(oldValue);
                                 TextInputDialog dialog = new TextInputDialog();
-                                dialog.setTitle(message.getMessage("chat.room.new.title", null, globalConfiguration.getLocale()));
-                                dialog.setHeaderText(message.getMessage("chat.room.new.header", null, globalConfiguration.getLocale()));
-                                dialog.setContentText(message.getMessage("chat.room.new.content", null, globalConfiguration.getLocale()));
+                                dialog.setTitle(globalConfiguration.getMessage("chat.room.new.title"));
+                                dialog.setHeaderText(globalConfiguration.getMessage("chat.room.new.header"));
+                                dialog.setContentText(globalConfiguration.getMessage("chat.room.new.content"));
 
                                 Optional<String> result = dialog.showAndWait();
                                 if (result.isPresent()) {
@@ -172,9 +168,9 @@ public class ChatWindow extends AbstractDiffListenerContainer {
                                         .select(oldValue);
                                 List<CustomSelect<Room>> choices = chat.getRooms().stream().filter(room -> !room.isVisible()).map(room1 -> new CustomSelect<>(room1, Room::getName)).collect(Collectors.toList());
                                 ChoiceDialog<CustomSelect<Room>> dialog = new ChoiceDialog<>(null, choices);
-                                dialog.setTitle(message.getMessage("chat.room.visible.title", null, globalConfiguration.getLocale()));
-                                dialog.setHeaderText(message.getMessage("chat.room.visible.header", null, globalConfiguration.getLocale()));
-                                dialog.setContentText(message.getMessage("chat.room.visible.content", null, globalConfiguration.getLocale()));
+                                dialog.setTitle(globalConfiguration.getMessage("chat.room.visible.title"));
+                                dialog.setHeaderText(globalConfiguration.getMessage("chat.room.visible.header"));
+                                dialog.setContentText(globalConfiguration.getMessage("chat.room.visible.content"));
 
                                 Optional<CustomSelect<Room>> result = dialog.showAndWait();
                                 if (result.isPresent()) {
@@ -259,20 +255,20 @@ public class ChatWindow extends AbstractDiffListenerContainer {
             countriesView.setCellFactory(param -> {
                 ListCell<PlayableCountry> cell = new CountryCell();
 
-                MenuItem itemKick = new MenuItem(message.getMessage("chat.room.kick", null, globalConfiguration.getLocale()));
+                MenuItem itemKick = new MenuItem(globalConfiguration.getMessage("chat.room.kick"));
                 itemKick.setOnAction(event -> {
                     PlayableCountry country = cell.getItem();
                     if (country != null) {
                         callService(chatService::inviteKickRoom, () -> new InviteKickRoomRequest(idRoom, false, cell.getItem().getId()), "Error when kicking in room.");
                     }
                 });
-                MenuItem itemInvite = new MenuItem(message.getMessage("chat.room.invite", null, globalConfiguration.getLocale()));
+                MenuItem itemInvite = new MenuItem(globalConfiguration.getMessage("chat.room.invite"));
                 itemInvite.setOnAction(event -> {
                     List<CustomSelect<PlayableCountry>> choices = this.countries.stream().filter(playableCountry -> !countriesView.getItems().contains(playableCountry)).map(country -> new CustomSelect<>(country, PlayableCountry::getName)).collect(Collectors.toList());
                     ChoiceDialog<CustomSelect<PlayableCountry>> dialog = new ChoiceDialog<>(null, choices);
-                    dialog.setTitle(message.getMessage("chat.room.invite.title", null, globalConfiguration.getLocale()));
-                    dialog.setHeaderText(message.getMessage("chat.room.invite.header", null, globalConfiguration.getLocale()));
-                    dialog.setContentText(message.getMessage("chat.room.invite.content", null, globalConfiguration.getLocale()));
+                    dialog.setTitle(globalConfiguration.getMessage("chat.room.invite.title"));
+                    dialog.setHeaderText(globalConfiguration.getMessage("chat.room.invite.header"));
+                    dialog.setContentText(globalConfiguration.getMessage("chat.room.invite.content"));
 
                     Optional<CustomSelect<PlayableCountry>> result = dialog.showAndWait();
                     if (result.isPresent()) {
@@ -291,7 +287,7 @@ public class ChatWindow extends AbstractDiffListenerContainer {
         TextField input = new TextField();
         input.setMaxWidth(Double.MAX_VALUE);
         hbox.getChildren().add(input);
-        Button submitBtn = new Button(message.getMessage("chat.submit", null, globalConfiguration.getLocale()));
+        Button submitBtn = new Button(globalConfiguration.getMessage("chat.submit"));
         submitBtn.setDisable(!present);
         input.setOnKeyPressed(event -> {
             if (KeyCode.ENTER.equals(event.getCode())) {

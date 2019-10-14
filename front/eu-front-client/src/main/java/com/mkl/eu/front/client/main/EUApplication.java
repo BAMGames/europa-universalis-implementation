@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.MessageSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.ArrayList;
@@ -43,8 +42,6 @@ public class EUApplication extends Application {
     private ApplicationContext context;
     /** Game service. */
     private IGameService gameService;
-    /** Message. */
-    private MessageSource message;
     /** Global configuration. */
     private GlobalConfiguration globalConfiguration;
     /** List of game popups opened in order to spread a window close. */
@@ -56,7 +53,6 @@ public class EUApplication extends Application {
         context = new ClassPathXmlApplicationContext("com/mkl/eu/front/client/eu-front-client-applicationContext.xml");
         gameService = context.getBean(IGameService.class);
         ITablesService tablesService = context.getBean(ITablesService.class);
-        message = context.getBean(MessageSource.class);
         globalConfiguration = context.getBean(GlobalConfiguration.class);
 
         globalConfiguration.setTables(tablesService.getTables());
@@ -70,13 +66,13 @@ public class EUApplication extends Application {
         TabPane tabPane = new TabPane();
         tabPane.getTabs().add(createGameTab(verticalTab));
         tabPane.getTabs().add(createTabLog());
-        Tab tab = new Tab(message.getMessage("game.games.title", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("game.games.title"));
         tab.setClosable(false);
         tab.setContent(tabPane);
         verticalTab.getTabs().add(tab);
 
         Scene scene = new Scene(verticalTab, 800, 600);
-        primaryStage.setTitle(message.getMessage("game.title", null, globalConfiguration.getLocale()));
+        primaryStage.setTitle(globalConfiguration.getMessage("game.title"));
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(event -> {
             gamePopups.forEach(GamePopup::close);
@@ -97,25 +93,25 @@ public class EUApplication extends Application {
         table.setPrefWidth(750);
         TableColumn<GameLight, String> column;
 
-        column = new TableColumn<>(message.getMessage("game.games.id", null, globalConfiguration.getLocale()));
+        column = new TableColumn<>(globalConfiguration.getMessage("game.games.id"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         column.setCellValueFactory(new PropertyValueFactory<>("id"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(message.getMessage("game.games.turn", null, globalConfiguration.getLocale()));
+        column = new TableColumn<>(globalConfiguration.getMessage("game.games.turn"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         column.setCellValueFactory(new PropertyValueFactory<>("turn"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(message.getMessage("game.games.status", null, globalConfiguration.getLocale()));
+        column = new TableColumn<>(globalConfiguration.getMessage("game.games.status"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.2));
-        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(message.getMessage("game.status." + param.getValue().getStatus(), null, globalConfiguration.getLocale())));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(globalConfiguration.getMessage(param.getValue().getStatus())));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(message.getMessage("game.games.country", null, globalConfiguration.getLocale()));
+        column = new TableColumn<>(globalConfiguration.getMessage("game.games.country"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.27));
         column.setCellValueFactory(param -> {
-            StringBuilder sb = new StringBuilder(message.getMessage(param.getValue().getCountry(), null, globalConfiguration.getLocale()));
+            StringBuilder sb = new StringBuilder(globalConfiguration.getMessage(param.getValue().getCountry()));
             if (param.getValue().getUnreadMessages() > 0) {
                 sb.append(" (")
                         .append(param.getValue().getUnreadMessages())
@@ -125,7 +121,7 @@ public class EUApplication extends Application {
         });
         table.getColumns().add(column);
 
-        column = new TableColumn<>(message.getMessage("game.games.actions", null, globalConfiguration.getLocale()));
+        column = new TableColumn<>(globalConfiguration.getMessage("game.games.actions"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
         column.setCellValueFactory(new PropertyValueFactory<>("NONE"));
         Callback<TableColumn<GameLight, String>, TableCell<GameLight, String>> cellFactory = new Callback<TableColumn<GameLight, String>, TableCell<GameLight, String>>() {
@@ -139,10 +135,10 @@ public class EUApplication extends Application {
                             setGraphic(null);
                             setText(null);
                         } else {
-                            Button btn = new Button(message.getMessage("game.games.load", null, globalConfiguration.getLocale()));
+                            Button btn = new Button(globalConfiguration.getMessage("game.games.load"));
                             btn.setOnAction(event -> {
                                 GameLight game = getTableView().getItems().get(getIndex());
-                                String title = message.getMessage("game.popup.title", new Object[]{game.getId(), game.getCountry()}, globalConfiguration.getLocale());
+                                String title = globalConfiguration.getMessage("game.popup.title", game.getId(), game.getCountry());
                                 Supplier<Tab> createTab = () -> {
                                     GamePopup popup = context.getBean(GamePopup.class, game.getId(), game.getIdCountry());
                                     gamePopups.add(popup);
@@ -172,7 +168,7 @@ public class EUApplication extends Application {
         List<GameLight> games = findGames();
         table.setItems(FXCollections.observableList(games));
 
-        Tab tab = new Tab(message.getMessage("game.games", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("game.games"));
         tab.setClosable(false);
 
         VBox vBox = new VBox();
@@ -198,7 +194,7 @@ public class EUApplication extends Application {
             return gameService.findGames(findGames);
         } catch (Exception e) {
             LOGGER.error("Impossible to find games.", e);
-            UIUtil.showException(e, globalConfiguration, message);
+            UIUtil.showException(e, globalConfiguration);
             return new ArrayList<>();
         }
     }
@@ -207,7 +203,7 @@ public class EUApplication extends Application {
      * @return the tab containing the logs.
      */
     private Tab createTabLog() {
-        Tab tab = new Tab(message.getMessage("game.log", null, globalConfiguration.getLocale()));
+        Tab tab = new Tab(globalConfiguration.getMessage("game.log"));
         tab.setClosable(false);
         TextArea text = JavaFxAppender.getText();
         tab.setContent(text);

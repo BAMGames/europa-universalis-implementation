@@ -9,7 +9,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.MessageSource;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,18 +28,23 @@ public final class UIUtil {
 
     /**
      * @param countryCode         code of the country.
-     * @param message             internationalization.
-     * @param globalConfiguration configuration containing the locale.
+     * @param globalConfiguration global configuration for internationalisation.
      * @return the country name to be displayed given the country code and the locale.
      */
-    public static String getCountryName(String countryCode, MessageSource message, GlobalConfiguration globalConfiguration) {
+    public static String getCountryName(String countryCode, GlobalConfiguration globalConfiguration) {
         if (StringUtils.isEmpty(countryCode)) {
             countryCode = "none";
         }
 
-        return message.getMessage(countryCode, null, globalConfiguration.getLocale());
+        return globalConfiguration.getMessage(countryCode);
     }
 
+    /**
+     * If in javaFx thread, just call the runnable.
+     * If not, call it in a Platform::runLater.
+     *
+     * @param runnable the runnable to call.
+     */
     public static void doInJavaFx(Runnable runnable) {
         // With Platform.runLater, this dialog can be displayed
         // even in non-javaFX component (the map)
@@ -55,24 +59,22 @@ public final class UIUtil {
      * Display an alert dialog displaying the exception.
      *
      * @param ex                  the exception.
-     * @param globalConfiguration global configuration containing the Locale.
-     * @param message             message source containing the internationalization.
+     * @param globalConfiguration global configuration for internationalisation.
      */
-    public static void showException(Exception ex, GlobalConfiguration globalConfiguration, MessageSource message) {
-        doInJavaFx(() -> showExceptionInternal(ex, globalConfiguration, message));
+    public static void showException(Exception ex, GlobalConfiguration globalConfiguration) {
+        doInJavaFx(() -> showExceptionInternal(ex, globalConfiguration));
     }
 
     /**
      * Display an alert dialog displaying the exception.
      *
      * @param ex                  the exception.
-     * @param globalConfiguration global configuration containing the Locale.
-     * @param message             message source containing the internationalization.
+     * @param globalConfiguration global configuration for internationalisation.
      */
-    private static void showExceptionInternal(Exception ex, GlobalConfiguration globalConfiguration, MessageSource message) {
+    private static void showExceptionInternal(Exception ex, GlobalConfiguration globalConfiguration) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(message.getMessage("exception.dialog.title", null, globalConfiguration.getLocale()));
-        alert.setHeaderText(message.getMessage("exception.dialog.header", null, globalConfiguration.getLocale()));
+        alert.setTitle(globalConfiguration.getMessage("exception.dialog.title"));
+        alert.setHeaderText(globalConfiguration.getMessage("exception.dialog.header"));
 
         String code = "exception.unknown";
         Object[] params = null;
@@ -83,7 +85,7 @@ public final class UIUtil {
             code = ((FunctionalException) ex).getCode();
             params = ((FunctionalException) ex).getParams();
         }
-        alert.setContentText(message.getMessage(code, params, globalConfiguration.getLocale()));
+        alert.setContentText(globalConfiguration.getMessage(code, params));
 
 
         StringWriter sw = new StringWriter();
@@ -91,7 +93,7 @@ public final class UIUtil {
         ex.printStackTrace(pw);
         String exceptionText = sw.toString();
 
-        Label label = new Label(message.getMessage("exception.dialog.stacktrace", null, globalConfiguration.getLocale()));
+        Label label = new Label(globalConfiguration.getMessage("exception.dialog.stacktrace"));
 
         TextArea textArea = new TextArea(exceptionText);
         textArea.setEditable(false);

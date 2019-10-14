@@ -56,29 +56,29 @@ public final class MenuHelper {
      */
     public static ContextualMenu createMenuProvince(final IMapMarker province, IBoardService boardService, IBattleService battleService, ISiegeService siegeService,
                                                     IMenuContainer container) {
-        ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.province", null, container.getGlobalConfiguration().getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage(province.getId(), null, container.getGlobalConfiguration().getLocale())));
+        ContextualMenu menu = new ContextualMenu(container.getGlobalConfiguration().getMessage("map.menu.province"));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getGlobalConfiguration().getMessage(province.getId())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
         menu.addAllMenuItems(createAdminMenu(province, boardService, container));
 
-        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.province.neighbors", null, container.getGlobalConfiguration().getLocale()));
+        ContextualMenu neighbours = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("map.menu.province.neighbors"));
         for (final BorderMarker border : province.getNeighbours()) {
-            StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
+            StringBuilder label = new StringBuilder(container.getGlobalConfiguration().getMessage(border.getProvince().getId()));
             if (border.getType() != null) {
-                label.append(" (").append(container.getMessage().getMessage("border." + border.getType().getCode(), null, container.getGlobalConfiguration().getLocale())).append(")");
+                label.append(" (").append(container.getGlobalConfiguration().getMessage(border.getType())).append(")");
             }
             neighbours.addMenuItem(ContextualMenuItem.createMenuLabel(label.toString()));
         }
         menu.addMenuItem(neighbours);
         if (province.getStacks().stream()
                 .anyMatch(stack -> stack.getStack().getMovePhase() == MovePhaseEnum.FIGHTING)) {
-            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.province.choose_battle", null, container.getGlobalConfiguration().getLocale()),
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.province.choose_battle"),
                     container.callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing battle.")));
         }
         if (province.getStacks().stream()
                 .anyMatch(stack -> stack.getStack().getMovePhase() == MovePhaseEnum.BESIEGING || stack.getStack().getMovePhase() == MovePhaseEnum.STILL_BESIEGING)) {
-            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.province.choose_siege", null, container.getGlobalConfiguration().getLocale()),
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.province.choose_siege"),
                     container.callServiceAsEvent(siegeService::chooseSiege, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing siege.")));
         }
 
@@ -87,28 +87,28 @@ public final class MenuHelper {
 
     private static List<ContextualMenuItem> createAdminMenu(IMapMarker province, IBoardService boardService, IMenuContainer container) {
         List<ContextualMenuItem> menus = new ArrayList<>();
-        ContextualMenu admin = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.admin", null, container.getGlobalConfiguration().getLocale()));
+        ContextualMenu admin = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("map.menu.admin"));
         Map<CountryTypeEnum, ContextualMenu> countryMenus = new HashMap<>();
         for (CountryReferential country : container.getGlobalConfiguration().getReferential().getCountries()) {
             ContextualMenu countryTypeMenu = countryMenus.get(country.getType());
             if (countryTypeMenu == null) {
-                countryTypeMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage(country.getType().name(), null, container.getGlobalConfiguration().getLocale()));
+                countryTypeMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage(country.getType()));
                 admin.addMenuItem(countryTypeMenu);
                 countryMenus.put(country.getType(), countryTypeMenu);
             }
-            ContextualMenu countryMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage(country.getName(), null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu countryMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage(country.getName()));
             countryTypeMenu.addMenuItem(countryMenu);
-            ContextualMenu landMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Land army", null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu landMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("Land army"));
             countryMenu.addMenuItem(landMenu);
-            ContextualMenu navalMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Naval army", null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu navalMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("Naval army"));
             countryMenu.addMenuItem(navalMenu);
-            ContextualMenu ecoMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Economic", null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu ecoMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("Economic"));
             countryMenu.addMenuItem(ecoMenu);
-            ContextualMenu warMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("War", null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu warMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("War"));
             countryMenu.addMenuItem(warMenu);
-            ContextualMenu diploMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Diplomacy", null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu diploMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("Diplomacy"));
             countryMenu.addMenuItem(diploMenu);
-            ContextualMenu trashMenu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("Others", null, container.getGlobalConfiguration().getLocale()));
+            ContextualMenu trashMenu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("Others"));
             countryMenu.addMenuItem(trashMenu);
 
             for (CounterFaceTypeEnum counter : CounterFaceTypeEnum.values()) {
@@ -128,7 +128,7 @@ public final class MenuHelper {
                     menu = trashMenu;
                 }
 
-                menu.addMenuItem(ContextualMenuItem.createMenuItem(counter.toString(), container.callServiceAsEvent(boardService::createCounter, () -> new CreateCounterRequest(province.getId(), counter, country.getName()), "Error when creating counter.")));
+                menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage(counter), container.callServiceAsEvent(boardService::createCounter, () -> new CreateCounterRequest(province.getId(), counter, country.getName()), "Error when creating counter.")));
             }
         }
 
@@ -147,13 +147,13 @@ public final class MenuHelper {
      */
     public static ContextualMenu createMenuStack(final StackMarker stack, IBoardService boardService,
                                                  IMenuContainer container) {
-        ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.stack", null, container.getGlobalConfiguration().getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.stack", null, container.getGlobalConfiguration().getLocale())));
-        String owner = UIUtil.getCountryName(stack.getStack().getCountry(), container.getMessage(), container.getGlobalConfiguration());
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.stack.info", new Object[]{owner, stack.getStack().getMove()}, container.getGlobalConfiguration().getLocale())));
+        ContextualMenu menu = new ContextualMenu(container.getGlobalConfiguration().getMessage("map.menu.stack"));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getGlobalConfiguration().getMessage("map.menu.stack")));
+        String owner = UIUtil.getCountryName(stack.getStack().getCountry(), container.getGlobalConfiguration());
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getGlobalConfiguration().getMessage("map.menu.stack.info", owner, stack.getStack().getMove())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
-        ContextualMenu control = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.stack.control", null, container.getGlobalConfiguration().getLocale()));
+        ContextualMenu control = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("map.menu.stack.control"));
         List<String> countries = stack.getCounters().stream()
                 .map(CounterMarker::getCountry)
                 .distinct()
@@ -162,21 +162,21 @@ public final class MenuHelper {
             if (StringUtils.equals(country, stack.getStack().getCountry())) {
                 continue;
             }
-            String countryName = UIUtil.getCountryName(country, container.getMessage(), container.getGlobalConfiguration());
+            String countryName = UIUtil.getCountryName(country, container.getGlobalConfiguration());
             control.addMenuItem(ContextualMenuItem.createMenuItem(countryName, container.callServiceAsEvent(boardService::takeStackControl, () -> new TakeStackControlRequest(stack.getId(), country), "Error when taking control of stack.")));
         }
         menu.addMenuItem(control);
-        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.stack.move", null, container.getGlobalConfiguration().getLocale()));
+        ContextualMenu move = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("map.menu.stack.move"));
         for (final BorderMarker border : stack.getProvince().getNeighbours()) {
-            StringBuilder label = new StringBuilder(container.getMessage().getMessage(border.getProvince().getId(), null, container.getGlobalConfiguration().getLocale()));
+            StringBuilder label = new StringBuilder(container.getGlobalConfiguration().getMessage(border.getProvince().getId()));
             if (border.getType() != null) {
-                label.append(" (").append(container.getMessage().getMessage("border." + border.getType().getCode(), null, container.getGlobalConfiguration().getLocale())).append(")");
+                label.append(" (").append(container.getGlobalConfiguration().getMessage(border.getType())).append(")");
             }
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), container.callServiceAsEvent(boardService::moveStack, () -> new MoveStackRequest(stack.getId(), border.getProvince().getId()), "Error when moving stack.")));
         }
         menu.addMenuItem(move);
         if (stack.getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
-            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.stack.end_move", null, container.getGlobalConfiguration().getLocale()),
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.stack.end_move"),
                     container.callServiceAsEvent(boardService::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.")));
         }
 
@@ -193,11 +193,11 @@ public final class MenuHelper {
      */
     public static ContextualMenu createMenuCounter(final CounterMarker counter, IBoardService boardService,
                                                    IMenuContainer container) {
-        ContextualMenu menu = new ContextualMenu(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getMessage().getMessage("map.menu.counter", null, container.getGlobalConfiguration().getLocale())));
+        ContextualMenu menu = new ContextualMenu(container.getGlobalConfiguration().getMessage("map.menu.counter"));
+        menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getGlobalConfiguration().getMessage("map.menu.counter")));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.counter.disband", null, container.getGlobalConfiguration().getLocale()),
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.counter.disband"),
                 container.callServiceAsEvent(boardService::removeCounter, () -> new RemoveCounterRequest(counter.getId()), "Error when deleting counter.")));
 
         return menu;
@@ -205,10 +205,10 @@ public final class MenuHelper {
 
     private static List<ContextualMenuItem> createGlobalMenu(IMenuContainer container) {
         List<ContextualMenuItem> menus = new ArrayList<>();
-        ContextualMenu menu = ContextualMenuItem.createMenuSubMenu(container.getMessage().getMessage("map.menu.map", null, container.getGlobalConfiguration().getLocale()));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.map.color", null, container.getGlobalConfiguration().getLocale()),
+        ContextualMenu menu = ContextualMenuItem.createMenuSubMenu(container.getGlobalConfiguration().getMessage("map.menu.map"));
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.map.color"),
                 event -> MapConfiguration.switchColor()));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getMessage().getMessage("map.menu.map.moving_stack", null, container.getGlobalConfiguration().getLocale()),
+        menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.map.moving_stack"),
                 event -> MapConfiguration.switchStacksMovePhase()));
 
         menus.add(menu);

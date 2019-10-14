@@ -24,7 +24,6 @@ import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import processing.core.PApplet;
@@ -62,9 +61,6 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
     private MyMarkerManager markerManager;
-    /** Internationalisation. */
-    @Autowired
-    private MessageSource message;
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
@@ -134,7 +130,7 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
             if (marker instanceof IMapMarker) {
                 IMapMarker mapMarker = (IMapMarker) marker;
 
-                pg.text(message.getMessage("map.infoview.stacks", null, globalConfiguration.getLocale()), newX, newY);
+                pg.text(globalConfiguration.getMessage("map.infoview.stacks"), newX, newY);
                 newY += V_TEXT;
                 pg.imageMode(PConstants.CORNER);
                 for (int i = 0; i < mapMarker.getStacks().size(); i++) {
@@ -351,12 +347,6 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
     public void processExceptionEvent(ExceptionEvent event) {
         resetContextualMenu();
         super.processExceptionEvent(event);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public MessageSource getMessage() {
-        return message;
     }
 
     /** {@inheritDoc} */
