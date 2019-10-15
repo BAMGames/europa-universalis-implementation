@@ -22,13 +22,18 @@ import com.mkl.eu.client.service.vo.tables.BasicForce;
 import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
+import com.mkl.eu.front.client.common.CounterFaceCellFactory;
+import com.mkl.eu.front.client.common.CounterInProvinceCellFactory;
+import com.mkl.eu.front.client.common.CounterInProvinceConverter;
 import com.mkl.eu.front.client.common.EnumConverter;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.CounterMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -82,7 +87,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
     /** The TableView containing the already planned actions. */
     private TableView<AdministrativeAction> maintenanceTable;
     /** The ChoiceBox containing the remaining counters. */
-    private ChoiceBox<Counter> maintenanceCountersChoice;
+    private ComboBox<Counter> maintenanceCountersChoice;
 
     /********************************************/
     /**        Nodes about purchase             */
@@ -218,26 +223,16 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
 
         HBox hBox = new HBox();
 
-        maintenanceCountersChoice = new ChoiceBox<>();
-        maintenanceCountersChoice.converterProperty().set(new StringConverter<Counter>() {
-            /** {@inheritDoc} */
-            @Override
-            public String toString(Counter object) {
-                return globalConfiguration.getMessage(object.getOwner().getProvince()) + " - " + globalConfiguration.getMessage(object.getType());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Counter fromString(String string) {
-                return null;
-            }
-        });
+        maintenanceCountersChoice = new ComboBox<>();
+        maintenanceCountersChoice.setCellFactory(new CounterInProvinceCellFactory(globalConfiguration));
+        maintenanceCountersChoice.converterProperty().set(new CounterInProvinceConverter(globalConfiguration));
 
         ChoiceBox<AdminActionTypeEnum> choiceType = new ChoiceBox<>();
         choiceType.converterProperty().set(new EnumConverter<>(globalConfiguration));
 
-        ChoiceBox<CounterFaceTypeEnum> toCounterChoice = new ChoiceBox<>();
+        ComboBox<CounterFaceTypeEnum> toCounterChoice = new ComboBox<>();
         toCounterChoice.setVisible(false);
+        toCounterChoice.setCellFactory(new CounterFaceCellFactory(gameConfig.getCountryName()));
         toCounterChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
 
         choiceType.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -380,6 +375,7 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                 .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
                         CounterUtil.isArmy(counter.getType())))
+                .sorted((c1, c2) -> c1.getOwner().getProvince().compareTo(c2.getOwner().getProvince()))
                 .collect(Collectors.toList());
         List<Counter> conscriptCounters = new ArrayList<>();
         List<Counter> fortresses = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
@@ -490,7 +486,8 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        ChoiceBox<CounterFaceTypeEnum> purchaseTypeChoice = new ChoiceBox<>();
+        ComboBox<CounterFaceTypeEnum> purchaseTypeChoice = new ComboBox<>();
+        purchaseTypeChoice.setCellFactory(new CounterFaceCellFactory(gameConfig.getCountryName()));
         purchaseTypeChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
 
         Button btn = new Button(globalConfiguration.getMessage("add"));
@@ -524,7 +521,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 if (newValue == null) {
                     purchaseTypeChoice.setItems(null);
                 } else {
-                    List<CounterFaceTypeEnum> faces = forces.stream().filter(force -> newValue.isPort() || force.getTech().isLand()).flatMap(force -> getFacesFromPurchaseForce(force.getType(), country.getName()).stream()).collect(Collectors.toList());
+                    List<CounterFaceTypeEnum> faces = forces.stream()
+                            .filter(force -> newValue.isPort() || force.getTech().isLand())
+                            .flatMap(force -> getFacesFromPurchaseForce(force.getType(), country.getName()).stream())
+                            .collect(Collectors.toList());
                     CounterFaceTypeEnum fortress = CommonUtil.findFirst(newValue.getStacks().stream()
                                     .flatMap(s -> s.getCounters().stream())
                                     .map(CounterMarker::getType),
@@ -766,8 +766,9 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        ChoiceBox<CounterFaceTypeEnum> faceChoice = new ChoiceBox<>();
+        ComboBox<CounterFaceTypeEnum> faceChoice = new ComboBox<>();
         faceChoice.setVisible(false);
+        faceChoice.setCellFactory(new CounterFaceCellFactory(gameConfig.getCountryName()));
         faceChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
 
         ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
@@ -1157,10 +1158,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(globalConfiguration.getMessage(param.getValue().getType())));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.info"));
-        column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getInfo(param.getValue())));
-        table.getColumns().add(column);
+        TableColumn<AdministrativeAction, AdministrativeAction> columnCustom = new TableColumn<>(globalConfiguration.getMessage("admin_action.info"));
+        columnCustom.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+        columnCustom.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue()));
+        columnCustom.setCellFactory(param -> getInfo());
+        table.getColumns().add(columnCustom);
 
         column = new TableColumn<>(globalConfiguration.getMessage("admin_action.cost"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
@@ -1222,28 +1224,36 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         }
     }
 
-    private String getInfo(AdministrativeAction action) {
-        StringBuilder info = new StringBuilder();
+    private TableCell<AdministrativeAction, AdministrativeAction> getInfo() {
+        return new TableCell<AdministrativeAction, AdministrativeAction>() {
+            @Override
+            protected void updateItem(AdministrativeAction action, boolean empty) {
+                super.updateItem(action, empty);
 
-        if (action.getType() == AdminActionTypeEnum.LF) {
-            Counter counter = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
-                    .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().orElse(null);
-            if (counter != null) {
-                String provinceName = globalConfiguration.getMessage(counter.getOwner().getProvince());
-                info.append(provinceName).append(" - ").append(globalConfiguration.getMessage(counter.getType()));
+                if (action == null || empty) {
+                    setGraphic(null);
+                } else {
+                    HBox hBox = new HBox();
+                    setGraphic(hBox);
+                    if (action.getType() == AdminActionTypeEnum.LF) {
+                        Counter counter = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                                .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().orElse(null);
+                        if (counter != null) {
+                            Label label = new Label(globalConfiguration.getMessage(counter.getOwner().getProvince()) + " - ");
+                            hBox.getChildren().addAll(label, UIUtil.getImage(counter));
+                        }
+                        if (action.getCounterFaceType() != null) {
+                            hBox.getChildren().addAll(new Label(" -> "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType()));
+                        }
+                    } else if (StringUtils.isNotEmpty(action.getProvince())) {
+                        hBox.getChildren().add(new Label(globalConfiguration.getMessage(action.getProvince())));
+                        if (action.getCounterFaceType() != null) {
+                            hBox.getChildren().addAll(new Label(" - "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType()));
+                        }
+                    }
+                }
             }
-            if (action.getCounterFaceType() != null) {
-                info.append(" -> ").append(globalConfiguration.getMessage(action.getCounterFaceType()));
-            }
-        } else if (StringUtils.isNotEmpty(action.getProvince())) {
-            String provinceName = globalConfiguration.getMessage(action.getProvince());
-            info.append(provinceName);
-            if (action.getCounterFaceType() != null) {
-                info.append(" - ").append(globalConfiguration.getMessage(action.getCounterFaceType()));
-            }
-        }
-
-        return info.toString();
+        };
     }
 
     /**

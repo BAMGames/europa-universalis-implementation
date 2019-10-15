@@ -139,10 +139,11 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
     /** Title to be refreshed when status changed. */
     private Text info = new Text();
 
-    public GamePopup(Long idGame, Long idCountry) {
+    public GamePopup(Long idGame, Long idCountry, String countryName) {
         gameConfig = new GameConfiguration();
         gameConfig.setIdGame(idGame);
         gameConfig.setIdCountry(idCountry);
+        gameConfig.setCountryName(countryName);
     }
 
     /** @return the content. */

@@ -2,14 +2,21 @@ package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
+import com.mkl.eu.front.client.map.marker.MarkerUtils;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -112,6 +119,42 @@ public final class UIUtil {
         alert.getDialogPane().setExpandableContent(expContent);
 
         alert.showAndWait();
+
+    }
+
+    /**
+     * @param counter the counter.
+     * @return an image of the counter.
+     */
+    public static ImageView getImage(Counter counter) {
+        String path = MarkerUtils.getImagePath(counter);
+        return getImage(path);
+    }
+
+    /**
+     * @param country of the counter.
+     * @param face    of the counter.
+     * @return an image of the counter.
+     */
+    public static ImageView getImage(String country, CounterFaceTypeEnum face) {
+        String path = MarkerUtils.getImagePath(country, face.name());
+        return getImage(path);
+    }
+
+    /**
+     * Internal method which retrieve an image from a path.
+     *
+     * @param path of the image.
+     * @return an image from the path.
+     */
+    private static ImageView getImage(String path) {
+        try {
+            FileInputStream fis = new FileInputStream(path);
+            return new ImageView(new Image(fis, 40, 40, true, false));
+        } catch (FileNotFoundException e) {
+            // TODO what to display if no image ?
+            return null;
+        }
 
     }
 }

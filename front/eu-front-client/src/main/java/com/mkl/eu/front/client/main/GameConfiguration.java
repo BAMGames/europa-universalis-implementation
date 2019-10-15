@@ -16,6 +16,8 @@ public class GameConfiguration {
     private Long versionGame;
     /** Id of the country loading the game. */
     private Long idCountry;
+    /** Name of the country loading the game. */
+    private String countryName;
     /** Maximum of the ids for the global messages. */
     private Long maxIdGlobalMessage;
     /** Maximum of the ids for the non global messages. */
@@ -29,6 +31,16 @@ public class GameConfiguration {
     /** @param idGame the idGame to set. */
     public void setIdGame(Long idGame) {
         this.idGame = idGame;
+    }
+
+    /** @return the countryName. */
+    public String getCountryName() {
+        return countryName;
+    }
+
+    /** @param countryName the countryName to set. */
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
     }
 
     /** @return the versionGame. */

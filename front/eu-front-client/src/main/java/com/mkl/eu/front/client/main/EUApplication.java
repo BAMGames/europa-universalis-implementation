@@ -140,7 +140,7 @@ public class EUApplication extends Application {
                                 GameLight game = getTableView().getItems().get(getIndex());
                                 String title = globalConfiguration.getMessage("game.popup.title", game.getId(), game.getCountry());
                                 Supplier<Tab> createTab = () -> {
-                                    GamePopup popup = context.getBean(GamePopup.class, game.getId(), game.getIdCountry());
+                                    GamePopup popup = context.getBean(GamePopup.class, game.getId(), game.getIdCountry(), game.getCountry());
                                     gamePopups.add(popup);
 
                                     Tab tab = new Tab(title);
