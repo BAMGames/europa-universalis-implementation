@@ -659,12 +659,13 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         siege.getNonPhasing().setLossesSelected(nonPhasingLossesAuto);
 
         // if annihilated, remove all counters
-        if (siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize())) {
+        boolean testLosses = siege.getUndermineDie() == 0 || siege.getUndermineResult() == SiegeUndermineResultEnum.BREACH_TAKEN;
+        if (testLosses && siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize())) {
             siege.getCounters().stream()
                     .filter(SiegeCounterEntity::isPhasing)
                     .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter(), siege.getGame())));
         }
-        if (siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize())) {
+        if ((testLosses && siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize())) || siege.getUndermineResult() == SiegeUndermineResultEnum.SURRENDER) {
             siege.getCounters().stream()
                     .filter(SiegeCounterEntity::isNotPhasing)
                     .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter(), siege.getGame())));

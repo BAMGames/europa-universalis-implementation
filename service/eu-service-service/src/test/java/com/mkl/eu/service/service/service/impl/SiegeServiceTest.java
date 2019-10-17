@@ -1586,7 +1586,22 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siegeCounter.setType(counter.getType());
             siegeCounter.setCountry(counter.getCountry());
             siege.getCounters().add(siegeCounter);
-            siege.getPhasing().setSize(fortress != null && fortress >= 3 ? 5 : 3);
+            game.getSieges().add(siege);
+
+            counter = new CounterEntity();
+            counter.setId(14l);
+            counter.setCountry(Camp.ENEMY.name);
+            counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
+            counter.setOwner(stack);
+            stack.getCounters().add(counter);
+
+            siegeCounter = new SiegeCounterEntity();
+            siegeCounter.setSiege(siege);
+            siegeCounter.setPhasing(false);
+            siegeCounter.setCounter(counter.getId());
+            siegeCounter.setType(counter.getType());
+            siegeCounter.setCountry(counter.getCountry());
+            siege.getCounters().add(siegeCounter);
             game.getSieges().add(siege);
 
             if (owner == null) {
@@ -1662,6 +1677,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeUndermineBuilder thenExpect(SiegeUndermineResultBuilder result) {
             List<DiffEntity> diffs = this.diffs;
+            DiffEntity removeBesieged = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 14l)
+                    .findAny()
+                    .orElse(null);
             if (diffsMan != null) {
                 DiffEntity diffSiege = diffs.stream()
                         .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.SIEGE)
@@ -1788,6 +1807,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             } else {
                 Assert.assertEquals("0 counter should have been added because of not manning the fortress but was not.", 0l, counterAdded);
                 Assert.assertNull("The army counter should not have been removed because of not manning the fortress but was.", removeArmy);
+            }
+            if (result.result == SiegeUndermineResultEnum.SURRENDER) {
+                Assert.assertNotNull("The besieged counter should have been removed because of the surrender of the fortress but was not.", removeBesieged);
+            } else {
+                Assert.assertNull("The besieged counter should not have been removed because of not the surrender of the fortress but was.", removeBesieged);
             }
 
             return this;
@@ -2092,6 +2116,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(country);
         SiegeEntity siege = new SiegeEntity();
         siege.setFortressLevel(0);
+        siege.setUndermineDie(8);
         siege.setStatus(SiegeStatusEnum.REDEPLOY);
         siege.setUndermineResult(SiegeUndermineResultEnum.WAR_HONOUR);
         siege.setFortressLevel(3);
@@ -2164,9 +2189,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         siegeCounter.setCountry(counter.getCountry());
         siegeCounter.setPhasing(true);
         siege.getCounters().add(siegeCounter);
-
-        siege.getNonPhasing().setSize(2);
-        siege.getPhasing().setSize(1);
 
         StackEntity stackIdf = new StackEntity();
         stackIdf.setId(666l);
