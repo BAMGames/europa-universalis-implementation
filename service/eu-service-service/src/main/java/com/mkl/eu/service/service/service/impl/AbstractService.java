@@ -361,29 +361,6 @@ public abstract class AbstractService implements INameConstants {
     }
 
     /**
-     * Creates and push a diff.
-     *
-     * @param diff to create and push.
-     */
-    protected void createDiff(DiffEntity diff) {
-        diffDao.create(diff);
-
-        push(Collections.singletonList(diff));
-    }
-
-    /**
-     * Creates and push some diffs.
-     *
-     * @param diffs to create and push.
-     */
-    protected void createDiffs(List<DiffEntity> diffs) {
-        diffs.stream()
-                .forEach(diffDao::create);
-
-        push(diffs);
-    }
-
-    /**
      * Creates the diff and then return a Response.
      *
      * @param diff      the diff to create.
@@ -393,16 +370,7 @@ public abstract class AbstractService implements INameConstants {
      * @return a Response.
      */
     protected <T> DiffResponse createDiff(DiffEntity diff, GameDiffsInfo gameDiffs, Request<T> request) {
-        createDiff(diff);
-        List<DiffEntity> diffs = new ArrayList<>(gameDiffs.getDiffs());
-        diffs.add(diff);
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(gameDiffs.getGame().getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiffs(Collections.singletonList(diff), gameDiffs, request);
     }
 
     /**
@@ -415,7 +383,10 @@ public abstract class AbstractService implements INameConstants {
      * @return a Response.
      */
     protected <T> DiffResponse createDiffs(List<DiffEntity> newDiffs, GameDiffsInfo gameDiffs, Request<T> request) {
-        createDiffs(newDiffs);
+        newDiffs.stream()
+                .forEach(diffDao::create);
+        push(newDiffs);
+
         List<DiffEntity> diffs = new ArrayList<>(gameDiffs.getDiffs());
         diffs.addAll(newDiffs);
         DiffResponse response = new DiffResponse();

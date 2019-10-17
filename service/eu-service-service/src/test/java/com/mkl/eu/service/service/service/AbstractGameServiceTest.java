@@ -23,11 +23,11 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
-import com.mkl.eu.service.service.socket.SocketHandler;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.mockito.Mock;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +53,6 @@ public abstract class AbstractGameServiceTest {
     @Mock
     protected DiffMapping diffMapping;
 
-    @Mock
-    protected SocketHandler socketHandler;
-
     /** Variable used to store something coming from a mock. */
     private List<DiffEntity> diffEntities;
 
@@ -78,7 +75,7 @@ public abstract class AbstractGameServiceTest {
     protected GameEntity createGameUsingMocks() {
         GameEntity game = new GameEntity();
         game.setId(GAME_ID);
-        game.setVersion(5L);
+        game.setVersion(VERSION_SINCE);
         when(gameDao.lock(GAME_ID)).thenReturn(game);
         when(gameDao.load(GAME_ID)).thenReturn(game);
 
@@ -102,6 +99,9 @@ public abstract class AbstractGameServiceTest {
     }
 
     protected void simulateDiff() {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.initSynchronization();
+        }
         List<DiffEntity> diffBefore = new ArrayList<>();
         diffBefore.add(new DiffEntity());
         diffBefore.add(new DiffEntity());

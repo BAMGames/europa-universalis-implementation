@@ -24,13 +24,13 @@ public interface IEconomicService extends INameConstants {
     /**
      * Compute the economical sheets of the game for the current turn.
      *
-     * @param idGame id of the game.
+     * @param request with the id of the game.
      * @return the diffs.
      * @throws FunctionalException functional exception.
      * @throws TechnicalException  technical exception.
      */
     @WebResult(name = RESPONSE)
-    DiffResponse computeEconomicalSheets(@WebParam(name = PARAMETER_ID_GAME) Long idGame) throws FunctionalException, TechnicalException;
+    DiffResponse computeEconomicalSheets(@WebParam(name = PARAMETER_COMPUTE_ECO_SHEETS) Request<Void> request) throws FunctionalException, TechnicalException;
 
     /**
      * Load economical sheets.

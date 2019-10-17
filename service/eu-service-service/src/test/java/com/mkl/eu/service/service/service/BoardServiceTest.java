@@ -415,14 +415,13 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         DiffEntity diffEntity = retrieveDiffCreated();
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, socketHandler, diffMapping);
+        InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("IdF");
         inOrder.verify(provinceDao).getProvinceByName("pecs");
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -744,12 +743,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         DiffEntity diffEntity = retrieveDiffCreated();
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(7L, diffEntity.getIdObject().longValue());
@@ -982,14 +980,13 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         DiffEntity diffEntity = retrieveDiffCreated();
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, counterDao, stackDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(counterDao).getCounter(13L, 12L);
         inOrder.verify(counterDao).getPatrons("genes", 12L);
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -1188,7 +1185,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(0).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(0).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
         Assert.assertEquals(2, diffEntities.get(0).getAttributes().size());
@@ -1231,7 +1228,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(0).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(0).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.VALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
         Assert.assertEquals(2, diffEntities.get(0).getAttributes().size());
@@ -1307,7 +1304,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(0).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(0).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffEntities.get(0).getTypeObject());
         Assert.assertEquals(0, diffEntities.get(0).getAttributes().size());

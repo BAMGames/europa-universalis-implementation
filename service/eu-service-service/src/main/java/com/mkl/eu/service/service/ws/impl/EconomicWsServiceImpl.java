@@ -30,8 +30,8 @@ public class EconomicWsServiceImpl extends SpringBeanAutowiringSupport implement
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse computeEconomicalSheets(Long idGame) throws FunctionalException, TechnicalException {
-        return economicService.computeEconomicalSheets(idGame);
+    public DiffResponse computeEconomicalSheets(Request<Void> request) throws FunctionalException, TechnicalException {
+        return economicService.computeEconomicalSheets(request);
     }
 
     /** {@inheritDoc} */

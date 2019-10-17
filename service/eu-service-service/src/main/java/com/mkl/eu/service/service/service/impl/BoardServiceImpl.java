@@ -243,23 +243,12 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_POINTS, stack.getMove() + movePoints),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.IS_MOVING, firstMove));
 
-        createDiff(diff);
-
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.add(diff);
-
         stack.setProvince(provinceTo);
         stack.setMove(stack.getMove() + movePoints);
         stack.setMovePhase(MovePhaseEnum.IS_MOVING);
         gameDao.update(game, false);
 
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /** {@inheritDoc} */
@@ -348,20 +337,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newController));
 
-        createDiff(diff);
-
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.add(diff);
-
         gameDao.update(game, false);
 
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /** {@inheritDoc} */
@@ -447,20 +425,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase));
 
-        createDiff(diff);
-
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.add(diff);
-
         gameDao.update(game, false);
 
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /** {@inheritDoc} */
@@ -553,17 +520,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
 
         DiffEntity diff = counterDomain.changeCounterOwner(counter, stack, game);
-        createDiff(diff);
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.add(diff);
 
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /**
@@ -695,17 +653,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             }
         }
 
-        createDiffs(newDiffs);
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.addAll(newDiffs);
-
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiffs(newDiffs, gameDiffs, request);
     }
 
     /** {@inheritDoc} */

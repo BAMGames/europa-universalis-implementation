@@ -15,7 +15,6 @@ import com.mkl.eu.client.service.util.EconomicUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
-import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -159,8 +158,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
     /** {@inheritDoc} */
     @Override
-    public DiffResponse computeEconomicalSheets(Long idGame) {
-        GameEntity game = gameDao.lock(idGame);
+    public DiffResponse computeEconomicalSheets(Request<Void> request) throws FunctionalException {
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_COMPUTE_ECO_SHEETS).setParams(METHOD_COMPUTE_ECO_SHEETS));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_COMPUTE_ECO_SHEETS, PARAMETER_COMPUTE_ECO_SHEETS);
+
+        GameEntity game = gameDiffs.getGame();
 
         Map<String, List<CounterFaceTypeEnum>> tradeCenters = economicalSheetDao.getTradeCenters(game.getId());
 
@@ -171,15 +175,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
 
-        createDiff(diff);
-        List<Diff> diffs = new ArrayList<>();
-        diffs.add(diffMapping.oeToVo(diff));
-
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffs);
-        response.setVersionGame(game.getVersion());
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /**
@@ -369,7 +365,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 break;
         }
 
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        List<DiffEntity> diffs = new ArrayList<>();
 
         if (admAct != null) {
             admAct.setType(request.getRequest().getType());
@@ -386,18 +382,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COLUMN, admAct.getColumn(), admAct.getColumn() != null),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BONUS, admAct.getBonus(), admAct.getBonus() != null));
 
-            createDiff(diff);
-
             diffs.add(diff);
         }
 
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiffs(diffs, gameDiffs, request);
     }
 
     /**
@@ -1679,17 +1667,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, action.getCountry().getId()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, action.getType()));
 
-        createDiff(diff);
-
-        diffs.add(diff);
-
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /** {@inheritDoc} */
@@ -1781,17 +1759,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
         }
 
-        createDiffs(newDiffs);
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.addAll(newDiffs);
-
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(game.getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiffs(newDiffs, gameDiffs, request);
     }
 
     /**

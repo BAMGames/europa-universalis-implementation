@@ -52,6 +52,8 @@ public interface INameConstants {
     String PARAMETER_LOAD_ROOM = "loadRoom";
     /** Name of the parameter readRoom. */
     String PARAMETER_READ_ROOM = "readRoom";
+    /** Name of the parameter computeEcoSheets. */
+    String PARAMETER_COMPUTE_ECO_SHEETS = "computeEcoSheets";
     /** Name of the parameter loadEcoSheets. */
     String PARAMETER_LOAD_ECO_SHEETS = "loadEcoSheets";
     /** Name of the parameter loadAdminActions. */
@@ -179,6 +181,8 @@ public interface INameConstants {
     String METHOD_LOAD_ROOM = "loadRoom";
     /** Name of the method readRoom. */
     String METHOD_READ_ROOM = "readRoom";
+    /** Name of the method computeEcoSheets. */
+    String METHOD_COMPUTE_ECO_SHEETS = "computeEcoSheets";
     /** Name of the method loadEcoSheets. */
     String METHOD_LOAD_ECO_SHEETS = "loadEcoSheets";
     /** Name of the method loadAdminActions. */

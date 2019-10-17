@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.AuthentInfo;
+import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
@@ -119,33 +120,35 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     private IOEUtil oeUtil;
 
     /** Variable used to store something coming from a mock. */
-    private DiffEntity diffEntity;
-
-    /** Variable used to store something coming from a mock. */
     private EconomicalSheetEntity sheetEntity;
 
     @Test
-    public void testComputeSheets() {
+    public void testComputeSheets() throws FunctionalException {
         GameEntity game = createGameUsingMocks();
         game.setTurn(2);
+
+        Request<Void> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("toto");
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(game.getId());
+        request.getGame().setVersionGame(game.getVersion());
 
         Diff diffAfter = new Diff();
 
         when(diffMapping.oeToVo((DiffEntity) anyObject())).thenReturn(diffAfter);
 
-        when(diffDao.create(anyObject())).thenAnswer(invocation -> {
-            diffEntity = (DiffEntity) invocation.getArguments()[0];
-            return diffEntity;
-        });
+        simulateDiff();
 
-        DiffResponse response = economicService.computeEconomicalSheets(game.getId().longValue());
+        DiffResponse response = economicService.computeEconomicalSheets(request);
 
-        InOrder inOrder = inOrder(gameDao, economicalSheetDao, diffDao, diffMapping, socketHandler);
+        InOrder inOrder = inOrder(gameDao, economicalSheetDao, diffDao, diffMapping);
+
+        DiffEntity diffEntity = retrieveDiffCreated();
 
         inOrder.verify(gameDao).lock(game.getId());
         inOrder.verify(economicalSheetDao).getTradeCenters(game.getId());
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oeToVo((DiffEntity) anyObject());
 
         Assert.assertNull(diffEntity.getIdObject());
@@ -156,10 +159,6 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1, diffEntity.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(0).getType());
         Assert.assertEquals(Integer.toString(game.getTurn()), diffEntity.getAttributes().get(0).getValue());
-
-        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(1, response.getDiffs().size());
-        Assert.assertEquals(diffAfter, response.getDiffs().get(0));
     }
 
     @Test
@@ -4640,7 +4639,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(13L, diffEntities.get(0).getIdObject().longValue());
-        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(0).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(0).getTypeObject());
         Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
@@ -4698,7 +4697,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(4, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(0).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(0).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(0).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(0).getType());
         Assert.assertEquals(DiffTypeObjectEnum.ECO_SHEET, diffEntities.get(0).getTypeObject());
         Assert.assertEquals(1, diffEntities.get(0).getAttributes().size());
@@ -4707,7 +4706,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(12L, diffEntities.get(1).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(1).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(1).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(1).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.VALIDATE, diffEntities.get(1).getType());
         Assert.assertEquals(DiffTypeObjectEnum.ADM_ACT, diffEntities.get(1).getTypeObject());
         Assert.assertEquals(1, diffEntities.get(1).getAttributes().size());
@@ -4716,7 +4715,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(12L, diffEntities.get(2).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(2).getIdObject());
-        Assert.assertEquals(5L, diffEntities.get(2).getVersionGame().longValue());
+        Assert.assertEquals(1L, diffEntities.get(2).getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(2).getType());
         Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(2).getTypeObject());
         Assert.assertEquals(0, diffEntities.get(2).getAttributes().size());

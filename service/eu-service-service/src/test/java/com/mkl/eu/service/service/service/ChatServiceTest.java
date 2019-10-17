@@ -151,14 +151,13 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         DiffResponse response = chatService.createRoom(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, "Title");
         inOrder.verify(chatDao).create(anyObject());
         inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
@@ -265,13 +264,12 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         DiffResponse response = chatService.speakInRoom(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoomGlobal(12L);
         inOrder.verify(chatDao).createMessage((MessageGlobalEntity) anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
         inOrder.verify(chatDao).getMessagesSince(12L, 4L, 21L);
         inOrder.verify(chatDao).getMessagesGlobalSince(12L, 22L);
@@ -358,14 +356,13 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         DiffResponse response = chatService.speakInRoom(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         //noinspection unchecked
         inOrder.verify(chatDao).createMessage((List<ChatEntity>) anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
         inOrder.verify(chatDao).getMessagesSince(12L, 4L, 21L);
         inOrder.verify(chatDao).getMessagesGlobalSince(12L, 22L);
@@ -517,7 +514,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         DiffResponse response = chatService.toggleRoom(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
@@ -724,7 +721,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         DiffResponse response = chatService.inviteKickRoom(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
@@ -732,11 +729,9 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         if (presentBefore == presentAfter) {
             inOrder.verify(diffDao, never()).create(anyObject());
             inOrder.verify(diffMapping, never()).oeToVo((DiffEntity) anyObject());
-            inOrder.verify(socketHandler, never()).push(anyObject(), anyObject(), anyObject());
         } else {
             inOrder.verify(diffDao).create(anyObject());
             inOrder.verify(diffMapping).oeToVo((DiffEntity) anyObject());
-            inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         }
         inOrder.verify(diffMapping).oesToVos(anyObject());
         inOrder.verify(chatDao).getMessagesSince(12L, 5L, 21L);
@@ -820,7 +815,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
 
         DiffResponse response = chatService.inviteKickRoom(request);
 
-        InOrder inOrder = inOrder(gameDao, diffDao, socketHandler, playableCountryDao, chatDao, chatMapping, diffMapping);
+        InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
         inOrder.verify(diffDao).getDiffsSince(12L, 1L);
@@ -828,7 +823,6 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         inOrder.verify(chatDao).createPresent(anyObject());
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oeToVo((DiffEntity) anyObject());
-        inOrder.verify(socketHandler).push(anyObject(), anyObject(), anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
         inOrder.verify(chatDao).getMessagesSince(12L, 5L, 21L);
         inOrder.verify(chatDao).getMessagesGlobalSince(12L, 22L);

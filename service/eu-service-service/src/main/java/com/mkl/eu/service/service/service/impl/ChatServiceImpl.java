@@ -87,18 +87,8 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.ROOM, room.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NAME, name),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, owner.getId()));
-        createDiff(diff);
 
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-        diffs.add(diff);
-
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(gameDiffs.getGame().getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiff(diff, gameDiffs, request);
     }
 
     /** {@inheritDoc} */
@@ -290,24 +280,16 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
         }
 
         GameEntity game = gameDiffs.getGame();
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
+        List<DiffEntity> diffs = new ArrayList<>();
 
         if (change) {
             DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.LINK, DiffTypeObjectEnum.ROOM, room.getId(),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, target.getId()),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.INVITE, request.getRequest().isInvite()));
-            createDiff(diff);
-
             diffs.add(diff);
         }
 
-        DiffResponse response = new DiffResponse();
-        response.setDiffs(diffMapping.oesToVos(diffs));
-        response.setVersionGame(gameDiffs.getGame().getVersion());
-
-        response.setMessages(getMessagesSince(request));
-
-        return response;
+        return createDiffs(diffs, gameDiffs, request);
     }
 
     /** {@inheritDoc} */

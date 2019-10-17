@@ -6,15 +6,12 @@ import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
-import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
-import com.mkl.eu.front.client.event.DiffEvent;
-import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -204,18 +201,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         });
 
         Button temp = new Button("ATEJ");
-        temp.setOnAction(event -> {
-            Long idGame = gameConfig.getIdGame();
-            try {
-                DiffResponse response = economicService.computeEconomicalSheets(idGame);
-                DiffEvent diff = new DiffEvent(response, idGame);
-                processDiffEvent(diff);
-            } catch (Exception e) {
-                LOGGER.error("Error when updating economical sheets.", e);
-
-                processExceptionEvent(new ExceptionEvent(e));
-            }
-        });
+        temp.setOnAction(event -> callService(economicService::computeEconomicalSheets, () -> null, "Error when updating economical sheets."));
         Button update = new Button(globalConfiguration.getMessage("eco.update"));
 
         HBox hBox = new HBox();
