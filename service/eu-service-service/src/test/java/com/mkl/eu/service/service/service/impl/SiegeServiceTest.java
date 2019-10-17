@@ -1949,6 +1949,16 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         try {
             siegeService.redeploy(request);
+            Assert.fail("Should break because country has no right to decide a redeploy in this siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("redeploy.request.idCountry", e.getParams()[0]);
+        }
+
+        when(oeUtil.isWarAlly(country, siege.getWar(), !siege.isBesiegingOffensive())).thenReturn(true);
+
+        try {
+            siegeService.redeploy(request);
             Assert.fail("Should break because request.redeploy is null");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
@@ -2190,6 +2200,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         siegeCounter.setPhasing(true);
         siege.getCounters().add(siegeCounter);
 
+        when(oeUtil.isWarAlly(country, siege.getWar(), !siege.isBesiegingOffensive())).thenReturn(true);
         StackEntity stackIdf = new StackEntity();
         stackIdf.setId(666l);
         when(counterDomain.createStack("idf", country.getName(), game)).thenReturn(stackIdf);

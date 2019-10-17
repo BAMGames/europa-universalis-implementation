@@ -1361,6 +1361,16 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_REDEPLOY)
                 .setParams(METHOD_REDEPLOY, SiegeStatusEnum.REDEPLOY.name()));
 
+        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(), !siege.isBesiegingOffensive());
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(accessRight)
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_REDEPLOY, country.getName(), "complex"));
+
         List<RedeployRequest.ProvinceRedeploy> redeploys = request.getRequest().getRedeploys();
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(CollectionUtils.isEmpty(redeploys))
