@@ -273,7 +273,10 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         VBox vBox = new VBox();
         vBox.getChildren().addAll(choiceBattleTurn);
 
-        tab.setContent(vBox);
+        ScrollPane scroll = new ScrollPane();
+        scroll.fitToWidthProperty().set(true);
+        scroll.setContent(vBox);
+        tab.setContent(scroll);
 
         choiceBattleTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null) {
@@ -775,7 +778,10 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
         VBox vBox = new VBox();
         vBox.getChildren().addAll(choiceSiegeTurn);
 
-        tab.setContent(vBox);
+        ScrollPane scroll = new ScrollPane();
+        scroll.fitToWidthProperty().set(true);
+        scroll.setContent(vBox);
+        tab.setContent(scroll);
 
         choiceSiegeTurn.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null) {

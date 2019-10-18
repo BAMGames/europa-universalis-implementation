@@ -302,21 +302,27 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         Text titleMed = new Text(globalConfiguration.getMessage("eco.tfs.mediterranean"));
         tableTFMed = new TableView<>();
         configureTableTradeFleet(tableTFMed);
+        tableTFMed.setPrefHeight(150);
 
         Text titleAtl = new Text(globalConfiguration.getMessage("eco.tfs.atlantic"));
         tableTFAtl = new TableView<>();
         configureTableTradeFleet(tableTFAtl);
+        tableTFAtl.setPrefHeight(230);
 
         Text titleInd = new Text(globalConfiguration.getMessage("eco.tfs.indian"));
         tableTFInd = new TableView<>();
         configureTableTradeFleet(tableTFInd);
+        tableTFInd.setPrefHeight(160);
 
         updateTradeFleetsTab();
 
         VBox vBox = new VBox();
         vBox.getChildren().addAll(titleMed, tableTFMed, titleAtl, tableTFAtl, titleInd, tableTFInd);
 
-        tab.setContent(vBox);
+        ScrollPane scroll = new ScrollPane();
+        scroll.fitToWidthProperty().set(true);
+        scroll.setContent(vBox);
+        tab.setContent(scroll);
 
         return tab;
     }

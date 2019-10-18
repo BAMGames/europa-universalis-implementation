@@ -203,7 +203,10 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
         VBox vBox = new VBox();
         vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane, establishmentPane, technologyPane, actions);
 
-        tab.setContent(vBox);
+        ScrollPane scroll = new ScrollPane();
+        scroll.fitToWidthProperty().set(true);
+        scroll.setContent(vBox);
+        tab.setContent(scroll);
 
         return tab;
     }
