@@ -12,14 +12,32 @@
     <version>1.0.0-SNAPSHOT</version>
     <name>EU reactor</name>
     <url>http://maven.apache.org</url>
-    
-    <modules>
-        <module>client</module>
-        <module>conf</module>
-        <module>front</module>
-        <module>parent</module>
-        <module>service</module>
-    </modules>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>client</module>
+                <module>conf</module>
+                <module>front</module>
+                <module>parent</module>
+                <module>service</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- circle ci stopped compiling javafx. TODO migrate to something more consistent like travis. -->
+            <id>circleci</id>
+            <modules>
+                <module>client</module>
+                <module>conf</module>
+                <module>parent</module>
+                <module>service</module>
+            </modules>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>
