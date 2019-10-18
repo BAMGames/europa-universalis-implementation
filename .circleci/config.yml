@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/openjdk:8-jdk
+      - image: circleci/openjfx
     steps:
       - checkout
       - run: mvn clean install jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report -DrepoToken=$COVERALLS_TOKEN
