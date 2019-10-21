@@ -51,17 +51,17 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_ROOM, PARAMETER_REQUEST).setParams(METHOD_CREATE_ROOM));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getGame().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_CREATE_ROOM));
         failIfEmpty(new AbstractService.CheckForThrow<String>().setTest(request.getRequest().getName()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_ROOM, PARAMETER_REQUEST, PARAMETER_NAME).setParams(METHOD_CREATE_ROOM));
 
         String name = request.getRequest().getName();
         PlayableCountryEntity owner = CommonUtil.findFirst(gameDiffs.getGame().getCountries().stream(),
-                c -> c.getId().equals(request.getIdCountry()));
+                c -> c.getId().equals(request.getGame().getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(owner).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_CREATE_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_CREATE_ROOM, request.getIdCountry()));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_CREATE_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_CREATE_ROOM, request.getGame().getIdCountry()));
 
         RoomEntity room = chatDao.getRoom(request.getGame().getIdGame(), name);
 
@@ -103,16 +103,16 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_REQUEST).setParams(METHOD_SPEAK_IN_ROOM));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getGame().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_SPEAK_IN_ROOM));
         failIfEmpty(new AbstractService.CheckForThrow<String>().setTest(request.getRequest().getMessage()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_REQUEST, PARAMETER_MESSAGE).setParams(METHOD_SPEAK_IN_ROOM));
 
         PlayableCountryEntity sender = CommonUtil.findFirst(gameDiffs.getGame().getCountries().stream(),
-                c -> c.getId().equals(request.getIdCountry()));
+                c -> c.getId().equals(request.getGame().getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(sender).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_SPEAK_IN_ROOM, request.getIdCountry()));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_SPEAK_IN_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_SPEAK_IN_ROOM, request.getGame().getIdCountry()));
 
         List<Long> idCountries = new ArrayList<>();
         MessageDiff msg = new MessageDiff();
@@ -183,7 +183,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST).setParams(METHOD_TOGGLE_ROOM));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getGame().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_TOGGLE_ROOM));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdRoom()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_ROOM).setParams(METHOD_TOGGLE_ROOM));
@@ -191,17 +191,17 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_VISIBLE).setParams(METHOD_TOGGLE_ROOM));
 
         PlayableCountryEntity sender = CommonUtil.findFirst(gameDiffs.getGame().getCountries().stream(),
-                c -> c.getId().equals(request.getIdCountry()));
+                c -> c.getId().equals(request.getGame().getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(sender).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_TOGGLE_ROOM, request.getIdCountry()));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_TOGGLE_ROOM, request.getGame().getIdCountry()));
 
         RoomEntity room = chatDao.getRoom(request.getGame().getIdGame(), request.getRequest().getIdRoom());
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(room).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_TOGGLE_ROOM, PARAMETER_REQUEST, PARAMETER_ID_ROOM).setParams(METHOD_TOGGLE_ROOM, request.getRequest().getIdRoom()));
 
-        PresentEntity present = CommonUtil.findFirst(room.getPresents(), presentEntity -> request.getIdCountry().equals(presentEntity.getCountry().getId()));
+        PresentEntity present = CommonUtil.findFirst(room.getPresents(), presentEntity -> request.getGame().getIdCountry().equals(presentEntity.getCountry().getId()));
 
         if (present != null) {
             present.setVisible(request.getRequest().isVisible());
@@ -231,7 +231,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_REQUEST).setParams(METHOD_INVITE_KICK_ROOM));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getChat()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_CHAT).setParams(METHOD_INVITE_KICK_ROOM));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getGame().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_INVITE_KICK_ROOM));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY).setParams(METHOD_INVITE_KICK_ROOM));
@@ -241,10 +241,10 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_REQUEST, PARAMETER_INVITE).setParams(METHOD_INVITE_KICK_ROOM));
 
         PlayableCountryEntity owner = CommonUtil.findFirst(gameDiffs.getGame().getCountries().stream(),
-                c -> c.getId().equals(request.getIdCountry()));
+                c -> c.getId().equals(request.getGame().getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(owner).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_INVITE_KICK_ROOM, request.getIdCountry()));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_INVITE_KICK_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_INVITE_KICK_ROOM, request.getGame().getIdCountry()));
 
         PlayableCountryEntity target = CommonUtil.findFirst(gameDiffs.getGame().getCountries().stream(),
                                                             c -> c.getId().equals(request.getRequest().getIdCountry()));
@@ -326,21 +326,21 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_READ_ROOM, PARAMETER_REQUEST, PARAMETER_ID_ROOM).setParams(METHOD_READ_ROOM));
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getChat()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_READ_ROOM, PARAMETER_CHAT).setParams(METHOD_READ_ROOM));
-        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+        failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getGame().getIdCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_READ_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_READ_ROOM));
 
         PlayableCountryEntity owner = CommonUtil.findFirst(gameDiffs.getGame().getCountries().stream(),
-                c -> c.getId().equals(request.getIdCountry()));
+                c -> c.getId().equals(request.getGame().getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(owner).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
-                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_READ_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_READ_ROOM, request.getIdCountry()));
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_READ_ROOM, PARAMETER_ID_COUNTRY).setParams(METHOD_READ_ROOM, request.getGame().getIdCountry()));
 
         RoomEntity room = chatDao.getRoom(request.getGame().getIdGame(), request.getRequest().getIdRoom());
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(room).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_READ_ROOM, PARAMETER_REQUEST, PARAMETER_ID_ROOM).setParams(METHOD_READ_ROOM, request.getRequest().getIdRoom()));
 
-        chatDao.readMessagesInRoom(request.getRequest().getIdRoom(), request.getIdCountry(), request.getRequest().getMaxId());
+        chatDao.readMessagesInRoom(request.getRequest().getIdRoom(), request.getGame().getIdCountry(), request.getRequest().getMaxId());
 
         DiffResponse response = new DiffResponse();
         response.setDiffs(diffMapping.oesToVos(gameDiffs.getDiffs()));

@@ -82,11 +82,11 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_BATTLES, request.getIdCountry(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
+        checkGameStatus(game, GameStatusEnum.MILITARY_BATTLES, request.getGame().getIdCountry(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -231,7 +231,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -262,7 +262,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_SELECT_FORCES)
                 .setParams(METHOD_SELECT_FORCES, BattleStatusEnum.SELECT_FORCES.name()));
 
-        boolean phasing = isCountryActive(game, request.getIdCountry());
+        boolean phasing = isCountryActive(game, request.getGame().getIdCountry());
 
         Boolean validated = phasing ? battle.getPhasing().isForces() : battle.getNonPhasing().isForces();
 
@@ -376,13 +376,13 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
 
         // TODO check that the player doing the request is leader of the stack
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(isPhasingPlayer(game, request.getIdCountry()))
+                .setTest(isPhasingPlayer(game, request.getGame().getIdCountry()))
                 .setCodeError(IConstantsServiceException.BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW)
                 .setMsgFormat("{1}: {0} only non phasing player can withdraw before battle.")
                 .setName(PARAMETER_WITHDRAW_BEFORE_BATTLE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
@@ -747,7 +747,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
 
@@ -780,7 +780,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             phasing = true;
             remainingMoral = CommonUtil.subtract(battle.getPhasing().getMoral(), battle.getPhasing().getLosses().getMoraleLoss());
         }
-        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        boolean playerPhasing = isPhasingPlayer(game, request.getGame().getIdCountry());
         boolean ok = phasing == playerPhasing;
         if (ok) {
             List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
@@ -1379,7 +1379,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
 
@@ -1402,7 +1402,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_CHOOSE_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES, BattleStatusEnum.CHOOSE_LOSS.name()));
 
-        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        boolean playerPhasing = isPhasingPlayer(game, request.getGame().getIdCountry());
         boolean accessRight = oeUtil.isWarAlly(country, battle.getWar(),
                 playerPhasing && battle.isPhasingOffensive() || !playerPhasing && !battle.isPhasingOffensive());
 
@@ -1578,7 +1578,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
 
@@ -1601,7 +1601,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_RETREAT_AFTER_BATTLE)
                 .setParams(METHOD_RETREAT_AFTER_BATTLE, BattleStatusEnum.RETREAT.name()));
 
-        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        boolean playerPhasing = isPhasingPlayer(game, request.getGame().getIdCountry());
         boolean accessRight = oeUtil.isWarAlly(country, battle.getWar(),
                 playerPhasing && battle.isPhasingOffensive() || !playerPhasing && !battle.isPhasingOffensive());
 

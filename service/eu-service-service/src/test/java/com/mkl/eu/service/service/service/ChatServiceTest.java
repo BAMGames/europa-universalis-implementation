@@ -85,7 +85,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("createRoom.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
 
         try {
             chatService.createRoom(request);
@@ -127,7 +127,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
         request.getRequest().setName("Title");
 
         GameEntity game = createGameUsingMocks();
@@ -154,7 +154,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 4L, 1L);
         inOrder.verify(chatDao).getRoom(12L, "Title");
         inOrder.verify(chatDao).create(anyObject());
         inOrder.verify(diffDao).create(anyObject());
@@ -199,7 +199,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("speakInRoom.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
 
         try {
             chatService.speakInRoom(request);
@@ -221,12 +221,12 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
         request.getRequest().setMessage("Message");
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -267,7 +267,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 4L, 1L);
         inOrder.verify(chatDao).getRoomGlobal(12L);
         inOrder.verify(chatDao).createMessage((MessageGlobalEntity) anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
@@ -290,13 +290,13 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
         request.getRequest().setIdRoom(9L);
         request.getRequest().setMessage("Message");
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
 
         GameEntity game = createGameUsingMocks();
         game.getCountries().add(new PlayableCountryEntity());
@@ -359,7 +359,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 4L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         //noinspection unchecked
         inOrder.verify(chatDao).createMessage((List<ChatEntity>) anyObject());
@@ -408,7 +408,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("toggleRoom.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
 
         try {
             chatService.toggleRoom(request);
@@ -459,13 +459,13 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
         request.getRequest().setIdRoom(9L);
         request.getRequest().setVisible(true);
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.setIdCountry(4L);
+        request.getGame().setIdCountry(4L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -517,7 +517,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 4L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
         inOrder.verify(chatDao).getMessagesSince(12L, 4L, 21L);
@@ -565,7 +565,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("inviteKickRoom.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(5L);
+        request.getGame().setIdCountry(5L);
 
         try {
             chatService.inviteKickRoom(request);
@@ -666,7 +666,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.setIdCountry(5L);
+        request.getGame().setIdCountry(5L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -724,7 +724,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 5L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         if (presentBefore == presentAfter) {
             inOrder.verify(diffDao, never()).create(anyObject());
@@ -760,7 +760,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdMessage(21L);
         request.getChat().setMaxIdGlobalMessage(22L);
-        request.setIdCountry(5L);
+        request.getGame().setIdCountry(5L);
 
         GameEntity game = createGameUsingMocks();
 
@@ -818,7 +818,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, playableCountryDao, chatDao, chatMapping, diffMapping);
 
         inOrder.verify(gameDao).load(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 5L, 1L);
         inOrder.verify(chatDao).getRoom(12L, 9L);
         inOrder.verify(chatDao).createPresent(anyObject());
         inOrder.verify(diffDao).create(anyObject());
@@ -937,7 +937,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("readRoom.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(3L);
+        request.getGame().setIdCountry(3L);
 
         try {
             chatService.readRoom(request);
@@ -947,7 +947,7 @@ public class ChatServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("readRoom.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(5L);
+        request.getGame().setIdCountry(5L);
         request.getRequest().setMaxId(19L);
 
         try {

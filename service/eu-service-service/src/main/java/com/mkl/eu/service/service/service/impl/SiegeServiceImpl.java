@@ -83,11 +83,11 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
+        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -221,7 +221,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -252,7 +252,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_SELECT_FORCES)
                 .setParams(METHOD_SELECT_FORCES, SiegeStatusEnum.SELECT_FORCES.name()));
 
-        boolean phasing = isCountryActive(game, request.getIdCountry());
+        boolean phasing = isCountryActive(game, request.getGame().getIdCountry());
 
         failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(phasing)
@@ -414,11 +414,11 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
+        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -809,11 +809,11 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
+        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -925,11 +925,11 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
+        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -1337,7 +1337,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -1508,7 +1508,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         // TODO Authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
 
@@ -1531,7 +1531,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_CHOOSE_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES, SiegeStatusEnum.CHOOSE_LOSS.name()));
 
-        boolean playerPhasing = isPhasingPlayer(game, request.getIdCountry());
+        boolean playerPhasing = isPhasingPlayer(game, request.getGame().getIdCountry());
         // TODO check that the player doing the request is leader of the stack and replace complex by this leader
         boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(),
                 playerPhasing && siege.isBesiegingOffensive() || !playerPhasing && !siege.isBesiegingOffensive());

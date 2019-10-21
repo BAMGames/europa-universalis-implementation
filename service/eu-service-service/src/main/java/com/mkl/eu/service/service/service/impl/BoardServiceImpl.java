@@ -79,7 +79,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -89,7 +89,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_MOVE_STACK));
         // TODO authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -263,7 +263,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -273,7 +273,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_TAKE_STACK_CONTROL));
         // TODO authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -354,7 +354,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -364,7 +364,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_END_MOVE_STACK));
         // TODO authorization
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -441,7 +441,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
 
         // TODO Authorization
 
@@ -455,7 +455,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         Long idCounter = request.getRequest().getIdCounter();
         Long idStack = request.getRequest().getIdStack();
         PlayableCountryEntity country = game.getCountries().stream()
-                .filter(x -> x.getId().equals(request.getIdCountry()))
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
         // No check on null of country because it will be done in Authorization before
@@ -582,7 +582,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getIdCountry(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
+        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getAuthent())
@@ -599,19 +599,19 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_VALIDATE_MIL_ROUND));
 
         failIfNull(new AbstractService.CheckForThrow<>()
-                .setTest(request.getIdCountry())
+                .setTest(request.getGame().getIdCountry())
                 .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
                 .setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_VALIDATE_MIL_ROUND));
 
-        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getIdCountry()));
+        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getGame().getIdCountry()));
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                 .setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_ID_COUNTRY)
-                .setParams(METHOD_VALIDATE_MIL_ROUND, request.getIdCountry()));
+                .setParams(METHOD_VALIDATE_MIL_ROUND, request.getGame().getIdCountry()));
 
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))

@@ -732,7 +732,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
                 request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
                 AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
@@ -824,7 +824,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(provinceDao).getProvinceByName("idf");
         inOrder.verify(adminActionDao).findPlannedAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
                 request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
@@ -907,7 +907,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(request.getRequest().getIdCountry(), game.getTurn(),
                 request.getRequest().getIdObject(), AdminActionTypeEnum.LM,
                 AdminActionTypeEnum.DIS, AdminActionTypeEnum.LF);
@@ -1394,7 +1394,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, provinceDao, oeUtil, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(provinceDao).getProvinceByName("corn");
         inOrder.verify(oeUtil).getStacksOnProvince(game, "corn");
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 1, null, AdminActionTypeEnum.PU);
@@ -1553,7 +1553,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, provinceDao, oeUtil, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(provinceDao).getProvinceByName("corn");
         inOrder.verify(oeUtil).getStacksOnProvince(game, "corn");
         inOrder.verify(adminActionDao).create(anyObject());
@@ -1699,7 +1699,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).load(request.getRequest().getIdAdmAct());
         inOrder.verify(adminActionDao).delete(action13);
         inOrder.verify(diffMapping).oesToVos(anyObject());
@@ -2182,7 +2182,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, oeUtil, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 1, null, AdminActionTypeEnum.TFI);
         inOrder.verify(provinceDao).getProvinceByName(province);
         inOrder.verify(oeUtil).getDti(anyObject(), anyObject(), anyObject());
@@ -2788,7 +2788,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, provinceDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao)
                 .findPlannedAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
                        AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
@@ -3034,7 +3034,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
                 AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
         inOrder.verify(oeUtil).getAdministrativeValue(game.getCountries().get(0));
@@ -3196,7 +3196,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, adminActionDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 1, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,
                 AdminActionTypeEnum.DTI, AdminActionTypeEnum.EXL);
         inOrder.verify(oeUtil).getStability(game, "france");
@@ -3710,7 +3710,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                                   oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 1, null, AdminActionTypeEnum.COL);
         inOrder.verify(provinceDao).getProvinceByName("quebec");
         inOrder.verify(provinceDao).getGoldInProvince("quebec");
@@ -4085,7 +4085,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                                   oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 1, null, AdminActionTypeEnum.TP);
         inOrder.verify(provinceDao).getProvinceByName("quebec");
         inOrder.verify(playableCountryDao).getOwnedProvinces("france", 12L);
@@ -4462,7 +4462,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, adminActionDao, countryDao, diffDao, diffMapping, oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(adminActionDao).findPlannedAdminActions(12L, 22, null, AdminActionTypeEnum.ELT, AdminActionTypeEnum.ENT);
         inOrder.verify(oeUtil).getMilitaryValue(game.getCountries().get(0));
         inOrder.verify(countryDao).getCountryByName("turquie");
@@ -4538,7 +4538,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("validateAdminActions.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(666L);
+        request.getGame().setIdCountry(666L);
 
         try {
             economicService.validateAdminActions(request);
@@ -4548,7 +4548,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("validateAdminActions.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         try {
             economicService.validateAdminActions(request);
@@ -4566,7 +4566,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks();
         game.setTurn(22);
@@ -4593,7 +4593,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                 oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(0, diffEntities.size());
@@ -4606,7 +4606,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks();
         game.setTurn(22);
@@ -4633,7 +4633,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                 oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(1, diffEntities.size());
@@ -4654,7 +4654,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
         request.getRequest().setValidate(true);
 
         GameEntity game = createGameUsingMocks();
@@ -4691,7 +4691,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
                 oeUtil);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(4, diffEntities.size());

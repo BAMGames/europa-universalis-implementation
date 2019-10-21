@@ -60,6 +60,7 @@ public class DiffMappingTest {
         object.setId(1L);
         object.setIdGame(2L);
         object.setVersionGame(1L);
+        object.setIdCountry(666l);
         object.setIdObject(12L);
         object.setTypeObject(DiffTypeObjectEnum.STACK);
         object.setType(DiffTypeEnum.MOVE);
@@ -113,6 +114,7 @@ public class DiffMappingTest {
 
         Diff object = new Diff();
         object.setVersionGame(1L);
+        object.setIdCountry(666l);
         object.setIdObject(12L);
         object.setTypeObject(DiffTypeObjectEnum.STACK);
         object.setType(DiffTypeEnum.MOVE);

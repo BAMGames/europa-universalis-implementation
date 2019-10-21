@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Socket for a client server side.
@@ -22,7 +23,7 @@ public class GameSocket implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketHandler.class);
     /** Socket to communicate with client. */
     private Socket socket;
-    /** Output stream used to write diff to the client. */
+    /** Output stream used to write response to the client. */
     private ObjectOutputStream outStream;
     /** Handler to be referenced to after the init. */
     private SocketHandler handler;
@@ -76,19 +77,20 @@ public class GameSocket implements Runnable {
     }
 
     /**
-     * Push a diff to a client.
+     * Push a response to a client.
      *
-     * @param diff        to push.
-     * @param idCountries List of countries that will receive this diff.
+     * @param response        to push.
+     * @param idCountries List of countries that will receive this response.
      */
-    public void push(DiffResponse diff, List<Long> idCountries) {
+    public void push(DiffResponse response, List<Long> idCountries) {
+        response.getDiffs().removeIf(diff -> diff.getIdObject() != null && !Objects.equals(diff.getIdObject(), info.getIdCountry()));
         if (idCountries == null || idCountries.isEmpty() || idCountries.contains(info.getIdCountry())) {
             try {
-                outStream.writeObject(diff);
+                outStream.writeObject(response);
             } catch (SocketException e) {
                 terminate = true;
             } catch (Exception e) {
-                LOGGER.error("Error when sending diff to client.", e);
+                LOGGER.error("Error when sending response to client.", e);
             }
         }
     }

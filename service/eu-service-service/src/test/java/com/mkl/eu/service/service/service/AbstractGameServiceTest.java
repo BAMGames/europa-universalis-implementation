@@ -32,7 +32,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -106,7 +106,7 @@ public abstract class AbstractGameServiceTest {
         diffBefore.add(new DiffEntity());
         diffBefore.add(new DiffEntity());
 
-        when(diffDao.getDiffsSince(GAME_ID, VERSION_SINCE)).thenReturn(diffBefore);
+        when(diffDao.getDiffsSince(eq(GAME_ID), anyLong(), eq(VERSION_SINCE))).thenReturn(diffBefore);
 
         when(diffMapping.oesToVos(anyObject())).thenAnswer(invocation -> {
             List<DiffEntity> diffs = invocation.getArgumentAt(0, List.class);
@@ -226,7 +226,7 @@ public abstract class AbstractGameServiceTest {
         }
 
         game.setStatus(status);
-        if (request.getIdCountry() != null) {
+        if (request.getGame().getIdCountry() != null) {
             try {
                 service.run(request);
                 Assert.fail("Should break because game.status is invalid");
@@ -238,19 +238,19 @@ public abstract class AbstractGameServiceTest {
             CountryOrderEntity order = new CountryOrderEntity();
             order.setGameStatus(wrongStatus);
             order.setCountry(new PlayableCountryEntity());
-            order.getCountry().setId(request.getIdCountry());
+            order.getCountry().setId(request.getGame().getIdCountry());
             order.setActive(true);
             game.getOrders().add(order);
             order = new CountryOrderEntity();
             order.setGameStatus(getOrderStatus(status));
             order.setCountry(new PlayableCountryEntity());
-            order.getCountry().setId(request.getIdCountry() * 2);
+            order.getCountry().setId(request.getGame().getIdCountry() * 2);
             order.setActive(true);
             game.getOrders().add(order);
             order = new CountryOrderEntity();
             order.setGameStatus(getOrderStatus(status));
             order.setCountry(new PlayableCountryEntity());
-            order.getCountry().setId(request.getIdCountry());
+            order.getCountry().setId(request.getGame().getIdCountry());
             order.setActive(false);
             game.getOrders().add(order);
 

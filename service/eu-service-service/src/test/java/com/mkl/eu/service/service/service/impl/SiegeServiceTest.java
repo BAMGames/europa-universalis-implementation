@@ -87,7 +87,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseSiege, "chooseSiege", GameStatusEnum.MILITARY_SIEGES);
 
         try {
@@ -217,7 +217,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(3).getCounters().get(1).setType(CounterFaceTypeEnum.LAND_DETACHMENT);
 
 
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         request.setRequest(new ChooseProvinceRequest());
         request.getRequest().setProvince("idf");
         testCheckStatus(pair.getRight(), request, siegeService::chooseSiege, "chooseSiege", GameStatusEnum.MILITARY_SIEGES);
@@ -295,7 +295,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
         testCheckStatus(pair.getRight(), request, siegeService::selectForces, "selectForces", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
 
         try {
             siegeService.selectForces(request);
@@ -406,7 +406,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
         testCheckStatus(pair.getRight(), request, siegeService::selectForces, "selectForces", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         request.setRequest(new SelectForcesRequest());
         request.getRequest().getForces().add(6L);
         request.getRequest().getForces().add(7L);
@@ -741,7 +741,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseMode, "chooseMode", GameStatusEnum.MILITARY_SIEGES);
 
         try {
@@ -889,7 +889,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseMode, "chooseMode", GameStatusEnum.MILITARY_SIEGES);
 
         request.setRequest(new ChooseModeForSiegeRequest());
@@ -966,7 +966,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setProvince(siege.getProvince());
         game.getStacks().add(stack);
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseMan, "chooseMan", GameStatusEnum.MILITARY_SIEGES);
 
         try {
@@ -1068,7 +1068,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
 
         try {
@@ -1129,7 +1129,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
 
         request.setRequest(new ChooseBreachForSiegeRequest());
@@ -1173,7 +1173,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);
         game.getSieges().get(1).setProvince("lyonnais");
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         testCheckStatus(pair.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
 
         request.setRequest(new ChooseBreachForSiegeRequest());
@@ -1648,7 +1648,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
             when(testClass.workflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.TURN_ORDER)));
 
-            request.setIdCountry(self.getId());
+            request.getGame().setIdCountry(self.getId());
             request.setRequest(new ChooseModeForSiegeRequest());
             request.getRequest().setProvinceTo("pecs");
             request.getRequest().setMode(SiegeModeEnum.UNDERMINE);
@@ -1665,7 +1665,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 manRequest.setGame(new GameInfo());
                 manRequest.getGame().setIdGame(game.getId());
                 manRequest.getGame().setVersionGame(VERSION_SINCE);
-                manRequest.setIdCountry(self.getId());
+                manRequest.getGame().setIdCountry(self.getId());
                 manRequest.setRequest(new ChooseManForSiegeRequest(man, 12l));
                 siegeService.chooseMan(manRequest);
 
@@ -1925,7 +1925,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         stack.setProvince(siege.getProvince());
         game.getStacks().add(stack);
         testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
 
         try {
             siegeService.redeploy(request);
@@ -2141,7 +2141,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getStacks().add(stack);
         testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
 
-        request.setIdCountry(12L);
+        request.getGame().setIdCountry(12L);
         request.setRequest(new RedeployRequest());
 
         RedeployRequest.ProvinceRedeploy redeploy1 = new RedeployRequest.ProvinceRedeploy();
@@ -2902,14 +2902,14 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
             if (breach) {
                 Request<ChooseBreachForSiegeRequest> request = pairAssaultBreach.getLeft();
-                request.setIdCountry(self.getId());
+                request.getGame().setIdCountry(self.getId());
                 request.setRequest(new ChooseBreachForSiegeRequest());
                 request.getRequest().setChoice(ChooseBreachForSiegeRequest.ChoiceBreachEnum.BREACH);
                 testClass.testCheckStatus(pairAssaultBreach.getRight(), request, siegeService::chooseBreach, "chooseBreach", GameStatusEnum.MILITARY_SIEGES);
                 siegeService.chooseBreach(request);
             } else {
                 Request<ChooseModeForSiegeRequest> request = pairAssault.getLeft();
-                request.setIdCountry(self.getId());
+                request.getGame().setIdCountry(self.getId());
                 request.setRequest(new ChooseModeForSiegeRequest());
                 request.getRequest().setProvinceTo("pecs");
                 request.getRequest().setMode(SiegeModeEnum.ASSAULT);
@@ -3291,7 +3291,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         idf.getBorders().add(border);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(27L);
+        request.getGame().setIdCountry(27L);
 
         try {
             siegeService.chooseLossesAfterAssault(request);
@@ -3331,7 +3331,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses.request.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
 
         try {
             siegeService.chooseLossesAfterAssault(request);
@@ -3351,7 +3351,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses.request.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(27L);
+        request.getGame().setIdCountry(27L);
         siege.getPhasing().setLossesSelected(true);
 
         try {
@@ -3362,7 +3362,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses.request.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         when(oeUtil.isWarAlly(spain, siege.getWar(), true)).thenReturn(true);
         siege.getNonPhasing().setLossesSelected(true);
 
@@ -3374,7 +3374,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses.request.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(27L);
+        request.getGame().setIdCountry(27L);
         siege.getPhasing().setLossesSelected(false);
         siege.getNonPhasing().setLossesSelected(false);
         siege.getPhasing().getLosses().setRoundLoss(1);
@@ -3518,7 +3518,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(27L);
+        request.getGame().setIdCountry(27L);
 
         when(oeUtil.isWarAlly(spain, siege.getWar(), true)).thenReturn(true);
         when(oeUtil.isWarAlly(france, siege.getWar(), false)).thenReturn(true);
@@ -3602,7 +3602,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(27L);
+        request.getGame().setIdCountry(27L);
 
         when(oeUtil.isWarAlly(spain, siege.getWar(), true)).thenReturn(true);
         when(oeUtil.isWarAlly(france, siege.getWar(), false)).thenReturn(true);
@@ -3742,7 +3742,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
 
         when(oeUtil.isWarAlly(spain, siege.getWar(), true)).thenReturn(true);
         when(oeUtil.isWarAlly(france, siege.getWar(), false)).thenReturn(true);

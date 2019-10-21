@@ -10,6 +10,8 @@ public class GameInfo {
     private Long idGame;
     /** Version of the game. */
     private Long versionGame;
+    /** Id of the country making a request. */
+    private Long idCountry;
 
     /** @return the idGame. */
     public Long getIdGame() {
@@ -29,5 +31,15 @@ public class GameInfo {
     /** @param versionGame the versionGame to set. */
     public void setVersionGame(Long versionGame) {
         this.versionGame = versionGame;
+    }
+
+    /** @return the idCountry. */
+    public Long getIdCountry() {
+        return idCountry;
+    }
+
+    /** @param idCountry the idCountry to set. */
+    public void setIdCountry(Long idCountry) {
+        this.idCountry = idCountry;
     }
 }

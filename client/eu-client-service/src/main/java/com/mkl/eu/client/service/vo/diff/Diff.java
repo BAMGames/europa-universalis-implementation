@@ -20,6 +20,8 @@ public class Diff implements Serializable {
     private DiffTypeEnum type;
     /** Type of the principal object. */
     private DiffTypeObjectEnum typeObject;
+    /** Id of the country (can be null). */
+    private Long idCountry;
     /** Id of the principal object. */
     private Long idObject;
     /** Attributes of the diff. */
@@ -53,6 +55,16 @@ public class Diff implements Serializable {
     /** @param typeObject the typeObject to set. */
     public void setTypeObject(DiffTypeObjectEnum typeObject) {
         this.typeObject = typeObject;
+    }
+
+    /** @return the idCountry. */
+    public Long getIdCountry() {
+        return idCountry;
+    }
+
+    /** @param idCountry the idCountry to set. */
+    public void setIdCountry(Long idCountry) {
+        this.idCountry = idCountry;
     }
 
     /** @return the idObject. */

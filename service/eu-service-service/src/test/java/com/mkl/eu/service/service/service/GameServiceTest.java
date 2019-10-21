@@ -389,7 +389,7 @@ public class GameServiceTest {
 
         when(gameDao.load(anyLong())).thenReturn(game);
 
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffs);
+        when(diffDao.getDiffsSince(12L, null, 1L)).thenReturn(diffs);
 
         List<Diff> diffVos = new ArrayList<>();
         diffVos.add(new Diff());
@@ -401,7 +401,7 @@ public class GameServiceTest {
 
         InOrder inOrder = inOrder(diffDao, diffMapping);
 
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, null, 1L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
         Assert.assertEquals(5L, response.getVersionGame().longValue());

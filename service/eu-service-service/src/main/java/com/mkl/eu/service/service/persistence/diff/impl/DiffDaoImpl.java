@@ -26,11 +26,12 @@ public class DiffDaoImpl extends GenericDaoImpl<DiffEntity, Long> implements IDi
 
     /** {@inheritDoc} */
     @Override
-    public List<DiffEntity> getDiffsSince(Long idGame, Long version) {
+    public List<DiffEntity> getDiffsSince(Long idGame, Long idCountry, Long version) {
         Criteria criteria = getSession().createCriteria(DiffEntity.class);
 
         criteria.add(Restrictions.eq("idGame", idGame));
         criteria.add(Restrictions.gt("versionGame", version));
+        criteria.add(Restrictions.or(Restrictions.isNull("idCountry"), Restrictions.eq("idCountry", idCountry)));
         criteria.setFetchMode("attributes", FetchMode.SELECT);
 
         return listAndCast(criteria);

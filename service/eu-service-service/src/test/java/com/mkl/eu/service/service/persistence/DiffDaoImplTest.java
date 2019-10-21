@@ -40,67 +40,99 @@ public class DiffDaoImplTest {
 
     @Test
     public void testGetDiffsSince() {
-        List<DiffEntity> games = diffDao.getDiffsSince(null, null);
+        List<DiffEntity> games = diffDao.getDiffsSince(null, null, null);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(null, 1L);
+        games = diffDao.getDiffsSince(null, null, 1L);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(1L, null);
+        games = diffDao.getDiffsSince(1L, null, null);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(3L, 1L);
+        games = diffDao.getDiffsSince(3L, null, 1L);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(3L, 1L);
+        games = diffDao.getDiffsSince(3L, null, 1L);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(1L, 0L);
+        games = diffDao.getDiffsSince(1L, null, 0L);
 
         Assert.assertEquals(5, games.size());
 
-        games = diffDao.getDiffsSince(1L, 1L);
+        games = diffDao.getDiffsSince(1L, 12L, 0L);
+
+        Assert.assertEquals(7, games.size());
+
+        games = diffDao.getDiffsSince(1L, 13L, 0L);
+
+        Assert.assertEquals(6, games.size());
+
+        games = diffDao.getDiffsSince(1L, null, 1L);
 
         Assert.assertEquals(4, games.size());
 
-        games = diffDao.getDiffsSince(1L, 2L);
+        games = diffDao.getDiffsSince(1L, null, 2L);
 
         Assert.assertEquals(3, games.size());
 
-        games = diffDao.getDiffsSince(1L, 3L);
+        games = diffDao.getDiffsSince(1L, null, 3L);
 
         Assert.assertEquals(2, games.size());
 
-        games = diffDao.getDiffsSince(1L, 4L);
+        games = diffDao.getDiffsSince(1L, null, 4L);
 
         Assert.assertEquals(1, games.size());
 
-        games = diffDao.getDiffsSince(1L, 5L);
+        games = diffDao.getDiffsSince(1L, null, 5L);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(1L, 6L);
+        games = diffDao.getDiffsSince(1L, 12L, 5L);
+
+        Assert.assertEquals(2, games.size());
+
+        games = diffDao.getDiffsSince(1L, 13L, 5L);
+
+        Assert.assertEquals(1, games.size());
+
+        games = diffDao.getDiffsSince(1L, null, 6L);
 
         Assert.assertEquals(0, games.size());
 
-        games = diffDao.getDiffsSince(2L, 0L);
+        games = diffDao.getDiffsSince(2L, null, 0L);
 
         Assert.assertEquals(3, games.size());
 
-        games = diffDao.getDiffsSince(2L, 1L);
+        games = diffDao.getDiffsSince(2L, 12L, 0L);
+
+        Assert.assertEquals(4, games.size());
+
+        games = diffDao.getDiffsSince(2L, 13L, 0L);
+
+        Assert.assertEquals(3, games.size());
+
+        games = diffDao.getDiffsSince(2L, null, 1L);
 
         Assert.assertEquals(2, games.size());
 
-        games = diffDao.getDiffsSince(2L, 2L);
+        games = diffDao.getDiffsSince(2L, null, 2L);
 
         Assert.assertEquals(1, games.size());
 
-        games = diffDao.getDiffsSince(2L, 3L);
+        games = diffDao.getDiffsSince(2L, null, 3L);
+
+        Assert.assertEquals(0, games.size());
+
+        games = diffDao.getDiffsSince(2L, 12L, 3L);
+
+        Assert.assertEquals(1, games.size());
+
+        games = diffDao.getDiffsSince(2L, 13L, 3L);
 
         Assert.assertEquals(0, games.size());
     }

@@ -260,7 +260,7 @@ public abstract class AbstractService implements INameConstants {
         failIfFalse(new CheckForThrow<Boolean>().setTest(versionGame <= game.getVersion()).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_VERSION_INCORRECT).setName(param, PARAMETER_GAME, PARAMETER_VERSION_GAME).setParams(method, versionGame, game.getVersion()));
 
-        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, versionGame);
+        List<DiffEntity> diffs = diffDao.getDiffsSince(idGame, gameInfo.getIdCountry(), versionGame);
 
         return new GameDiffsInfo(game, diffs);
     }
@@ -448,7 +448,7 @@ public abstract class AbstractService implements INameConstants {
         List<MessageDiff> messages = new ArrayList<>();
 
         if (request != null && request.getGame() != null && request.getChat() != null) {
-            List<ChatEntity> chatEntities = chatDao.getMessagesSince(request.getGame().getIdGame(), request.getIdCountry(), request.getChat().getMaxIdMessage());
+            List<ChatEntity> chatEntities = chatDao.getMessagesSince(request.getGame().getIdGame(), request.getGame().getIdCountry(), request.getChat().getMaxIdMessage());
             List<MessageGlobalEntity> messageEntities = chatDao.getMessagesGlobalSince(request.getGame().getIdGame(), request.getChat().getMaxIdGlobalMessage());
 
 

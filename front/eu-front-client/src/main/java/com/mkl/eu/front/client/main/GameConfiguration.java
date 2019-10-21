@@ -92,7 +92,7 @@ public class GameConfiguration {
         request.setGame(new GameInfo());
         request.getGame().setIdGame(idGame);
         request.getGame().setVersionGame(versionGame);
-        request.setIdCountry(idCountry);
+        request.getGame().setIdCountry(idCountry);
     }
 
     /**
@@ -104,6 +104,5 @@ public class GameConfiguration {
         request.setChat(new ChatInfo());
         request.getChat().setMaxIdGlobalMessage(maxIdGlobalMessage);
         request.getChat().setMaxIdMessage(maxIdMessage);
-        request.setIdCountry(idCountry);
     }
 }

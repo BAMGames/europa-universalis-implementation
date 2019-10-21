@@ -93,7 +93,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testMoveStackFailSimple() {
         Pair<Request<MoveStackRequest>, GameEntity> pair = testCheckGame(boardService::moveStack, "moveStack");
         Request<MoveStackRequest> request = pair.getLeft();
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         testCheckStatus(pair.getRight(), request, boardService::moveStack, "moveStack", GameStatusEnum.MILITARY_MOVE);
 
         try {
@@ -133,7 +133,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setRequest(new MoveStackRequest());
         request.setAuthent(new AuthentInfo());
         request.setGame(new GameInfo());
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(13L);
@@ -371,7 +371,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setRequest(new MoveStackRequest());
         request.setAuthent(new AuthentInfo());
         request.setGame(new GameInfo());
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(13L);
@@ -418,7 +418,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 26L, 1L);
         inOrder.verify(provinceDao).getProvinceByName("IdF");
         inOrder.verify(provinceDao).getProvinceByName("pecs");
         inOrder.verify(diffDao).create(anyObject());
@@ -454,7 +454,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testEndMoveStackFailSimple() {
         Pair<Request<EndMoveStackRequest>, GameEntity> pair = testCheckGame(boardService::endMoveStack, "endMoveStack");
         Request<EndMoveStackRequest> request = pair.getLeft();
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         GameEntity game = pair.getRight();
         testCheckStatus(game, request, boardService::endMoveStack, "endMoveStack", GameStatusEnum.MILITARY_MOVE);
         game.getStacks().add(new StackEntity());
@@ -543,7 +543,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setRequest(new EndMoveStackRequest());
         request.setAuthent(new AuthentInfo());
         request.setGame(new GameInfo());
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(13L);
@@ -597,7 +597,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testTakeStackControlFail() {
         Pair<Request<TakeStackControlRequest>, GameEntity> pair = testCheckGame(boardService::takeStackControl, "takeStackControl");
         Request<TakeStackControlRequest> request = pair.getLeft();
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         GameEntity game = pair.getRight();
         testCheckStatus(game, request, boardService::takeStackControl, "takeStackControl", GameStatusEnum.MILITARY_MOVE);
         game.getCountries().add(new PlayableCountryEntity());
@@ -703,7 +703,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setRequest(new TakeStackControlRequest());
         request.setAuthent(new AuthentInfo());
         request.setGame(new GameInfo());
-        request.setIdCountry(27L);
+        request.getGame().setIdCountry(27L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(7L);
@@ -746,7 +746,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 27L, 1L);
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
@@ -770,7 +770,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testMoveCounterFailSimple() {
         Pair<Request<MoveCounterRequest>, GameEntity> pair = testCheckGame(boardService::moveCounter, "moveCounter");
         Request<MoveCounterRequest> request = pair.getLeft();
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         testCheckStatus(pair.getRight(), request, boardService::moveCounter, "moveCounter", GameStatusEnum.MILITARY_MOVE);
 
         try {
@@ -796,10 +796,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testMoveCounterFailComplex() {
         Request<MoveCounterRequest> request = new Request<>();
         request.setRequest(new MoveCounterRequest());
-        request.setIdCountry(27L);
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
+        request.getGame().setIdCountry(27L);
         request.getRequest().setIdCounter(13L);
         request.getRequest().setIdStack(8L);
 
@@ -884,7 +884,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("moveCounter.idCountry", e.getParams()[0]);
         }
 
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
 
         try {
             boardService.moveCounter(request);
@@ -930,10 +930,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testMoveCounterSuccess() throws Exception {
         Request<MoveCounterRequest> request = new Request<>();
         request.setRequest(new MoveCounterRequest());
-        request.setIdCountry(666L);
         request.setGame(new GameInfo());
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
+        request.getGame().setIdCountry(666L);
         request.getRequest().setIdCounter(13L);
         request.getRequest().setIdStack(8L);
 
@@ -967,7 +967,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         diffBefore.add(new DiffEntity());
         diffBefore.add(new DiffEntity());
 
-        when(diffDao.getDiffsSince(12L, 1L)).thenReturn(diffBefore);
+        when(diffDao.getDiffsSince(12L, 666L, 1L)).thenReturn(diffBefore);
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
 
@@ -983,7 +983,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 666L, 1L);
         inOrder.verify(counterDao).getCounter(13L, 12L);
         inOrder.verify(counterDao).getPatrons("genes", 12L);
         inOrder.verify(diffDao).create(anyObject());
@@ -1016,7 +1016,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("toto");
         request.setGame(new GameInfo());
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         request.getGame().setIdGame(12L);
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdCounter(13L);
@@ -1050,7 +1050,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
 
         inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 1L);
+        inOrder.verify(diffDao).getDiffsSince(12L, 26L, 1L);
         inOrder.verify(counterDao).getCounter(13L, 12L);
         inOrder.verify(diffDao).create(anyObject());
         inOrder.verify(diffMapping).oesToVos(anyObject());
@@ -1081,7 +1081,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testValidateMilRoundFail() {
         Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(boardService::validateMilitaryRound, "validateMilitaryRound");
         Request<ValidateRequest> request = pair.getLeft();
-        request.setIdCountry(26L);
+        request.getGame().setIdCountry(26L);
         GameEntity game = pair.getRight();
 
         testCheckStatus(game, request, boardService::validateMilitaryRound, "validateMilitaryRound", GameStatusEnum.MILITARY_MOVE);
@@ -1139,7 +1139,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
@@ -1165,7 +1165,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.getAuthent().setUsername("MKL");
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
         game.getOrders().get(0).setReady(true);
@@ -1203,7 +1203,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
         request.getRequest().setValidate(true);
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
         CountryOrderEntity order = new CountryOrderEntity();
@@ -1246,7 +1246,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.setGame(createGameInfo());
         request.setRequest(new ValidateRequest());
         request.getRequest().setValidate(true);
-        request.setIdCountry(13L);
+        request.getGame().setIdCountry(13L);
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
         game.getOrders().clear();
