@@ -258,7 +258,13 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 if (newValue == null) {
                     choiceType.setItems(FXCollections.observableArrayList());
                 } else if (CounterUtil.isLandArmy(newValue.getType())) {
-                    choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS, AdminActionTypeEnum.LM));
+                    boolean atWar = GameUtil.isAtWar(country.getName(), game);
+                    List<AdminActionTypeEnum> options = new ArrayList<>();
+                    options.add(AdminActionTypeEnum.DIS);
+                    if (atWar) {
+                        options.add(AdminActionTypeEnum.LM);
+                    }
+                    choiceType.setItems(FXCollections.observableArrayList(options));
                 } else if (CounterUtil.isArmy(newValue.getType())) {
                     choiceType.setItems(FXCollections.observableArrayList(AdminActionTypeEnum.DIS));
                 } else if (CounterUtil.isFortress(newValue.getType())) {
@@ -413,10 +419,11 @@ public class AdminActionsWindow extends AbstractDiffListenerContainer {
                 .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
                         basicForce.getPeriod().getBegin() <= game.getTurn() &&
                         basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
-        // TODO manage wars
+
+        boolean atWar = GameUtil.isAtWar(country.getName(), game);
         List<Unit> units = globalConfiguration.getTables().getUnits().stream()
                 .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
-                        (unit.getAction() == UnitActionEnum.MAINT_WAR || unit.getAction() == UnitActionEnum.MAINT) &&
+                        ((unit.getAction() == UnitActionEnum.MAINT_WAR && atWar) || (unit.getAction() == UnitActionEnum.MAINT_PEACE && !atWar) || unit.getAction() == UnitActionEnum.MAINT) &&
                         !unit.isSpecial() &&
                         (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
         Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);

@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -249,13 +248,13 @@ public final class GameUtil {
     /**
      * Tells if a specific country is fully at war in a specific game.
      *
-     * @param idCountry id of the country.
+     * @param countryName name of the country.
      * @param game      the game.
      * @return if the country is at war.
      */
-    public static boolean isAtWar(Long idCountry, Game game) {
+    public static boolean isAtWar(String countryName, Game game) {
         return game.getWars().stream()
                 .flatMap(war -> war.getCountries().stream())
-                .anyMatch(country -> country.getImplication() == WarImplicationEnum.FULL && Objects.equals(idCountry, country.getCountry().getId()));
+                .anyMatch(country -> country.getImplication() == WarImplicationEnum.FULL && StringUtils.equals(countryName, country.getCountry().getName()));
     }
 }

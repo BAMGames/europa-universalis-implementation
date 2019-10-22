@@ -252,30 +252,30 @@ public class GameUtilTest {
     public void testAtWar() {
         Game game = new Game();
         War war = new War();
-        war.getCountries().add(createCountryInWar(12L, WarImplicationEnum.FULL, true));
-        war.getCountries().add(createCountryInWar(14L, WarImplicationEnum.LIMITED, true));
-        war.getCountries().add(createCountryInWar(13L, WarImplicationEnum.FULL, false));
+        war.getCountries().add(createCountryInWar("france", WarImplicationEnum.FULL, true));
+        war.getCountries().add(createCountryInWar("turquie", WarImplicationEnum.LIMITED, true));
+        war.getCountries().add(createCountryInWar("espagne", WarImplicationEnum.FULL, false));
         game.getWars().add(war);
         war = new War();
-        war.getCountries().add(createCountryInWar(14L, WarImplicationEnum.FULL, true));
-        war.getCountries().add(createCountryInWar(12L, WarImplicationEnum.LIMITED, true));
-        war.getCountries().add(createCountryInWar(15L, WarImplicationEnum.FULL, false));
-        war.getCountries().add(createCountryInWar(16L, WarImplicationEnum.LIMITED, false));
+        war.getCountries().add(createCountryInWar("turquie", WarImplicationEnum.FULL, true));
+        war.getCountries().add(createCountryInWar("france", WarImplicationEnum.LIMITED, true));
+        war.getCountries().add(createCountryInWar("pologne", WarImplicationEnum.FULL, false));
+        war.getCountries().add(createCountryInWar("russie", WarImplicationEnum.LIMITED, false));
         game.getWars().add(war);
 
         Assert.assertFalse(GameUtil.isAtWar(null, game));
-        Assert.assertTrue(GameUtil.isAtWar(12L, game));
-        Assert.assertTrue(GameUtil.isAtWar(13L, game));
-        Assert.assertTrue(GameUtil.isAtWar(14L, game));
-        Assert.assertTrue(GameUtil.isAtWar(15L, game));
-        Assert.assertFalse(GameUtil.isAtWar(16L, game));
-        Assert.assertFalse(GameUtil.isAtWar(16L, game));
+        Assert.assertTrue(GameUtil.isAtWar("france", game));
+        Assert.assertTrue(GameUtil.isAtWar("espagne", game));
+        Assert.assertTrue(GameUtil.isAtWar("turquie", game));
+        Assert.assertTrue(GameUtil.isAtWar("pologne", game));
+        Assert.assertFalse(GameUtil.isAtWar("russie", game));
+        Assert.assertFalse(GameUtil.isAtWar("england", game));
     }
 
-    private CountryInWar createCountryInWar(Long id, WarImplicationEnum implication, boolean offensive) {
+    private CountryInWar createCountryInWar(String countryName, WarImplicationEnum implication, boolean offensive) {
         CountryInWar country = new CountryInWar();
         country.setCountry(new CountryLight());
-        country.getCountry().setId(id);
+        country.getCountry().setName(countryName);
         country.setImplication(implication);
         country.setOffensive(offensive);
         return country;
