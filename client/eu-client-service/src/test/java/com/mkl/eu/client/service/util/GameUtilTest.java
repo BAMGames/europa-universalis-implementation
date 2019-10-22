@@ -2,8 +2,12 @@ package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
+import com.mkl.eu.client.service.vo.diplo.CountryInWar;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
+import com.mkl.eu.client.service.vo.ref.country.CountryLight;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -242,5 +246,38 @@ public class GameUtilTest {
         Assert.assertEquals(2, countries.size());
         Assert.assertEquals("angleterre", countries.get(0).getName());
         Assert.assertEquals("france", countries.get(1).getName());
+    }
+
+    @Test
+    public void testAtWar() {
+        Game game = new Game();
+        War war = new War();
+        war.getCountries().add(createCountryInWar(12L, WarImplicationEnum.FULL, true));
+        war.getCountries().add(createCountryInWar(14L, WarImplicationEnum.LIMITED, true));
+        war.getCountries().add(createCountryInWar(13L, WarImplicationEnum.FULL, false));
+        game.getWars().add(war);
+        war = new War();
+        war.getCountries().add(createCountryInWar(14L, WarImplicationEnum.FULL, true));
+        war.getCountries().add(createCountryInWar(12L, WarImplicationEnum.LIMITED, true));
+        war.getCountries().add(createCountryInWar(15L, WarImplicationEnum.FULL, false));
+        war.getCountries().add(createCountryInWar(16L, WarImplicationEnum.LIMITED, false));
+        game.getWars().add(war);
+
+        Assert.assertFalse(GameUtil.isAtWar(null, game));
+        Assert.assertTrue(GameUtil.isAtWar(12L, game));
+        Assert.assertTrue(GameUtil.isAtWar(13L, game));
+        Assert.assertTrue(GameUtil.isAtWar(14L, game));
+        Assert.assertTrue(GameUtil.isAtWar(15L, game));
+        Assert.assertFalse(GameUtil.isAtWar(16L, game));
+        Assert.assertFalse(GameUtil.isAtWar(16L, game));
+    }
+
+    private CountryInWar createCountryInWar(Long id, WarImplicationEnum implication, boolean offensive) {
+        CountryInWar country = new CountryInWar();
+        country.setCountry(new CountryLight());
+        country.getCountry().setId(id);
+        country.setImplication(implication);
+        country.setOffensive(offensive);
+        return country;
     }
 }

@@ -4,10 +4,12 @@ import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -242,5 +244,18 @@ public final class GameUtil {
         }
 
         return countries;
+    }
+
+    /**
+     * Tells if a specific country is fully at war in a specific game.
+     *
+     * @param idCountry id of the country.
+     * @param game      the game.
+     * @return if the country is at war.
+     */
+    public static boolean isAtWar(Long idCountry, Game game) {
+        return game.getWars().stream()
+                .flatMap(war -> war.getCountries().stream())
+                .anyMatch(country -> country.getImplication() == WarImplicationEnum.FULL && Objects.equals(idCountry, country.getCountry().getId()));
     }
 }
