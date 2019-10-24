@@ -500,6 +500,13 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         return diffs;
     }
 
+    /**
+     * Computes the action at the end of a military round.
+     *
+     * @param nextRound the next season.
+     * @param game      the game.
+     * @return the diffs created.
+     */
     private List<DiffEntity> initNewRound(String nextRound, GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
@@ -528,11 +535,21 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         return diffs;
     }
 
+    /**
+     * Computes the action at the end of the military phase.
+     *
+     * @param game the game.
+     * @return the diffs created.
+     */
     protected List<DiffEntity> endRound(GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
 
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game));
-        // FIXME Redeployment phase
+        game.setStatus(GameStatusEnum.REDEPLOYMENT);
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.REDEPLOYMENT)));
+        // set the order of position 0 active
+        diffs.add(changeActivePlayers(0, game));
 
         return diffs;
     }

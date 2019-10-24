@@ -1104,9 +1104,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(0, zeroNotActive);
 
         if (end) {
-            Assert.assertEquals(1, diffs.size());
-
-            Assert.assertEquals(roundMove, diffs.get(0));
+            Assert.assertTrue(diffs.contains(roundMove));
         } else {
 
             Assert.assertEquals(4, diffs.size());
@@ -1154,8 +1152,22 @@ public class StatusWorkflowDomainTest {
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
 
-        Assert.assertEquals(1, diffs.size());
-        Assert.assertEquals(end, diffs.get(0));
+        Assert.assertEquals(3, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d == end)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
     }
 
     @Test

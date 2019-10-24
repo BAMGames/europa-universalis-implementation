@@ -32,6 +32,16 @@ public enum GameStatusEnum {
     /** Sieges. */
     MILITARY_SIEGES,
     /** Fights against revolts, pirates and natives. */
-    MILITARY_NEUTRALS
+    MILITARY_NEUTRALS,
+    /*********************************************************************************************************
+     *                                     End of military phases                                            *
+     *********************************************************************************************************/
 
+
+    /** Redeployment. */
+    REDEPLOYMENT,
+    /** Exchequer repartition. */
+    EXCHEQUER,
+    /** Stability improvement. */
+    STABILITY
 }
