@@ -42,8 +42,10 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 @Component
 @Scope(value = "prototype")
 public class EcoWindow extends AbstractDiffListenerContainer {
-    /** Table config for sheet B. */
-    private static final List<TableConfig<EconomicalSheet>> config;
+    /** Table configA for sheet A. */
+    private static final List<TableConfig<EconomicalSheet>> configA;
+    /** Table configB for sheet B. */
+    private static final List<TableConfig<EconomicalSheet>> configB;
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
@@ -56,6 +58,10 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private List<TradeFleet> tradeFleets;
     /** Flag saying that a trading fleet has changed and that trade fleet tab should be updated. */
     private boolean tradeFleetModified;
+    /** ChoiceBox for the countries for sheet A. */
+    private ChoiceBox<PlayableCountry> choiceA;
+    /** TableView for the sheets A. */
+    private TableView<List<String>> tableA;
     /** ChoiceBox for the countries for sheet B. */
     private ChoiceBox<PlayableCountry> choiceB;
     /** TableView for the sheets B. */
@@ -70,56 +76,92 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     private TabPane tabPane;
 
     static {
-        config = new ArrayList<>();
+        configB = new ArrayList<>();
         int index = -1;
-        config.add(new TableConfig<>("1", "eco.sheetB.provinceIncome", ++index, sheet -> toString(sheet.getProvincesIncome())));
-        config.add(new TableConfig<>("2", "eco.sheetB.vassalIncome", ++index, sheet -> toString(sheet.getVassalIncome())));
-        config.add(new TableConfig<>("3", "eco.sheetB.pillages", ++index, sheet -> toString(sheet.getPillages())));
-        config.add(new TableConfig<>("4", "eco.sheetB.eventLandIncome", ++index, sheet -> toString(sheet.getEventLandIncome())));
-        config.add(new TableConfig<>("5", "eco.sheetB.landIncome", ++index, sheet -> toString(sheet.getLandIncome())));
-        config.add(new TableConfig<>("6", "eco.sheetB.mnuIncome", ++index, sheet -> toString(sheet.getMnuIncome())));
-        config.add(new TableConfig<>("7", "eco.sheetB.goldIncome", ++index, sheet -> toString(sheet.getGoldIncome())));
-        config.add(new TableConfig<>("8", "eco.sheetB.industrialIncome", ++index, sheet -> toString(sheet.getIndustrialIncome())));
-        config.add(new TableConfig<>("9", "eco.sheetB.domTradeIncome", ++index, sheet -> toString(sheet.getDomTradeIncome())));
-        config.add(new TableConfig<>("10", "eco.sheetB.forTradeIncome", ++index, sheet -> toString(sheet.getForTradeIncome())));
-        config.add(new TableConfig<>("11", "eco.sheetB.fleetLevelIncome", ++index, sheet -> toString(sheet.getFleetLevelIncome())));
-        config.add(new TableConfig<>("12", "eco.sheetB.fleetMonopIncome", ++index, sheet -> toString(sheet.getFleetMonopIncome())));
-        config.add(new TableConfig<>("13", "eco.sheetB.monopolies", ++index, sheet -> ""));
-        config.add(new TableConfig<>("14", "eco.sheetB.tradeCenterIncome", ++index, sheet -> toString(sheet.getTradeCenterIncome())));
-        config.add(new TableConfig<>("15", "eco.sheetB.tradeCenterLoss", ++index, sheet -> toString(sheet.getTradeCenterLoss())));
-        config.add(new TableConfig<>("16", "eco.sheetB.tradeIncome", ++index, sheet -> toString(sheet.getTradeIncome())));
-        config.add(new TableConfig<>("17", "eco.sheetB.colIncome", ++index, sheet -> toString(sheet.getColIncome())));
-        config.add(new TableConfig<>("18", "eco.sheetB.tpIncome", ++index, sheet -> toString(sheet.getTpIncome())));
-        config.add(new TableConfig<>("19", "eco.sheetB.exoResIncome", ++index, sheet -> toString(sheet.getExoResIncome())));
-        config.add(new TableConfig<>("20", "eco.sheetB.monopolies", ++index, sheet -> ""));
-        config.add(new TableConfig<>("21", "eco.sheetB.rotwIncome", ++index, sheet -> toString(sheet.getRotwIncome())));
-        config.add(new TableConfig<>("22", "eco.sheetB.specialIncome", ++index, sheet -> toString(sheet.getSpecialIncome())));
-        config.add(new TableConfig<>("23", "eco.sheetB.income", ++index, sheet -> toString(sheet.getIncome())));
-        config.add(new TableConfig<>("24", "eco.sheetB.eventIncome", ++index, sheet -> toString(sheet.getEventIncome())));
-        config.add(new TableConfig<>("25", "eco.sheetB.grossIncome", ++index, sheet -> toString(sheet.getGrossIncome())));
-        config.add(new TableConfig<>("26", "eco.sheetB.interestExpense", ++index, sheet -> toString(sheet.getInterestExpense())));
-        config.add(new TableConfig<>("27", "eco.sheetB.mandatoryRefundExpense", ++index, sheet -> toString(sheet.getMandRefundExpense())));
-        config.add(new TableConfig<>("28", "eco.sheetB.rtCollapse", ++index, sheet -> toString(sheet.getRtCollapse())));
-        config.add(new TableConfig<>("29", "eco.sheetB.optionalRefundExpense", ++index, sheet -> toString(sheet.getOptRefundExpense())));
-        config.add(new TableConfig<>("30", "eco.sheetB.unitMaintenance", ++index, sheet -> toString(sheet.getUnitMaintExpense())));
-        config.add(new TableConfig<>("31", "eco.sheetB.fortMaintenance", ++index, sheet -> toString(sheet.getFortMaintExpense())));
-        config.add(new TableConfig<>("32", "eco.sheetB.missionMaintenance", ++index, sheet -> toString(sheet.getMissMaintExpense())));
-        config.add(new TableConfig<>("33", "eco.sheetB.unitPurchase", ++index, sheet -> toString(sheet.getUnitPurchExpense())));
-        config.add(new TableConfig<>("34", "eco.sheetB.fortPurchase", ++index, sheet -> toString(sheet.getFortPurchExpense())));
-        config.add(new TableConfig<>("35", "eco.sheetB.adminActions", ++index, sheet -> toString(sheet.getAdminActExpense())));
-        config.add(new TableConfig<>("36", "eco.sheetB.adminReactions", ++index, sheet -> toString(sheet.getAdminReactExpense())));
-        config.add(new TableConfig<>("37", "eco.sheetB.otherExpenses", ++index, sheet -> toString(sheet.getOtherExpense())));
-        config.add(new TableConfig<>("38", "eco.sheetB.adminTotalExpense", ++index, sheet -> toString(sheet.getAdmTotalExpense())));
-        config.add(new TableConfig<>("39", "eco.sheetB.excTaxesModifier", ++index, sheet -> toString(sheet.getExcTaxesMod())));
-        config.add(new TableConfig<>("40", "eco.sheetB.passiveCampaigns", ++index, sheet -> toString(sheet.getPassCampExpense())));
-        config.add(new TableConfig<>("41", "eco.sheetB.activeCampaigns", ++index, sheet -> toString(sheet.getActCampExpense())));
-        config.add(new TableConfig<>("42", "eco.sheetB.majorCampaigns", ++index, sheet -> toString(sheet.getMajCampExpense())));
-        config.add(new TableConfig<>("43", "eco.sheetB.multipleCampaigns", ++index, sheet -> toString(sheet.getMultCampExpense())));
-        config.add(new TableConfig<>("44", "eco.sheetB.excRecruits", ++index, sheet -> toString(sheet.getExcRecruitExpense())));
-        config.add(new TableConfig<>("45", "eco.sheetB.navalRefit", ++index, sheet -> toString(sheet.getNavalRefitExpense())));
-        config.add(new TableConfig<>("46", "eco.sheetB.praesidiosBuild", ++index, sheet -> toString(sheet.getPraesidioExpense())));
-        config.add(new TableConfig<>("47", "eco.sheetB.militaryTotal", ++index, sheet -> toString(sheet.getMilitaryExpense())));
-        config.add(new TableConfig<>("48", "eco.sheetB.total", ++index, sheet -> toString(sheet.getExpenses())));
+        configB.add(new TableConfig<>("1", "eco.sheetB.provinceIncome", ++index, sheet -> toString(sheet.getProvincesIncome())));
+        configB.add(new TableConfig<>("2", "eco.sheetB.vassalIncome", ++index, sheet -> toString(sheet.getVassalIncome())));
+        configB.add(new TableConfig<>("3", "eco.sheetB.pillages", ++index, sheet -> toString(sheet.getLostIncome())));
+        configB.add(new TableConfig<>("4", "eco.sheetB.eventLandIncome", ++index, sheet -> toString(sheet.getEventLandIncome())));
+        configB.add(new TableConfig<>("5", "eco.sheetB.landIncome", ++index, sheet -> toString(sheet.getLandIncome())));
+        configB.add(new TableConfig<>("6", "eco.sheetB.mnuIncome", ++index, sheet -> toString(sheet.getMnuIncome())));
+        configB.add(new TableConfig<>("7", "eco.sheetB.goldIncome", ++index, sheet -> toString(sheet.getGoldIncome())));
+        configB.add(new TableConfig<>("8", "eco.sheetB.industrialIncome", ++index, sheet -> toString(sheet.getIndustrialIncome())));
+        configB.add(new TableConfig<>("9", "eco.sheetB.domTradeIncome", ++index, sheet -> toString(sheet.getDomTradeIncome())));
+        configB.add(new TableConfig<>("10", "eco.sheetB.forTradeIncome", ++index, sheet -> toString(sheet.getForTradeIncome())));
+        configB.add(new TableConfig<>("11", "eco.sheetB.fleetLevelIncome", ++index, sheet -> toString(sheet.getFleetLevelIncome())));
+        configB.add(new TableConfig<>("12", "eco.sheetB.fleetMonopIncome", ++index, sheet -> toString(sheet.getFleetMonopIncome())));
+        configB.add(new TableConfig<>("13", "eco.sheetB.monopolies", ++index, sheet -> ""));
+        configB.add(new TableConfig<>("14", "eco.sheetB.tradeCenterIncome", ++index, sheet -> toString(sheet.getTradeCenterIncome())));
+        configB.add(new TableConfig<>("15", "eco.sheetB.tradeCenterLoss", ++index, sheet -> toString(sheet.getTradeCenterLoss())));
+        configB.add(new TableConfig<>("16", "eco.sheetB.tradeIncome", ++index, sheet -> toString(sheet.getTradeIncome())));
+        configB.add(new TableConfig<>("17", "eco.sheetB.colIncome", ++index, sheet -> toString(sheet.getColIncome())));
+        configB.add(new TableConfig<>("18", "eco.sheetB.tpIncome", ++index, sheet -> toString(sheet.getTpIncome())));
+        configB.add(new TableConfig<>("19", "eco.sheetB.exoResIncome", ++index, sheet -> toString(sheet.getExoResIncome())));
+        configB.add(new TableConfig<>("20", "eco.sheetB.monopolies", ++index, sheet -> ""));
+        configB.add(new TableConfig<>("21", "eco.sheetB.rotwIncome", ++index, sheet -> toString(sheet.getRotwIncome())));
+        configB.add(new TableConfig<>("22", "eco.sheetB.specialIncome", ++index, sheet -> toString(sheet.getSpecialIncome())));
+        configB.add(new TableConfig<>("23", "eco.sheetB.income", ++index, sheet -> toString(sheet.getIncome())));
+        configB.add(new TableConfig<>("24", "eco.sheetB.eventIncome", ++index, sheet -> toString(sheet.getEventIncome())));
+        configB.add(new TableConfig<>("25", "eco.sheetB.grossIncome", ++index, sheet -> toString(sheet.getGrossIncome())));
+        configB.add(new TableConfig<>("26", "eco.sheetB.interestExpense", ++index, sheet -> toString(sheet.getInterestExpense())));
+        configB.add(new TableConfig<>("27", "eco.sheetB.mandatoryRefundExpense", ++index, sheet -> toString(sheet.getMandRefundExpense())));
+        configB.add(new TableConfig<>("28", "eco.sheetB.rtCollapse", ++index, sheet -> toString(sheet.getRtCollapse())));
+        configB.add(new TableConfig<>("29", "eco.sheetB.optionalRefundExpense", ++index, sheet -> toString(sheet.getOptRefundExpense())));
+        configB.add(new TableConfig<>("30", "eco.sheetB.unitMaintenance", ++index, sheet -> toString(sheet.getUnitMaintExpense())));
+        configB.add(new TableConfig<>("31", "eco.sheetB.fortMaintenance", ++index, sheet -> toString(sheet.getFortMaintExpense())));
+        configB.add(new TableConfig<>("32", "eco.sheetB.missionMaintenance", ++index, sheet -> toString(sheet.getMissMaintExpense())));
+        configB.add(new TableConfig<>("33", "eco.sheetB.unitPurchase", ++index, sheet -> toString(sheet.getUnitPurchExpense())));
+        configB.add(new TableConfig<>("34", "eco.sheetB.fortPurchase", ++index, sheet -> toString(sheet.getFortPurchExpense())));
+        configB.add(new TableConfig<>("35", "eco.sheetB.adminActions", ++index, sheet -> toString(sheet.getAdminActExpense())));
+        configB.add(new TableConfig<>("36", "eco.sheetB.adminReactions", ++index, sheet -> toString(sheet.getAdminReactExpense())));
+        configB.add(new TableConfig<>("37", "eco.sheetB.otherExpenses", ++index, sheet -> toString(sheet.getOtherExpense())));
+        configB.add(new TableConfig<>("38", "eco.sheetB.adminTotalExpense", ++index, sheet -> toString(sheet.getAdmTotalExpense())));
+        configB.add(new TableConfig<>("39", "eco.sheetB.excTaxesModifier", ++index, sheet -> toString(sheet.getExcTaxesMod())));
+        configB.add(new TableConfig<>("40", "eco.sheetB.passiveCampaigns", ++index, sheet -> toString(sheet.getPassCampExpense())));
+        configB.add(new TableConfig<>("41", "eco.sheetB.activeCampaigns", ++index, sheet -> toString(sheet.getActCampExpense())));
+        configB.add(new TableConfig<>("42", "eco.sheetB.majorCampaigns", ++index, sheet -> toString(sheet.getMajCampExpense())));
+        configB.add(new TableConfig<>("43", "eco.sheetB.multipleCampaigns", ++index, sheet -> toString(sheet.getMultCampExpense())));
+        configB.add(new TableConfig<>("44", "eco.sheetB.excRecruits", ++index, sheet -> toString(sheet.getExcRecruitExpense())));
+        configB.add(new TableConfig<>("45", "eco.sheetB.navalRefit", ++index, sheet -> toString(sheet.getNavalRefitExpense())));
+        configB.add(new TableConfig<>("46", "eco.sheetB.praesidiosBuild", ++index, sheet -> toString(sheet.getPraesidioExpense())));
+        configB.add(new TableConfig<>("47", "eco.sheetB.militaryTotal", ++index, sheet -> toString(sheet.getMilitaryExpense())));
+        configB.add(new TableConfig<>("48", "eco.sheetB.total", ++index, sheet -> toString(sheet.getExpenses())));
+
+        configA = new ArrayList<>();
+        index = -1;
+        configA.add(new TableConfig<>("1", "eco.sheetA.rtStart", ++index, sheet -> toString(sheet.getRtStart())));
+        configA.add(new TableConfig<>("2", "eco.sheetA.rtEvents", ++index, sheet -> toString(sheet.getRtEvents())));
+        configA.add(new TableConfig<>("3", "eco.sheetA.gifts", ++index, sheet -> toString(sheet.getLoans())));
+        configA.add(new TableConfig<>("4", "eco.sheetA.woodSlaves", ++index, sheet -> toString(sheet.getWoodSlaves())));
+        configA.add(new TableConfig<>("5", "eco.sheetA.diploActions", ++index, sheet -> toString(sheet.getDiploActions())));
+        configA.add(new TableConfig<>("6", "eco.sheetA.diploReactions", ++index, sheet -> toString(sheet.getDiploReactions())));
+        configA.add(new TableConfig<>("7", "eco.sheetA.diploSub", ++index, sheet -> toString(sheet.getSubsidies())));
+        configA.add(new TableConfig<>("8", "eco.sheetA.rtAfterDiplo", ++index, sheet -> toString(sheet.getRtDiplo())));
+        configA.add(new TableConfig<>("9", "eco.sheetA.pillages", ++index, sheet -> toString(sheet.getPillages())));
+        configA.add(new TableConfig<>("10", "eco.sheetA.gold", ++index, sheet -> toString(sheet.getGoldRotw())));
+        configA.add(new TableConfig<>("11", "eco.sheetA.taxMod", ++index, sheet -> toString(sheet.getExcTaxesMod())));
+        configA.add(new TableConfig<>("12", "eco.sheetA.excTaxes", ++index, sheet -> toString(sheet.getExcTaxes())));
+        configA.add(new TableConfig<>("13", "eco.sheetA.rtBeforeExchequer", ++index, sheet -> toString(sheet.getRtBefExch())));
+        configA.add(new TableConfig<>("14", "eco.sheetA.grossIncome", ++index, sheet -> toString(sheet.getGrossIncome())));
+        configA.add(new TableConfig<>("15", "eco.sheetA.regularIncome", ++index, sheet -> toString(sheet.getRegularIncome())));
+        configA.add(new TableConfig<>("16", "eco.sheetA.prestigeIncome", ++index, sheet -> toString(sheet.getPrestigeIncome())));
+        configA.add(new TableConfig<>("17", "eco.sheetA.maxNatLoan", ++index, sheet -> toString(sheet.getMaxNatLoan())));
+        configA.add(new TableConfig<>("18", "eco.sheetA.maxInterLoan", ++index, sheet -> toString(sheet.getMaxInterLoan())));
+        configA.add(new TableConfig<>("19", "eco.sheetA.expenses", ++index, sheet -> toString(sheet.getExpenses())));
+        configA.add(new TableConfig<>("20", "eco.sheetA.remainingExpenses", ++index, sheet -> toString(sheet.getRemainingExpenses())));
+        configA.add(new TableConfig<>("21", "eco.sheetA.prestigeExpenses", ++index, sheet -> toString(sheet.getPrestigeSpent())));
+        configA.add(new TableConfig<>("22", "eco.sheetA.natLoanExpenses", ++index, sheet -> toString(sheet.getNatLoan())));
+        configA.add(new TableConfig<>("23", "eco.sheetA.interLoanExpenses", ++index, sheet -> toString(sheet.getInterLoan())));
+        configA.add(new TableConfig<>("24", "eco.sheetA.rtBalance", ++index, sheet -> toString(sheet.getRtBalance())));
+        configA.add(new TableConfig<>("25", "eco.sheetA.rtAfterExchequer", ++index, sheet -> toString(sheet.getRtAftExch())));
+        configA.add(new TableConfig<>("26", "eco.sheetA.prestigeVPs", ++index, sheet -> toString(sheet.getPrestigeVP())));
+        configA.add(new TableConfig<>("27", "eco.sheetA.wealth", ++index, sheet -> toString(sheet.getWealth())));
+        configA.add(new TableConfig<>("28", "eco.sheetA.periodWealth", ++index, sheet -> toString(sheet.getPeriodWealth())));
+        configA.add(new TableConfig<>("29", "eco.sheetA.stabImprovment", ++index, sheet -> toString(sheet.getStab())));
+        configA.add(new TableConfig<>("30", "eco.sheetA.peace", ++index, sheet -> toString(sheet.getPeace())));
+        configA.add(new TableConfig<>("31", "eco.sheetA.rtAfterPeace", ++index, sheet -> toString(sheet.getRtPeace())));
+        configA.add(new TableConfig<>("32", "eco.sheetA.inflation", ++index, sheet -> toString(sheet.getInflation())));
+        configA.add(new TableConfig<>("33", "eco.sheetA.rtEnd", ++index, sheet -> toString(sheet.getRtEnd())));
     }
 
     /**
@@ -162,6 +204,51 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         Tab tab = new Tab(globalConfiguration.getMessage("eco.sheetA"));
         tab.setClosable(false);
 
+        choiceA = new ChoiceBox<>();
+        choiceA.setItems(FXCollections.observableArrayList(countries));
+        choiceA.converterProperty().set(new StringConverter<PlayableCountry>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(PlayableCountry object) {
+                return object.getName();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public PlayableCountry fromString(String string) {
+                PlayableCountry country = null;
+
+                for (PlayableCountry countryTest : countries) {
+                    if (StringUtils.equals(string, countryTest.getName())) {
+                        country = countryTest;
+                        break;
+                    }
+                }
+
+                return country;
+            }
+        });
+
+        HBox hBox = new HBox();
+        hBox.getChildren().addAll(choiceA);
+
+        tableA = new TableView<>();
+        tableA.setTableMenuButtonVisible(true);
+        tableA.setPrefWidth(750);
+        tableA.setPrefHeight(520);
+
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(hBox, tableA);
+
+        tab.setContent(vBox);
+
+        choiceA.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != oldValue) {
+                populateTable(tableA, newValue, configA);
+            }
+        });
+        choiceA.getSelectionModel().select(country);
+
         return tab;
     }
 
@@ -200,12 +287,11 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             }
         });
 
-        Button temp = new Button("ATEJ");
-        temp.setOnAction(event -> callService(economicService::computeEconomicalSheets, () -> null, "Error when updating economical sheets."));
         Button update = new Button(globalConfiguration.getMessage("eco.update"));
+        update.setOnAction(event -> callService(economicService::computeEconomicalSheets, () -> null, "Error when updating economical sheets."));
 
         HBox hBox = new HBox();
-        hBox.getChildren().addAll(choiceB, temp, update);
+        hBox.getChildren().addAll(choiceB, update);
 
         tableB = new TableView<>();
         tableB.setTableMenuButtonVisible(true);
@@ -219,7 +305,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
 
         choiceB.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
-                populateTable(tableB, newValue, config);
+                populateTable(tableB, newValue, configB);
             }
         });
         choiceB.getSelectionModel().select(country);
@@ -259,13 +345,13 @@ public class EcoWindow extends AbstractDiffListenerContainer {
             }
         }
 
-        TableColumn<List<String>, String> column = new TableColumn<>(globalConfiguration.getMessage("eco.sheetB.#"));
+        TableColumn<List<String>, String> column = new TableColumn<>(globalConfiguration.getMessage("eco.sheet.#"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
         column.setSortable(false);
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(0)));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.sheetB.turnNumber"));
+        column = new TableColumn<>(globalConfiguration.getMessage("eco.sheet.turnNumber"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.33));
         column.setSortable(false);
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(1)));
@@ -547,11 +633,18 @@ public class EcoWindow extends AbstractDiffListenerContainer {
         }
 
         Long idSelectedCountry = null;
+        if (choiceA.getSelectionModel().getSelectedItem() != null) {
+            idSelectedCountry = choiceA.getSelectionModel().getSelectedItem().getId();
+        }
+        if (idCountry == null || idCountry.equals(idSelectedCountry)) {
+            populateTable(tableA, choiceA.getSelectionModel().getSelectedItem(), configA);
+        }
+        idSelectedCountry = null;
         if (choiceB.getSelectionModel().getSelectedItem() != null) {
             idSelectedCountry = choiceB.getSelectionModel().getSelectedItem().getId();
         }
         if (idCountry == null || idCountry.equals(idSelectedCountry)) {
-            populateTable(tableB, choiceB.getSelectionModel().getSelectedItem(), config);
+            populateTable(tableB, choiceB.getSelectionModel().getSelectedItem(), configB);
         }
     }
 
