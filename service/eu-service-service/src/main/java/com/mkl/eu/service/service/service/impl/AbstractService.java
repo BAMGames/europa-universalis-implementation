@@ -71,8 +71,10 @@ public abstract class AbstractService implements INameConstants {
     public static final String MSG_MISSING_COUNTER = "{1}: {0} The counter {2} for country {3} is missing. Please ask an admin for correction.";
     /** Error message when the status is invalid. */
     public static final String MSG_INVALID_STATUS = "{1}: {0} The status {2} is invalid: it should be {3}.";
-    /** Error message when a table netry is missing. */
+    /** Error message when a table entry is missing. */
     public static final String MSG_MISSING_TABLE = "Entry {1} for table {0} does not exist.";
+    /** Error message when an entity is missing. */
+    public static final String MSG_MISSING_ENTITY = "Entity of type {1} with identifier {0} does not exist.";
     /** Socket Handler. */
     @Autowired
     private SocketHandler socketHandler;

@@ -139,7 +139,6 @@ public interface IConstantsCommonException {
      */
     String CONCURRENT_MODIFICATION = "exception.eu.common.concurrent_modification";
 
-
     /**
      * <p>
      * Technical exception thrown when a table entry is not found.
@@ -153,4 +152,18 @@ public interface IConstantsCommonException {
      * </p>
      */
     String MISSING_TABLE = "exception.eu.common.table_missing";
+
+    /**
+     * <p>
+     * Technical exception thrown when an entity is not found.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: type of entity.</li>
+     * <li>1: Identifier of the entity.</li>
+     * </ul>
+     * </p>
+     */
+    String MISSING_ENTITY = "exception.eu.common.entity_missing";
 }

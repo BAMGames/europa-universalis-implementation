@@ -988,7 +988,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String SIEGE_CANT_REDEPLOY = "exception.eu.board.siege_cant_redeploy";
+    String SIEGE_CANT_REDEPLOY = "exception.eu.military.siege_cant_redeploy";
 
     /**
      * <p>
@@ -1002,7 +1002,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String PROVINCE_REDEPLOY_TWICE = "exception.eu.board.province_redeploy_twice";
+    String PROVINCE_REDEPLOY_TWICE = "exception.eu.military.province_redeploy_twice";
 
     /**
      * <p>
@@ -1016,7 +1016,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String UNIT_CANT_REDEPLOY_TWICE = "exception.eu.board.unit_cant_redeploy_twice";
+    String UNIT_CANT_REDEPLOY_TWICE = "exception.eu.military.unit_cant_redeploy_twice";
 
     /**
      * <p>
@@ -1030,7 +1030,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String UNIT_CANT_REDEPLOY_PROVINCE = "exception.eu.board.unit_cant_redeploy_province";
+    String UNIT_CANT_REDEPLOY_PROVINCE = "exception.eu.military.unit_cant_redeploy_province";
 
     /**
      * <p>
@@ -1043,5 +1043,79 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String GARRISON_CANT_REDEPLOY = "exception.eu.board.garrison_cant_redeploy";
+    String GARRISON_CANT_REDEPLOY = "exception.eu.military.garrison_cant_redeploy";
+
+    /**********************************************************************/
+    /**                INTERPHASE SERVICE EXCEPTION                       */
+    /**********************************************************************/
+
+    /**
+     * <p>
+     * Exception thrown when trying to loot a province without having a stack in it.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_LOOTING_NO_STACK = "exception.eu.military.land_looting_no_stack";
+
+    /**
+     * <p>
+     * Exception thrown when trying to loot a province that is not owned by an enemy.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_LOOTING_NOT_ENEMY = "exception.eu.military.land_looting_not_enemy";
+
+    /**
+     * <p>
+     * Exception thrown when trying to loot a province with insufficient forces.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_LOOTING_INSUFFICIENT_FORCES = "exception.eu.military.land_looting_insufficient_forces";
+
+    /**
+     * <p>
+     * Exception thrown when trying to burn a trading post while there is no enemy trading post.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_LOOTING_BURN_TP_NO_TP = "exception.eu.military.land_looting_burn_tp_no_tp";
+
+    /**
+     * <p>
+     * Exception thrown when trying to burn a trading post without controlling it.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the target province.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_LOOTING_BURN_TP_NO_CONTROL = "exception.eu.military.land_looting_burn_tp_no_control";
 }

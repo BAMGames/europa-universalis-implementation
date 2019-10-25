@@ -172,6 +172,8 @@ public enum DiffAttributeTypeEnum {
     ID_WAR,
     /** To say if the phasing side is the offensive side. */
     PHASING_OFFENSIVE,
+    /** Economical sheet pillage done by armies. */
+    PILLAGE,
 
 
 }
