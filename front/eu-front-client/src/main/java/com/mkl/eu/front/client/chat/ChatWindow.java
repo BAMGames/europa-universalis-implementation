@@ -48,7 +48,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 
 /**
  * Window containing all the chats between players.
- * TODO add a status tab with the diffs and an error tab with the volatile logs.
+ * TODO TG-128 add a status tab with the diffs and an error tab with the volatile logs.
  *
  * @author MKL.
  */

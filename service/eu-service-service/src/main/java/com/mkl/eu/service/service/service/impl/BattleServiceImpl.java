@@ -84,7 +84,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         checkGameStatus(game, GameStatusEnum.MILITARY_BATTLES, request.getGame().getIdCountry(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -229,7 +229,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -374,13 +374,13 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_WITHDRAW_BEFORE_BATTLE, PARAMETER_WITHDRAW_BEFORE_BATTLE);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
                 .orElse(null);
 
-        // TODO check that the player doing the request is leader of the stack
+        // TODO TG-5 check that the player doing the request is leader of the stack
         failIfTrue(new CheckForThrow<Boolean>()
                 .setTest(isPhasingPlayer(game, request.getGame().getIdCountry()))
                 .setCodeError(IConstantsServiceException.BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW)
@@ -455,7 +455,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             if (!success) {
                 int die = oeUtil.rollDie(game, country);
 
-                // TODO leader diff manoeuvre if positive
+                // TODO TG-5 leader diff manoeuvre if positive
                 if (die >= 8) {
                     success = true;
                 }
@@ -494,12 +494,12 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         }
 
         List<DiffEntity> newDiffs = new ArrayList<>();
-        // TODO replacement leader if needed
+        // TODO TG-5 replacement leader if needed
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         attributes.addAll(fillBattleModifiers(battle));
         attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.FIRST_FIRE));
         newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_FIRST_FIRE, 3, attributes));
-        // TODO at sea, WIND advantage forces can retreat
+        // TODO TG-10 at sea, WIND advantage forces can retreat
         if (battle.getEnd() == null) {
             attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.FIRST_SHOCK));
             newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_FIRST_SHOCK, 2, attributes));
@@ -575,7 +575,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 true, getReferential(), getTables(), battle.getGame());
         battle.getNonPhasing().setTech(techNotPhasing);
 
-        // TODO tercios moral boost
+        // TODO TG-131 tercios moral boost
         BattleTech battleTechPhasing = getTables().getBattleTechs().stream()
                 .filter(bt -> StringUtils.equals(bt.getTechnologyFor(), techPhasing) && StringUtils.equals(bt.getTechnologyAgainst(), techNotPhasing))
                 .findAny()
@@ -604,11 +604,11 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         battle.getPhasing().getSecondDay().addFireAndShock(-1);
         battle.getNonPhasing().getSecondDay().addFireAndShock(-1);
 
-        // TODO leaders
+        // TODO TG-5 leaders
 
-        // TODO tercios
+        // TODO TG-131 tercios
 
-        // TODO foraging
+        // TODO TG-6 foraging
 
         // Terrain modifiers
         AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
@@ -694,7 +694,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             battle.getNonPhasing().getSecondDay().addShock(1);
         }
 
-        // TODO TUR Sipahi for pursuit
+        // TODO TG-131 TUR Sipahi for pursuit
 
         // Size diff
         double phasingSize = oeUtil.getArmySize(armyPhasing, getTables(), battle.getGame());
@@ -745,7 +745,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_RETREAT_FIRST_DAY, PARAMETER_RETREAT_FIRST_DAY);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -770,7 +770,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_RETREAT_FIRST_DAY)
                 .setParams(METHOD_RETREAT_FIRST_DAY, BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF.name()));
 
-        // TODO if intercepting battle, it is the opposite
+        // TODO TG-7 if intercepting battle, it is the opposite
         boolean phasing;
         int remainingMoral;
         if (battle.getStatus() == BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF) {
@@ -790,7 +790,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                             bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCountry()));
         }
 
-        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(ok)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
@@ -803,7 +803,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         if (request.getRequest().isValidate()) {
             int die = oeUtil.rollDie(game);
 
-            // TODO leader manoeuvre
+            // TODO TG-5 leader manoeuvre
             boolean success = die <= remainingMoral;
 
             if (success) {
@@ -846,7 +846,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         } else {
             attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.SECOND_FIRE));
             newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_SECOND_FIRE, 1, attributes));
-            // TODO at sea, WIND advantage forces can retreat
+            // TODO TG-10 at sea, WIND advantage forces can retreat
             if (battle.getEnd() == null) {
                 attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.SECOND_SHOCK));
                 newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_SECOND_SHOCK, 0, attributes));
@@ -1335,7 +1335,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
     private void computeRetreat(BattleSideEntity side, boolean winner, Supplier<Integer> dieSupplier) {
         if (!winner) {
             int retreat = dieSupplier.get();
-            // TODO subtract leader manoeuvre if not routed
+            // TODO TG-5 subtract leader manoeuvre if not routed
             side.setRetreat(retreat);
             side.getLosses().add(oeUtil.retreat(retreat));
         }
@@ -1377,7 +1377,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -1406,7 +1406,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         boolean accessRight = oeUtil.isWarAlly(country, battle.getWar(),
                 playerPhasing && battle.isPhasingOffensive() || !playerPhasing && !battle.isPhasingOffensive());
 
-        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(accessRight)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
@@ -1576,7 +1576,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_BATTLES, METHOD_RETREAT_AFTER_BATTLE, PARAMETER_RETREAT_AFTER_BATTLE);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -1605,7 +1605,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         boolean accessRight = oeUtil.isWarAlly(country, battle.getWar(),
                 playerPhasing && battle.isPhasingOffensive() || !playerPhasing && !battle.isPhasingOffensive());
 
-        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(accessRight)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)

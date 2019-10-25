@@ -43,7 +43,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
     /** {@inheritDoc} */
     @Override
     public DiffResponse createRoom(Request<CreateRoomRequest> request) throws FunctionalException, TechnicalException {
-        // TODO check idCountry and authent in request AND chatInfo
+        // TODO TG-2 check idCountry and authent in request AND chatInfo
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_ROOM).setParams(METHOD_CREATE_ROOM));
 
@@ -94,7 +94,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
     /** {@inheritDoc} */
     @Override
     public DiffResponse speakInRoom(Request<SpeakInRoomRequest> request) throws FunctionalException, TechnicalException {
-        // TODO check idCountry and authent in request AND chatInfo
+        // TODO TG-2 check idCountry and authent in request AND chatInfo
         // TODO check if speaker is present in room
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_SPEAK_IN_ROOM).setParams(METHOD_SPEAK_IN_ROOM));
@@ -174,7 +174,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
     /** {@inheritDoc} */
     @Override
     public DiffResponse toggleRoom(Request<ToggleRoomRequest> request) throws FunctionalException, TechnicalException {
-        // TODO check idCountry and authent in request AND chatInfo
+        // TODO TG-2 check idCountry and authent in request AND chatInfo
         // TODO check if the user is present in room
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_TOGGLE_ROOM).setParams(METHOD_TOGGLE_ROOM));
@@ -219,7 +219,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
     /** {@inheritDoc} */
     @Override
     public DiffResponse inviteKickRoom(Request<InviteKickRoomRequest> request) throws FunctionalException, TechnicalException {
-        // TODO check idCountry and authent in chatInfo
+        // TODO TG-2 check idCountry and authent in chatInfo
         // TODO check if the user is owner of the room
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
@@ -295,7 +295,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
     /** {@inheritDoc} */
     @Override
     public Room loadRoom(SimpleRequest<LoadRoomRequest> request) throws FunctionalException, TechnicalException {
-        // TODO check idCountry and authent in chatInfo
+        // TODO TG-2 check idCountry and authent in chatInfo
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_ROOM).setParams(METHOD_LOAD_ROOM));
@@ -313,7 +313,7 @@ public class ChatServiceImpl extends AbstractService implements IChatService {
     /** {@inheritDoc} */
     @Override
     public DiffResponse readRoom(Request<ReadRoomRequest> request) throws FunctionalException, TechnicalException {
-        // TODO check idCountry and authent in chatInfo
+        // TODO TG-2 check idCountry and authent in chatInfo
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_READ_ROOM).setParams(METHOD_READ_ROOM));

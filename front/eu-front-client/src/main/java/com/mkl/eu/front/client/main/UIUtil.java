@@ -15,6 +15,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.StringUtils;
 
+import java.awt.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -31,6 +32,19 @@ public final class UIUtil {
      */
     private UIUtil() {
 
+    }
+
+    /**
+     * Center a component.
+     *
+     * @param component to center.
+     */
+    public static void centerFrame(Component component) {
+        // We retrieve the screen size.
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+
+        // And we move our component in the middle of the screen.
+        component.setLocation((screen.width - component.getSize().width) / 2, (screen.height - component.getSize().height) / 2);
     }
 
     /**
@@ -152,7 +166,7 @@ public final class UIUtil {
             FileInputStream fis = new FileInputStream(path);
             return new ImageView(new Image(fis, 40, 40, true, false));
         } catch (FileNotFoundException e) {
-            // TODO what to display if no image ?
+            // TODO TG-15 what to display if no image ?
             return null;
         }
 

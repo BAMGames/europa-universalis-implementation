@@ -55,7 +55,7 @@ public final class CounterUtil {
                 case LAND_SEPOY_EXPLORATION:
                     size = THIRD;
                     break;
-                // TODO Pashas
+                // TODO TG-5 Pashas
                 default:
                     break;
             }

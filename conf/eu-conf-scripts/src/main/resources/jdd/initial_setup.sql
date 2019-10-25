@@ -673,7 +673,7 @@ INSERT INTO stack (ID, ID_GAME, R_PROVINCE)
 VALUES (714, 1, 'eTrakya');
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)
 VALUES (717, 714, 'FLEET_MINUS', 'turquie');
--- TODO pashas
+-- TODO TG-5 pashas
 
 -- Venetia
 INSERT INTO counter (ID, ID_STACK, TYPE, R_COUNTRY)

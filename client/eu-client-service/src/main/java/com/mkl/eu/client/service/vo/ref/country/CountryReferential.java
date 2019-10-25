@@ -39,7 +39,7 @@ public class CountryReferential extends EuObject {
     private List<ReinforcementsReferential> reinforcements = new ArrayList<>();
     /** Limit forces. Exhaustive list of counters of the country (except leaders). */
     private List<LimitReferential> limits = new ArrayList<>();
-    /** TODO conception of preferences. */
+    /** TODO TG-18 conception of preferences. */
     /** Army class of this country. */
     private ArmyClassEnum armyClass;
     /** Capitals of the country (may be empty). */

@@ -85,7 +85,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -219,7 +219,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_SELECT_FORCES, PARAMETER_SELECT_FORCES);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -363,7 +363,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         boolean plain = province.getTerrain() == TerrainEnum.PLAIN;
         boolean port = province.getBorders().stream()
                 .anyMatch(border -> border.getProvinceTo() instanceof SeaProvinceEntity);
-        // TODO cancel port if it is blockaded
+        // TODO TG-11 cancel port if it is blockaded
         boolean rotw = province instanceof RotwProvinceEntity;
         int terrainMalus = 0;
         if (!rotw) {
@@ -388,7 +388,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
                 .flatMap(stack -> stack.getCounters().stream())
                 .collect(Collectors.summingInt(siegeworkValue));
-        // TODO siege bonus of leaders
+        // TODO TG-5 siege bonus of leaders
         int besiegingBonus = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isNotPhasing)
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2 ? 3 : 1)
@@ -416,7 +416,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -742,7 +742,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .orElse(null);
         if (enemies.contains(owner)) {
             if (control != null) {
-                // TODO Leaders use controller of the siege for control counter
+                // TODO TG-5 Leaders use controller of the siege for control counter
                 diffs.add(counterDomain.changeCounterCountry(control, country.getName(), game));
             } else {
                 diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.CONTROL, country.getName(), siege.getProvince(), null, game));
@@ -750,7 +750,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         } else {
             diffs.add(counterDomain.removeCounter(control.getId(), game));
         }
-        // TODO use case of praesidios
+        // TODO TG-130 use case of praesidios
         CounterEntity fortress = presentCounters.stream()
                 .filter(counter -> CounterUtil.isFortress(counter.getType()))
                 .findAny()
@@ -759,13 +759,13 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         int levelLost = man ? 1 : 2;
         int level = siege.getFortressLevel() - levelLost;
         if (fortress != null) {
-            // TODO special fortresses
+            // TODO TG-130 special fortresses
             CounterFaceTypeEnum newFortress = CounterUtil.getFortressesFromLevel(level, CounterUtil.isArsenal(fortress.getType()));
             diffs.add(counterDomain.removeCounter(fortress.getId(), game));
             if (level > naturalFortressLevel) {
                 String newController;
                 if (enemies.contains(owner)) {
-                    // TODO Leaders use controller of the siege for control counter
+                    // TODO TG-5 Leaders use controller of the siege for control counter
                     newController = country.getName();
                 } else {
                     newController = owner;
@@ -775,7 +775,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 diffs.add(counterDomain.createCounter(newFortress, null, siege.getProvince(), null, game));
             }
         } else if (naturalFortressLevel > 1) {
-            // TODO add a rule that remove these neutral fortress 1 counters at end of turn
+            // TODO TG-113 add a rule that remove these neutral fortress 1 counters at end of turn
             diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.FORTRESS_1, null, siege.getProvince(), null, game));
         }
 
@@ -811,7 +811,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -927,7 +927,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -1110,7 +1110,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 true, getReferential(), getTables(), siege.getGame());
         siege.getNonPhasing().setTech(techNotPhasing);
 
-        // TODO tercios moral boost
+        // TODO TG-131 tercios moral boost
         BattleTech battleTechPhasing = getTables().getBattleTechs().stream()
                 .filter(bt -> StringUtils.equals(bt.getTechnologyFor(), techPhasing) && StringUtils.equals(bt.getTechnologyAgainst(), techNotPhasing))
                 .findAny()
@@ -1131,7 +1131,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             siege.getNonPhasing().setMoral(battleTechNonPhasing.getMoral());
         }
 
-        // TODO leaders
+        // TODO TG-5 leaders
 
 
         if (StringUtils.equals(techNotPhasing, Tech.MEDIEVAL)) {
@@ -1335,7 +1335,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_REDEPLOY, PARAMETER_REDEPLOY);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -1361,7 +1361,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setName(PARAMETER_REDEPLOY)
                 .setParams(METHOD_REDEPLOY, SiegeStatusEnum.REDEPLOY.name()));
 
-        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(), !siege.isBesiegingOffensive());
 
         failIfFalse(new CheckForThrow<Boolean>()
@@ -1506,7 +1506,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         checkSimpleStatus(game, GameStatusEnum.MILITARY_SIEGES, METHOD_CHOOSE_LOSSES, PARAMETER_CHOOSE_LOSSES);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -1532,7 +1532,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setParams(METHOD_CHOOSE_LOSSES, SiegeStatusEnum.CHOOSE_LOSS.name()));
 
         boolean playerPhasing = isPhasingPlayer(game, request.getGame().getIdCountry());
-        // TODO check that the player doing the request is leader of the stack and replace complex by this leader
+        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         boolean accessRight = oeUtil.isWarAlly(country, siege.getWar(),
                 playerPhasing && siege.isBesiegingOffensive() || !playerPhasing && !siege.isBesiegingOffensive());
         failIfFalse(new CheckForThrow<Boolean>()

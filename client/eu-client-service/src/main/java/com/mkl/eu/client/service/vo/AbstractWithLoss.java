@@ -34,7 +34,7 @@ public class AbstractWithLoss extends EuObject implements Losses {
                 loss = new StandardLoss(thirdLosses / 3, thirdLosses % 3, getMoraleLoss());
                 break;
             case Tech.GALLEASS:
-                // TODO NGD without VGD
+                // TODO TG-10 NGD without VGD
                 break;
         }
 

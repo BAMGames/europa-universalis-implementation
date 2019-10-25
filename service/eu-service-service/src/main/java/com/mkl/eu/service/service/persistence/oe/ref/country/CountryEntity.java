@@ -46,7 +46,7 @@ public class CountryEntity implements IEntity, Serializable {
     private List<ReinforcementsEntity> reinforcements;
     /** Limit forces. Exhaustive list of counters of the country (except leaders). */
     private List<LimitEntity> limits;
-    /** TODO conception of preferences. */
+    /** TODO TG-18 conception of preferences. */
     /** Army class of this country. */
     private ArmyClassEnum armyClass;
     /** Capitals of the country (may be empty). */

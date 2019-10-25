@@ -301,7 +301,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     public DiffResponse addAdminAction(Request<AddAdminActionRequest> request) throws FunctionalException, TechnicalException {
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT).setParams(METHOD_ADD_ADM_ACT));
-        // TODO authent
+        // TODO TG-2 authent
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_ADD_ADM_ACT, PARAMETER_ADD_ADM_ACT);
         GameEntity game = gameDiffs.getGame();
@@ -1251,7 +1251,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
             failIfFalse(new CheckForThrow<Boolean>().setTest(provinceOk).setCodeError(IConstantsServiceException.PIONEERING)
                     .setMsgFormat("{1}: {0} The colony located in {2} and of level {3} can't be upgraded because of pioneering rules.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, level));
-            // TODO countries and economical events rules
+            // TODO TG-131countries and economical events rules
+            // TODO TG-12
         }
 
         checkSettlements(game, country, rotwProv);
@@ -1295,7 +1296,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             bonus += 2;
         }
         // TODO battles
-        // TODO leaders
+        // TODO TG-5 leaders
 
         AdministrativeActionEntity admAct = new AdministrativeActionEntity();
         admAct.setCountry(country);
@@ -1420,7 +1421,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             bonus += 2;
         }
         // TODO battles
-        // TODO leaders
+        // TODO TG-5 leaders
 
         AdministrativeActionEntity admAct = new AdministrativeActionEntity();
         admAct.setCountry(country);
@@ -1564,7 +1565,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         int bonus = 0;
         if (StringUtils.equals(PlayableCountry.TURKEY, country.getName())) {
-            // TODO REFORMS
+            // TODO TG-131 REFORMS
             bonus -= 1;
         }
         CountryEntity countryRef = countryDao.getCountryByName(country.getName());
@@ -2262,7 +2263,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
                     diffs.add(diff);
 
-                    // TODO ignore fleet counters with only galleys
+                    // TODO TG-9 ignore fleet counters with only galleys
                     int upgradeCost = game.getStacks().stream().flatMap(s -> s.getCounters().stream())
                             .filter(c -> StringUtils.equals(c.getCountry(), country.getName()))
                             .collect(Collectors.summingInt(c -> CounterUtil.getUpgradeCost(c.getType(), land)));

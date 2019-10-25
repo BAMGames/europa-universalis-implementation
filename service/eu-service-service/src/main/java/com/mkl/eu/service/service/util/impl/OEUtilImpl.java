@@ -1007,7 +1007,7 @@ public final class OEUtilImpl implements IOEUtil {
                 .findAny()
                 .orElse(null);
 
-        // TODO reforms of turkey
+        // TODO TG-131 reforms of turkey
         return between(game.getTurn(), PI, PII) && armies.stream().anyMatch(army -> hasAssault(army, PlayableCountry.POLAND)) ||
                 between(game.getTurn(), PI, PIII) && armies.stream().anyMatch(army -> hasAssault(army, PlayableCountry.RUSSIA)) ||
                 between(game.getTurn(), PI, PIII) && armies.stream().anyMatch(army -> hasAssault(army, PlayableCountry.TURKEY));
@@ -1057,7 +1057,7 @@ public final class OEUtilImpl implements IOEUtil {
         Double total = counters.stream()
                 .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
 
-        // TODO pasha always conscript
+        // TODO TG-5 pasha always conscript
 
         return veterans > total / 2;
     }

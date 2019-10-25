@@ -53,7 +53,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     /** {@inheritDoc} */
     @Override
     public List<DiffEntity> computeEndAdministrativeActions(GameEntity game) {
-        // FIXME check minors at war
+        // TODO TG-13 check minors at war
         return initMilitaryPhase(game);
     }
 
@@ -523,11 +523,11 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
 
-        // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+        // TODO TG-5 when leaders implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                // FIXME when leaders implemented, it will be MILITARY_HIERARCHY phase
+                // TODO TG-5 when leaders implemented, it will be MILITARY_HIERARCHY phase
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
         // set the order of position 0 active

@@ -114,7 +114,7 @@ public class CounterUtilTest {
         Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_TRANSPORT));
         Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_GALLEY));
 
-        // TODO test pashas
+        // TODO TG-5 test pashas
     }
 
     @Test

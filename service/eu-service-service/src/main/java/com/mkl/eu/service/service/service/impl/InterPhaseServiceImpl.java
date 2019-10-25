@@ -62,7 +62,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
 
         checkGameStatus(game, GameStatusEnum.REDEPLOYMENT, request.getGame().getIdCountry(), METHOD_LAND_LOOTING, PARAMETER_LAND_LOOTING);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()

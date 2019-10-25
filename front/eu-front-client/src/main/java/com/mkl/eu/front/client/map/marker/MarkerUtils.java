@@ -47,13 +47,13 @@ public final class MarkerUtils {
      * @return the markers to add to the maps.
      */
     public static Map<String, Marker> createMarkers(Game game) {
-        // TODO configure externalization
+        // TODO TG-15 configure externalization
         List<Feature> countries = GeoJSONReader.loadDataFromJSON(null, GeoJSONReaderUtil.readJson("data/map/v2/countries.geo.json"));
 
         XStream xstream = new XStream();
         xstream.processAnnotations(Border.class);
 
-        // TODO configure externalization
+        // TODO TG-15 configure externalization
         //noinspection unchecked
         List<Border> borders = (List<Border>) xstream.fromXML(new File("data/map/v2/borders.xml"));
         MarkerFactory markerFactory = new MarkerFactory();
@@ -185,7 +185,7 @@ public final class MarkerUtils {
      * @return the image path of the counter.
      */
     public static String getImagePath(String country, String type) {
-        // TODO configure externalization
+        // TODO TG-15 configure externalization
         StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
         if (country != null) {
             path.append(country)

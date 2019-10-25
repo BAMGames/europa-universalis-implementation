@@ -10,7 +10,7 @@ import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
  */
 public class CountryOrder {
     /** Country concerned by the turn order. */
-    // FIXME add a 'fake' playable country in case of minor alone in war
+    // TODO TG-18 add a 'fake' playable country in case of minor alone in war
     private PlayableCountry country;
     /** Phase of the game concerned by the turn order. For military phases, it is MILITARY_MOVE. */
     private GameStatusEnum gameStatus;

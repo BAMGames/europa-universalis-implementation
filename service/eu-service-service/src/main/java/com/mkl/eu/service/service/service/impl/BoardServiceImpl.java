@@ -87,7 +87,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat(MSG_MISSING_PARAMETER)
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST)
                 .setParams(METHOD_MOVE_STACK));
-        // TODO authorization
+        // TODO TG-2 authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -271,7 +271,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat(MSG_MISSING_PARAMETER)
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST)
                 .setParams(METHOD_TAKE_STACK_CONTROL));
-        // TODO authorization
+        // TODO TG-2 authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -362,7 +362,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat(MSG_MISSING_PARAMETER)
                 .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST)
                 .setParams(METHOD_END_MOVE_STACK));
-        // TODO authorization
+        // TODO TG-2 authorization
         PlayableCountryEntity country = game.getCountries().stream()
                 .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
                 .findFirst()
@@ -443,7 +443,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         GameEntity game = gameDiffs.getGame();
         checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
 
-        // TODO Authorization
+        // TODO TG-2 Authorization
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -563,7 +563,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                         .setParams(method, country.getName(), patrons.get(0)));
 
             } else {
-                // TODO manage minor countries in war with no or multiple patrons
+                // TODO TG-13 manage minor countries in war with no or multiple patrons
                 // If minor at war with no patron, creation of a fake playable country
                 // so only multiple patrons use case remains
             }
@@ -667,7 +667,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CREATE_COUNTER, PARAMETER_CREATE_COUNTER);
         GameEntity game = gameDiffs.getGame();
-        // TODO authorization ADMIN
+        // TODO TG-2 authorization ADMIN
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -711,7 +711,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_REMOVE_COUNTER, PARAMETER_REMOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
-        // TODO authorization ADMIN
+        // TODO TG-2 authorization ADMIN
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())

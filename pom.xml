@@ -28,7 +28,7 @@
             </modules>
         </profile>
         <profile>
-            <!-- circle ci stopped compiling javafx. TODO migrate to something more consistent like travis. -->
+            <!-- circle ci stopped compiling javafx. TODO TG-127 migrate to something more consistent like travis. -->
             <id>circleci</id>
             <modules>
                 <module>client</module>

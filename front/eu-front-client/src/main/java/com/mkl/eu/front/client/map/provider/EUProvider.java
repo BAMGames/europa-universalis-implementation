@@ -79,7 +79,7 @@ public class EUProvider extends AbstractMapProvider {
      * @return the path the portion of the map will be stored on disk.
      */
     private String getImagePath(String subPath) {
-        // TODO configure
+        // TODO TG-15 configure
         return "data/map/v2/carte/" + subPath + ".png";
     }
 
@@ -90,7 +90,7 @@ public class EUProvider extends AbstractMapProvider {
 
         String subPath = getZoomString(coordinate);
 
-        // TODO configure
+        // TODO TG-15 configure
         String url = "http://old-lipn.univ-paris13.fr/~dubacq/europa/carte/0.6/" + subPath + ".png";
 
 

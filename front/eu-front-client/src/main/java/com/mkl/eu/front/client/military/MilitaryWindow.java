@@ -406,7 +406,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
      * @param tooltip the tooltip to patch.
      */
     private void patchTooltipUntilMigrationJava9(Tooltip tooltip) {
-        // FIXME remove when migrating to java 9 or above
+        // TODO TG-129 remove when migrating to java 9 or above
         try {
             Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
             fieldBehavior.setAccessible(true);
