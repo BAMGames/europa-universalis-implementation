@@ -22,6 +22,7 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
 
     /**
      * Returns the patrons (can be multiple for rotw countries) of the country.
+     * A country is always a patron of itself.
      *
      * @param country to check.
      * @param idGame  id of the game.

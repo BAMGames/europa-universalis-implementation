@@ -51,15 +51,29 @@ public class CounterDaoImplTest {
 
     @Test
     public void testGetPatrons() {
-        Assert.assertEquals(1, counterDao.getPatrons("sancta sedes", 1L).size());
-        Assert.assertEquals("france", counterDao.getPatrons("sancta sedes", 1L).get(0));
-        Assert.assertEquals(1, counterDao.getPatrons("sancta sedes", 2L).size());
-        Assert.assertEquals("espagne", counterDao.getPatrons("sancta sedes", 2L).get(0));
-        Assert.assertEquals(2, counterDao.getPatrons("iroquois", 1L).size());
-        Assert.assertEquals("france", counterDao.getPatrons("iroquois", 1L).get(0));
-        Assert.assertEquals("angleterre", counterDao.getPatrons("iroquois", 1L).get(1));
-        Assert.assertEquals(0, counterDao.getPatrons("iroquois", 2L).size());
-        Assert.assertEquals(0, counterDao.getPatrons("sabaudia", 1L).size());
+        List<String> patrons = counterDao.getPatrons("sancta sedes", 1L);
+        Assert.assertEquals(2, patrons.size());
+        Assert.assertTrue(patrons.contains("sancta sedes"));
+        Assert.assertTrue(patrons.contains("france"));
+
+        patrons = counterDao.getPatrons("sancta sedes", 2L);
+        Assert.assertEquals(2, patrons.size());
+        Assert.assertTrue(patrons.contains("sancta sedes"));
+        Assert.assertTrue(patrons.contains("espagne"));
+
+        patrons = counterDao.getPatrons("iroquois", 1L);
+        Assert.assertEquals(3, patrons.size());
+        Assert.assertTrue(patrons.contains("iroquois"));
+        Assert.assertTrue(patrons.contains("france"));
+        Assert.assertTrue(patrons.contains("angleterre"));
+
+        patrons = counterDao.getPatrons("iroquois", 2L);
+        Assert.assertEquals(1, patrons.size());
+        Assert.assertTrue(patrons.contains("iroquois"));
+
+        patrons = counterDao.getPatrons("sabaudia", 1L);
+        Assert.assertEquals(1, patrons.size());
+        Assert.assertTrue(patrons.contains("sabaudia"));
     }
 
     @Test

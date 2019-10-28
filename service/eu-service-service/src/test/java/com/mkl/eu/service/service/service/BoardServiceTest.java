@@ -408,6 +408,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(game.getCountries().get(0).getName()));
         when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
         when(oeUtil.getMovePoints(pecs, idf, false)).thenReturn(4);
+        when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
 
         simulateDiff();
 
@@ -572,6 +573,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         EuropeanProvinceEntity province = new EuropeanProvinceEntity();
         when(provinceDao.getProvinceByName(stack.getProvince())).thenReturn(province);
         when(oeUtil.getController(province, game)).thenReturn(controller);
+        when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
 
         simulateDiff();
 
@@ -736,6 +738,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
+        when(counterDao.getPatrons("espagne", game.getId())).thenReturn(Collections.singletonList("espagne"));
 
         simulateDiff();
 
@@ -1032,6 +1035,9 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         counter.setOwner(stack);
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(26L);
+        game.getCountries().get(0).setName("france");
 
         when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
 
@@ -1040,6 +1046,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         newStack.setId(25L);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(newStack);
         when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
+        when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
 
         simulateDiff();
 

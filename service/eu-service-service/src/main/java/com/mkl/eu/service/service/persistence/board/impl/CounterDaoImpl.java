@@ -89,6 +89,7 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
             countries = counters.stream().map(CounterEntity::getCountry).collect(Collectors.toList());
         }
+        countries.add(country);
 
         return countries;
     }

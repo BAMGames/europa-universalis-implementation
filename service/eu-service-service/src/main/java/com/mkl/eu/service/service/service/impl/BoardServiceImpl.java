@@ -235,7 +235,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     .setParams(METHOD_MOVE_STACK, stack.getProvince(), allyForces, fortress));
         }
 
-        checkCanManipulateObject(stack.getCountry(), country, game, METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
+        List<String> patrons = counterDao.getPatrons(stack.getCountry(), game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_MOVE_STACK, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_MOVE_STACK, country.getName(), patrons));
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, idStack,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, stack.getProvince()),
@@ -315,7 +321,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_COUNTRY)
                 .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController));
 
-        checkCanManipulateObject(newController, country, game, METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
+        List<String> patrons = counterDao.getPatrons(newController, game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_TAKE_STACK_CONTROL, country.getName(), patrons));
 
         Map<String, Double> countersByCountry = stack.getCounters().stream()
                 .collect(Collectors.groupingBy(CounterEntity::getCountry, Collectors.summingDouble(value -> CounterUtil.getSizeFromType(value.getType()))));
@@ -397,7 +409,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_END_MOVE_STACK, idStack));
 
-        checkCanManipulateObject(stack.getCountry(), country, game, METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
+        List<String> patrons = counterDao.getPatrons(stack.getCountry(), game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_END_MOVE_STACK, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_END_MOVE_STACK, country.getName(), patrons));
 
         MovePhaseEnum movePhase;
         List<String> enemies = oeUtil.getEnemies(country, game);
@@ -476,7 +494,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                 .setParams(METHOD_MOVE_COUNTER, game.getId()));
 
-        checkCanManipulateObject(counter.getCountry(), country, game, METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
+        List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_MOVE_COUNTER, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_MOVE_COUNTER, country.getName(), patrons));
 
         Optional<StackEntity> stackOpt = null;
         if (idStack != null) {
@@ -522,52 +546,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         DiffEntity diff = counterDomain.changeCounterOwner(counter, stack, game);
 
         return createDiff(diff, gameDiffs, request);
-    }
-
-    /**
-     * Throws an exception if the country has no right to manipulate an object owned by countryName.
-     *
-     * @param countryName real owner of the object. Can be a minor country in which case country must be a patron of countryName.
-     * @param country     country asking to manipulate the object.
-     * @param game        the game.
-     * @param method      calling this. For logging purpose.
-     * @param param       name of the param holding the gameInfo. For logging purpose.
-     * @throws FunctionalException
-     */
-    private void checkCanManipulateObject(String countryName, PlayableCountryEntity country, GameEntity game, String method, String param) throws FunctionalException {
-        PlayableCountryEntity owner = game.getCountries().stream()
-                .filter(x -> StringUtils.equals(countryName, x.getName()))
-                .findFirst()
-                .orElse(null);
-        if (owner != null) {
-            failIfFalse(new CheckForThrow<Boolean>()
-                    .setTest(country.getId().equals(owner.getId()))
-                    .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                    .setMsgFormat(MSG_ACCESS_RIGHT)
-                    .setName(param, PARAMETER_ID_COUNTRY)
-                    .setParams(method, country.getName(), countryName));
-
-        } else {
-            List<String> patrons = counterDao.getPatrons(countryName, game.getId());
-            if (patrons.size() == 1) {
-                owner = game.getCountries().stream()
-                        .filter(x -> StringUtils.equals(patrons.get(0), x.getName()))
-                        .findFirst()
-                        .orElse(null);
-                boolean ok = owner != null && country.getId().equals(owner.getId());
-                failIfFalse(new CheckForThrow<Boolean>()
-                        .setTest(ok)
-                        .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
-                        .setMsgFormat(MSG_ACCESS_RIGHT)
-                        .setName(param, PARAMETER_ID_COUNTRY)
-                        .setParams(method, country.getName(), patrons.get(0)));
-
-            } else {
-                // TODO TG-13 manage minor countries in war with no or multiple patrons
-                // If minor at war with no patron, creation of a fake playable country
-                // so only multiple patrons use case remains
-            }
-        }
     }
 
     /** {@inheritDoc} */
