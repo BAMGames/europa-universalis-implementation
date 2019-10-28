@@ -1051,17 +1051,17 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
-     * Exception thrown when trying to loot a province without having a stack in it.
+     * Exception thrown when trying to loot a province twice with the same stack.
      * </p>
      * <p>
      * Parameters:
      * <ul>
      * <li>0: Action being performed (or object being updated).</li>
-     * <li>1: name of the target province.</li>
+     * <li>1: id of the stack.</li>
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_NO_STACK = "exception.eu.military.land_looting_no_stack";
+    String LAND_LOOTING_TWICE = "exception.eu.military.land_looting_twice";
 
     /**
      * <p>

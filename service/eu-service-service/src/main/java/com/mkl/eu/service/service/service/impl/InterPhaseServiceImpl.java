@@ -11,8 +11,10 @@ import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
+import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
@@ -47,6 +49,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
     /** Province Dao. */
     @Autowired
     private IProvinceDao provinceDao;
+    /** Counter Dao. */
+    @Autowired
+    private ICounterDao counterDao;
 
     /** {@inheritDoc} */
     @Override
@@ -81,32 +86,38 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setMsgFormat(MSG_MISSING_PARAMETER)
                 .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_TYPE)
                 .setParams(METHOD_LAND_LOOTING));
-        failIfEmpty(new AbstractService.CheckForThrow<String>()
-                .setTest(request.getRequest().getProvince())
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest().getIdStack())
                 .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_LOOTING));
-        String provinceName = request.getRequest().getProvince();
-        AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceName);
+        StackEntity stack = game.getStacks().stream()
+                .filter(s -> Objects.equals(request.getRequest().getIdStack(), s.getId()))
+                .findAny()
+                .orElse(null);
         failIfNull(new AbstractService.CheckForThrow<>()
-                .setTest(province)
+                .setTest(stack)
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_LOOTING));
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(stack.getProvince());
 
-        // TODO check province not already looted. Maybe add a MovePhase.PILLAGING to the stack ?
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(stack.getMovePhase() == MovePhaseEnum.LOOTING)
+                .setCodeError(IConstantsServiceException.LAND_LOOTING_TWICE)
+                .setMsgFormat("{1}: {0} The stack of id {2} has already looted.")
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_LOOTING, stack.getId()));
 
-        // TODO later implement looting for minor countries
-        boolean hasStack = game.getStacks().stream()
-                .anyMatch(stack -> StringUtils.equals(country.getName(), stack.getCountry()) && StringUtils.equals(provinceName, stack.getProvince()));
-        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                .setTest(hasStack)
-                .setCodeError(IConstantsServiceException.LAND_LOOTING_NO_STACK)
-                .setMsgFormat("{1}: {0} You must own a stack in the province {2] to loot it.")
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
-                .setParams(METHOD_LAND_LOOTING));
+        List<String> patrons = counterDao.getPatrons(stack.getCountry(), game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_LAND_LOOTING, country.getName(), patrons));
 
         List<String> enemies = oeUtil.getEnemies(country, game);
         String owner = oeUtil.getOwner(province, game);
@@ -129,6 +140,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
             default:
                 diffs = new ArrayList<>();
         }
+        stack.setMovePhase(MovePhaseEnum.LOOTING);
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.LOOTING)));
 
         return createDiffs(diffs, gameDiffs, request);
     }

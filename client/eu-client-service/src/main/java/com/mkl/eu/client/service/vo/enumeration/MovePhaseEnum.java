@@ -17,7 +17,9 @@ public enum MovePhaseEnum {
     /** Has moved and will siege at the end of the round. */
     BESIEGING(true),
     /** Has not moved and will siege at the end of the round. */
-    STILL_BESIEGING(false);
+    STILL_BESIEGING(false),
+    /** Is looting during the interphase. */
+    LOOTING(false);
 
     /** Flag to say if it has finished moving. */
     private boolean moved;
