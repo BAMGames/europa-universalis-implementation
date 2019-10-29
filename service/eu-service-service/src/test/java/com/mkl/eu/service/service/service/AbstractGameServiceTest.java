@@ -278,17 +278,7 @@ public abstract class AbstractGameServiceTest {
     }
 
     private GameStatusEnum getOrderStatus(GameStatusEnum status) {
-        switch (status) {
-            case MILITARY_CAMPAIGN:
-            case MILITARY_SUPPLY:
-            case MILITARY_MOVE:
-            case MILITARY_BATTLES:
-            case MILITARY_SIEGES:
-            case MILITARY_NEUTRALS:
-                return GameStatusEnum.MILITARY_MOVE;
-            default:
-                return status;
-        }
+        return GameStatusEnum.MILITARY_MOVE;
     }
 
     protected interface IServiceWithCheckGame<V> {

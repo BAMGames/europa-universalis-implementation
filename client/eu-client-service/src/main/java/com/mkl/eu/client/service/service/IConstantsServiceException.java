@@ -1051,6 +1051,20 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when trying to loot with a stack that cannot loot.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_LOOTING_INVALID_STACK = "exception.eu.military.land_looting_invalid_stack";
+
+    /**
+     * <p>
      * Exception thrown when trying to loot a province twice with the same stack.
      * </p>
      * <p>
@@ -1072,6 +1086,7 @@ public interface IConstantsServiceException {
      * <ul>
      * <li>0: Action being performed (or object being updated).</li>
      * <li>1: name of the target province.</li>
+     * <li>2: name of the current owner of the province.</li>
      * </ul>
      * </p>
      */

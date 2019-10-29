@@ -28,6 +28,8 @@ import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,8 @@ import java.util.stream.Collectors;
  *
  * @author MKL.
  */
+@Service
+@Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class InterPhaseServiceImpl extends AbstractService implements IInterPhaseService {
     /** Counter Domain. */
     @Autowired
@@ -101,14 +105,21 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                 .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
-                .setParams(METHOD_LAND_LOOTING));
+                .setParams(METHOD_LAND_LOOTING, request.getRequest().getIdStack()));
+        boolean canLootWithStack = oeUtil.isMobile(stack);
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(canLootWithStack)
+                .setCodeError(IConstantsServiceException.LAND_LOOTING_INVALID_STACK)
+                .setMsgFormat("{1}: {0} The stack of id {2} cannot loot.")
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_LOOTING, request.getRequest().getIdStack()));
         AbstractProvinceEntity province = provinceDao.getProvinceByName(stack.getProvince());
 
         failIfTrue(new CheckForThrow<Boolean>()
                 .setTest(stack.getMovePhase() == MovePhaseEnum.LOOTING)
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_TWICE)
                 .setMsgFormat("{1}: {0} The stack of id {2} has already looted.")
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_ID_STACK)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_LOOTING, stack.getId()));
 
         List<String> patrons = counterDao.getPatrons(stack.getCountry(), game.getId());
@@ -116,7 +127,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setTest(patrons.contains(country.getName()))
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT)
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_ID_COUNTRY)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_LOOTING, country.getName(), patrons));
 
         List<String> enemies = oeUtil.getEnemies(country, game);
@@ -125,9 +136,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(enemies.contains(owner))
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_NOT_ENEMY)
-                .setMsgFormat("{1}: {0} You must loot a province that is owned by one of your enemy. Current owner is {2}.")
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
-                .setParams(METHOD_LAND_LOOTING));
+                .setMsgFormat("{1}: {0} You must loot a province that is owned by one of your enemy. Current owner of {2} is {3}.")
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_LOOTING, province.getName(), owner));
 
         List<DiffEntity> diffs;
         switch (request.getRequest().getType()) {
@@ -174,8 +185,8 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setTest(canLoot)
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_INSUFFICIENT_FORCES)
                 .setMsgFormat("{1}: {0} You do not has enough forces to loot province {2}.")
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
-                .setParams(METHOD_LAND_LOOTING));
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_LOOTING, province.getName()));
 
         List<CounterEntity> existingPillages = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(province.getName(), stack.getProvince()))
@@ -254,7 +265,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_BURN_TP_NO_TP)
                 .setMsgFormat("{1}: {0} There must exist an enemy trading post in order to burn it in {2}.")
                 .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
-                .setParams(METHOD_LAND_LOOTING));
+                .setParams(METHOD_LAND_LOOTING, province.getName()));
 
         List<String> allies = oeUtil.getAllies(country, game);
         String controller = oeUtil.getController(province, game);
@@ -264,7 +275,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_BURN_TP_NO_CONTROL)
                 .setMsgFormat("{1}: {0} You have to control the trading post in {2} to burn it.")
                 .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
-                .setParams(METHOD_LAND_LOOTING));
+                .setParams(METHOD_LAND_LOOTING, province.getName()));
 
         List<DiffEntity> diffs = new ArrayList<>();
 

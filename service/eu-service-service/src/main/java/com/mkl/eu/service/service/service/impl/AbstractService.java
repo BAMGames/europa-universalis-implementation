@@ -320,6 +320,7 @@ public abstract class AbstractService implements INameConstants {
             case MILITARY_BATTLES:
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
+            case REDEPLOYMENT:
                 failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                         .setTest(isPhasingPlayer(game, idCountry))
                         .setCodeError(IConstantsServiceException.INVALID_STATUS)
