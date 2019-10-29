@@ -143,7 +143,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         List<DiffEntity> diffs;
         switch (request.getRequest().getType()) {
             case PILLAGE:
-                diffs = pillageLand(province, country, game);
+                diffs = pillageLand(province, country, StringUtils.equals(stack.getCountry(), country.getName()), game);
                 break;
             case BURN_TP:
                 diffs = burnTradingPost(province, country, game);
@@ -163,11 +163,12 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
      *
      * @param province the province to be pillaged.
      * @param country  the country pillaging the province.
+     * @param major    if the stack looting the province is led by a major.
      * @param game     the game.
      * @return the diffs involved.
      * @throws FunctionalException functional exception.
      */
-    private List<DiffEntity> pillageLand(AbstractProvinceEntity province, PlayableCountryEntity country, GameEntity game) throws FunctionalException {
+    private List<DiffEntity> pillageLand(AbstractProvinceEntity province, PlayableCountryEntity country, boolean major, GameEntity game) throws FunctionalException {
         List<String> allies = oeUtil.getAllies(country, game);
         String controller = oeUtil.getController(province, game);
 
@@ -198,31 +199,33 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .findAny()
                 .orElse(null);
 
-        int landIncome = 0;
-        if (province instanceof EuropeanProvinceEntity) {
-            landIncome = ((EuropeanProvinceEntity) province).getIncome();
-        } else if (province instanceof RotwProvinceEntity) {
-            RegionEntity region = provinceDao.getRegionByName(((RotwProvinceEntity) province).getRegion());
-            boolean hasArmy = game.getStacks().stream()
-                    .filter(stack -> StringUtils.equals(country.getName(), stack.getCountry()) && StringUtils.equals(province.getName(), stack.getProvince()))
-                    .flatMap(stack -> stack.getCounters().stream())
-                    .anyMatch(counter -> CounterUtil.isArmyCounter(counter.getType()));
-            if (hasArmy) {
-                landIncome = region.getIncome();
-            } else {
-                landIncome = region.getIncome() / 2;
-            }
-        }
         List<DiffEntity> diffs = new ArrayList<>();
-        if (existingPillages.isEmpty() && landIncome > 0) {
-            EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
-                    .filter(ecoSheet -> Objects.equals(ecoSheet.getTurn(), game.getTurn()))
-                    .findAny()
-                    .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_ENTITY, MSG_MISSING_ENTITY,
-                            "EconomicalSheetEntity", "country : " + country.getId() + " - turn : " + game.getTurn()));
-            sheet.setPillages(sheet.getPillages() + landIncome);
-            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PILLAGE, sheet.getPillages())));
+        if (major) {
+            int landIncome = 0;
+            if (province instanceof EuropeanProvinceEntity) {
+                landIncome = ((EuropeanProvinceEntity) province).getIncome();
+            } else if (province instanceof RotwProvinceEntity) {
+                RegionEntity region = provinceDao.getRegionByName(((RotwProvinceEntity) province).getRegion());
+                boolean hasArmy = game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(country.getName(), stack.getCountry()) && StringUtils.equals(province.getName(), stack.getProvince()))
+                        .flatMap(stack -> stack.getCounters().stream())
+                        .anyMatch(counter -> CounterUtil.isArmyCounter(counter.getType()));
+                if (hasArmy) {
+                    landIncome = region.getIncome();
+                } else {
+                    landIncome = region.getIncome() / 2;
+                }
+            }
+            if (existingPillages.isEmpty() && landIncome > 0) {
+                EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                        .filter(ecoSheet -> Objects.equals(ecoSheet.getTurn(), game.getTurn()))
+                        .findAny()
+                        .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_ENTITY, MSG_MISSING_ENTITY,
+                                "EconomicalSheetEntity", "country : " + country.getId() + " - turn : " + game.getTurn()));
+                sheet.setPillages(sheet.getPillages() + landIncome);
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PILLAGE, sheet.getPillages())));
+            }
         }
 
         if (existingPillages.size() <= 1) {
@@ -264,7 +267,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setTest(tradingPost)
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_BURN_TP_NO_TP)
                 .setMsgFormat("{1}: {0} There must exist an enemy trading post in order to burn it in {2}.")
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_LOOTING, province.getName()));
 
         List<String> allies = oeUtil.getAllies(country, game);
@@ -274,7 +277,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setTest(allies.contains(controller))
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_BURN_TP_NO_CONTROL)
                 .setMsgFormat("{1}: {0} You have to control the trading post in {2} to burn it.")
-                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_LOOTING, province.getName()));
 
         List<DiffEntity> diffs = new ArrayList<>();
