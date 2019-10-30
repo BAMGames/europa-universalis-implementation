@@ -550,6 +550,41 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.REDEPLOYMENT)));
         // set the order of position 0 active
         diffs.add(changeActivePlayers(0, game));
+        diffs.addAll(adjustPillages(game));
+
+        return diffs;
+    }
+
+    /**
+     * Remove one pillage from each province.
+     *
+     * @param game the game.
+     * @return the diffs involved.
+     */
+    private List<DiffEntity> adjustPillages(GameEntity game) {
+        Map<String, List<CounterEntity>> pillagesPerProvince = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.PILLAGE_MINUS || counter.getType() == CounterFaceTypeEnum.PILLAGE_PLUS)
+                .collect(Collectors.groupingBy(counter -> counter.getOwner().getProvince()));
+
+        List<DiffEntity> diffs = new ArrayList<>();
+        for (List<CounterEntity> pillages : pillagesPerProvince.values()) {
+            CounterEntity pillageMinus = pillages.stream()
+                    .filter(counter -> counter.getType() == CounterFaceTypeEnum.PILLAGE_MINUS)
+                    .findAny()
+                    .orElse(null);
+            if (pillageMinus != null) {
+                diffs.add(counterDomain.removeCounter(pillageMinus.getId(), game));
+            } else {
+                CounterEntity pillagePlus = pillages.stream()
+                        .filter(counter -> counter.getType() == CounterFaceTypeEnum.PILLAGE_PLUS)
+                        .findAny()
+                        .orElse(null);
+                if (pillagePlus != null) {
+                    diffs.add(counterDomain.switchCounter(pillagePlus.getId(), CounterFaceTypeEnum.PILLAGE_MINUS, null, game));
+                }
+            }
+        }
 
         return diffs;
     }

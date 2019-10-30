@@ -7,9 +7,7 @@ import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.vo.diff.Diff;
-import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
@@ -23,10 +21,12 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.util.DiffUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
@@ -408,5 +408,16 @@ public abstract class AbstractGameServiceTest {
                 .map(DiffAttributesEntity::getValue)
                 .findAny()
                 .orElse(null);
+    }
+
+    public static Answer<?> removeCounterAnswer() {
+        return invocation -> DiffUtil.createDiff(invocation.getArgumentAt(1, GameEntity.class), DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER,
+                invocation.getArgumentAt(0, Long.class));
+    }
+
+    public static Answer<?> switchCounterAnswer() {
+        return invocation -> DiffUtil.createDiff(invocation.getArgumentAt(3, GameEntity.class), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER,
+                invocation.getArgumentAt(0, Long.class),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocation.getArgumentAt(1, CounterFaceTypeEnum.class)));
     }
 }

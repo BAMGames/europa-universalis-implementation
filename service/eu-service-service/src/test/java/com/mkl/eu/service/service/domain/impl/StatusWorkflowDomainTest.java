@@ -29,10 +29,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.List;
+import java.util.Objects;
 
-import static com.mkl.eu.service.service.service.AbstractGameServiceTest.getAttribute;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
+import static com.mkl.eu.service.service.service.AbstractGameServiceTest.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -1145,14 +1145,39 @@ public class StatusWorkflowDomainTest {
     @Test
     public void testEndRound() {
         GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.PILLAGE_MINUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("orleans");
+        stack.getCounters().add(createCounter(2L, null, CounterFaceTypeEnum.PILLAGE_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("picardie");
+        stack.getCounters().add(createCounter(3L, null, CounterFaceTypeEnum.PILLAGE_PLUS, stack));
+        stack.getCounters().add(createCounter(4L, null, CounterFaceTypeEnum.PILLAGE_MINUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("vendee");
+        stack.getCounters().add(createCounter(5L, null, CounterFaceTypeEnum.PILLAGE_MINUS, stack));
+        stack.getCounters().add(createCounter(6L, null, CounterFaceTypeEnum.PILLAGE_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("auvergne");
+        stack.getCounters().add(createCounter(7L, null, CounterFaceTypeEnum.REVOLT_MINUS, stack));
+        game.getStacks().add(stack);
+
 
         DiffEntity end = new DiffEntity();
         end.setId(1L);
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game)).thenReturn(end);
+        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(removeCounterAnswer());
+        when(counterDomain.switchCounter(anyLong(), any(), anyInt(), any())).thenAnswer(switchCounterAnswer());
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
 
-        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(7, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d == end)
                 .findAny()
@@ -1165,6 +1190,26 @@ public class StatusWorkflowDomainTest {
         Assert.assertNotNull(diff);
         diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(1L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(2L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(4L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(5L, d.getIdObject()))
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);

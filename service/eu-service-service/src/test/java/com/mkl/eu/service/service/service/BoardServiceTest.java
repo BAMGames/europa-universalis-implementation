@@ -10,8 +10,8 @@ import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
-import com.mkl.eu.service.service.domain.impl.StatusWorkflowDomainImpl;
+import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -60,10 +60,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     private BoardServiceImpl boardService;
 
     @Mock
-    private CounterDomainImpl counterDomain;
+    private ICounterDomain counterDomain;
 
     @Mock
-    private StatusWorkflowDomainImpl statusWorkflowDomain;
+    private IStatusWorkflowDomain statusWorkflowDomain;
 
     @Mock
     private IProvinceDao provinceDao;

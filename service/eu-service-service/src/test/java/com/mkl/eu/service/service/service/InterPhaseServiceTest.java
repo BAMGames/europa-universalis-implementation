@@ -6,8 +6,8 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
-import com.mkl.eu.service.service.domain.impl.StatusWorkflowDomainImpl;
+import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
@@ -47,10 +47,10 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
     private InterPhaseServiceImpl interPhaseService;
 
     @Mock
-    private CounterDomainImpl counterDomain;
+    private ICounterDomain counterDomain;
 
     @Mock
-    private StatusWorkflowDomainImpl statusWorkflowDomain;
+    private IStatusWorkflowDomain statusWorkflowDomain;
 
     @Mock
     private IProvinceDao provinceDao;
