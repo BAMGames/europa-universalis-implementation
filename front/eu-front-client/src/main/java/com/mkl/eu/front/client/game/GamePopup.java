@@ -897,10 +897,14 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         } else if (attribute != null && StringUtils.equals(attribute.getValue(), MovePhaseEnum.NOT_MOVED.name())) {
             // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.
             game.getStacks().stream()
-                    .filter(stack1 -> stack1.getMovePhase() == MovePhaseEnum.MOVED)
+                    .filter(stack1 -> stack1.getMovePhase() != null)
                     .forEach(stack1 -> {
                         stack1.setMove(0);
-                        stack1.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                        if (stack1.getMovePhase().isBesieging()) {
+                            stack1.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
+                        } else {
+                            stack1.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                        }
                     });
         }
     }

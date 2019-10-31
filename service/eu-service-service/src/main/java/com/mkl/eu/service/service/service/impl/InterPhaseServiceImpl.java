@@ -143,7 +143,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         List<DiffEntity> diffs;
         switch (request.getRequest().getType()) {
             case PILLAGE:
-                diffs = pillageLand(province, country, StringUtils.equals(stack.getCountry(), country.getName()), game);
+                diffs = pillageLand(province, country, stack, game);
                 break;
             case BURN_TP:
                 diffs = burnTradingPost(province, country, game);
@@ -151,9 +151,11 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
             default:
                 diffs = new ArrayList<>();
         }
-        stack.setMovePhase(MovePhaseEnum.LOOTING);
+        if (stack.getMovePhase() != MovePhaseEnum.LOOTING_BESIEGING) {
+            stack.setMovePhase(MovePhaseEnum.LOOTING);
+        }
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.LOOTING)));
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, stack.getMovePhase())));
 
         return createDiffs(diffs, gameDiffs, request);
     }
@@ -161,14 +163,14 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
     /**
      * Pillage a land province.
      *
-     * @param province the province to be pillaged.
-     * @param country  the country pillaging the province.
-     * @param major    if the stack looting the province is led by a major.
-     * @param game     the game.
+     * @param province     the province to be pillaged.
+     * @param country      the country pillaging the province.
+     * @param pillageStack the stack pillaging.
+     * @param game         the game.
      * @return the diffs involved.
      * @throws FunctionalException functional exception.
      */
-    private List<DiffEntity> pillageLand(AbstractProvinceEntity province, PlayableCountryEntity country, boolean major, GameEntity game) throws FunctionalException {
+    private List<DiffEntity> pillageLand(AbstractProvinceEntity province, PlayableCountryEntity country, StackEntity pillageStack, GameEntity game) throws FunctionalException {
         List<String> allies = oeUtil.getAllies(country, game);
         String controller = oeUtil.getController(province, game);
 
@@ -180,6 +182,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                     .filter(counter -> allies.contains(counter.getCountry()))
                     .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
             canLoot = size >= oeUtil.getFortressLevel(province, game);
+            pillageStack.setMovePhase(MovePhaseEnum.LOOTING_BESIEGING);
         }
 
         failIfFalse(new AbstractService.CheckForThrow<Boolean>()
@@ -200,7 +203,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .orElse(null);
 
         List<DiffEntity> diffs = new ArrayList<>();
-        if (major) {
+        if (StringUtils.equals(pillageStack.getCountry(), country.getName())) {
             int landIncome = 0;
             if (province instanceof EuropeanProvinceEntity) {
                 landIncome = ((EuropeanProvinceEntity) province).getIncome();

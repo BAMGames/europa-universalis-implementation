@@ -77,7 +77,7 @@ public final class MenuHelper {
                     container.callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing battle.")));
         }
         if (province.getStacks().stream()
-                .anyMatch(stack -> stack.getStack().getMovePhase() == MovePhaseEnum.BESIEGING || stack.getStack().getMovePhase() == MovePhaseEnum.STILL_BESIEGING)) {
+                .anyMatch(stack -> stack.getStack().getMovePhase().isBesieging())) {
             menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.province.choose_siege"),
                     container.callServiceAsEvent(siegeService::chooseSiege, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing siege.")));
         }

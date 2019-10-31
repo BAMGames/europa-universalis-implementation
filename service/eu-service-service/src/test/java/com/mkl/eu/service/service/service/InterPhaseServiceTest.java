@@ -261,11 +261,25 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
                 .thenExpect(LandLootingResultBuilder.create().removeTp());
     }
 
+    @Test
+    public void testLandLootingBesieging() throws FunctionalException {
+        LandLootingBuilder.create().type(LandLootTypeEnum.PILLAGE).income(10).besieging()
+                .whenLandLooting(interPhaseService, this)
+                .thenExpect(LandLootingResultBuilder.create().income(10).addPillage().stillBesieging());
+        LandLootingBuilder.create().type(LandLootTypeEnum.PILLAGE).income(10).rotw().besieging()
+                .whenLandLooting(interPhaseService, this)
+                .thenExpect(LandLootingResultBuilder.create().income(5).addPillage().stillBesieging());
+        LandLootingBuilder.create().type(LandLootTypeEnum.PILLAGE).income(10).minor().besieging()
+                .whenLandLooting(interPhaseService, this)
+                .thenExpect(LandLootingResultBuilder.create().addPillage().stillBesieging());
+    }
+
     static class LandLootingBuilder {
         LandLootTypeEnum type;
         boolean rotw;
         boolean army;
         boolean minor;
+        boolean besieging;
         int income;
         List<CounterFaceTypeEnum> pillages = new ArrayList<>();
         List<DiffEntity> diffs;
@@ -291,6 +305,11 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
         LandLootingBuilder minor() {
             this.minor = true;
+            return this;
+        }
+
+        LandLootingBuilder besieging() {
+            this.besieging = true;
             return this;
         }
 
@@ -366,7 +385,11 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             when(testClass.oeUtil.getAllies(country, game)).thenReturn(Collections.singletonList("france"));
             when(testClass.oeUtil.getEnemies(country, game)).thenReturn(Collections.singletonList("spain"));
             when(testClass.oeUtil.getOwner(pecs, game)).thenReturn("spain");
-            when(testClass.oeUtil.getController(pecs, game)).thenReturn("france");
+            if (besieging) {
+                when(testClass.oeUtil.getController(pecs, game)).thenReturn("spain");
+            } else {
+                when(testClass.oeUtil.getController(pecs, game)).thenReturn("france");
+            }
             when(testClass.counterDomain.createCounter(CounterFaceTypeEnum.PILLAGE_PLUS, null, pillages.isEmpty() ? null : 15L, game))
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER));
             when(testClass.counterDomain.switchCounter(anyLong(), any(), anyInt(), any()))
@@ -392,7 +415,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
                     .orElse(null);
             Assert.assertNotNull("The stack should have been modified but was not.", diff);
             Assert.assertEquals("The wrong stack was modified.", 4L, diff.getIdObject().longValue());
-            Assert.assertEquals("The stack was wrongly modified.", MovePhaseEnum.LOOTING.name(), getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+            Assert.assertEquals("The stack was wrongly modified.", result.movePhase.name(), getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
 
             diff = diffs.stream()
                     .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET)
@@ -443,6 +466,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
     }
 
     static class LandLootingResultBuilder {
+        MovePhaseEnum movePhase = MovePhaseEnum.LOOTING;
         int income;
         boolean addPillage;
         boolean switchPillage;
@@ -450,6 +474,11 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
         static LandLootingResultBuilder create() {
             return new LandLootingResultBuilder();
+        }
+
+        LandLootingResultBuilder stillBesieging() {
+            this.movePhase = MovePhaseEnum.LOOTING_BESIEGING;
+            return this;
         }
 
         LandLootingResultBuilder income(int income) {

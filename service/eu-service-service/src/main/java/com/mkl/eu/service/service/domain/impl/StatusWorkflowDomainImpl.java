@@ -282,7 +282,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             // There is no other country. If we are in move phase, check siege
             if (game.getStatus() == GameStatusEnum.MILITARY_MOVE || game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
                 List<String> provincesAtSiege = game.getStacks().stream()
-                        .filter(s -> s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING)
+                        .filter(s -> s.getMovePhase().isBesieging())
                         .map(StackEntity::getProvince)
                         .distinct()
                         .collect(Collectors.toList());
@@ -301,7 +301,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                         siege.setGame(game);
 
                         List<CounterEntity> besiegingCounters = game.getStacks().stream()
-                                .filter(s -> (s.getMovePhase() == MovePhaseEnum.BESIEGING || s.getMovePhase() == MovePhaseEnum.STILL_BESIEGING) && StringUtils.equals(province, s.getProvince()))
+                                .filter(s -> (s.getMovePhase().isBesieging()) && StringUtils.equals(province, s.getProvince()))
                                 .flatMap(s -> s.getCounters().stream())
                                 .collect(Collectors.toList());
                         List<CounterEntity> besiegedCounters = game.getStacks().stream()
@@ -512,12 +512,15 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
 
         // Stacks move phase reset
-        // FIXME handle besieging and besieged stacks
         game.getStacks().stream()
-                .filter(stack -> stack.getMovePhase() == MovePhaseEnum.MOVED)
+                .filter(stack -> stack.getMovePhase() != null)
                 .forEach(stack -> {
                     stack.setMove(0);
-                    stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                    if (stack.getMovePhase().isBesieging()) {
+                        stack.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
+                    } else {
+                        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                    }
                 });
 
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
