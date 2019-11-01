@@ -50,4 +50,12 @@ public interface IStatusWorkflowDomain {
      * @return the diffs related to the change of round.
      */
     List<DiffEntity> nextRound(GameEntity game);
+
+    /**
+     * Method to call at the end of the redeployment phase of a group of playing countries.
+     *
+     * @param game the game.
+     * @return the diff corresponding to the switch of the next phase.
+     */
+    List<DiffEntity> endRedeploymentPhase(GameEntity game);
 }

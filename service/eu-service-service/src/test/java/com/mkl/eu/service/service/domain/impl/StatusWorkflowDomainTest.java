@@ -1683,4 +1683,87 @@ public class StatusWorkflowDomainTest {
             return this;
         }
     }
+
+    @Test
+    public void testEndRedeploymentPhaseToNextPlayer() {
+        GameEntity game = new GameEntity();
+        game.setStatus(GameStatusEnum.REDEPLOYMENT);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity turkey = new PlayableCountryEntity();
+        turkey.setName("turkey");
+        game.getCountries().add(turkey);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(0);
+        order.setCountry(france);
+        order.setActive(true);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(0);
+        order.setCountry(turkey);
+        order.setActive(true);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(1);
+        order.setCountry(spain);
+        game.getOrders().add(order);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
+
+        Assert.assertEquals(GameStatusEnum.REDEPLOYMENT, game.getStatus());
+        Assert.assertEquals(1, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                .findAny()
+                .orElse(null);
+        Assert.assertEquals("1", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+    }
+
+    @Test
+    public void testEndRedeploymentPhaseToExchequer() {
+        GameEntity game = new GameEntity();
+        game.setStatus(GameStatusEnum.REDEPLOYMENT);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setName("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity turkey = new PlayableCountryEntity();
+        turkey.setName("turkey");
+        game.getCountries().add(turkey);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setName("spain");
+        game.getCountries().add(spain);
+        CountryOrderEntity order = new CountryOrderEntity();
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(0);
+        order.setCountry(france);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(0);
+        order.setCountry(turkey);
+        game.getOrders().add(order);
+        order = new CountryOrderEntity();
+        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
+        order.setPosition(1);
+        order.setActive(true);
+        order.setCountry(spain);
+        game.getOrders().add(order);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
+
+        Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
+        Assert.assertEquals(1, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+    }
 }

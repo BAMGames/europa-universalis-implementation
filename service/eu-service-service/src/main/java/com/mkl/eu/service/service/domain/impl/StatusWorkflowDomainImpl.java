@@ -591,4 +591,34 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
 
         return diffs;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DiffEntity> endRedeploymentPhase(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        int currentPosition = game.getOrders().stream()
+                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .map(CountryOrderEntity::getPosition)
+                .findFirst()
+                .orElse(Integer.MAX_VALUE);
+
+        Integer next = game.getOrders().stream()
+                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.getPosition() > currentPosition)
+                .map(CountryOrderEntity::getPosition)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+
+        if (next != null) {
+            diffs.add(changeActivePlayers(next, game));
+        } else {
+            // TODO exchequer
+            game.setStatus(GameStatusEnum.EXCHEQUER);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.EXCHEQUER)));
+        }
+
+        return diffs;
+    }
 }
