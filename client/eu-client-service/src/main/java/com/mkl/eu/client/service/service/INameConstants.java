@@ -142,6 +142,8 @@ public interface INameConstants {
     String PARAMETER_LAND_LOOTING = "landLooting";
     /** Name of the parameter landRedeploy. */
     String PARAMETER_LAND_REDEPLOY = "landRedeploy";
+    /** Name of the parameter validateRedeploy. */
+    String PARAMETER_VALIDATE_REDEPLOY = "validateRedeploy";
 
 
 
@@ -225,4 +227,6 @@ public interface INameConstants {
     String METHOD_LAND_LOOTING = "landLooting";
     /** Name of the method landRedeploy. */
     String METHOD_LAND_REDEPLOY = "landRedeploy";
+    /** Name of the parameter validateRedeploy. */
+    String METHOD_VALIDATE_REDEPLOY = "validateRedeploy";
 }

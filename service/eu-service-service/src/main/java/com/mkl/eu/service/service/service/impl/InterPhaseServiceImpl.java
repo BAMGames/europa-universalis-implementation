@@ -3,21 +3,25 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IInterPhaseService;
+import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
+import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
+import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
@@ -48,6 +52,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
     /** Counter Domain. */
     @Autowired
     private ICounterDomain counterDomain;
+    /** Status workflow domain. */
+    @Autowired
+    private IStatusWorkflowDomain statusWorkflowDomain;
     /** OeUtil. */
     @Autowired
     private IOEUtil oeUtil;
@@ -400,5 +407,85 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getId(), game)));
 
         return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse validateRedeploy(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_REDEPLOY)
+                .setParams(METHOD_VALIDATE_REDEPLOY));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_REDEPLOY, PARAMETER_VALIDATE_REDEPLOY);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.REDEPLOYMENT, request.getGame().getIdCountry(), METHOD_VALIDATE_REDEPLOY, PARAMETER_VALIDATE_REDEPLOY);
+
+        // TODO TG-2 Authorization
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_REQUEST)
+                .setParams(METHOD_VALIDATE_REDEPLOY));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getGame().getIdCountry())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_VALIDATE_REDEPLOY));
+
+        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getGame().getIdCountry()));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_VALIDATE_REDEPLOY, request.getGame().getIdCountry()));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_AUTHENT, PARAMETER_USERNAME)
+                .setParams(METHOD_VALIDATE_REDEPLOY, request.getAuthent().getUsername(), country.getUsername()));
+
+        CountryOrderEntity order = game.getOrders().stream()
+                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                        o.getCountry().getId().equals(country.getId()))
+                .findFirst()
+                .orElse(null);
+
+        List<DiffEntity> newDiffs = new ArrayList<>();
+
+        if (order != null && order.isReady() != request.getRequest().isValidate()) {
+            order.setReady(request.getRequest().isValidate());
+
+            long countriesNotReady = game.getOrders().stream()
+                    .filter(o -> o.isActive() &&
+                            o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
+                            !o.isReady())
+                    .count();
+
+            if (countriesNotReady == 0) {
+                newDiffs.addAll(statusWorkflowDomain.endRedeploymentPhase(game));
+            } else {
+                DiffTypeEnum type = DiffTypeEnum.INVALIDATE;
+                if (request.getRequest().isValidate()) {
+                    type = DiffTypeEnum.VALIDATE;
+                }
+                DiffEntity diff = DiffUtil.createDiff(game, type, DiffTypeObjectEnum.TURN_ORDER,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
+
+                newDiffs.add(diff);
+            }
+        }
+
+        return createDiffs(newDiffs, gameDiffs, request);
     }
 }
