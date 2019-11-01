@@ -3,7 +3,7 @@ package com.mkl.eu.client.service.service.military;
 import com.mkl.eu.client.service.vo.enumeration.LandLootTypeEnum;
 
 /**
- * Request for a service that needs only a province.
+ * Request for the landLooting service.
  *
  * @author MKL.
  */

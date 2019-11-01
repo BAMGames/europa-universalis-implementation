@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
+import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,5 +29,11 @@ public class InterPhaseWsServiceImpl extends SpringBeanAutowiringSupport impleme
     @Override
     public DiffResponse landLooting(Request<LandLootingRequest> request) throws FunctionalException, TechnicalException {
         return interPhaseService.landLooting(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse landRedeploy(Request<LandRedeployRequest> request) throws FunctionalException, TechnicalException {
+        return interPhaseService.landRedeploy(request);
     }
 }

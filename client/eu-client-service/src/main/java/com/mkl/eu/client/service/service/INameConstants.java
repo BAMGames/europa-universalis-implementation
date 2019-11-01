@@ -140,6 +140,8 @@ public interface INameConstants {
     String PARAMETER_UNIT = "unit";
     /** Name of the parameter landLooting. */
     String PARAMETER_LAND_LOOTING = "landLooting";
+    /** Name of the parameter landRedeploy. */
+    String PARAMETER_LAND_REDEPLOY = "landRedeploy";
 
 
 
@@ -221,4 +223,6 @@ public interface INameConstants {
     String METHOD_REDEPLOY = "redeploy";
     /** Name of the method landLooting. */
     String METHOD_LAND_LOOTING = "landLooting";
+    /** Name of the method landRedeploy. */
+    String METHOD_LAND_REDEPLOY = "landRedeploy";
 }

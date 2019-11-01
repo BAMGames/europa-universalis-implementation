@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
+import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
@@ -500,5 +501,202 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             this.removeTp = true;
             return this;
         }
+    }
+
+    @Test
+    public void testLandRedeployFail() {
+        Pair<Request<LandRedeployRequest>, GameEntity> pair = testCheckGame(interPhaseService::landRedeploy, "landRedeploy");
+        Request<LandRedeployRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setName("france");
+        country.setId(26L);
+        game.getCountries().add(country);
+        request.getGame().setIdCountry(26L);
+        testCheckStatus(pair.getRight(), request, interPhaseService::landRedeploy, "landRedeploy", GameStatusEnum.REDEPLOYMENT);
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because landRedeploy.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("landRedeploy.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new LandRedeployRequest());
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("landRedeploy.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("idf");
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because idStack is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("landRedeploy.request.idStack", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdStack(4L);
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because stack does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("landRedeploy.request.idStack", e.getParams()[0]);
+        }
+
+        StackEntity stack = new StackEntity();
+        stack.setId(4L);
+        stack.setCountry("france");
+        stack.setProvince("pecs");
+        stack.setMovePhase(MovePhaseEnum.LOOTING);
+        game.getStacks().add(stack);
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because stack is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_NOT_MOBILE, e.getCode());
+            Assert.assertEquals("landRedeploy.request.idStack", e.getParams()[0]);
+        }
+
+        when(oeUtil.isMobile(stack)).thenReturn(true);
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because stack does not belong to country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("landRedeploy.request.idStack", e.getParams()[0]);
+        }
+
+        when(counterDao.getPatrons(stack.getCountry(), game.getId())).thenReturn(Collections.singletonList(country.getName()));
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because province does not belong to an enemy");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.LAND_REDEPLOY_NOT_ENEMY, e.getCode());
+            Assert.assertEquals("landRedeploy.request.idStack", e.getParams()[0]);
+        }
+
+        when(oeUtil.getEnemies(country, game)).thenReturn(Collections.singletonList("spain"));
+        when(oeUtil.getController(pecs, game)).thenReturn("spain");
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("landRedeploy.request.province", e.getParams()[0]);
+        }
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("idf");
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+
+        try {
+            interPhaseService.landRedeploy(request);
+            Assert.fail("Should break because units cant redeploy in province");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.UNIT_CANT_REDEPLOY_PROVINCE, e.getCode());
+            Assert.assertEquals("landRedeploy.request.province", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testLandRedeploySuccessNoSiegeWork() throws FunctionalException {
+        testLandRedeploySuccess();
+    }
+
+    @Test
+    public void testLandRedeploySuccessWithSiegeWork() throws FunctionalException {
+        testLandRedeploySuccess(CounterFaceTypeEnum.SIEGEWORK_MINUS, CounterFaceTypeEnum.SIEGEWORK_PLUS);
+    }
+
+    @Test
+    public void testLandRedeploySuccessBordel() throws FunctionalException {
+        testLandRedeploySuccess(CounterFaceTypeEnum.SIEGEWORK_MINUS, CounterFaceTypeEnum.REVOLT_PLUS);
+    }
+
+    private void testLandRedeploySuccess(CounterFaceTypeEnum... siegeworks) throws FunctionalException {
+        Pair<Request<LandRedeployRequest>, GameEntity> pair = testCheckGame(interPhaseService::landRedeploy, "landRedeploy");
+        Request<LandRedeployRequest> request = pair.getLeft();
+        request.setRequest(new LandRedeployRequest());
+        request.getRequest().setProvince("idf");
+        request.getRequest().setIdStack(4L);
+        GameEntity game = pair.getRight();
+        StackEntity stack = new StackEntity();
+        stack.setId(4L);
+        stack.setCountry("france");
+        stack.setProvince("pecs");
+        stack.setMovePhase(MovePhaseEnum.LOOTING);
+        game.getStacks().add(stack);
+        StackEntity stackSiegeworks = new StackEntity();
+        stackSiegeworks.setId(3L);
+        stackSiegeworks.setProvince("milano");
+        stackSiegeworks.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stackSiegeworks));
+        game.getStacks().add(stackSiegeworks);
+        if (siegeworks != null && siegeworks.length > 0) {
+            stackSiegeworks = new StackEntity();
+            stackSiegeworks.setId(5L);
+            stackSiegeworks.setProvince("pecs");
+            for (CounterFaceTypeEnum siegework : siegeworks) {
+                stackSiegeworks.getCounters().add(createCounter(1L, null, siegework, stackSiegeworks));
+            }
+            game.getStacks().add(stackSiegeworks);
+        }
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setName("france");
+        country.setId(26L);
+        game.getCountries().add(country);
+        request.getGame().setIdCountry(26L);
+        testCheckStatus(pair.getRight(), request, interPhaseService::landRedeploy, "landRedeploy", GameStatusEnum.REDEPLOYMENT);
+
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("idf");
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(oeUtil.isMobile(stack)).thenReturn(true);
+        when(counterDao.getPatrons(stack.getCountry(), game.getId())).thenReturn(Collections.singletonList(country.getName()));
+        when(oeUtil.getEnemies(country, game)).thenReturn(Collections.singletonList("spain"));
+        when(oeUtil.getController(pecs, game)).thenReturn("spain");
+        when(oeUtil.canRetreat(idf, false, 0d, country, game)).thenReturn(true);
+        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(removeCounterAnswer());
+
+        simulateDiff();
+
+        interPhaseService.landRedeploy(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(4L, diff.getIdObject().longValue());
+        Assert.assertEquals("pecs", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+        long siegeworksRemoved = siegeworks == null ? 0 : Arrays.stream(siegeworks)
+                .filter(type -> type == CounterFaceTypeEnum.SIEGEWORK_MINUS || type == CounterFaceTypeEnum.SIEGEWORK_PLUS)
+                .count();
+        long diffsRemoved = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(1L, d.getIdObject()))
+                .count();
+        Assert.assertEquals(diffsRemoved, siegeworksRemoved);
     }
 }

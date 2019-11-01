@@ -7,6 +7,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
+import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -288,5 +289,116 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         diffs.add(counterDomain.removeCounter(tradingPost.getId(), game));
 
         return diffs;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse landRedeploy(Request<LandRedeployRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_LAND_REDEPLOY)
+                .setParams(METHOD_LAND_REDEPLOY));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_LAND_REDEPLOY, PARAMETER_LAND_REDEPLOY);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.REDEPLOYMENT, request.getGame().getIdCountry(), METHOD_LAND_REDEPLOY, PARAMETER_LAND_REDEPLOY);
+
+        // TODO TG-2 Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST)
+                .setParams(METHOD_LAND_REDEPLOY));
+        failIfEmpty(new AbstractService.CheckForThrow<String>()
+                .setTest(request.getRequest().getProvince())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setParams(METHOD_LAND_REDEPLOY));
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest().getIdStack())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_REDEPLOY));
+        StackEntity stack = game.getStacks().stream()
+                .filter(s -> Objects.equals(request.getRequest().getIdStack(), s.getId()))
+                .findAny()
+                .orElse(null);
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(stack)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_REDEPLOY, request.getRequest().getIdStack()));
+        boolean isMobile = oeUtil.isMobile(stack);
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(isMobile)
+                .setCodeError(IConstantsServiceException.STACK_NOT_MOBILE)
+                .setMsgFormat("{1}: {0} {2} Stack is not mobile.")
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_REDEPLOY, request.getRequest().getIdStack()));
+        AbstractProvinceEntity provinceFrom = provinceDao.getProvinceByName(stack.getProvince());
+
+        List<String> patrons = counterDao.getPatrons(stack.getCountry(), game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_REDEPLOY, country.getName(), patrons));
+
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        String controller = oeUtil.getController(provinceFrom, game);
+
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(enemies.contains(controller))
+                .setCodeError(IConstantsServiceException.LAND_REDEPLOY_NOT_ENEMY)
+                .setMsgFormat("{1}: {0} You must loot redeploy from a province that is controlled by one of your enemy. Current controller of {2} is {3}.")
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                .setParams(METHOD_LAND_REDEPLOY, provinceFrom.getName(), controller));
+
+        AbstractProvinceEntity provinceTo = provinceDao.getProvinceByName(request.getRequest().getProvince());
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(provinceTo)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setParams(METHOD_LAND_REDEPLOY, request.getRequest().getProvince()));
+
+        boolean canRedeploy = oeUtil.canRetreat(provinceTo, false, 0d, country, game);
+
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(canRedeploy)
+                .setCodeError(IConstantsServiceException.UNIT_CANT_REDEPLOY_PROVINCE)
+                .setMsgFormat("{1}: {0} Impossible to redeploy units in the province {2}.")
+                .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setParams(METHOD_CHOOSE_MODE, provinceTo.getName()));
+
+        // TODO TG-135 provinceTo should be closest friendly province in MP
+
+        List<DiffEntity> diffs = new ArrayList<>();
+        stack.setProvince(provinceTo.getName());
+        stack.setMovePhase(MovePhaseEnum.MOVED);
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, provinceFrom.getName()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo.getName()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+        game.getStacks().stream()
+                .filter(s -> StringUtils.equals(provinceFrom.getName(), s.getProvince()))
+                .flatMap(s -> s.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS)
+                .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getId(), game)));
+
+        return createDiffs(diffs, gameDiffs, request);
     }
 }

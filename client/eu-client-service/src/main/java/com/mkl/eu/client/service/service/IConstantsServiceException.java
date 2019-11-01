@@ -1133,4 +1133,19 @@ public interface IConstantsServiceException {
      * </p>
      */
     String LAND_LOOTING_BURN_TP_NO_CONTROL = "exception.eu.military.land_looting_burn_tp_no_control";
+
+    /**
+     * <p>
+     * Exception thrown when trying to redeploy from a province that is not controlled by an enemy.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: name of the target province.</li>
+     * <li>2: name of the current owner of the province.</li>
+     * </ul>
+     * </p>
+     */
+    String LAND_REDEPLOY_NOT_ENEMY = "exception.eu.military.land_redeploy_not_enemy";
 }
