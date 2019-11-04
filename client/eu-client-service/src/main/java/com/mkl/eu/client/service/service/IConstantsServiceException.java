@@ -1148,4 +1148,18 @@ public interface IConstantsServiceException {
      * </p>
      */
     String LAND_REDEPLOY_NOT_ENEMY = "exception.eu.military.land_redeploy_not_enemy";
+
+    /**
+     * <p>
+     * Exception thrown when trying to validate redeployment while there are still some forces redeployment pending.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: List of provinces where a redeployment is forced.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_MUST_REDEPLOY = "exception.eu.military.stack_must_redeploy";
 }

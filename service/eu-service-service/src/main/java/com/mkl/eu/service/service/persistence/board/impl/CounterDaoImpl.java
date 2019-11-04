@@ -96,6 +96,36 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
     /** {@inheritDoc} */
     @Override
+    public List<String> getMinors(String country, Long idGame) {
+        Criteria criteria = getSession().createCriteria(CounterEntity.class);
+
+        criteria.add(Restrictions.or(Restrictions.eq("type", CounterFaceTypeEnum.DIPLOMACY), Restrictions.eq("type", CounterFaceTypeEnum.DIPLOMACY_WAR)));
+        criteria.add(Restrictions.like("owner.province", "B_DE_" + country + "%"));
+
+        Criteria criteriaStack = criteria.createCriteria("owner", "owner");
+        criteriaStack.add(Restrictions.eq("game.id", idGame));
+
+        List<CounterEntity> counters = criteria.list();
+        List<String> countries = counters.stream()
+                .map(CounterEntity::getCountry)
+                .collect(Collectors.toList());
+
+        criteria = getSession().createCriteria(CounterEntity.class);
+
+        criteria.add(Restrictions.or(Restrictions.eq("type", CounterFaceTypeEnum.ROTW_RELATION), Restrictions.eq("type", CounterFaceTypeEnum.ROTW_ALLIANCE)));
+        criteria.add(Restrictions.eq("country", country));
+
+        counters = criteria.list();
+        countries.addAll(counters.stream()
+                .map(counter -> counter.getOwner().getProvince())
+                .map(prov -> prov.substring(5))
+                .collect(Collectors.toList()));
+
+        return countries;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<String> getVassals(String country, Long idGame) {
         List<String> countries = new ArrayList<>();
         Criteria criteria = getSession().createCriteria(CounterEntity.class);

@@ -77,6 +77,25 @@ public class CounterDaoImplTest {
     }
 
     @Test
+    public void testGetMinors() {
+        List<String> minors = counterDao.getMinors("france", 1L);
+        Assert.assertEquals(2, minors.size());
+        Assert.assertTrue(minors.contains("sancta sedes"));
+        Assert.assertTrue(minors.contains("iroquois"));
+
+        minors = counterDao.getMinors("angleterre", 1L);
+        Assert.assertEquals(1, minors.size());
+        Assert.assertTrue(minors.contains("iroquois"));
+
+        minors = counterDao.getMinors("espagne", 1L);
+        Assert.assertEquals(0, minors.size());
+
+        minors = counterDao.getMinors("espagne", 2L);
+        Assert.assertEquals(1, minors.size());
+        Assert.assertTrue(minors.contains("sancta sedes"));
+    }
+
+    @Test
     public void testGetVassals() {
         Assert.assertEquals(0, counterDao.getVassals("france", 1L).size());
         Assert.assertEquals(0, counterDao.getVassals("espagne", 2L).size());

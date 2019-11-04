@@ -436,7 +436,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setTest(request.getGame().getIdCountry())
                 .setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER)
-                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_ID_COUNTRY)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_GAME, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_VALIDATE_REDEPLOY));
 
         PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getGame().getIdCountry()));
@@ -444,7 +444,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(country).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
-                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_ID_COUNTRY)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_GAME, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_VALIDATE_REDEPLOY, request.getGame().getIdCountry()));
 
         failIfFalse(new CheckForThrow<Boolean>()
@@ -453,6 +453,55 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setMsgFormat(MSG_ACCESS_RIGHT)
                 .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_AUTHENT, PARAMETER_USERNAME)
                 .setParams(METHOD_VALIDATE_REDEPLOY, request.getAuthent().getUsername(), country.getUsername()));
+
+        List<String> allies = oeUtil.getAllies(country, game);
+        List<String> minors = counterDao.getMinors(country.getName(), game.getId());
+
+        List<String> minorsAndSelf = minors.stream()
+                .filter(allies::contains)
+                .collect(Collectors.toList());
+        minorsAndSelf.add(country.getName());
+
+        List<String> besiegingProvinces = game.getStacks().stream()
+                .filter(stack -> stack.getMovePhase() != null && stack.getMovePhase().isBesieging()
+                        && minorsAndSelf.contains(stack.getCountry()))
+                .map(StackEntity::getProvince)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<String> mustRedeployProvinces = new ArrayList<>();
+        for (String provinceName : besiegingProvinces) {
+            AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceName);
+            int fortress = oeUtil.getFortressLevel(province, game);
+            double size = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(provinceName, stack.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> allies.contains(counter.getCountry()))
+                    .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
+            if (size < fortress) {
+                mustRedeployProvinces.add(provinceName);
+            } else {
+                boolean canStay = game.getStacks().stream()
+                        .filter(stack -> StringUtils.equals(provinceName, stack.getProvince()))
+                        .flatMap(stack -> stack.getCounters().stream())
+                        .anyMatch(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS);
+                if (!canStay) {
+                    canStay = game.getSieges().stream()
+                            .anyMatch(siege -> Objects.equals(game.getTurn(), siege.getTurn()) && StringUtils.equals(provinceName, siege.getProvince())
+                                    && siege.isBreach());
+                }
+                if (!canStay) {
+                    mustRedeployProvinces.add(provinceName);
+                }
+            }
+        }
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(mustRedeployProvinces.isEmpty())
+                .setCodeError(IConstantsServiceException.STACK_MUST_REDEPLOY)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                .setParams(METHOD_VALIDATE_REDEPLOY, mustRedeployProvinces));
 
         CountryOrderEntity order = game.getOrders().stream()
                 .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&

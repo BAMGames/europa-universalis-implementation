@@ -19,6 +19,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RegionEntity;
@@ -709,14 +710,16 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         Request<ValidateRequest> request = pair.getLeft();
         request.getGame().setIdCountry(26L);
         GameEntity game = pair.getRight();
+        game.setTurn(10);
 
         testCheckStatus(game, request, interPhaseService::validateRedeploy, "validateRedeploy", GameStatusEnum.REDEPLOYMENT);
 
         game.setTurn(22);
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setId(13L);
-        game.getCountries().get(0).setName("france");
-        game.getCountries().get(0).setUsername("MKL");
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(13L);
+        country.setName("france");
+        country.setUsername("MKL");
+        game.getCountries().add(country);
         request.setAuthent(new AuthentInfo());
         request.getAuthent().setUsername("toto");
 
@@ -735,7 +738,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             Assert.fail("Should break because request.request.idCountry is invalid");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
-            Assert.assertEquals("validateRedeploy.idCountry", e.getParams()[0]);
+            Assert.assertEquals("validateRedeploy.game.idCountry", e.getParams()[0]);
         }
 
         game.getCountries().get(0).setId(26L);
@@ -746,6 +749,92 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
             Assert.assertEquals("validateRedeploy.authent.username", e.getParams()[0]);
+        }
+
+        request.getAuthent().setUsername("MKL");
+
+        when(oeUtil.getAllies(country, game)).thenReturn(Arrays.asList("france", "turkey", "sabaudia", "genua"));
+        when(counterDao.getMinors(country.getName(), game.getId())).thenReturn(Arrays.asList("sabaudia", "corsica"));
+        when(oeUtil.getFortressLevel(any(), any())).thenReturn(3);
+        when(provinceDao.getProvinceByName(anyString())).thenReturn(new EuropeanProvinceEntity());
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.setCountry("france");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("milano");
+        stack.setCountry("genua");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("napoli");
+        stack.setCountry("sabaudia");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("andalucia");
+        stack.setCountry("corsica");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("ulm");
+        stack.setCountry("france");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        stack.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("ulm");
+        stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
+        game.getStacks().add(stack);
+        SiegeEntity siege = new SiegeEntity();
+        siege.setProvince("ulm");
+        siege.setTurn(game.getTurn() + 1);
+        siege.setBreach(true);
+        game.getSieges().add(siege);
+
+        stack = new StackEntity();
+        stack.setProvince("brandebourg");
+        stack.setCountry("france");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        stack.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("brandebourg");
+        stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("silesie");
+        stack.setCountry("france");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        stack.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("silesie");
+        stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
+        game.getStacks().add(stack);
+        siege = new SiegeEntity();
+        siege.setProvince("silesie");
+        siege.setTurn(game.getTurn());
+        siege.setBreach(true);
+        game.getSieges().add(siege);
+
+        try {
+            interPhaseService.validateRedeploy(request);
+            Assert.fail("Should break because there are still stack that must redeploy");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_MUST_REDEPLOY, e.getCode());
+            Assert.assertEquals("validateRedeploy.request.validate", e.getParams()[0]);
+            List<String> provinces = (List<String>) e.getParams()[2];
+            Collections.sort(provinces);
+            Assert.assertEquals(Arrays.asList("napoli", "pecs", "ulm"), provinces);
         }
     }
 
