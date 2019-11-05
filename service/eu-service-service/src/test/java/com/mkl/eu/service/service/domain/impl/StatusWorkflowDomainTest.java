@@ -64,22 +64,13 @@ public class StatusWorkflowDomainTest {
         game.setVersion(5L);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(0).setGameStatus(GameStatusEnum.DIPLOMACY);
         game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(1).setGameStatus(GameStatusEnum.MILITARY_MOVE);
         game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(2).setGameStatus(GameStatusEnum.DIPLOMACY);
-        game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(3).setGameStatus(GameStatusEnum.MILITARY_MOVE);
-        game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(4).setGameStatus(GameStatusEnum.DIPLOMACY);
-        game.getOrders().add(new CountryOrderEntity());
-        game.getOrders().get(5).setGameStatus(GameStatusEnum.MILITARY_MOVE);
 
         checkDiffsForMilitary(game);
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
-        Assert.assertEquals(3, game.getOrders().size());
+        Assert.assertEquals(0, game.getOrders().size());
     }
 
     private void checkDiffsForMilitary(GameEntity game) {
@@ -148,19 +139,15 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(4, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(3).getPosition());
@@ -250,23 +237,18 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(5, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(3).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(4).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(4).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(4).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(4).getPosition());
@@ -382,27 +364,21 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(6, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(venise.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(3).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(4).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(4).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(4).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(4).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(5).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(5).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(5).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(5).getPosition());
@@ -515,27 +491,21 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(6, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(venise.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(3).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(4).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(4).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(4).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(4).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(5).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(5).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(5).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(5).getPosition());
@@ -658,31 +628,24 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(7, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(venise.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(3).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(4).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(4).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(4).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(4).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(5).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(5).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(5).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(5).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(6).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(6).getGame());
         Assert.assertEquals(hollande.getName(), game.getOrders().get(6).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(6).getPosition());
@@ -805,31 +768,24 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(7, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(venise.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(hollande.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(3).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(4).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(4).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(4).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(4).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(5).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(5).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(5).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(5).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(6).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(6).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(6).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(6).getPosition());
@@ -956,31 +912,24 @@ public class StatusWorkflowDomainTest {
 
         Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getStatus());
         Assert.assertEquals(7, game.getOrders().size());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(0).getGame());
         Assert.assertEquals(hollande.getName(), game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(0, game.getOrders().get(0).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(1).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(1).getGame());
         Assert.assertEquals(france.getName(), game.getOrders().get(1).getCountry().getName());
         Assert.assertEquals(1, game.getOrders().get(1).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(2).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(2).getGame());
         Assert.assertEquals(russie.getName(), game.getOrders().get(2).getCountry().getName());
         Assert.assertEquals(2, game.getOrders().get(2).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(3).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(3).getGame());
         Assert.assertEquals(venise.getName(), game.getOrders().get(3).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(3).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(4).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(4).getGame());
         Assert.assertEquals(turquie.getName(), game.getOrders().get(4).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(4).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(5).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(5).getGame());
         Assert.assertEquals(espagne.getName(), game.getOrders().get(5).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(5).getPosition());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(6).getGameStatus());
         Assert.assertEquals(game, game.getOrders().get(6).getGame());
         Assert.assertEquals(pologne.getName(), game.getOrders().get(6).getCountry().getName());
         Assert.assertEquals(4, game.getOrders().get(6).getPosition());
@@ -1085,18 +1034,15 @@ public class StatusWorkflowDomainTest {
         List<DiffEntity> diffs = statusWorkflowDomain.nextRound(game, init);
 
         long alreadyReady = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.isReady())
+                .filter(CountryOrderEntity::isReady)
                 .count();
 
         long activeNotZero = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.isActive() && o.getPosition() != 0)
+                .filter(o -> o.isActive() && o.getPosition() != 0)
                 .count();
 
         long zeroNotActive = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        !o.isActive() && o.getPosition() == 0)
+                .filter(o -> !o.isActive() && o.getPosition() == 0)
                 .count();
 
         Assert.assertEquals(0, alreadyReady);
@@ -1253,13 +1199,11 @@ public class StatusWorkflowDomainTest {
 
         CountryOrderEntity order = new CountryOrderEntity();
         order.setCountry(france);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(0);
         order.setActive(true);
         game.getOrders().add(order);
         order = new CountryOrderEntity();
         order.setCountry(spain);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(1);
         order.setActive(false);
         game.getOrders().add(order);
@@ -1478,13 +1422,11 @@ public class StatusWorkflowDomainTest {
 
             CountryOrderEntity order = new CountryOrderEntity();
             order.setCountry(france);
-            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
             order.setPosition(0);
             order.setActive(!lastPlayerInTurnOrder);
             game.getOrders().add(order);
             order = new CountryOrderEntity();
             order.setCountry(spain);
-            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
             order.setPosition(1);
             order.setActive(lastPlayerInTurnOrder);
             game.getOrders().add(order);
@@ -1698,19 +1640,16 @@ public class StatusWorkflowDomainTest {
         spain.setName("spain");
         game.getCountries().add(spain);
         CountryOrderEntity order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(0);
         order.setCountry(france);
         order.setActive(true);
         game.getOrders().add(order);
         order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(0);
         order.setCountry(turkey);
         order.setActive(true);
         game.getOrders().add(order);
         order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(1);
         order.setCountry(spain);
         game.getOrders().add(order);
@@ -1740,17 +1679,14 @@ public class StatusWorkflowDomainTest {
         spain.setName("spain");
         game.getCountries().add(spain);
         CountryOrderEntity order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(0);
         order.setCountry(france);
         game.getOrders().add(order);
         order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(0);
         order.setCountry(turkey);
         game.getOrders().add(order);
         order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setPosition(1);
         order.setActive(true);
         order.setCountry(spain);

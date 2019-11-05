@@ -88,7 +88,6 @@ public abstract class AbstractGameServiceTest {
         game.setStatus(gameStatus);
         for (Long idCountry : idCountries) {
             CountryOrderEntity order = new CountryOrderEntity();
-            order.setGameStatus(gameStatus);
             order.setCountry(new PlayableCountryEntity());
             order.getCountry().setId(idCountry);
             order.setActive(true);
@@ -236,19 +235,11 @@ public abstract class AbstractGameServiceTest {
             }
 
             CountryOrderEntity order = new CountryOrderEntity();
-            order.setGameStatus(wrongStatus);
-            order.setCountry(new PlayableCountryEntity());
-            order.getCountry().setId(request.getGame().getIdCountry());
-            order.setActive(true);
-            game.getOrders().add(order);
-            order = new CountryOrderEntity();
-            order.setGameStatus(getOrderStatus(status));
             order.setCountry(new PlayableCountryEntity());
             order.getCountry().setId(request.getGame().getIdCountry() * 2);
             order.setActive(true);
             game.getOrders().add(order);
             order = new CountryOrderEntity();
-            order.setGameStatus(getOrderStatus(status));
             order.setCountry(new PlayableCountryEntity());
             order.getCountry().setId(request.getGame().getIdCountry());
             order.setActive(false);
@@ -275,10 +266,6 @@ public abstract class AbstractGameServiceTest {
 
             game.setStatus(status);
         }
-    }
-
-    private GameStatusEnum getOrderStatus(GameStatusEnum status) {
-        return GameStatusEnum.MILITARY_MOVE;
     }
 
     protected interface IServiceWithCheckGame<V> {

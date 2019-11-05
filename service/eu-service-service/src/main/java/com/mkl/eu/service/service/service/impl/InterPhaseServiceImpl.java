@@ -504,8 +504,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setParams(METHOD_VALIDATE_REDEPLOY, mustRedeployProvinces));
 
         CountryOrderEntity order = game.getOrders().stream()
-                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.getCountry().getId().equals(country.getId()))
+                .filter(o -> o.isActive() && o.getCountry().getId().equals(country.getId()))
                 .findFirst()
                 .orElse(null);
 
@@ -515,9 +514,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
             order.setReady(request.getRequest().isValidate());
 
             long countriesNotReady = game.getOrders().stream()
-                    .filter(o -> o.isActive() &&
-                            o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                            !o.isReady())
+                    .filter(o -> o.isActive() && !o.isReady())
                     .count();
 
             if (countriesNotReady == 0) {

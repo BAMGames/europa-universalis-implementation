@@ -352,12 +352,11 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
                 int activePosition = game.getOrders().stream()
-                        .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE && order.isActive())
+                        .filter(CountryOrder::isActive)
                         .map(CountryOrder::getPosition)
                         .findFirst()
                         .orElse(-1);
                 game.getOrders().stream()
-                        .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
                         .sorted(Comparator.comparing(CountryOrder::getPosition))
                         .forEach(order -> {
                             HBox hBox = new HBox();
@@ -1289,13 +1288,11 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
             if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
                 SimpleRequest<LoadTurnOrderRequest> request = new SimpleRequest<>();
                 authentHolder.fillAuthentInfo(request);
-                request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame(), GameStatusEnum.MILITARY_MOVE));
+                request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame()));
                 try {
                     List<CountryOrder> orders = gameService.loadTurnOrder(request);
 
-                    game.getOrders().removeAll(game.getOrders().stream()
-                            .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
-                            .collect(Collectors.toList()));
+                    game.getOrders().clear();
                     game.getOrders().addAll(orders);
                 } catch (FunctionalException e) {
                     LOGGER.error("Can't load turn order.", e);
@@ -1420,8 +1417,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         Long idCountry = tmp;
 
         game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == gameStatus &&
-                        (idCountry == null || idCountry.equals(o.getCountry().getId())))
+                .filter(o -> (idCountry == null || idCountry.equals(o.getCountry().getId())))
                 .forEach(o -> o.setReady(true));
     }
 
@@ -1446,8 +1442,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         Long idCountry = tmp;
 
         game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == gameStatus &&
-                        (idCountry == null || idCountry.equals(o.getCountry().getId())))
+                .filter(o -> (idCountry == null || idCountry.equals(o.getCountry().getId())))
                 .forEach(o -> o.setReady(false));
     }
 
@@ -1470,14 +1465,12 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         GameStatusEnum gameStatus = GameStatusEnum.valueOf(attributeStatus.getValue());
 
         game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == gameStatus)
                 .forEach(o -> {
                     o.setActive(false);
                     o.setReady(false);
                 });
         game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == gameStatus &&
-                        o.getPosition() == position)
+                .filter(o -> o.getPosition() == position)
                 .forEach(o -> o.setActive(true));
     }
 

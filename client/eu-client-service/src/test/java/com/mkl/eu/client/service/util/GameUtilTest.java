@@ -217,27 +217,18 @@ public class GameUtilTest {
 
         CountryOrder order = new CountryOrder();
         order.setCountry(france);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
-        order.setActive(true);
-        game.getOrders().add(order);
-        order = new CountryOrder();
-        order.setCountry(france);
-        order.setGameStatus(GameStatusEnum.DIPLOMACY);
         order.setActive(true);
         game.getOrders().add(order);
         order = new CountryOrder();
         order.setCountry(angleterre);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setActive(true);
         game.getOrders().add(order);
         order = new CountryOrder();
         order.setCountry(turquie);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setActive(false);
         game.getOrders().add(order);
         order = new CountryOrder();
         order.setCountry(pologne);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         game.getOrders().add(order);
 
         countries = GameUtil.getActivePlayers(game);

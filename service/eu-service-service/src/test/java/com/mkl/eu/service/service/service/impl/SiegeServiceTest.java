@@ -336,7 +336,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         }
 
         CountryOrderEntity order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setActive(true);
         order.setCountry(country);
         game.getOrders().add(order);
@@ -435,7 +434,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getWarAllies(country, siege.getWar())).thenReturn(Collections.singletonList(country.getName()));
 
         CountryOrderEntity order = new CountryOrderEntity();
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setActive(true);
         order.setCountry(country);
         game.getOrders().add(order);
@@ -3276,7 +3274,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -3514,7 +3511,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);
@@ -3598,7 +3594,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);
@@ -3738,7 +3733,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, siegeService::chooseLossesAfterAssault, "chooseLosses", GameStatusEnum.MILITARY_SIEGES);

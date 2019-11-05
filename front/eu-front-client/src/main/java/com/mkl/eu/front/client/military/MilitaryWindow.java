@@ -236,7 +236,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
      */
     private void updateInfoPanel() {
         CountryOrder countryOrder = game.getOrders().stream()
-                .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE && Objects.equals(order.getCountry().getId(), gameConfig.getIdCountry()))
+                .filter(order -> Objects.equals(order.getCountry().getId(), gameConfig.getIdCountry()))
                 .findAny()
                 .orElse(null);
         validateMilitaryPhase.setDisable(true);

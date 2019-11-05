@@ -3,7 +3,6 @@ package com.mkl.eu.client.service.util;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
 import org.apache.commons.lang3.StringUtils;
 
@@ -234,7 +233,7 @@ public final class GameUtil {
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
                 countries = game.getOrders().stream()
-                        .filter(order -> order.isActive() && order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                        .filter(CountryOrder::isActive)
                         .map(CountryOrder::getCountry)
                         .collect(Collectors.toList());
                 break;

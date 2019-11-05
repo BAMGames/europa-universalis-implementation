@@ -61,7 +61,6 @@ public class CountryOrderMapping extends AbstractMapping {
         CountryOrder target = new CountryOrder();
 
         target.setCountry(playableCountryMapping.oeToVo(source.getCountry(), objectsCreated));
-        target.setGameStatus(source.getGameStatus());
         target.setPosition(source.getPosition());
         target.setActive(source.isActive());
         target.setReady(source.isReady());

@@ -134,9 +134,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         /**
          * Finally, previous order is removed.
          */
-        game.getOrders().removeAll(game.getOrders().stream()
-                .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
-                .collect(Collectors.toList()));
+        game.getOrders().clear();
 
         /**
          * Hibernate will delete old values after inserting new one.
@@ -153,7 +151,6 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             for (PlayableCountryEntity country : alliances.get(i).getCountries()) {
                 CountryOrderEntity order = new CountryOrderEntity();
                 order.setGame(game);
-                order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
                 order.setCountry(country);
                 order.setPosition(i);
                 game.getOrders().add(order);
@@ -177,7 +174,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             return diffs;
         }
         int currentPosition = game.getOrders().stream()
-                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .filter(CountryOrderEntity::isActive)
                 .map(CountryOrderEntity::getPosition)
                 .findFirst()
                 .orElse(Integer.MAX_VALUE);
@@ -249,8 +246,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
 
         // Other cases: we check if there is another country in current phase of this round
         Integer next = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.getPosition() > currentPosition)
+                .filter(o -> o.getPosition() > currentPosition)
                 .map(CountryOrderEntity::getPosition)
                 .min(Comparator.naturalOrder())
                 .orElse(null);
@@ -348,22 +344,20 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     }
 
     /**
-     * Change the active player in the military phase.
+     * Change the active player in the non simultaneous phase.
      *
-     * @param position the new position of the active player in the military phase.
+     * @param position the new position of the active player in the non simultaneous phase.
      * @param game     the game.
      * @return the diff created.
      */
     private DiffEntity changeActivePlayers(int position, GameEntity game) {
         game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
                 .forEach(o -> {
                     o.setActive(false);
                     o.setReady(false);
                 });
         game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.getPosition() == position)
+                .filter(o -> o.getPosition() == position)
                 .forEach(o -> o.setActive(true));
 
         return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
@@ -399,8 +393,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             filterPhasing = country -> !country.isOffensive() && country.getImplication() == WarImplicationEnum.FULL;
         }
         Function<CountryInWarEntity, Integer> toActiveOrder = country -> game.getOrders().stream()
-                .filter(order -> order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        StringUtils.equals(country.getCountry().getName(), order.getCountry().getName()))
+                .filter(order -> StringUtils.equals(country.getCountry().getName(), order.getCountry().getName()))
                 .map(CountryOrderEntity::getPosition)
                 .findAny()
                 .orElse(null);
@@ -598,14 +591,13 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         List<DiffEntity> diffs = new ArrayList<>();
 
         int currentPosition = game.getOrders().stream()
-                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE)
+                .filter(CountryOrderEntity::isActive)
                 .map(CountryOrderEntity::getPosition)
                 .findFirst()
                 .orElse(Integer.MAX_VALUE);
 
         Integer next = game.getOrders().stream()
-                .filter(o -> o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.getPosition() > currentPosition)
+                .filter(o -> o.getPosition() > currentPosition)
                 .map(CountryOrderEntity::getPosition)
                 .min(Comparator.naturalOrder())
                 .orElse(null);

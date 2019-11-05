@@ -4,7 +4,6 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.service.service.game.FindGamesRequest;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
@@ -70,13 +69,10 @@ public class GameDaoImpl extends GenericDaoImpl<GameEntity, Long> implements IGa
 
     /** {@inheritDoc} */
     @Override
-    public List<CountryOrderEntity> findTurnOrder(Long idGame, GameStatusEnum gameStatus) {
+    public List<CountryOrderEntity> findTurnOrder(Long idGame) {
         Criteria criteria = getSession().createCriteria(CountryOrderEntity.class);
 
         criteria.add(Restrictions.eq("game.id", idGame));
-        if (gameStatus != null) {
-            criteria.add(Restrictions.eq("gameStatus", gameStatus));
-        }
 
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 

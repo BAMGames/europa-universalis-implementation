@@ -14,7 +14,6 @@ import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
@@ -435,11 +434,11 @@ public class GameServiceTest {
             Assert.assertEquals("loadTurnOrder.request", e.getParams()[0]);
         }
 
-        request.setRequest(new LoadTurnOrderRequest(1L, GameStatusEnum.MILITARY_MOVE));
+        request.setRequest(new LoadTurnOrderRequest(1L));
 
         List<CountryOrderEntity> orderEntities = new ArrayList<>();
         orderEntities.add(new CountryOrderEntity());
-        when(gameDao.findTurnOrder(1L, GameStatusEnum.MILITARY_MOVE)).thenReturn(orderEntities);
+        when(gameDao.findTurnOrder(1L)).thenReturn(orderEntities);
         List<CountryOrder> ordersVos = new ArrayList<>();
         ordersVos.add(new CountryOrder());
         ordersVos.add(new CountryOrder());

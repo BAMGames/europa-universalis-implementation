@@ -517,7 +517,6 @@ public class GameMappingTest {
 
         CountryOrder object = new CountryOrder();
         object.setCountry(FRA_VO);
-        object.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         object.setPosition(0);
         object.setActive(true);
         object.setReady(true);
@@ -525,7 +524,6 @@ public class GameMappingTest {
 
         object = new CountryOrder();
         object.setCountry(PRU_VO);
-        object.setGameStatus(GameStatusEnum.DIPLOMACY);
         object.setPosition(0);
         object.setActive(false);
         object.setReady(false);
@@ -1027,7 +1025,6 @@ public class GameMappingTest {
 
         CountryOrderEntity object = new CountryOrderEntity();
         object.setCountry(FRA_OE);
-        object.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         object.setPosition(0);
         object.setActive(true);
         object.setReady(true);
@@ -1035,7 +1032,6 @@ public class GameMappingTest {
 
         object = new CountryOrderEntity();
         object.setCountry(PRU_OE);
-        object.setGameStatus(GameStatusEnum.DIPLOMACY);
         object.setPosition(0);
         object.setActive(false);
         object.setReady(false);

@@ -1,7 +1,6 @@
 package com.mkl.eu.service.service.persistence;
 
 import com.mkl.eu.client.service.service.game.FindGamesRequest;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
@@ -41,10 +40,9 @@ public interface IGameDao extends IGenericDao<GameEntity, Long> {
      * Find the turn order of the specified game at the specified phase.
      *
      * @param idGame     id of the game.
-     * @param gameStatus status (phase) of the game.
      * @return the turn order.
      */
-    List<CountryOrderEntity> findTurnOrder(Long idGame, GameStatusEnum gameStatus);
+    List<CountryOrderEntity> findTurnOrder(Long idGame);
 
     /**
      * Persists an entity of any kind.

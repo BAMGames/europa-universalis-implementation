@@ -289,7 +289,6 @@ public abstract class AbstractService implements INameConstants {
             case MILITARY_NEUTRALS:
                 CountryOrderEntity activeOrder = CommonUtil.findFirst(game.getOrders().stream(),
                         order -> order.isActive() &&
-                                order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                                 order.getCountry().getId().equals(idCountry));
                 active = activeOrder != null;
                 break;
@@ -336,12 +335,11 @@ public abstract class AbstractService implements INameConstants {
     /**
      * @param game      the game.
      * @param idCountry the country.
-     * @return <code>true</code> if the country is the phasing side during a military round, <code>false</code> otherwise.
+     * @return <code>true</code> if the country is the phasing side during a non simultaneous phase, <code>false</code> otherwise.
      */
     protected boolean isPhasingPlayer(GameEntity game, Long idCountry) {
         return game.getOrders().stream()
                 .anyMatch(order -> order.isActive() &&
-                        order.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
                         order.getCountry().getId().equals(idCountry));
     }
 

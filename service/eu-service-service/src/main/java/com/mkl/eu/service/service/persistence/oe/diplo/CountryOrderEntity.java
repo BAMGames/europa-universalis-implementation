@@ -1,6 +1,5 @@
 package com.mkl.eu.service.service.persistence.oe.diplo;
 
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 
@@ -21,9 +20,6 @@ public class CountryOrderEntity {
     /** Country concerned by the turn order. */
     // TODO TG-13 add a 'fake' playable country in case of minor alone in war
     private PlayableCountryEntity country;
-    /** Phase of the game concerned by the turn order. For military phases, it is MILITARY_MOVE. */
-    // FIXME check if useless and then remove.
-    private GameStatusEnum gameStatus;
     /** Position of the country in the turn order. */
     private int position;
     /** Activity of this order segment (ie the one whose it is the turn). */
@@ -55,19 +51,6 @@ public class CountryOrderEntity {
     /** @param country the country to set. */
     public void setCountry(PlayableCountryEntity country) {
         this.country = country;
-    }
-
-    /** @return the gameStatus. */
-    @Id
-    @Enumerated(EnumType.STRING)
-    @Column(name = "GAME_STATUS")
-    public GameStatusEnum getGameStatus() {
-        return gameStatus;
-    }
-
-    /** @param gameStatus the gameStatus to set. */
-    public void setGameStatus(GameStatusEnum gameStatus) {
-        this.gameStatus = gameStatus;
     }
 
     /** @return the position. */
@@ -111,8 +94,6 @@ public class CountryOrderEntity {
         private GameEntity game;
         /** Composite id country. */
         private PlayableCountryEntity country;
-        /** Composite id status. */
-        private GameStatusEnum gameStatus;
 
         /** @return the game. */
         public GameEntity getGame() {
@@ -134,23 +115,12 @@ public class CountryOrderEntity {
             this.country = country;
         }
 
-        /** @return the gameStatus. */
-        public GameStatusEnum getGameStatus() {
-            return gameStatus;
-        }
-
-        /** @param gameStatus the gameStatus to set. */
-        public void setGameStatus(GameStatusEnum gameStatus) {
-            this.gameStatus = gameStatus;
-        }
-
         /** {@inheritDoc} */
         @Override
         public String toString() {
             return "EmbeddedId{" +
                     "game=" + game.getId() +
                     ", country=" + country.getName() +
-                    ", gameStatus=" + gameStatus +
                     '}';
         }
     }

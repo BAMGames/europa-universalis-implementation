@@ -4,7 +4,6 @@ import com.excilys.ebi.spring.dbunit.config.DBOperation;
 import com.excilys.ebi.spring.dbunit.test.DataSet;
 import com.excilys.ebi.spring.dbunit.test.RollbackTransactionalDataSetTestExecutionListener;
 import com.mkl.eu.client.service.vo.enumeration.CountryTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
@@ -57,15 +56,10 @@ public class WarTest {
         Assert.assertEquals(false, war.getCountries().get(1).isOffensive());
         Assert.assertEquals(WarImplicationEnum.LIMITED, war.getCountries().get(1).getImplication());
 
-        Assert.assertEquals(2, game.getOrders().size());
+        Assert.assertEquals(1, game.getOrders().size());
         Assert.assertEquals("suede", game.getOrders().get(0).getCountry().getName());
         Assert.assertEquals(3, game.getOrders().get(0).getCountry().getDti());
-        Assert.assertEquals(GameStatusEnum.MILITARY_MOVE, game.getOrders().get(0).getGameStatus());
         Assert.assertEquals(5, game.getOrders().get(0).getPosition());
-        Assert.assertEquals("espagne", game.getOrders().get(1).getCountry().getName());
-        Assert.assertEquals(1, game.getOrders().get(1).getCountry().getDti());
-        Assert.assertEquals(GameStatusEnum.DIPLOMACY, game.getOrders().get(1).getGameStatus());
-        Assert.assertEquals(3, game.getOrders().get(1).getPosition());
 
     }
 }

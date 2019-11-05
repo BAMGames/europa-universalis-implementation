@@ -599,8 +599,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_VALIDATE_MIL_ROUND, request.getAuthent().getUsername(), country.getUsername()));
 
         CountryOrderEntity order = game.getOrders().stream()
-                .filter(o -> o.isActive() && o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                        o.getCountry().getId().equals(country.getId()))
+                .filter(o -> o.isActive() && o.getCountry().getId().equals(country.getId()))
                 .findFirst()
                 .orElse(null);
 
@@ -611,9 +610,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             order.setReady(request.getRequest().isValidate());
 
             long countriesNotReady = game.getOrders().stream()
-                    .filter(o -> o.isActive() &&
-                            o.getGameStatus() == GameStatusEnum.MILITARY_MOVE &&
-                            !o.isReady())
+                    .filter(o -> o.isActive() && !o.isReady())
                     .count();
 
             if (countriesNotReady == 0) {

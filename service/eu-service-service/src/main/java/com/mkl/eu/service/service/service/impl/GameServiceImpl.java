@@ -165,8 +165,7 @@ public class GameServiceImpl extends AbstractService implements IGameService {
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_LOAD_TURN_ORDER, PARAMETER_REQUEST).setParams(METHOD_LOAD_TURN_ORDER));
 
         List<CountryOrderEntity> sheetEntities = gameDao.findTurnOrder(
-                request.getRequest().getIdGame(),
-                request.getRequest().getGameStatus());
+                request.getRequest().getIdGame());
 
         return countryOrderMapping.oesToVos(sheetEntities, new HashMap<>());
     }

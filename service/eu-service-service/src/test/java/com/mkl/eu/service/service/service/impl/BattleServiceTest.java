@@ -449,7 +449,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         if (phasing) {
             CountryOrderEntity order = new CountryOrderEntity();
-            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
             order.setActive(true);
             order.setCountry(country);
             game.getOrders().add(order);
@@ -768,7 +767,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(new PlayableCountryEntity());
         order.getCountry().setId(26L);
         game.getOrders().add(order);
@@ -930,7 +928,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getWarAllies(country, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(new PlayableCountryEntity());
         order.getCountry().setId(26L);
         game.getOrders().add(order);
@@ -1108,7 +1105,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -2061,7 +2057,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             game.getCountries().add(nonPhasingCountry);
             CountryOrderEntity order = new CountryOrderEntity();
             order.setActive(true);
-            order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
             order.setCountry(new PlayableCountryEntity());
             order.getCountry().setId(phasingCountry.getId());
             game.getOrders().add(order);
@@ -2703,7 +2698,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -2926,7 +2920,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
@@ -3000,7 +2993,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
@@ -3136,7 +3128,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
@@ -3275,7 +3266,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -3501,7 +3491,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -3646,7 +3635,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
@@ -3797,7 +3785,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getBattles().get(1).setProvince("lyonnais");
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
-        order.setGameStatus(GameStatusEnum.MILITARY_MOVE);
         order.setCountry(france);
         game.getOrders().add(order);
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
