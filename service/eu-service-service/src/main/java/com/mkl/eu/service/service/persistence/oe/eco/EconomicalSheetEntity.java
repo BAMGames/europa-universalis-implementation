@@ -49,6 +49,12 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     private Integer excTaxes;
     /** Royal treasure before Exchequer. Line 13 of sheet A. */
     private Integer rtBefExch;
+    /** Column of the Exchequer test. */
+    private Integer exchequerColumn;
+    /** Bonus of the Exchequer test. */
+    private Integer exchequerBonus;
+    /** Unmodified die of the exchequer test. */
+    private Integer exchequerDie;
     /** Regular income. Line 15 of sheet A. */
     private Integer regularIncome;
     /** Prestige income. Line 16 of sheet A. */
@@ -416,6 +422,39 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     /** @param rtBefExch the rtBefExch to set. */
     public void setRtBefExch(Integer rtBefExch) {
         this.rtBefExch = rtBefExch;
+    }
+
+    /** @return the exchequerColumn. */
+    @Column(name = "EXCHEQUER_COLUMN")
+    public Integer getExchequerColumn() {
+        return exchequerColumn;
+    }
+
+    /** @param exchequerColumn the exchequerColumn to set. */
+    public void setExchequerColumn(Integer exchequerColumn) {
+        this.exchequerColumn = exchequerColumn;
+    }
+
+    /** @return the exchequerBonus. */
+    @Column(name = "EXCHEQUER_BONUS")
+    public Integer getExchequerBonus() {
+        return exchequerBonus;
+    }
+
+    /** @param exchequerBonus the exchequerBonus to set. */
+    public void setExchequerBonus(Integer exchequerBonus) {
+        this.exchequerBonus = exchequerBonus;
+    }
+
+    /** @return the exchequerDie. */
+    @Column(name = "EXCHEQUER_DIE")
+    public Integer getExchequerDie() {
+        return exchequerDie;
+    }
+
+    /** @param exchequerDie the exchequerDie to set. */
+    public void setExchequerDie(Integer exchequerDie) {
+        this.exchequerDie = exchequerDie;
     }
 
     /** @return the regularIncome. */

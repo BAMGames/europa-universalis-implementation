@@ -21,6 +21,8 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Test for Tables service, dao and mapping.
  *
@@ -338,5 +340,33 @@ public class TableDaoImplTest {
         Assert.assertEquals(1, assaultResult.getRoundLoss().intValue());
         Assert.assertEquals(0, assaultResult.getThirdLoss().intValue());
         Assert.assertEquals(3, assaultResult.getMoraleLoss().intValue());
+    }
+
+    @Test
+    public void testExchequer() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+        List<Exchequer> exchequers = tables.getExchequers();
+
+        Assert.assertEquals(6, exchequers.size());
+        Exchequer exchequer = exchequers.stream()
+                .filter(exc -> exc.getResult() == ResultEnum.FUMBLE)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(exchequer);
+        Assert.assertEquals(30, exchequer.getRegular().intValue());
+        Assert.assertEquals(0, exchequer.getPrestige().intValue());
+        Assert.assertEquals(40, exchequer.getNatLoan().intValue());
+        Assert.assertEquals(20, exchequer.getInterLoan().intValue());
+
+        exchequer = exchequers.stream()
+                .filter(exc -> exc.getResult() == ResultEnum.CRITICAL_HIT)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(exchequer);
+        Assert.assertEquals(60, exchequer.getRegular().intValue());
+        Assert.assertEquals(40, exchequer.getPrestige().intValue());
+        Assert.assertEquals(20, exchequer.getNatLoan().intValue());
+        Assert.assertEquals(100, exchequer.getInterLoan().intValue());
     }
 }

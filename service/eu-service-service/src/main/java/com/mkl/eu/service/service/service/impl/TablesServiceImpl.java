@@ -107,6 +107,8 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
         tablesMapping.fillFortressResistanceTables(fortressResistances, TABLES);
         List<AssaultResultEntity> assaultResults = tablesDao.getAssaultResults();
         tablesMapping.fillAssaultResultTables(assaultResults, TABLES);
+        List<ExchequerEntity> exchequers = tablesDao.getExchequers();
+        tablesMapping.fillExchequerTables(exchequers, TABLES);
     }
 
     /**

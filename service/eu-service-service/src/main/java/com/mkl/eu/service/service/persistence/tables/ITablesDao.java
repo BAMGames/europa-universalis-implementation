@@ -85,4 +85,9 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the assault result tables.
      */
     List<AssaultResultEntity> getAssaultResults();
+
+    /**
+     * @return the exchequer result tables.
+     */
+    List<ExchequerEntity> getExchequers();
 }

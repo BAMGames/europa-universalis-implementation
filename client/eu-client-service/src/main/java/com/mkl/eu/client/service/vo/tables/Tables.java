@@ -17,8 +17,6 @@ public class Tables {
     private List<TradeIncome> foreignTrades = new ArrayList<>();
     /** Domestic trade incomes. */
     private List<TradeIncome> domesticTrades = new ArrayList<>();
-    /** Periods of the game. */
-//    private List<Period>
     /** Basic forces of major powers. */
     private List<BasicForce> basicForces = new ArrayList<>();
     /** Unit purchase and maintenance costs of major powers. */
@@ -41,15 +39,12 @@ public class Tables {
     private List<FortressResistance> fortressResistances = new ArrayList<>();
     /** Results of assault. */
     private List<AssaultResult> assaultResults = new ArrayList<>();
+    /** Results of exchequer. */
+    private List<Exchequer> exchequers = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
         return periods;
-    }
-
-    /** @param periods the periods to set. */
-    public void setPeriods(List<Period> periods) {
-        this.periods = periods;
     }
 
     /** @return the techs. */
@@ -57,19 +52,9 @@ public class Tables {
         return techs;
     }
 
-    /** @param techs the techs to set. */
-    public void setTechs(List<Tech> techs) {
-        this.techs = techs;
-    }
-
     /** @return the foreignTrades. */
     public List<TradeIncome> getForeignTrades() {
         return foreignTrades;
-    }
-
-    /** @param foreignTrades the foreignTrades to set. */
-    public void setForeignTrades(List<TradeIncome> foreignTrades) {
-        this.foreignTrades = foreignTrades;
     }
 
     /** @return the domesticTrades. */
@@ -77,19 +62,9 @@ public class Tables {
         return domesticTrades;
     }
 
-    /** @param domesticTrades the domesticTrades to set. */
-    public void setDomesticTrades(List<TradeIncome> domesticTrades) {
-        this.domesticTrades = domesticTrades;
-    }
-
     /** @return the basicForces. */
     public List<BasicForce> getBasicForces() {
         return basicForces;
-    }
-
-    /** @param basicForces the basicForces to set. */
-    public void setBasicForces(List<BasicForce> basicForces) {
-        this.basicForces = basicForces;
     }
 
     /** @return the units. */
@@ -97,19 +72,9 @@ public class Tables {
         return units;
     }
 
-    /** @param units the units to set. */
-    public void setUnits(List<Unit> units) {
-        this.units = units;
-    }
-
     /** @return the limits. */
     public List<Limit> getLimits() {
         return limits;
-    }
-
-    /** @param limits the limits to set. */
-    public void setLimits(List<Limit> limits) {
-        this.limits = limits;
     }
 
     /** @return the results. */
@@ -117,19 +82,9 @@ public class Tables {
         return results;
     }
 
-    /** @param results the results to set. */
-    public void setResults(List<Result> results) {
-        this.results = results;
-    }
-
     /** @return the battleTechs. */
     public List<BattleTech> getBattleTechs() {
         return battleTechs;
-    }
-
-    /** @param battleTechs the battleTechs to set. */
-    public void setBattleTechs(List<BattleTech> battleTechs) {
-        this.battleTechs = battleTechs;
     }
 
     /** @return the combatResults. */
@@ -137,19 +92,9 @@ public class Tables {
         return combatResults;
     }
 
-    /** @param combatResults the combatResults to set. */
-    public void setCombatResults(List<CombatResult> combatResults) {
-        this.combatResults = combatResults;
-    }
-
     /** @return the armyClasses. */
     public List<ArmyClasse> getArmyClasses() {
         return armyClasses;
-    }
-
-    /** @param armyClasses the armyClasses to set. */
-    public void setArmyClasses(List<ArmyClasse> armyClasses) {
-        this.armyClasses = armyClasses;
     }
 
     /** @return the armyArtilleries. */
@@ -157,19 +102,9 @@ public class Tables {
         return armyArtilleries;
     }
 
-    /** @param armyArtilleries the armyArtilleries to set. */
-    public void setArmyArtilleries(List<ArmyArtillery> armyArtilleries) {
-        this.armyArtilleries = armyArtilleries;
-    }
-
     /** @return the artillerySieges. */
     public List<ArtillerySiege> getArtillerySieges() {
         return artillerySieges;
-    }
-
-    /** @param artillerySieges the artillerySieges to set. */
-    public void setArtillerySieges(List<ArtillerySiege> artillerySieges) {
-        this.artillerySieges = artillerySieges;
     }
 
     /** @return the fortressResistances. */
@@ -177,18 +112,13 @@ public class Tables {
         return fortressResistances;
     }
 
-    /** @param fortressResistances the fortressResistances to set. */
-    public void setFortressResistances(List<FortressResistance> fortressResistances) {
-        this.fortressResistances = fortressResistances;
-    }
-
     /** @return the assaultResults. */
     public List<AssaultResult> getAssaultResults() {
         return assaultResults;
     }
 
-    /** @param assaultResults the assaultResults to set. */
-    public void setAssaultResults(List<AssaultResult> assaultResults) {
-        this.assaultResults = assaultResults;
+    /** @return the exchequers. */
+    public List<Exchequer> getExchequers() {
+        return exchequers;
     }
 }

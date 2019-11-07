@@ -257,8 +257,8 @@ public class TablesMapping extends AbstractMapping {
     /**
      * Fill the results tables.
      *
-     * @param sources        List of results entity.
-     * @param tables         the target tables.
+     * @param sources List of results entity.
+     * @param tables  the target tables.
      */
     public void fillResultsTables(List<ResultEntity> sources, Tables tables) {
         if (tables != null && sources != null) {
@@ -271,7 +271,7 @@ public class TablesMapping extends AbstractMapping {
     /**
      * OE to VO.
      *
-     * @param source         object source.
+     * @param source object source.
      * @return object mapped.
      */
     public Result oeToVo(ResultEntity source) {
@@ -538,6 +538,44 @@ public class TablesMapping extends AbstractMapping {
         target.setFire(source.isFire());
         target.setBreach(source.isBreach());
         target.setBesieger(source.isBesieger());
+
+        return target;
+    }
+
+    /**
+     * Fill the exchequer tables.
+     *
+     * @param sources List of entity.
+     * @param tables  the target tables.
+     */
+    public void fillExchequerTables(List<ExchequerEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (ExchequerEntity source : sources) {
+                Exchequer target = oeToVo(source);
+                tables.getExchequers().add(target);
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public Exchequer oeToVo(ExchequerEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        Exchequer target = new Exchequer();
+
+        target.setId(source.getId());
+        target.setResult(source.getResult());
+        target.setRegular(source.getRegular());
+        target.setPrestige(source.getPrestige());
+        target.setNatLoan(source.getNatLoan());
+        target.setInterLoan(source.getInterLoan());
 
         return target;
     }

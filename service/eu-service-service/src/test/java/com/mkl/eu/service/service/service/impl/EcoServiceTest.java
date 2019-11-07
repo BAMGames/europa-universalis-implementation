@@ -140,7 +140,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         simulateDiff();
 
-        DiffResponse response = economicService.computeEconomicalSheets(request);
+        economicService.computeEconomicalSheets(request);
 
         InOrder inOrder = inOrder(gameDao, economicalSheetDao, diffDao, diffMapping);
 
@@ -264,7 +264,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         trade.setMinValue(80);
         trade.setValue(18);
         domTrades.add(trade);
-        tables.setDomesticTrades(domTrades);
+        tables.getDomesticTrades().addAll(domTrades);
         List<TradeIncome> forTrades = new ArrayList<>();
         trade = new TradeIncome();
         trade.setCountryValue(1);
@@ -287,7 +287,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         trade.setMaxValue(49);
         trade.setValue(15);
         forTrades.add(trade);
-        tables.setForeignTrades(forTrades);
+        tables.getForeignTrades().addAll(forTrades);
         EconomicServiceImpl.TABLES = tables;
 
         economicService.computeEconomicalSheet(country, idGame, 2, centers);
@@ -1187,7 +1187,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(3);
         limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         List<Tech> techs = new ArrayList<>();
         Tech tech = new Tech();
         tech.setName(Tech.MEDIEVAL);
@@ -1197,7 +1197,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setName(Tech.RENAISSANCE);
         tech.setBeginTurn(11);
         techs.add(tech);
-        tables.setTechs(techs);
+        tables.getTechs().addAll(techs);
         EconomicServiceImpl.TABLES = tables;
 
         request.getRequest().setProvince("poitou");
@@ -1350,7 +1350,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         unit.setTech(new Tech());
         unit.getTech().setName("MEDIEVAL");
         units.add(unit);
-        tables.setUnits(units);
+        tables.getUnits().addAll(units);
         List<Limit> limits = new ArrayList<>();
         Limit limit = new Limit();
         limit.setCountry("france");
@@ -1376,7 +1376,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
@@ -1499,7 +1499,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         unit.setTech(new Tech());
         unit.getTech().setName("MEDIEVAL");
         units.add(unit);
-        tables.setUnits(units);
+        tables.getUnits().addAll(units);
         List<Limit> limits = new ArrayList<>();
         Limit limit = new Limit();
         limit.setCountry("france");
@@ -1525,7 +1525,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.PURCHASE_LAND_TROOPS);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         List<Tech> techs = new ArrayList<>();
         Tech tech = new Tech();
         tech.setName("RENAISSANCE");
@@ -1535,7 +1535,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setName(Tech.ARQUEBUS);
         tech.setBeginTurn(11);
         techs.add(tech);
-        tables.setTechs(techs);
+        tables.getTechs().addAll(techs);
         EconomicServiceImpl.TABLES = tables;
 
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
@@ -1823,7 +1823,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.ACTION_TFI);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         List<String> countries = new ArrayList<>();
@@ -2158,7 +2158,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.ACTION_TFI);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         when(oeUtil.getDti(game, EconomicServiceImpl.TABLES, "france")).thenReturn(3);
@@ -2366,7 +2366,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(0);
         limit.setType(LimitTypeEnum.MAX_MNU);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         try {
@@ -2770,7 +2770,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.MAX_MNU);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
@@ -2899,7 +2899,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(5);
         limit.setType(LimitTypeEnum.MAX_FTI_ROTW);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         try {
@@ -3016,7 +3016,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(5);
         limit.setType(LimitTypeEnum.MAX_FTI_ROTW);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         when(adminActionDao.create(anyObject())).thenAnswer(invocation -> {
@@ -3290,14 +3290,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limitCol.setNumber(1);
         limitCol.setType(LimitTypeEnum.MAX_COL);
         limits.add(limitCol);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         List<Period> periods = new ArrayList<>();
         Period period = new Period();
         period.setName(Period.PERIOD_I);
         period.setBegin(1);
         period.setEnd(6);
         periods.add(period);
-        tables.setPeriods(periods);
+        tables.getPeriods().addAll(periods);
         EconomicServiceImpl.TABLES = tables;
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
@@ -3648,14 +3648,14 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.ACTION_COL);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         List<Period> periods = new ArrayList<>();
         Period period = new Period();
         period.setName(Period.PERIOD_I);
         period.setBegin(1);
         period.setEnd(6);
         periods.add(period);
-        tables.setPeriods(periods);
+        tables.getPeriods().addAll(periods);
         EconomicServiceImpl.TABLES = tables;
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
@@ -3813,7 +3813,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limitCol.setNumber(0);
         limitCol.setType(LimitTypeEnum.MAX_TP);
         limits.add(limitCol);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
@@ -4037,7 +4037,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setNumber(2);
         limit.setType(LimitTypeEnum.ACTION_TP);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         EconomicServiceImpl.TABLES = tables;
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
@@ -4232,7 +4232,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setLand(true);
         tech.setName(Tech.MEDIEVAL);
         techs.add(tech);
-        tables.setTechs(techs);
+        tables.getTechs().addAll(techs);
         EconomicServiceImpl.TABLES = tables;
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
@@ -4323,7 +4323,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setBeginBox(11);
         tech.setLand(true);
         tech.setName(Tech.RENAISSANCE);
-        techs.add(tech);
+        tables.getTechs().add(tech);
 
         try {
             economicService.addAdminAction(request);
@@ -4336,13 +4336,13 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setBeginBox(21);
         tech.setLand(true);
         tech.setName(Tech.MUSKET);
-        techs.add(tech);
+        tables.getTechs().add(tech);
         tech = new Tech();
         tech.setBeginTurn(31);
         tech.setBeginBox(31);
         tech.setLand(true);
         tech.setName(Tech.BAROQUE);
-        techs.add(tech);
+        tables.getTechs().add(tech);
 
         try {
             economicService.addAdminAction(request);
@@ -4435,7 +4435,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setLand(true);
         tech.setName(Tech.BAROQUE);
         techs.add(tech);
-        tables.setTechs(techs);
+        tables.getTechs().addAll(techs);
         EconomicServiceImpl.TABLES = tables;
 
         List<AdministrativeActionEntity> actionsFor12 = new ArrayList<>();
@@ -5167,7 +5167,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         periodI.setBegin(1);
         periodI.setEnd(60);
         periods.add(periodI);
-        tables.setPeriods(periods);
+        tables.getPeriods().addAll(periods);
         List<Result> results = new ArrayList<>();
         Result result = new Result();
         result.setColumn(0);
@@ -5184,7 +5184,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         result.setDie(6);
         result.setResult(ResultEnum.SUCCESS);
         results.add(result);
-        tables.setResults(results);
+        tables.getResults().addAll(results);
         result = new Result();
         result.setColumn(1);
         result.setDie(4);
@@ -5200,7 +5200,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         result.setDie(6);
         result.setResult(ResultEnum.CRITICAL_HIT);
         results.add(result);
-        tables.setResults(results);
+        tables.getResults().addAll(results);
         List<Limit> limits = new ArrayList<>();
         Limit limit = new Limit();
         limit.setCountry("france");
@@ -5210,7 +5210,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         limit.setType(LimitTypeEnum.MAX_FTI);
         limit.setNumber(4);
         limits.add(limit);
-        tables.setLimits(limits);
+        tables.getLimits().addAll(limits);
         List<Tech> techs = new ArrayList<>();
         Tech renaissance = new Tech();
         renaissance.setName(Tech.RENAISSANCE);
@@ -5227,7 +5227,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         naeG.setBeginTurn(3);
         naeG.setLand(false);
         techs.add(naeG);
-        tables.setTechs(techs);
+        tables.getTechs().addAll(techs);
         List<Unit> units = new ArrayList<>();
         Unit unit = new Unit();
         unit.setCountry("france");
@@ -5272,7 +5272,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         unit.setTech(naeG);
         unit.setPrice(50);
         units.add(unit);
-        tables.setUnits(units);
+        tables.getUnits().addAll(units);
         List<BasicForce> basicForces = new ArrayList<>();
         BasicForce basicForce = new BasicForce();
         basicForce.setCountry("france");
@@ -5280,7 +5280,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         basicForce.setType(ForceTypeEnum.ND);
         basicForce.setNumber(1);
         basicForces.add(basicForce);
-        tables.setBasicForces(basicForces);
+        tables.getBasicForces().addAll(basicForces);
         EconomicServiceImpl.TABLES = tables;
 
         when(oeUtil.rollDie(game, france))
@@ -5442,7 +5442,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.getWarStatus(game, france)).thenReturn(WarStatusEnum.PEACE);
 
-        diffs = economicService.computeAdministrativeActions(france, game, newTfis, provinces);
+        economicService.computeAdministrativeActions(france, game, newTfis, provinces);
 
         Assert.assertEquals(160, france.getEconomicalSheets().get(0).getUnitMaintExpense().intValue());
         Assert.assertEquals(1, france.getEconomicalSheets().get(0).getFortMaintExpense().intValue());
@@ -5715,8 +5715,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         result.setResult(ResultEnum.CRITICAL_HIT);
         results.add(result);
 
-        tables.setResults(results);
-        economicService.TABLES = tables;
+        tables.getResults().addAll(results);
+        EconomicServiceImpl.TABLES = tables;
 
         Map<String, Map<String, Integer>> newTfis = new HashMap<>();
         newTfis.put("ZPVenise", new HashMap<>());
@@ -6237,8 +6237,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         result.setResult(ResultEnum.CRITICAL_HIT);
         results.add(result);
 
-        tables.setResults(results);
-        economicService.TABLES = tables;
+        tables.getResults().addAll(results);
+        EconomicServiceImpl.TABLES = tables;
 
         Set<String> establishments = new HashSet<>();
         establishments.add("rBelem~W");
@@ -6643,7 +6643,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         tech.setLand(false);
         tech.setName(Tech.THREE_DECKER);
         techs.add(tech);
-        tables.setTechs(techs);
+        tables.getTechs().addAll(techs);
         EconomicServiceImpl.TABLES = tables;
 
         // To isolate unexpected calls
