@@ -174,6 +174,8 @@ public enum DiffAttributeTypeEnum {
     PHASING_OFFENSIVE,
     /** Economical sheet pillage done by armies. */
     PILLAGE,
+    /** Economical sheet exceptional taxes. */
+    EXC_TAXES,
 
 
 }

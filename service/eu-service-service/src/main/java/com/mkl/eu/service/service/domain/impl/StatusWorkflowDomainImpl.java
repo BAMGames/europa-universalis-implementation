@@ -14,6 +14,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
@@ -606,6 +607,7 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             diffs.add(changeActivePlayers(next, game));
         } else {
             diffs.addAll(adjustSiegeworks(game));
+            diffs.addAll(computeExceptionalTaxes(game));
             // TODO exchequer
             game.setStatus(GameStatusEnum.EXCHEQUER);
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
@@ -650,6 +652,32 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                 if (siegeworkRemain.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS) {
                     diffs.add(counterDomain.switchCounter(siegeworkRemain.getId(), CounterFaceTypeEnum.SIEGEWORK_MINUS, null, game));
                 }
+            }
+        }
+
+        return diffs;
+    }
+
+    /**
+     * Compute the exceptional taxes for each country that has done one.
+     *
+     * @param game the game.
+     * @return the diffs involved.
+     */
+    private List<DiffEntity> computeExceptionalTaxes(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        for (PlayableCountryEntity country : game.getCountries()) {
+            EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                    .filter(es -> Objects.equals(game.getTurn(), es.getTurn()))
+                    .findAny()
+                    .orElse(null);
+            if (sheet != null && sheet.getExcTaxesMod() != null) {
+                Integer die = oeUtil.rollDie(game, country);
+                sheet.setExcTaxes(10 * (die + sheet.getExcTaxesMod()));
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXC_TAXES, sheet.getExcTaxes())));
             }
         }
 

@@ -328,6 +328,7 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffAttributeTypeEnum#ID_COUNTRY for the country owning the sheet (mandatory).</li>
      * <li>DiffAttributeTypeEnum#PILLAGE for the pillage line.</li>
+     * <li>DiffAttributeTypeEnum#EXC_TAXES for the exceptional taxes line.</li>
      * </ul>
      * </li>
      * </ul>
