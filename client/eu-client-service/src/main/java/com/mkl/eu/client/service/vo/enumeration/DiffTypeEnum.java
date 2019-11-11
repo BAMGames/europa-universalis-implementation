@@ -323,6 +323,13 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_MORALE_LOSS the morale losses taken by the besieged forces of this siege.</li>
      * </ul>
      * </li>
+     * </li>
+     * <li>DiffTypeObjectEnum#ECHO_SHEET in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY for the country owning the sheet (mandatory).</li>
+     * <li>DiffAttributeTypeEnum#PILLAGE for the pillage line.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     MODIFY

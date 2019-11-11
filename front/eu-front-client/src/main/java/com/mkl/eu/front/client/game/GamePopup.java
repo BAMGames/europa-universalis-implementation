@@ -27,6 +27,7 @@ import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.diplo.WarLight;
 import com.mkl.eu.client.service.vo.eco.AdministrativeAction;
 import com.mkl.eu.client.service.vo.eco.Competition;
+import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.military.Battle;
@@ -1036,6 +1037,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
      */
     private void updateEcoSheet(Game game, Diff diff) {
         switch (diff.getType()) {
+            case MODIFY:
+                modifySheet(game, diff);
+                break;
             case INVALIDATE:
                 invalidateSheet(game, diff);
                 break;
@@ -1043,6 +1047,36 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 LOGGER.error("Unknown diff " + diff);
                 break;
         }
+    }
+
+    /**
+     * Process the modify sheet diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify sheet.
+     */
+    private void modifySheet(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute == null || StringUtils.isEmpty(attribute.getValue())) {
+            LOGGER.error("Missing id country in modify sheet event.");
+            return;
+        }
+        Long idCountry = Long.parseLong(attribute.getValue());
+        PlayableCountry country = game.getCountries().stream()
+                .filter(pc -> Objects.equals(idCountry, pc.getId()))
+                .findAny()
+                .orElse(new PlayableCountry());
+        EconomicalSheet sheet = country.getEconomicalSheets().stream()
+                .filter(es -> Objects.equals(diff.getIdObject(), es.getId()))
+                .findAny()
+                .orElse(null);
+
+        if (sheet == null) {
+            LOGGER.error("Invalid sheet in modify sheet event.");
+            return;
+        }
+
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.PILLAGE, sheet::setPillages);
     }
 
     /**

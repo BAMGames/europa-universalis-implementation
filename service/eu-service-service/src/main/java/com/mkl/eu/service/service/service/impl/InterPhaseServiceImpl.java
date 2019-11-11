@@ -235,6 +235,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                                 "EconomicalSheetEntity", "country : " + country.getId() + " - turn : " + game.getTurn()));
                 sheet.setPillages(sheet.getPillages() + landIncome);
                 diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PILLAGE, sheet.getPillages())));
             }
         }
