@@ -605,10 +605,52 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
         if (next != null) {
             diffs.add(changeActivePlayers(next, game));
         } else {
+            diffs.addAll(adjustSiegeworks(game));
             // TODO exchequer
             game.setStatus(GameStatusEnum.EXCHEQUER);
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.EXCHEQUER)));
+        }
+
+        return diffs;
+    }
+
+    /**
+     * Only one siegework minus can remain if the province is still besieged.
+     *
+     * @param game the game.
+     * @return the diffs involved.
+     */
+    private List<DiffEntity> adjustSiegeworks(GameEntity game) {
+        Map<String, List<CounterEntity>> siegeworksPerProvince = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS)
+                .collect(Collectors.groupingBy(counter -> counter.getOwner().getProvince()));
+
+        List<DiffEntity> diffs = new ArrayList<>();
+        for (String province : siegeworksPerProvince.keySet()) {
+            List<CounterEntity> siegeworks = siegeworksPerProvince.get(province);
+            boolean besieged = game.getStacks().stream()
+                    .anyMatch(stack -> stack.getMovePhase() != null && stack.getMovePhase().isBesieging()
+                            && StringUtils.equals(province, stack.getProvince()));
+            if (!besieged) {
+                siegeworks.stream()
+                        .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework.getId(), game)));
+            } else {
+                CounterEntity siegeworkRemain = siegeworks.stream()
+                        .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS)
+                        .findAny()
+                        .orElse(siegeworks.stream()
+                                .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS)
+                                .findAny()
+                                .orElse(null));
+                siegeworks.stream()
+                        .filter(siegework -> !Objects.equals(siegeworkRemain.getId(), siegework.getId()))
+                        .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework.getId(), game)));
+                if (siegeworkRemain.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS) {
+                    diffs.add(counterDomain.switchCounter(siegeworkRemain.getId(), CounterFaceTypeEnum.SIEGEWORK_MINUS, null, game));
+                }
+            }
         }
 
         return diffs;

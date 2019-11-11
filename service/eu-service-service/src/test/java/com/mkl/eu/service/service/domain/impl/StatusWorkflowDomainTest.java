@@ -1504,6 +1504,7 @@ public class StatusWorkflowDomainTest {
                 game.getStacks().add(stack);
             }
 
+            //noinspection unchecked
             when(testClass.oeUtil.searchWar(anyList(), anyList(), any())).thenReturn(new ImmutablePair<>(war, false));
             AbstractProvinceEntity idf = new EuropeanProvinceEntity();
             when(testClass.provinceDao.getProvinceByName("idf")).thenReturn(idf);
@@ -1692,14 +1693,99 @@ public class StatusWorkflowDomainTest {
         order.setCountry(spain);
         game.getOrders().add(order);
 
+        StackEntity stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
+        stack.getCounters().add(createCounter(2L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.getCounters().add(createCounter(11L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("silesie");
+        stack.getCounters().add(createCounter(21L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("silesie");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("orleanais");
+        stack.getCounters().add(createCounter(31L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
+        stack.getCounters().add(createCounter(32L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("orleanais");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+
+        stack = new StackEntity();
+        stack.setProvince("vendee");
+        stack.getCounters().add(createCounter(41L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        stack.getCounters().add(createCounter(42L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("vendee");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        game.getStacks().add(stack);
+
+        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(removeCounterAnswer());
+        when(counterDomain.switchCounter(anyLong(), any(), any(), any())).thenAnswer(switchCounterAnswer());
+
         List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
 
         Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
-        Assert.assertEquals(1, diffs.size());
+        Assert.assertEquals(7, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                        && Objects.equals(1L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                        && Objects.equals(2L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                        && Objects.equals(21L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(CounterFaceTypeEnum.SIEGEWORK_MINUS.name(), getAttribute(diff, DiffAttributeTypeEnum.TYPE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                        && Objects.equals(32L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                        && (Objects.equals(41L, d.getIdObject()) || Objects.equals(42L, d.getIdObject())))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                        && (Objects.equals(41L, d.getIdObject()) || Objects.equals(42L, d.getIdObject())))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(CounterFaceTypeEnum.SIEGEWORK_MINUS.name(), getAttribute(diff, DiffAttributeTypeEnum.TYPE));
     }
 }
