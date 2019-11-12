@@ -206,6 +206,7 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#STATUS in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STATUS to know at which new status should be the game.</li>
+     * <li>DiffAttributeTypeEnum#ACTIVE at false to un ready every country.</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#STACK in which case it will use:
@@ -329,6 +330,14 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#ID_COUNTRY for the country owning the sheet (mandatory).</li>
      * <li>DiffAttributeTypeEnum#PILLAGE for the pillage line.</li>
      * <li>DiffAttributeTypeEnum#EXC_TAXES for the exceptional taxes line.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_ROYAL_TREASURE for the royal treasure before exchequer line.</li>
+     * <li>DiffAttributeTypeEnum#EXPENSES for the expenses line.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_COL for the exchequer column.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_MOD for the exchequer modifier.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_DIE for the unmodified exchequer die roll.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_REGULAR for the regular income line.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_PRESTIGE for the prestige income line.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_MAX_NAT_LOAN for the maximum national loan line.</li>
      * </ul>
      * </li>
      * </ul>

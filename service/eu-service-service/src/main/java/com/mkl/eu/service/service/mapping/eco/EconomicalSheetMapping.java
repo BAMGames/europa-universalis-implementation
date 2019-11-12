@@ -126,6 +126,9 @@ public class EconomicalSheetMapping extends AbstractMapping {
         target.setRtAftExch(source.getRtAftExch());
         target.setRtBalance(source.getRtBalance());
         target.setRtBefExch(source.getRtBefExch());
+        target.setExchequerColumn(source.getExchequerColumn());
+        target.setExchequerBonus(source.getExchequerBonus());
+        target.setExchequerDie(source.getExchequerDie());
         target.setRtCollapse(source.getRtCollapse());
         target.setRtDiplo(source.getRtDiplo());
         target.setRtEnd(source.getRtEnd());

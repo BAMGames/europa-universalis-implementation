@@ -176,6 +176,24 @@ public enum DiffAttributeTypeEnum {
     PILLAGE,
     /** Economical sheet exceptional taxes. */
     EXC_TAXES,
+    /** Economical sheet exchequer die column. */
+    EXCHEQUER_COL,
+    /** Economical sheet exchequer die modifier. */
+    EXCHEQUER_MOD,
+    /** Economical sheet exchequer unmodified die roll. */
+    EXCHEQUER_DIE,
+    /** Economical sheet RT before exchequer. */
+    EXCHEQUER_ROYAL_TREASURE,
+    /** Economical sheet total expenses. */
+    EXPENSES,
+    /** Economical sheet exchequer regular income. */
+    EXCHEQUER_REGULAR,
+    /** Economical sheet exchequer prestige income. */
+    EXCHEQUER_PRESTIGE,
+    /** Economical sheet exchequer max national loan. */
+    EXCHEQUER_MAX_NAT_LOAN,
+    /** Economical sheet remaining expenses. */
+    REMAINING_EXPENSES,
 
 
 }

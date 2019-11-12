@@ -1,8 +1,12 @@
 package com.mkl.eu.service.service.domain.impl;
 
+import com.mkl.eu.client.common.exception.IConstantsCommonException;
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Exchequer;
+import com.mkl.eu.client.service.vo.tables.Result;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
@@ -10,6 +14,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
@@ -19,6 +24,7 @@ import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.impl.AbstractBack;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +43,7 @@ import java.util.stream.Collectors;
  * @author MKL.
  */
 @Component
-public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
+public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWorkflowDomain {
     /** Counter domain. */
     @Autowired
     private ICounterDomain counterDomain;
@@ -607,11 +613,11 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
             diffs.add(changeActivePlayers(next, game));
         } else {
             diffs.addAll(adjustSiegeworks(game));
-            diffs.addAll(computeExceptionalTaxes(game));
-            // TODO exchequer
+            diffs.addAll(updateEcoSheet(game));
             game.setStatus(GameStatusEnum.EXCHEQUER);
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.EXCHEQUER)));
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.EXCHEQUER),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false)));
         }
 
         return diffs;
@@ -659,12 +665,12 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
     }
 
     /**
-     * Compute the exceptional taxes for each country that has done one.
+     * Compute the exceptional taxes and the exchequer test for each country.
      *
      * @param game the game.
      * @return the diffs involved.
      */
-    private List<DiffEntity> computeExceptionalTaxes(GameEntity game) {
+    private List<DiffEntity> updateEcoSheet(GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
 
         for (PlayableCountryEntity country : game.getCountries()) {
@@ -672,14 +678,109 @@ public class StatusWorkflowDomainImpl implements IStatusWorkflowDomain {
                     .filter(es -> Objects.equals(game.getTurn(), es.getTurn()))
                     .findAny()
                     .orElse(null);
-            if (sheet != null && sheet.getExcTaxesMod() != null) {
-                Integer die = oeUtil.rollDie(game, country);
-                sheet.setExcTaxes(10 * (die + sheet.getExcTaxesMod()));
+
+            if (sheet != null) {
+                List<DiffAttributesEntity> attributes = new ArrayList<>();
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
+                attributes.addAll(computeExceptionalTaxes(sheet, country, game));
+                attributes.addAll(computeExchequer(sheet, country, game));
+
                 diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXC_TAXES, sheet.getExcTaxes())));
+                        attributes.toArray(new DiffAttributesEntity[attributes.size()])));
+
+                country.setReady(false);
             }
         }
+
+        return diffs;
+    }
+
+    /**
+     * Compute the exceptional taxes for each country that has done one.
+     *
+     * @param sheet   the economical sheet.
+     * @param country the country.
+     * @param game    the game.
+     * @return the diffs involved.
+     */
+    private List<DiffAttributesEntity> computeExceptionalTaxes(EconomicalSheetEntity sheet, PlayableCountryEntity country, GameEntity game) {
+        List<DiffAttributesEntity> diffs = new ArrayList<>();
+
+        if (sheet.getExcTaxesMod() != null) {
+            Integer die = oeUtil.rollDie(game, country);
+            sheet.setExcTaxes(10 * (die + sheet.getExcTaxesMod()));
+            diffs.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXC_TAXES, sheet.getExcTaxes()));
+        }
+
+        return diffs;
+    }
+
+    /**
+     * Compute the exchequer test for each country.
+     *
+     * @param sheet   the economical sheet.
+     * @param country the country.
+     * @param game    the game.
+     * @return the diffs involved.
+     */
+    private List<DiffAttributesEntity> computeExchequer(EconomicalSheetEntity sheet, PlayableCountryEntity country, GameEntity game) {
+        List<DiffAttributesEntity> diffs = new ArrayList<>();
+
+        sheet.setRtBefExch(CommonUtil.add(0, sheet.getRtDiplo(), sheet.getPillages(), sheet.getGoldRotw(), sheet.getExcTaxes()));
+        sheet.setExpenses(CommonUtil.add(0, sheet.getInterestExpense(), sheet.getMandRefundExpense(),
+                sheet.getAdmTotalExpense(), sheet.getMilitaryExpense()));
+
+        Integer stab = oeUtil.getStability(game, country.getName());
+        Integer exchequerMod = 0;
+        WarStatusEnum warStatus = oeUtil.getWarStatus(game, country);
+        if (warStatus == WarStatusEnum.PEACE) {
+            exchequerMod += 2;
+        }
+        // TODO TG-138 Loans and bankrupt
+        // TODO TG-18 loan treaty broken
+
+        Integer die = oeUtil.rollDie(game, country);
+        sheet.setExchequerColumn(stab);
+        sheet.setExchequerBonus(exchequerMod);
+        sheet.setExchequerDie(die);
+
+        int modifiedDie = Math.min(Math.max(die + exchequerMod, 1), 10);
+        ResultEnum result = getTables().getResults().stream()
+                .filter(res -> Objects.equals(stab, res.getColumn()) && Objects.equals(modifiedDie, res.getDie()))
+                .map(Result::getResult)
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "results", "column:" + stab + ",die:" + modifiedDie));
+
+        Exchequer exchequer = getTables().getExchequers().stream()
+                .filter(exc -> exc.getResult() == result)
+                .findAny()
+                .orElseThrow(createTechnicalExceptionSupplier(IConstantsCommonException.MISSING_TABLE, MSG_MISSING_TABLE, "exchequer", result.name()));
+
+        int grossIncome = sheet.getGrossIncome() != null ? sheet.getGrossIncome() : 0;
+        int regular = grossIncome * exchequer.getRegular() / 100;
+        int prestige = grossIncome * exchequer.getPrestige() / 100;
+        int loanRatio = exchequer.getNatLoan();
+        if (warStatus != WarStatusEnum.PEACE) {
+            loanRatio += 10;
+        }
+        // TODO TG-131 Spain +10 if expulsion
+        int loan = grossIncome * loanRatio / 100;
+        sheet.setRegularIncome(regular);
+        sheet.setPrestigeIncome(prestige);
+        sheet.setMaxNatLoan(loan);
+        // TODO TG-138 international loans
+
+        sheet.setRemainingExpenses(sheet.getExpenses() - sheet.getRegularIncome());
+
+        diffs.addAll(Arrays.asList(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_ROYAL_TREASURE, sheet.getRtBefExch()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXPENSES, sheet.getExpenses()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_COL, sheet.getExchequerColumn()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_MOD, sheet.getExchequerBonus()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_DIE, sheet.getExchequerDie()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_REGULAR, sheet.getRegularIncome()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE, sheet.getPrestigeIncome()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_MAX_NAT_LOAN, sheet.getMaxNatLoan()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.REMAINING_EXPENSES, sheet.getRemainingExpenses())));
 
         return diffs;
     }

@@ -293,6 +293,9 @@ public class GameMappingTest {
         object.setRtBefExch(86);
         object.setRtCollapse(87);
         object.setRtDiplo(88);
+        object.setExchequerColumn(666);
+        object.setExchequerBonus(667);
+        object.setExchequerDie(668);
         objects.add(object);
 
         return objects;
@@ -800,6 +803,9 @@ public class GameMappingTest {
         object.setRtBefExch(86);
         object.setRtCollapse(87);
         object.setRtDiplo(88);
+        object.setExchequerColumn(666);
+        object.setExchequerBonus(667);
+        object.setExchequerDie(668);
         objects.add(object);
 
         return objects;

@@ -1,6 +1,9 @@
 package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Exchequer;
+import com.mkl.eu.client.service.vo.tables.Result;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
@@ -19,6 +22,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.impl.AbstractBack;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -1850,15 +1854,25 @@ public class StatusWorkflowDomainTest {
 
         when(oeUtil.rollDie(any(), (PlayableCountryEntity) any())).thenReturn(1);
 
+        fillTables();
+
         List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
 
         Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
-        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(4, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(2L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(null, getAttribute(diff, DiffAttributeTypeEnum.EXC_TAXES));
+        Assert.assertEquals("1", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
         diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
                         && Objects.equals(11L, d.getIdObject()))
@@ -1880,14 +1894,18 @@ public class StatusWorkflowDomainTest {
     @Test
     public void testEndRedeploymentPhaseExchequer() {
         GameEntity game = new GameEntity();
+        game.setTurn(10);
         game.setStatus(GameStatusEnum.REDEPLOYMENT);
         PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(1L);
         france.setName("france");
         game.getCountries().add(france);
         PlayableCountryEntity turkey = new PlayableCountryEntity();
+        turkey.setId(2L);
         turkey.setName("turkey");
         game.getCountries().add(turkey);
         PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(3L);
         spain.setName("spain");
         game.getCountries().add(spain);
         CountryOrderEntity order = new CountryOrderEntity();
@@ -1904,14 +1922,135 @@ public class StatusWorkflowDomainTest {
         order.setCountry(spain);
         game.getOrders().add(order);
 
+        EconomicalSheetEntity franceSheet = new EconomicalSheetEntity();
+        franceSheet.setId(1L);
+        franceSheet.setTurn(game.getTurn());
+        franceSheet.setRtDiplo(100);
+        franceSheet.setPillages(10);
+        franceSheet.setGoldRotw(25);
+        franceSheet.setExcTaxes(-10);
+        franceSheet.setInterestExpense(2);
+        franceSheet.setMandRefundExpense(20);
+        franceSheet.setAdmTotalExpense(200);
+        franceSheet.setMilitaryExpense(100);
+        franceSheet.setGrossIncome(400);
+        france.getEconomicalSheets().add(franceSheet);
+        france.getEconomicalSheets().add(new EconomicalSheetEntity());
+
+        spain.getEconomicalSheets().add(new EconomicalSheetEntity());
+        EconomicalSheetEntity spainSheet = new EconomicalSheetEntity();
+        spainSheet.setId(2L);
+        spainSheet.setTurn(game.getTurn());
+        spainSheet.setGrossIncome(98);
+        spain.getEconomicalSheets().add(spainSheet);
+
+        turkey.getEconomicalSheets().add(new EconomicalSheetEntity());
+
+        when(oeUtil.getStability(game, france.getName())).thenReturn(1);
+        when(oeUtil.getStability(game, spain.getName())).thenReturn(-3);
+        when(oeUtil.getWarStatus(game, france)).thenReturn(WarStatusEnum.PEACE);
+        when(oeUtil.getWarStatus(game, spain)).thenReturn(WarStatusEnum.CLASSIC_WAR);
+        when(oeUtil.rollDie(game, france)).thenReturn(10);
+        when(oeUtil.rollDie(game, spain)).thenReturn(0);
+
+        fillTables();
+
         List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
 
         Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
-        Assert.assertEquals(1, diffs.size());
+        Assert.assertEquals(3, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals("false", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(1L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(france.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("125", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_ROYAL_TREASURE));
+        Assert.assertEquals(125, franceSheet.getRtBefExch().intValue());
+        Assert.assertEquals("322", getAttribute(diff, DiffAttributeTypeEnum.EXPENSES));
+        Assert.assertEquals(322, franceSheet.getExpenses().intValue());
+        Assert.assertEquals("1", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_COL));
+        Assert.assertEquals(1, franceSheet.getExchequerColumn().intValue());
+        Assert.assertEquals("2", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_MOD));
+        Assert.assertEquals(2, franceSheet.getExchequerBonus().intValue());
+        Assert.assertEquals("10", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_DIE));
+        Assert.assertEquals(10, franceSheet.getExchequerDie().intValue());
+        Assert.assertEquals("240", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_REGULAR));
+        Assert.assertEquals(240, franceSheet.getRegularIncome().intValue());
+        Assert.assertEquals("160", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE));
+        Assert.assertEquals(160, franceSheet.getPrestigeIncome().intValue());
+        Assert.assertEquals("80", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_MAX_NAT_LOAN));
+        Assert.assertEquals(80, franceSheet.getMaxNatLoan().intValue());
+        Assert.assertEquals("82", getAttribute(diff, DiffAttributeTypeEnum.REMAINING_EXPENSES));
+        Assert.assertEquals(82, franceSheet.getRemainingExpenses().intValue());
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(2L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(spain.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_ROYAL_TREASURE));
+        Assert.assertEquals(0, spainSheet.getRtBefExch().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.EXPENSES));
+        Assert.assertEquals(0, spainSheet.getExpenses().intValue());
+        Assert.assertEquals("-3", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_COL));
+        Assert.assertEquals(-3, spainSheet.getExchequerColumn().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_MOD));
+        Assert.assertEquals(0, spainSheet.getExchequerBonus().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_DIE));
+        Assert.assertEquals(0, spainSheet.getExchequerDie().intValue());
+        Assert.assertEquals("29", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_REGULAR));
+        Assert.assertEquals(29, spainSheet.getRegularIncome().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE));
+        Assert.assertEquals(0, spainSheet.getPrestigeIncome().intValue());
+        Assert.assertEquals("49", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_MAX_NAT_LOAN));
+        Assert.assertEquals(49, spainSheet.getMaxNatLoan().intValue());
+        Assert.assertEquals("-29", getAttribute(diff, DiffAttributeTypeEnum.REMAINING_EXPENSES));
+        Assert.assertEquals(-29, spainSheet.getRemainingExpenses().intValue());
+    }
+
+    private void fillTables() {
+        AbstractBack.TABLES = new Tables();
+        Result result = new Result();
+        result.setColumn(1);
+        result.setDie(10);
+        result.setResult(ResultEnum.CRITICAL_HIT);
+        AbstractBack.TABLES.getResults().add(result);
+        result = new Result();
+        result.setColumn(0);
+        result.setDie(1);
+        result.setResult(ResultEnum.FAILED);
+        AbstractBack.TABLES.getResults().add(result);
+        result = new Result();
+        result.setColumn(-3);
+        result.setDie(1);
+        result.setResult(ResultEnum.FUMBLE);
+        AbstractBack.TABLES.getResults().add(result);
+        Exchequer exchequer = new Exchequer();
+        exchequer.setResult(ResultEnum.CRITICAL_HIT);
+        exchequer.setRegular(60);
+        exchequer.setPrestige(40);
+        exchequer.setNatLoan(20);
+        AbstractBack.TABLES.getExchequers().add(exchequer);
+        exchequer = new Exchequer();
+        exchequer.setResult(ResultEnum.FAILED);
+        exchequer.setRegular(20);
+        exchequer.setPrestige(20);
+        exchequer.setNatLoan(40);
+        AbstractBack.TABLES.getExchequers().add(exchequer);
+        exchequer = new Exchequer();
+        exchequer.setResult(ResultEnum.FUMBLE);
+        exchequer.setRegular(30);
+        exchequer.setPrestige(00);
+        exchequer.setNatLoan(40);
+        AbstractBack.TABLES.getExchequers().add(exchequer);
     }
 }

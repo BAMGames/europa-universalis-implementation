@@ -1078,6 +1078,15 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
 
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.PILLAGE, sheet::setPillages);
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXC_TAXES, sheet::setExcTaxes);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_ROYAL_TREASURE, sheet::setRtBefExch);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXPENSES, sheet::setExpenses);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_COL, sheet::setExchequerColumn);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_MOD, sheet::setExchequerBonus);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_DIE, sheet::setExchequerDie);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_REGULAR, sheet::setRegularIncome);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE, sheet::setPrestigeIncome);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_MAX_NAT_LOAN, sheet::setMaxNatLoan);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.REMAINING_EXPENSES, sheet::setRemainingExpenses);
     }
 
     /**
@@ -1334,6 +1343,12 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 }
             }
         }
+
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.ACTIVE, active -> {
+            if (!active) {
+                game.getCountries().forEach(country -> country.setReady(false));
+            }
+        });
     }
 
     /**
