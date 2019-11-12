@@ -1750,9 +1750,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
                 newDiffs.add(diff);
 
-                diff = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.STATUS);
-                newDiffs.add(diff);
-
                 newDiffs.addAll(statusWorkflowDomain.computeEndAdministrativeActions(game));
             } else {
                 DiffEntity diff = DiffUtil.createDiff(game, request.getRequest().isValidate() ? DiffTypeEnum.VALIDATE : DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.STATUS, country.getId(),

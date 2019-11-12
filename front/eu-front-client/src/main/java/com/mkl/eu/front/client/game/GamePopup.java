@@ -1355,71 +1355,34 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
      * Process the validate status action diff event.
      *
      * @param game to update.
-     * @param diff involving a validatation status.
+     * @param diff involving a validatate status.
      */
     private void validateStatus(Game game, Diff diff) {
-        PlayableCountry country = null;
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
-        if (attribute != null) {
-            Long idCountry = Long.parseLong(attribute.getValue());
-            country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        if (attribute == null) {
+            LOGGER.error("Missing country in validate status event.");
+            return;
         }
-
-        switch (game.getStatus()) {
-            case ADMINISTRATIVE_ACTIONS_CHOICE:
-                if (country != null) {
-                    country.setReady(true);
-                } else {
-                    game.getCountries().stream()
-                            .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
-                            .forEach(c -> c.setReady(true));
-                }
-                break;
-            case MILITARY_MOVE:
-                if (country != null) {
-                    Long idCountry = country.getId();
-                    game.getOrders().stream()
-                            .filter(order -> order.getCountry().getId().equals(idCountry) &&
-                                    order.isActive())
-                            .forEach(order -> order.setActive(false));
-                } else {
-                    game.getOrders().stream()
-                            .forEach(order -> order.setActive(false));
-                }
-                break;
-            default:
-                break;
-        }
+        Long idCountry = Long.parseLong(attribute.getValue());
+        PlayableCountry country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        country.setReady(true);
     }
 
     /**
      * Process the invalidate status action diff event.
      *
      * @param game to update.
-     * @param diff involving an invalidattion status.
+     * @param diff involving an invalidate status.
      */
     private void invalidateStatus(Game game, Diff diff) {
-        PlayableCountry country = null;
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
-        if (attribute != null) {
-            Long idCountry = Long.parseLong(attribute.getValue());
-            country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        if (attribute == null) {
+            LOGGER.error("Missing country in invalidate status event.");
+            return;
         }
-
-        switch (game.getStatus()) {
-            case ADMINISTRATIVE_ACTIONS_CHOICE:
-                if (country != null) {
-                    country.setReady(false);
-                } else {
-                    game.getCountries().stream()
-                            .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
-                            .forEach(c -> c.setReady(false));
-                }
-                break;
-            case MILITARY_MOVE:
-            default:
-                break;
-        }
+        Long idCountry = Long.parseLong(attribute.getValue());
+        PlayableCountry country = findFirst(game.getCountries(), c -> idCountry.equals(c.getId()));
+        country.setReady(false);
     }
 
     /**

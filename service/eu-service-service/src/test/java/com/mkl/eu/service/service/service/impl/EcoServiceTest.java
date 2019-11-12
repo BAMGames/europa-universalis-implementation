@@ -4694,7 +4694,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         inOrder.verify(diffDao).getDiffsSince(12L, request.getGame().getIdCountry(), 1L);
         inOrder.verify(diffMapping).oesToVos(anyObject());
 
-        Assert.assertEquals(4, diffEntities.size());
+        Assert.assertEquals(3, diffEntities.size());
         Assert.assertEquals(12L, diffEntities.get(0).getIdGame().longValue());
         Assert.assertEquals(null, diffEntities.get(0).getIdObject());
         Assert.assertEquals(1L, diffEntities.get(0).getVersionGame().longValue());
@@ -4713,14 +4713,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntities.get(1).getAttributes().get(0).getType());
         Assert.assertEquals("22", diffEntities.get(1).getAttributes().get(0).getValue());
 
-        Assert.assertEquals(12L, diffEntities.get(2).getIdGame().longValue());
-        Assert.assertEquals(null, diffEntities.get(2).getIdObject());
-        Assert.assertEquals(1L, diffEntities.get(2).getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntities.get(2).getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffEntities.get(2).getTypeObject());
-        Assert.assertEquals(0, diffEntities.get(2).getAttributes().size());
-
-        Assert.assertEquals(statusDiff, diffEntities.get(3));
+        Assert.assertEquals(statusDiff, diffEntities.get(2));
     }
 
     @Test
