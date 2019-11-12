@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Exchequer;
+import com.mkl.eu.client.service.vo.tables.Period;
 import com.mkl.eu.client.service.vo.tables.Result;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.domain.ICounterDomain;
@@ -2052,5 +2053,215 @@ public class StatusWorkflowDomainTest {
         exchequer.setPrestige(00);
         exchequer.setNatLoan(40);
         AbstractBack.TABLES.getExchequers().add(exchequer);
+    }
+
+    @Test
+    public void testEndExchequerFirstTurnPeriod() {
+        GameEntity game = new GameEntity();
+        game.setTurn(7);
+        game.setStatus(GameStatusEnum.EXCHEQUER);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(1L);
+        france.setName("france");
+        france.setReady(true);
+        game.getCountries().add(france);
+        PlayableCountryEntity turkey = new PlayableCountryEntity();
+        turkey.setId(2L);
+        turkey.setName("turkey");
+        turkey.setReady(true);
+        game.getCountries().add(turkey);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(3L);
+        spain.setName("spain");
+        spain.setReady(true);
+        game.getCountries().add(spain);
+
+        EconomicalSheetEntity franceSheet = new EconomicalSheetEntity();
+        franceSheet.setId(1L);
+        franceSheet.setTurn(game.getTurn());
+        franceSheet.setPrestigeSpent(16);
+        franceSheet.setNatLoan(10);
+        franceSheet.setInterLoan(25);
+        franceSheet.setRemainingExpenses(-10);
+        franceSheet.setRtBefExch(-5);
+        franceSheet.setPrestigeIncome(24);
+        franceSheet.setGrossIncome(400);
+        france.getEconomicalSheets().add(franceSheet);
+        EconomicalSheetEntity previous = new EconomicalSheetEntity();
+        previous.setId(11L);
+        previous.setTurn(game.getTurn() - 1);
+        previous.setPeriodWealth(500);
+        france.getEconomicalSheets().add(previous);
+
+        EconomicalSheetEntity spainSheet = new EconomicalSheetEntity();
+        spainSheet.setId(2L);
+        spainSheet.setTurn(game.getTurn());
+        spainSheet.setRemainingExpenses(0);
+        spainSheet.setGrossIncome(100);
+        spain.getEconomicalSheets().add(spainSheet);
+        previous = new EconomicalSheetEntity();
+        previous.setId(21L);
+        previous.setTurn(game.getTurn() - 2);
+        previous.setPeriodWealth(500);
+        spain.getEconomicalSheets().add(previous);
+
+        turkey.getEconomicalSheets().add(new EconomicalSheetEntity());
+
+        AbstractBack.TABLES = new Tables();
+        Period period = new Period();
+        period.setBegin(7);
+        period.setEnd(15);
+        period.setName(Period.PERIOD_II);
+        AbstractBack.TABLES.getPeriods().add(period);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endExchequerPhase(game);
+
+        Assert.assertEquals(GameStatusEnum.STABILITY, game.getStatus());
+        Assert.assertEquals(3, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        Assert.assertEquals(GameStatusEnum.STABILITY.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals("false", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(1L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(france.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("61", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE));
+        Assert.assertEquals(61, franceSheet.getRtBalance().intValue());
+        Assert.assertEquals("56", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER));
+        Assert.assertEquals(56, franceSheet.getRtAftExch().intValue());
+        Assert.assertEquals("8", getAttribute(diff, DiffAttributeTypeEnum.PRESTIGE_VPS));
+        Assert.assertEquals(8, franceSheet.getPrestigeVP().intValue());
+        Assert.assertEquals("408", getAttribute(diff, DiffAttributeTypeEnum.WEALTH));
+        Assert.assertEquals(408, franceSheet.getWealth().intValue());
+        Assert.assertEquals("408", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
+        Assert.assertEquals(408, franceSheet.getPeriodWealth().intValue());
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(2L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(spain.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE));
+        Assert.assertEquals(0, spainSheet.getRtBalance().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER));
+        Assert.assertEquals(0, spainSheet.getRtAftExch().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.PRESTIGE_VPS));
+        Assert.assertEquals(0, spainSheet.getPrestigeVP().intValue());
+        Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.WEALTH));
+        Assert.assertEquals(100, spainSheet.getWealth().intValue());
+        Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
+        Assert.assertEquals(100, spainSheet.getPeriodWealth().intValue());
+    }
+
+    @Test
+    public void testEndExchequerExistingPeriod() {
+        GameEntity game = new GameEntity();
+        game.setTurn(10);
+        game.setStatus(GameStatusEnum.EXCHEQUER);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(1L);
+        france.setName("france");
+        france.setReady(true);
+        game.getCountries().add(france);
+        PlayableCountryEntity turkey = new PlayableCountryEntity();
+        turkey.setId(2L);
+        turkey.setName("turkey");
+        turkey.setReady(true);
+        game.getCountries().add(turkey);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(3L);
+        spain.setName("spain");
+        spain.setReady(true);
+        game.getCountries().add(spain);
+
+        EconomicalSheetEntity franceSheet = new EconomicalSheetEntity();
+        franceSheet.setId(1L);
+        franceSheet.setTurn(game.getTurn());
+        franceSheet.setPrestigeSpent(16);
+        franceSheet.setNatLoan(10);
+        franceSheet.setInterLoan(25);
+        franceSheet.setRemainingExpenses(-10);
+        franceSheet.setRtBefExch(-5);
+        franceSheet.setPrestigeIncome(24);
+        franceSheet.setGrossIncome(400);
+        france.getEconomicalSheets().add(franceSheet);
+        EconomicalSheetEntity previous = new EconomicalSheetEntity();
+        previous.setId(11L);
+        previous.setTurn(game.getTurn() - 1);
+        previous.setPeriodWealth(500);
+        france.getEconomicalSheets().add(previous);
+
+        EconomicalSheetEntity spainSheet = new EconomicalSheetEntity();
+        spainSheet.setId(2L);
+        spainSheet.setTurn(game.getTurn());
+        spainSheet.setRemainingExpenses(0);
+        spainSheet.setGrossIncome(100);
+        spain.getEconomicalSheets().add(spainSheet);
+        previous = new EconomicalSheetEntity();
+        previous.setId(21L);
+        previous.setTurn(game.getTurn() - 2);
+        previous.setPeriodWealth(500);
+        spain.getEconomicalSheets().add(previous);
+
+        turkey.getEconomicalSheets().add(new EconomicalSheetEntity());
+
+        AbstractBack.TABLES = new Tables();
+        Period period = new Period();
+        period.setBegin(7);
+        period.setEnd(15);
+        period.setName(Period.PERIOD_II);
+        AbstractBack.TABLES.getPeriods().add(period);
+
+        List<DiffEntity> diffs = statusWorkflowDomain.endExchequerPhase(game);
+
+        Assert.assertEquals(GameStatusEnum.STABILITY, game.getStatus());
+        Assert.assertEquals(3, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        Assert.assertEquals(GameStatusEnum.STABILITY.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+        Assert.assertEquals("false", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(1L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(france.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("61", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE));
+        Assert.assertEquals(61, franceSheet.getRtBalance().intValue());
+        Assert.assertEquals("56", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER));
+        Assert.assertEquals(56, franceSheet.getRtAftExch().intValue());
+        Assert.assertEquals("8", getAttribute(diff, DiffAttributeTypeEnum.PRESTIGE_VPS));
+        Assert.assertEquals(8, franceSheet.getPrestigeVP().intValue());
+        Assert.assertEquals("408", getAttribute(diff, DiffAttributeTypeEnum.WEALTH));
+        Assert.assertEquals(408, franceSheet.getWealth().intValue());
+        Assert.assertEquals("908", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
+        Assert.assertEquals(908, franceSheet.getPeriodWealth().intValue());
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(2L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(spain.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE));
+        Assert.assertEquals(0, spainSheet.getRtBalance().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER));
+        Assert.assertEquals(0, spainSheet.getRtAftExch().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.PRESTIGE_VPS));
+        Assert.assertEquals(0, spainSheet.getPrestigeVP().intValue());
+        Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.WEALTH));
+        Assert.assertEquals(100, spainSheet.getWealth().intValue());
+        Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
+        Assert.assertEquals(100, spainSheet.getPeriodWealth().intValue());
     }
 }

@@ -784,4 +784,55 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
 
         return diffs;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DiffEntity> endExchequerPhase(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        for (PlayableCountryEntity country : game.getCountries()) {
+            EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                    .filter(es -> Objects.equals(game.getTurn(), es.getTurn()))
+                    .findAny()
+                    .orElse(null);
+
+            if (sheet != null) {
+                int additionalIncomes = CommonUtil.add(0, sheet.getPrestigeSpent(), sheet.getNatLoan(), sheet.getInterLoan());
+                sheet.setRtBalance(additionalIncomes - sheet.getRemainingExpenses());
+                sheet.setRtAftExch(CommonUtil.add(sheet.getRtBefExch(), sheet.getRtBalance()));
+                sheet.setPrestigeVP(CommonUtil.subtract(sheet.getPrestigeIncome(), sheet.getPrestigeSpent()));
+                boolean firstTurnOfPeriod = getTables().getPeriods().stream()
+                        .anyMatch(period -> Objects.equals(period.getBegin(), game.getTurn()));
+                sheet.setWealth(CommonUtil.add(sheet.getGrossIncome(), sheet.getPrestigeVP()));
+                if (firstTurnOfPeriod) {
+                    sheet.setPeriodWealth(sheet.getWealth());
+                } else {
+                    int previousWealth = country.getEconomicalSheets().stream()
+                            .filter(es -> Objects.equals(game.getTurn() - 1, es.getTurn()))
+                            .map(EconomicalSheetEntity::getPeriodWealth)
+                            .findAny()
+                            .orElse(0);
+
+                    sheet.setPeriodWealth(CommonUtil.add(previousWealth, sheet.getWealth()));
+                }
+
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE, sheet.getRtBalance()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER, sheet.getRtAftExch()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PRESTIGE_VPS, sheet.getPrestigeVP()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WEALTH, sheet.getWealth()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PERIOD_WEALTH, sheet.getPeriodWealth())));
+
+                country.setReady(false);
+            }
+        }
+
+        game.setStatus(GameStatusEnum.STABILITY);
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.STABILITY.name()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false)));
+
+        return diffs;
+    }
 }

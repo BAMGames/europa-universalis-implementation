@@ -34,8 +34,8 @@ public interface IInterPhaseService {
     @WebResult(name = RESPONSE)
     DiffResponse exchequerRepartition(@WebParam(name = PARAMETER_VALIDATE_REDEPLOY) Request<ExchequerRepartitionRequest> request) throws FunctionalException, TechnicalException;
 
-//    @WebResult(name = RESPONSE)
-//    DiffResponse validateExchequer(@WebParam(name = PARAMETER_VALIDATE_REDEPLOY) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+    @WebResult(name = RESPONSE)
+    DiffResponse validateExchequer(@WebParam(name = PARAMETER_VALIDATE_EXCHEQUER) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
 
 //    @WebResult(name = RESPONSE)
 //    DiffResponse improveStability(@WebParam(name = PARAMETER_LAND_LOOTING) Request<LandLootingRequest> request) throws FunctionalException, TechnicalException;

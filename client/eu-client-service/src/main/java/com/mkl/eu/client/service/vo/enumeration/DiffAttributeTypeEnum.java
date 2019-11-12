@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.vo.enumeration;
 
 /**
  * Enumeration for the types of diff attributes.
+ * // TODO TG-139 replace this enum by a bunch of String constants
  *
  * @author MKL.
  */
@@ -196,6 +197,14 @@ public enum DiffAttributeTypeEnum {
     REMAINING_EXPENSES,
     /** Economical sheet exchequer prestige spent. */
     EXCHEQUER_PRESTIGE_SPENT,
-
-
+    /** Economical sheet royal treasure balance. */
+    ROYAL_TREASURE_BALANCE,
+    /** Economical sheet royal treasure after exchequer. */
+    ROYAL_TREASURE_AFTER_EXCHEQUER,
+    /** Economical sheet prestige VPs. */
+    PRESTIGE_VPS,
+    /** Economical sheet wealth. */
+    WEALTH,
+    /** Economical sheet period wealth. */
+    PERIOD_WEALTH,
 }

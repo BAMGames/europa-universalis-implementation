@@ -339,6 +339,11 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#EXCHEQUER_PRESTIGE for the prestige income line.</li>
      * <li>DiffAttributeTypeEnum#EXCHEQUER_MAX_NAT_LOAN for the maximum national loan line.</li>
      * <li>DiffAttributeTypeEnum#EXCHEQUER_PRESTIGE_SPENT for the prestige spent line.</li>
+     * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_BALANCE for the royal treasure line.</li>
+     * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_AFTER_EXCHEQUER for the royal treasure after exchequer test line.</li>
+     * <li>DiffAttributeTypeEnum#PRESTIGE_VPS for the prestige VPs line.</li>
+     * <li>DiffAttributeTypeEnum#WEALTH for the wealth line.</li>
+     * <li>DiffAttributeTypeEnum#PERIOD_WEALTH for the period wealth line.</li>
      * </ul>
      * </li>
      * </ul>

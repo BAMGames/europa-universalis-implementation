@@ -50,4 +50,10 @@ public class InterPhaseWsServiceImpl extends SpringBeanAutowiringSupport impleme
     public DiffResponse exchequerRepartition(Request<ExchequerRepartitionRequest> request) throws FunctionalException, TechnicalException {
         return interPhaseService.exchequerRepartition(request);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse validateExchequer(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        return interPhaseService.validateExchequer(request);
+    }
 }

@@ -578,12 +578,15 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setName(PARAMETER_EXCHEQUER_REPARTITION, PARAMETER_REQUEST, PARAMETER_GAME, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_EXCHEQUER_REPARTITION));
 
+        int maxValue = Math.min(CommonUtil.toInt(sheet.getPrestigeIncome()), CommonUtil.toInt(sheet.getRemainingExpenses()));
+
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(CommonUtil.subtract(request.getRequest().getPrestige(), sheet.getPrestigeIncome()) > 0)
+                .setTest(request.getRequest().getPrestige() < 0 ||
+                        CommonUtil.subtract(request.getRequest().getPrestige(), maxValue) > 0)
                 .setCodeError(IConstantsServiceException.PRESTIGE_TOO_HIGH)
-                .setMsgFormat("")
+                .setMsgFormat("{1}: {0} Prestige turned into income ({2}) is invalid, it should be positive and lesser than {3}.")
                 .setName(PARAMETER_EXCHEQUER_REPARTITION, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_PRESTIGE)
-                .setParams(METHOD_EXCHEQUER_REPARTITION, request.getRequest().getPrestige(), sheet.getPrestigeIncome()));
+                .setParams(METHOD_EXCHEQUER_REPARTITION, request.getRequest().getPrestige(), maxValue));
 
         List<DiffEntity> diffs = new ArrayList<>();
         if (sheet.getPrestigeSpent() == null || sheet.getPrestigeSpent() != request.getRequest().getPrestige()) {
@@ -593,5 +596,78 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         }
 
         return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse validateExchequer(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_EXCHEQUER)
+                .setParams(METHOD_VALIDATE_EXCHEQUER));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_EXCHEQUER, PARAMETER_VALIDATE_EXCHEQUER);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.EXCHEQUER, null, METHOD_VALIDATE_EXCHEQUER, PARAMETER_VALIDATE_EXCHEQUER);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getAuthent())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_EXCHEQUER, PARAMETER_AUTHENT)
+                .setParams(METHOD_VALIDATE_EXCHEQUER));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_EXCHEQUER, PARAMETER_REQUEST)
+                .setParams(METHOD_VALIDATE_EXCHEQUER));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getGame().getIdCountry())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_VALIDATE_EXCHEQUER, PARAMETER_GAME, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_VALIDATE_EXCHEQUER));
+
+        PlayableCountryEntity country = CommonUtil.findFirst(game.getCountries(), c -> c.getId().equals(request.getGame().getIdCountry()));
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(country)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_VALIDATE_EXCHEQUER, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_VALIDATE_EXCHEQUER, request.getGame().getIdCountry()));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_VALIDATE_EXCHEQUER, PARAMETER_AUTHENT, PARAMETER_USERNAME)
+                .setParams(METHOD_VALIDATE_EXCHEQUER, request.getAuthent().getUsername(), country.getUsername()));
+
+        List<DiffEntity> newDiffs = new ArrayList<>();
+
+        if (country.isReady() != request.getRequest().isValidate()) {
+            country.setReady(request.getRequest().isValidate());
+
+            long countriesNotReady = game.getCountries().stream()
+                    .filter(c -> StringUtils.isNotEmpty(c.getUsername()) && !c.isReady())
+                    .count();
+
+            if (countriesNotReady == 0) {
+                newDiffs.addAll(statusWorkflowDomain.endExchequerPhase(game));
+            } else {
+                DiffEntity diff = DiffUtil.createDiff(game, request.getRequest().isValidate() ? DiffTypeEnum.VALIDATE : DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.STATUS, country.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
+                newDiffs.add(diff);
+            }
+        }
+
+        return createDiffs(newDiffs, gameDiffs, request);
     }
 }

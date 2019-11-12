@@ -1055,7 +1055,56 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         }
 
         sheet.setPrestigeIncome(100);
+        request.getRequest().setPrestige(100);
         request.getRequest().setPrestige(101);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because prestige spent is too high");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PRESTIGE_TOO_HIGH, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.request.prestige", e.getParams()[0]);
+        }
+
+        sheet.setPrestigeIncome(-1);
+        request.getRequest().setPrestige(-1);
+        request.getRequest().setPrestige(-1);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because prestige spent is too high");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PRESTIGE_TOO_HIGH, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.request.prestige", e.getParams()[0]);
+        }
+
+        sheet.setPrestigeIncome(100);
+        sheet.setRemainingExpenses(60);
+        request.getRequest().setPrestige(80);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because prestige spent is too high");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PRESTIGE_TOO_HIGH, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.request.prestige", e.getParams()[0]);
+        }
+
+        sheet.setPrestigeIncome(60);
+        sheet.setRemainingExpenses(100);
+        request.getRequest().setPrestige(80);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because prestige spent is too high");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PRESTIGE_TOO_HIGH, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.request.prestige", e.getParams()[0]);
+        }
+
+        sheet.setPrestigeIncome(60);
+        sheet.setRemainingExpenses(60);
+        request.getRequest().setPrestige(80);
 
         try {
             interPhaseService.exchequerRepartition(request);
@@ -1130,6 +1179,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             sheet.setTurn(game.getTurn());
             sheet.setPrestigeSpent(prestigeSpentBefore);
             sheet.setPrestigeIncome(prestigeIncome);
+            sheet.setRemainingExpenses(prestigeIncome);
             country.getEconomicalSheets().add(sheet);
             game.getCountries().add(country);
             testClass.testCheckStatus(pair.getRight(), request, interPhaseService::exchequerRepartition, "exchequerRepartition", GameStatusEnum.EXCHEQUER);
@@ -1164,5 +1214,167 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
             return this;
         }
+    }
+
+    @Test
+    public void testvalidateExchequerFail() {
+        Pair<Request<ValidateRequest>, GameEntity> pair = testCheckGame(interPhaseService::validateExchequer, "validateExchequer");
+        Request<ValidateRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+
+        testCheckStatus(game, request, interPhaseService::validateExchequer, "validateExchequer", GameStatusEnum.EXCHEQUER);
+
+        game.setTurn(22);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+
+        try {
+            interPhaseService.validateExchequer(request);
+            Assert.fail("Should break because request.authent is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateExchequer.authent", e.getParams()[0]);
+        }
+
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("toto");
+
+        try {
+            interPhaseService.validateExchequer(request);
+            Assert.fail("Should break because request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateExchequer.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ValidateRequest());
+
+        try {
+            interPhaseService.validateExchequer(request);
+            Assert.fail("Should break because request.request.idCountry is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("validateExchequer.game.idCountry", e.getParams()[0]);
+        }
+
+        request.getGame().setIdCountry(666L);
+
+        try {
+            interPhaseService.validateExchequer(request);
+            Assert.fail("Should break because request.request.idCountry is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("validateExchequer.idCountry", e.getParams()[0]);
+        }
+
+        request.getGame().setIdCountry(13L);
+
+        try {
+            interPhaseService.validateExchequer(request);
+            Assert.fail("Should break because request.authent can't do this action");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("validateExchequer.authent.username", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testValidateAdmActSuccessSimple() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.getGame().setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks();
+        game.setTurn(22);
+        game.setStatus(GameStatusEnum.EXCHEQUER);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+
+        simulateDiff();
+
+        interPhaseService.validateExchequer(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(0, diffEntities.size());
+    }
+
+    @Test
+    public void testValidateAdmActSuccessMedium() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.getGame().setIdCountry(13L);
+
+        GameEntity game = createGameUsingMocks();
+        game.setTurn(22);
+        game.setStatus(GameStatusEnum.EXCHEQUER);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(true);
+
+        simulateDiff();
+
+        interPhaseService.validateExchequer(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(1, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.INVALIDATE && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals("13", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+    }
+
+    @Test
+    public void testValidateAdmActSuccessComplex() throws FunctionalException {
+        Request<ValidateRequest> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("MKL");
+        request.setGame(createGameInfo());
+        request.setRequest(new ValidateRequest());
+        request.getGame().setIdCountry(13L);
+        request.getRequest().setValidate(true);
+
+        GameEntity game = createGameUsingMocks();
+        game.setTurn(22);
+        game.setStatus(GameStatusEnum.EXCHEQUER);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(0).setId(13L);
+        game.getCountries().get(0).setName("france");
+        game.getCountries().get(0).setUsername("MKL");
+        game.getCountries().get(0).setReady(false);
+        game.getCountries().add(new PlayableCountryEntity());
+        game.getCountries().get(1).setId(14L);
+        game.getCountries().get(1).setName("angleterre");
+        game.getCountries().get(1).setReady(false);
+
+        List<DiffEntity> statusDiffs = new ArrayList<>();
+        DiffEntity statusDiff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS);
+        statusDiffs.add(statusDiff);
+        when(statusWorkflowDomain.endExchequerPhase(game)).thenReturn(statusDiffs);
+
+        simulateDiff();
+
+        interPhaseService.validateExchequer(request);
+
+        List<DiffEntity> diffEntities = retrieveDiffsCreated();
+
+        Assert.assertEquals(1, diffEntities.size());
+        Assert.assertEquals(statusDiff, diffEntities.get(0));
     }
 }
