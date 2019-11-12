@@ -1162,4 +1162,19 @@ public interface IConstantsServiceException {
      * </p>
      */
     String STACK_MUST_REDEPLOY = "exception.eu.military.stack_must_redeploy";
+
+    /**
+     * <p>
+     * Exception thrown when trying to spend more prestige than possible in the income.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: the wanting prestige into income.</li>
+     * <li>2: the maxprestige that can be turn into income.</li>
+     * </ul>
+     * </p>
+     */
+    String PRESTIGE_TOO_HIGH = "exception.eu.military.prestige_too_high";
 }

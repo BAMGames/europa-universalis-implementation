@@ -144,6 +144,12 @@ public interface INameConstants {
     String PARAMETER_LAND_REDEPLOY = "landRedeploy";
     /** Name of the parameter validateRedeploy. */
     String PARAMETER_VALIDATE_REDEPLOY = "validateRedeploy";
+    /** Name of the parameter exchequerRepartition. */
+    String PARAMETER_EXCHEQUER_REPARTITION = "exchequerRepartition";
+    /** Name of the parameter validateExchequer. */
+    String PARAMETER_VALIDATE_EXCHEQUER = "validateExchequer";
+    /** Name of the parameter prestige. */
+    String PARAMETER_PRESTIGE = "prestige";
 
 
 
@@ -229,4 +235,8 @@ public interface INameConstants {
     String METHOD_LAND_REDEPLOY = "landRedeploy";
     /** Name of the parameter validateRedeploy. */
     String METHOD_VALIDATE_REDEPLOY = "validateRedeploy";
+    /** Name of the parameter exchequerRepartition. */
+    String METHOD_EXCHEQUER_REPARTITION = "exchequerRepartition";
+    /** Name of the parameter validateExchequer. */
+    String METHOD_VALIDATE_EXCHEQUER = "validateExchequer";
 }

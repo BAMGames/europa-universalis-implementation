@@ -5,7 +5,9 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -995,5 +997,172 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(endRedeploymentPhase, diffEntities.get(0));
+    }
+
+    @Test
+    public void testExchequerRepartitionFail() {
+        Pair<Request<ExchequerRepartitionRequest>, GameEntity> pair = testCheckGame(interPhaseService::exchequerRepartition, "exchequerRepartition");
+        Request<ExchequerRepartitionRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        game.setTurn(10);
+
+        testCheckStatus(game, request, interPhaseService::exchequerRepartition, "exchequerRepartition", GameStatusEnum.EXCHEQUER);
+
+        request.getGame().setIdCountry(26L);
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(26L);
+        country.setName("france");
+        game.getCountries().add(country);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ExchequerRepartitionRequest());
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because request.game.idCountry is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.game.idCountry", e.getParams()[0]);
+        }
+
+        EconomicalSheetEntity sheet = new EconomicalSheetEntity();
+        country.getEconomicalSheets().add(sheet);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because request.request.idCountry is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.game.idCountry", e.getParams()[0]);
+        }
+
+        sheet.setTurn(game.getTurn());
+        request.getRequest().setPrestige(1);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because prestige spent is too high");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PRESTIGE_TOO_HIGH, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.request.prestige", e.getParams()[0]);
+        }
+
+        sheet.setPrestigeIncome(100);
+        request.getRequest().setPrestige(101);
+
+        try {
+            interPhaseService.exchequerRepartition(request);
+            Assert.fail("Should break because prestige spent is too high");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.PRESTIGE_TOO_HIGH, e.getCode());
+            Assert.assertEquals("exchequerRepartition.request.request.prestige", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testExchequerRepartitionSuccess() throws FunctionalException {
+        ExchequerRepartitionBuilder.create()
+                .whenRepartition(this, interPhaseService)
+                .thenExpect(true);
+        ExchequerRepartitionBuilder.create()
+                .prestigeSpentBefore(0)
+                .whenRepartition(this, interPhaseService)
+                .thenExpect(false);
+        ExchequerRepartitionBuilder.create()
+                .prestigeIncome(100).prestigeSpent(50)
+                .whenRepartition(this, interPhaseService)
+                .thenExpect(true);
+        ExchequerRepartitionBuilder.create()
+                .prestigeIncome(100).prestigeSpentBefore(50).prestigeSpent(50)
+                .whenRepartition(this, interPhaseService)
+                .thenExpect(false);
+        ExchequerRepartitionBuilder.create()
+                .prestigeIncome(100).prestigeSpentBefore(80).prestigeSpent(50)
+                .whenRepartition(this, interPhaseService)
+                .thenExpect(true);
+    }
+
+    static class ExchequerRepartitionBuilder {
+        Integer prestigeSpentBefore;
+        Integer prestigeIncome;
+        int prestigeSpent;
+        EconomicalSheetEntity sheet;
+        List<DiffEntity> diffs;
+
+        static ExchequerRepartitionBuilder create() {
+            return new ExchequerRepartitionBuilder();
+        }
+
+        ExchequerRepartitionBuilder prestigeSpentBefore(Integer prestigeSpentBefore) {
+            this.prestigeSpentBefore = prestigeSpentBefore;
+            return this;
+        }
+
+        ExchequerRepartitionBuilder prestigeIncome(Integer prestigeIncome) {
+            this.prestigeIncome = prestigeIncome;
+            return this;
+        }
+
+        ExchequerRepartitionBuilder prestigeSpent(int prestigeSpent) {
+            this.prestigeSpent = prestigeSpent;
+            return this;
+        }
+
+        ExchequerRepartitionBuilder whenRepartition(InterPhaseServiceTest testClass, IInterPhaseService interPhaseService) throws FunctionalException {
+            Pair<Request<ExchequerRepartitionRequest>, GameEntity> pair = testClass.testCheckGame(interPhaseService::exchequerRepartition, "exchequerRepartition");
+            Request<ExchequerRepartitionRequest> request = pair.getLeft();
+            request.setRequest(new ExchequerRepartitionRequest());
+            request.getRequest().setPrestige(prestigeSpent);
+            GameEntity game = pair.getRight();
+            game.setTurn(6);
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            country.setName("france");
+            country.setId(26L);
+            sheet = new EconomicalSheetEntity();
+            sheet.setId(17L);
+            sheet.setTurn(game.getTurn());
+            sheet.setPrestigeSpent(prestigeSpentBefore);
+            sheet.setPrestigeIncome(prestigeIncome);
+            country.getEconomicalSheets().add(sheet);
+            game.getCountries().add(country);
+            testClass.testCheckStatus(pair.getRight(), request, interPhaseService::exchequerRepartition, "exchequerRepartition", GameStatusEnum.EXCHEQUER);
+            request.getGame().setIdCountry(26L);
+
+            testClass.simulateDiff();
+
+            interPhaseService.exchequerRepartition(request);
+
+            diffs = testClass.retrieveDiffsCreated();
+
+            return this;
+        }
+
+        ExchequerRepartitionBuilder thenExpect(boolean ceateDiff) {
+            if (ceateDiff) {
+                Assert.assertEquals("If old and new prestige spent are not the same, a diff should be created.", 1, diffs.size());
+
+                DiffEntity diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                                && Objects.equals(17L, d.getIdObject()))
+                        .findAny()
+                        .orElse(null);
+
+                Assert.assertNotNull("The modify eco sheet diff was not created while it should.", diff);
+                Assert.assertEquals("The prestige spent attribute in the modify eco sheet diff is wrong.", prestigeSpent + "", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE_SPENT));
+                Assert.assertEquals("The prestige spent in the eco sheet is wrong.", prestigeSpent, sheet.getPrestigeSpent().intValue());
+            } else {
+                Assert.assertEquals("If old and new prestige spent are the same, no diff should be created.", 0, diffs.size());
+                Assert.assertEquals("The prestige spent in the eco sheet is wrong.", prestigeSpentBefore, sheet.getPrestigeSpent());
+            }
+
+            return this;
+        }
     }
 }

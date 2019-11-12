@@ -8,6 +8,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
@@ -534,5 +535,63 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         }
 
         return createDiffs(newDiffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse exchequerRepartition(Request<ExchequerRepartitionRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_EXCHEQUER_REPARTITION)
+                .setParams(METHOD_EXCHEQUER_REPARTITION));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_EXCHEQUER_REPARTITION, PARAMETER_EXCHEQUER_REPARTITION);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.EXCHEQUER, null, METHOD_EXCHEQUER_REPARTITION, PARAMETER_EXCHEQUER_REPARTITION);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_EXCHEQUER_REPARTITION, PARAMETER_REQUEST)
+                .setParams(METHOD_EXCHEQUER_REPARTITION));
+
+        // TODO TG-2 Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                .filter(es -> Objects.equals(game.getTurn(), es.getTurn()))
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(sheet)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_EXCHEQUER_REPARTITION, PARAMETER_REQUEST, PARAMETER_GAME, PARAMETER_ID_COUNTRY)
+                .setParams(METHOD_EXCHEQUER_REPARTITION));
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(CommonUtil.subtract(request.getRequest().getPrestige(), sheet.getPrestigeIncome()) > 0)
+                .setCodeError(IConstantsServiceException.PRESTIGE_TOO_HIGH)
+                .setMsgFormat("")
+                .setName(PARAMETER_EXCHEQUER_REPARTITION, PARAMETER_REQUEST, PARAMETER_REQUEST, PARAMETER_PRESTIGE)
+                .setParams(METHOD_EXCHEQUER_REPARTITION, request.getRequest().getPrestige(), sheet.getPrestigeIncome()));
+
+        List<DiffEntity> diffs = new ArrayList<>();
+        if (sheet.getPrestigeSpent() == null || sheet.getPrestigeSpent() != request.getRequest().getPrestige()) {
+            sheet.setPrestigeSpent(request.getRequest().getPrestige());
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE_SPENT, sheet.getPrestigeSpent())));
+        }
+
+        return createDiffs(diffs, gameDiffs, request);
     }
 }

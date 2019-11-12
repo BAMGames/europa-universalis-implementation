@@ -1087,6 +1087,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE, sheet::setPrestigeIncome);
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_MAX_NAT_LOAN, sheet::setMaxNatLoan);
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.REMAINING_EXPENSES, sheet::setRemainingExpenses);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE_SPENT, sheet::setPrestigeSpent);
     }
 
     /**

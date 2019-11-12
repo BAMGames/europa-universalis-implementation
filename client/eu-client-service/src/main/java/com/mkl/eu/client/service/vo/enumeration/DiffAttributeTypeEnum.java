@@ -194,6 +194,8 @@ public enum DiffAttributeTypeEnum {
     EXCHEQUER_MAX_NAT_LOAN,
     /** Economical sheet remaining expenses. */
     REMAINING_EXPENSES,
+    /** Economical sheet exchequer prestige spent. */
+    EXCHEQUER_PRESTIGE_SPENT,
 
 
 }

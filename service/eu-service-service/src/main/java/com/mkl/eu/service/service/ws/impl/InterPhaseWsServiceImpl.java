@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -42,5 +43,11 @@ public class InterPhaseWsServiceImpl extends SpringBeanAutowiringSupport impleme
     @Override
     public DiffResponse validateRedeploy(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
         return interPhaseService.validateRedeploy(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse exchequerRepartition(Request<ExchequerRepartitionRequest> request) throws FunctionalException, TechnicalException {
+        return interPhaseService.exchequerRepartition(request);
     }
 }

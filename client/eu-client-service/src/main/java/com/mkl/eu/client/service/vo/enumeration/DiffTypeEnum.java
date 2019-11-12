@@ -338,6 +338,7 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#EXCHEQUER_REGULAR for the regular income line.</li>
      * <li>DiffAttributeTypeEnum#EXCHEQUER_PRESTIGE for the prestige income line.</li>
      * <li>DiffAttributeTypeEnum#EXCHEQUER_MAX_NAT_LOAN for the maximum national loan line.</li>
+     * <li>DiffAttributeTypeEnum#EXCHEQUER_PRESTIGE_SPENT for the prestige spent line.</li>
      * </ul>
      * </li>
      * </ul>

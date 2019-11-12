@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
@@ -30,9 +31,12 @@ public interface IInterPhaseService {
     @WebResult(name = RESPONSE)
     DiffResponse validateRedeploy(@WebParam(name = PARAMETER_VALIDATE_REDEPLOY) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
 
+    @WebResult(name = RESPONSE)
+    DiffResponse exchequerRepartition(@WebParam(name = PARAMETER_VALIDATE_REDEPLOY) Request<ExchequerRepartitionRequest> request) throws FunctionalException, TechnicalException;
+
 //    @WebResult(name = RESPONSE)
-//    DiffResponse exchequerRepartition(@WebParam(name = PARAMETER_LAND_LOOTING) Request<LandLootingRequest> request) throws FunctionalException, TechnicalException;
-//
+//    DiffResponse validateExchequer(@WebParam(name = PARAMETER_VALIDATE_REDEPLOY) Request<ValidateRequest> request) throws FunctionalException, TechnicalException;
+
 //    @WebResult(name = RESPONSE)
 //    DiffResponse improveStability(@WebParam(name = PARAMETER_LAND_LOOTING) Request<LandLootingRequest> request) throws FunctionalException, TechnicalException;
 
