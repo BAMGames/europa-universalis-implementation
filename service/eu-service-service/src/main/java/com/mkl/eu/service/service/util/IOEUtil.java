@@ -343,4 +343,11 @@ public interface IOEUtil {
      * @return the losses of the retreat.
      */
     AbstractWithLossEntity retreat(Integer modifiedRollDie);
+
+    /**
+     * @param country the country.
+     * @param game    the game.
+     * @return the prosperity of the country: -1 for anti prosperous, +1 for prosperous, 0 for neither.
+     */
+    int getProsperity(PlayableCountryEntity country, GameEntity game);
 }

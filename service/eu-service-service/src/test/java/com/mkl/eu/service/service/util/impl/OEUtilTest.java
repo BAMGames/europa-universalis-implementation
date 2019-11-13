@@ -18,6 +18,7 @@ import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
@@ -3389,6 +3390,97 @@ public class OEUtilTest {
             for (String expectedCountry : expectedCountries) {
                 Assert.assertTrue("The country " + expectedCountry + " should have been retrieved but was not.", countries.contains(expectedCountry));
             }
+            return this;
+        }
+    }
+
+    @Test
+    public void testProsperity() {
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).previousGrossIncome(110)
+                .whenProsperity(oeUtil)
+                .thenExpect(0);
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).grossIncome(120)
+                .whenProsperity(oeUtil)
+                .thenExpect(0);
+        ProsperityBuilder.create()
+                .previousGrossIncome(110).grossIncome(120)
+                .whenProsperity(oeUtil)
+                .thenExpect(0);
+
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).previousGrossIncome(110).grossIncome(120)
+                .whenProsperity(oeUtil)
+                .thenExpect(1);
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).previousGrossIncome(100).grossIncome(101)
+                .whenProsperity(oeUtil)
+                .thenExpect(1);
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).previousGrossIncome(110).grossIncome(109)
+                .whenProsperity(oeUtil)
+                .thenExpect(0);
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).previousGrossIncome(99).grossIncome(98)
+                .whenProsperity(oeUtil)
+                .thenExpect(-1);
+        ProsperityBuilder.create()
+                .antePenultGrossIncome(100).previousGrossIncome(99).grossIncome(99)
+                .whenProsperity(oeUtil)
+                .thenExpect(0);
+    }
+
+    static class ProsperityBuilder {
+        Integer grossIncome;
+        Integer previousGrossIncome;
+        Integer antePenultGrossIncome;
+        int prosperity;
+
+        static ProsperityBuilder create() {
+            return new ProsperityBuilder();
+        }
+
+        ProsperityBuilder grossIncome(Integer grossIncome) {
+            this.grossIncome = grossIncome;
+            return this;
+        }
+
+        ProsperityBuilder previousGrossIncome(Integer previousGrossIncome) {
+            this.previousGrossIncome = previousGrossIncome;
+            return this;
+        }
+
+        ProsperityBuilder antePenultGrossIncome(Integer antePenultGrossIncome) {
+            this.antePenultGrossIncome = antePenultGrossIncome;
+            return this;
+        }
+
+        ProsperityBuilder whenProsperity(IOEUtil oeUtil) {
+            GameEntity game = new GameEntity();
+            game.setTurn(10);
+
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            EconomicalSheetEntity sheet = new EconomicalSheetEntity();
+            sheet.setTurn(10);
+            sheet.setGrossIncome(grossIncome);
+            country.getEconomicalSheets().add(sheet);
+            sheet = new EconomicalSheetEntity();
+            sheet.setTurn(9);
+            sheet.setGrossIncome(previousGrossIncome);
+            country.getEconomicalSheets().add(sheet);
+            sheet = new EconomicalSheetEntity();
+            sheet.setTurn(8);
+            sheet.setGrossIncome(antePenultGrossIncome);
+            country.getEconomicalSheets().add(sheet);
+
+            prosperity = oeUtil.getProsperity(country, game);
+
+            return this;
+        }
+
+        ProsperityBuilder thenExpect(int expected) {
+            Assert.assertEquals(expected, prosperity);
             return this;
         }
     }

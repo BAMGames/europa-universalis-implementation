@@ -17,6 +17,7 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
@@ -1164,5 +1165,38 @@ public final class OEUtilImpl implements IOEUtil {
         // cap die to [1-8)
         int die = Math.max(1, Math.min(8, modifiedRollDie));
         return AbstractWithLossEntity.create((die - 1) / 2);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getProsperity(PlayableCountryEntity country, GameEntity game) {
+        int prosperity = 0;
+
+        Integer current = country.getEconomicalSheets().stream()
+                .filter(es -> Objects.equals(game.getTurn(), es.getTurn()) && es.getGrossIncome() != null)
+                .map(EconomicalSheetEntity::getGrossIncome)
+                .findAny()
+                .orElse(null);
+        Integer previous = country.getEconomicalSheets().stream()
+                .filter(es -> Objects.equals(game.getTurn() - 1, es.getTurn()) && es.getGrossIncome() != null)
+                .map(EconomicalSheetEntity::getGrossIncome)
+                .findAny()
+                .orElse(null);
+        Integer antepenult = country.getEconomicalSheets().stream()
+                .filter(es -> Objects.equals(game.getTurn() - 2, es.getTurn()) && es.getGrossIncome() != null)
+                .map(EconomicalSheetEntity::getGrossIncome)
+                .findAny()
+                .orElse(null);
+        if (current != null && previous != null && antepenult != null) {
+            if (current >= previous && previous >= antepenult && (current > previous || previous > antepenult)) {
+                prosperity = 1;
+            } else if (current < previous && previous < antepenult) {
+                prosperity = -1;
+            }
+        }
+
+        return prosperity;
     }
 }
