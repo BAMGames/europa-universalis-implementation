@@ -9,9 +9,12 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
+import com.mkl.eu.client.service.service.eco.ImproveStabilityRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.EconomicUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
@@ -669,5 +672,105 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         }
 
         return createDiffs(newDiffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse improveStability(Request<ImproveStabilityRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_IMPROVE_STABILITY)
+                .setParams(METHOD_IMPROVE_STABILITY));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_IMPROVE_STABILITY, PARAMETER_IMPROVE_STABILITY);
+        GameEntity game = gameDiffs.getGame();
+
+        checkGameStatus(game, GameStatusEnum.STABILITY, null, METHOD_IMPROVE_STABILITY, PARAMETER_IMPROVE_STABILITY);
+
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_IMPROVE_STABILITY, PARAMETER_REQUEST)
+                .setParams(METHOD_IMPROVE_STABILITY));
+
+        // TODO TG-2 Authorization
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(country.isReady())
+                .setCodeError(IConstantsServiceException.ACTION_ALREADY_DONE)
+                .setMsgFormat("{1}: {0} The action {2} has already been done by the country {3}.")
+                .setName(PARAMETER_IMPROVE_STABILITY, PARAMETER_REQUEST)
+                .setParams(METHOD_IMPROVE_STABILITY, METHOD_IMPROVE_STABILITY, country.getName()));
+
+        int stability = oeUtil.getStability(game, country.getName());
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(request.getRequest().getInvestment() != null && stability == 3)
+                .setCodeError(IConstantsServiceException.STABILITY_MAX)
+                .setMsgFormat("{1}: {0} The stability is already at max.")
+                .setName(PARAMETER_IMPROVE_STABILITY, PARAMETER_REQUEST, PARAMETER_INVESTMENT)
+                .setParams(METHOD_IMPROVE_STABILITY));
+
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                .filter(es -> Objects.equals(game.getTurn(), es.getTurn()))
+                .findAny()
+                .orElse(null);
+        if (sheet != null && request.getRequest().getInvestment() != null) {
+            sheet.setStab(EconomicUtil.getAdminActionCost(AdminActionTypeEnum.MNU, request.getRequest().getInvestment()));
+            int modifier = CommonUtil.toInt(sheet.getStabModifier());
+            if (request.getRequest().getInvestment() == InvestmentEnum.M) {
+                modifier += 2;
+            } else if (request.getRequest().getInvestment() == InvestmentEnum.L) {
+                modifier += 5;
+            }
+            int die = oeUtil.rollDie(game, country);
+            sheet.setStabDie(die);
+            int stabDiff = 0;
+            if (die + modifier <= 5) {
+                stabDiff = -1;
+            } else if (die + modifier >= 18) {
+                stabDiff = 3;
+            } else if (die + modifier >= 15) {
+                stabDiff = 2;
+            } else if (die + modifier >= 11) {
+                stabDiff = 1;
+            }
+
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STAB, sheet.getStab()),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STAB_DIE, sheet.getStabDie())));
+
+            int newStab = Math.min(Math.max(stability + stabDiff, -3), 3);
+            if (newStab != stability) {
+                diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.STABILITY, country.getName(), GameUtil.getStabilityBox(newStab), game));
+            }
+        }
+
+        country.setReady(true);
+
+        long countriesNotReady = game.getCountries().stream()
+                .filter(c -> StringUtils.isNotEmpty(c.getUsername()) && !c.isReady())
+                .count();
+
+        if (countriesNotReady == 0) {
+            diffs.addAll(statusWorkflowDomain.endStabilityPhase(game));
+        } else {
+            DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.STATUS, country.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
+            diffs.add(diff);
+        }
+
+        return createDiffs(diffs, gameDiffs, request);
     }
 }

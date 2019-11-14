@@ -8,8 +8,10 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
+import com.mkl.eu.client.service.service.eco.ImproveStabilityRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
@@ -1376,5 +1378,277 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(1, diffEntities.size());
         Assert.assertEquals(statusDiff, diffEntities.get(0));
+    }
+
+    @Test
+    public void testImproveStability() {
+        Pair<Request<ImproveStabilityRequest>, GameEntity> pair = testCheckGame(interPhaseService::improveStability, "improveStability");
+        Request<ImproveStabilityRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+
+        testCheckStatus(game, request, interPhaseService::improveStability, "improveStability", GameStatusEnum.STABILITY);
+        request.getGame().setIdCountry(13L);
+
+        game.setTurn(22);
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(13L);
+        country.setName("france");
+        game.getCountries().add(country);
+        country.setReady(true);
+        when(oeUtil.getStability(game, country.getName())).thenReturn(3);
+
+        try {
+            interPhaseService.improveStability(request);
+            Assert.fail("Should break because request.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("improveStability.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new ImproveStabilityRequest());
+
+        try {
+            interPhaseService.improveStability(request);
+            Assert.fail("Should break because improve stability has already been done.");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.ACTION_ALREADY_DONE, e.getCode());
+            Assert.assertEquals("improveStability.request", e.getParams()[0]);
+        }
+
+        country.setReady(false);
+        request.getRequest().setInvestment(InvestmentEnum.S);
+
+        try {
+            interPhaseService.improveStability(request);
+            Assert.fail("Should break because stability is already at max.");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STABILITY_MAX, e.getCode());
+            Assert.assertEquals("improveStability.request.investment", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testImproveStabilitySuccess() throws FunctionalException {
+        // No try to improve stab
+        ImproveStabilityBuilder.create()
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create());
+        ImproveStabilityBuilder.create().lastCountry()
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create());
+
+        // 5 + 2 no stability change
+        ImproveStabilityBuilder.create()
+                .stability(0).investment(InvestmentEnum.S).stabilityModifier(2).stabilityDieRoll(5)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(30));
+
+        // 3 + 2 stability drops by 1
+        ImproveStabilityBuilder.create()
+                .stability(0).investment(InvestmentEnum.S).stabilityModifier(2).stabilityDieRoll(3)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(30).stabilityMoved().newStability(-1));
+
+        // 3 - 15 stability drops by 1
+        ImproveStabilityBuilder.create()
+                .stability(0).investment(InvestmentEnum.S).stabilityModifier(-15).stabilityDieRoll(3)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(30).stabilityMoved().newStability(-1));
+
+        // 3 + 2 stability should drop by 1 but it is already at -3
+        ImproveStabilityBuilder.create()
+                .stability(-3).investment(InvestmentEnum.S).stabilityModifier(2).stabilityDieRoll(3)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(30));
+
+        // 5 + 8 stability gains 1
+        ImproveStabilityBuilder.create()
+                .stability(0).investment(InvestmentEnum.S).stabilityModifier(8).stabilityDieRoll(5)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(30).stabilityMoved().newStability(1));
+
+        // 5 + 8 + 2 (Medium investment) stability gains 2
+        ImproveStabilityBuilder.create()
+                .stability(0).investment(InvestmentEnum.M).stabilityModifier(8).stabilityDieRoll(5)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(50).stabilityMoved().newStability(2));
+
+        // 5 + 8 + 5 (High investment) stability gains 3
+        ImproveStabilityBuilder.create()
+                .stability(0).investment(InvestmentEnum.L).stabilityModifier(8).stabilityDieRoll(5)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(100).stabilityMoved().newStability(3));
+
+        // 5 + 8 + 5 (High investment) stability should gain 3 but gains only 2 because capped at 3.
+        ImproveStabilityBuilder.create()
+                .stability(1).investment(InvestmentEnum.L).stabilityModifier(8).stabilityDieRoll(5)
+                .whenImproveStability(this, interPhaseService)
+                .thenExpect(ImproveStabilityResultBuilder.create()
+                        .stabilityCost(100).stabilityMoved().newStability(3));
+    }
+
+    static class ImproveStabilityBuilder {
+        int stability;
+        InvestmentEnum investment;
+        Integer stabilityModifier;
+        int stabilityDieRoll;
+        boolean lastCountry;
+        List<DiffEntity> diffs;
+        EconomicalSheetEntity sheet;
+
+        static ImproveStabilityBuilder create() {
+            return new ImproveStabilityBuilder();
+        }
+
+        ImproveStabilityBuilder stability(int stability) {
+            this.stability = stability;
+            return this;
+        }
+
+        ImproveStabilityBuilder investment(InvestmentEnum investment) {
+            this.investment = investment;
+            return this;
+        }
+
+        ImproveStabilityBuilder stabilityModifier(Integer stabilityModifier) {
+            this.stabilityModifier = stabilityModifier;
+            return this;
+        }
+
+        ImproveStabilityBuilder stabilityDieRoll(int stabilityDieRoll) {
+            this.stabilityDieRoll = stabilityDieRoll;
+            return this;
+        }
+
+        ImproveStabilityBuilder lastCountry() {
+            this.lastCountry = true;
+            return this;
+        }
+
+        ImproveStabilityBuilder whenImproveStability(InterPhaseServiceTest testClass, IInterPhaseService interPhaseService) throws FunctionalException {
+            Pair<Request<ImproveStabilityRequest>, GameEntity> pair = testClass.testCheckGame(interPhaseService::improveStability, "improveStability");
+            Request<ImproveStabilityRequest> request = pair.getLeft();
+            request.setRequest(new ImproveStabilityRequest());
+            request.getRequest().setInvestment(investment);
+            GameEntity game = pair.getRight();
+            game.setTurn(6);
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            country.setName("france");
+            country.setId(26L);
+            sheet = new EconomicalSheetEntity();
+            sheet.setId(17L);
+            sheet.setTurn(game.getTurn());
+            sheet.setStabModifier(stabilityModifier);
+            country.getEconomicalSheets().add(sheet);
+            game.getCountries().add(country);
+            if (!lastCountry) {
+                PlayableCountryEntity otherCountry = new PlayableCountryEntity();
+                otherCountry.setName("espagne");
+                otherCountry.setId(27L);
+                otherCountry.setUsername("toto");
+                game.getCountries().add(otherCountry);
+            }
+            testClass.testCheckStatus(pair.getRight(), request, interPhaseService::improveStability, "improveStability", GameStatusEnum.STABILITY);
+            request.getGame().setIdCountry(26L);
+
+            when(testClass.oeUtil.getStability(game, country.getName())).thenReturn(stability);
+            when(testClass.oeUtil.rollDie(game, country)).thenReturn(stabilityDieRoll);
+            when(testClass.statusWorkflowDomain.endStabilityPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS)));
+            when(testClass.counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenAnswer(moveSpecialCounterAnswer());
+
+            testClass.simulateDiff();
+
+            interPhaseService.improveStability(request);
+
+            diffs = testClass.retrieveDiffsCreated();
+
+            return this;
+        }
+
+        ImproveStabilityBuilder thenExpect(ImproveStabilityResultBuilder result) {
+            DiffEntity stabDiff = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                    .findAny()
+                    .orElse(null);
+            if (result.stabilityMoved) {
+                Assert.assertNotNull("The stability counter move diff is missing.", stabDiff);
+                if (result.newStability != null) {
+                    String box = GameUtil.getStabilityBox(result.newStability);
+                    Assert.assertEquals("The stability counter has moved to the wrong box province.", box, getAttribute(stabDiff, DiffAttributeTypeEnum.PROVINCE_TO));
+                }
+            } else {
+                Assert.assertNull("The stability counter move diff is present while it should not.", stabDiff);
+            }
+
+            DiffEntity ecoSheetDiff = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                            && Objects.equals(sheet.getId(), diff.getIdObject()))
+                    .findAny()
+                    .orElse(null);
+            if (investment != null) {
+                Assert.assertNotNull("The modify eco sheet diff is missing.", ecoSheetDiff);
+                Assert.assertEquals("The country in the diff is wrong.", "26", getAttribute(ecoSheetDiff, DiffAttributeTypeEnum.ID_COUNTRY));
+                Assert.assertEquals("The stability improvement cost in the diff is wrong.", result.stabilityCost + "", getAttribute(ecoSheetDiff, DiffAttributeTypeEnum.STAB));
+                Assert.assertEquals("The stability improvement cost is wrong.", result.stabilityCost, sheet.getStab());
+                Assert.assertEquals("The stability die roll in the diff is wrong.", stabilityDieRoll + "", getAttribute(ecoSheetDiff, DiffAttributeTypeEnum.STAB_DIE));
+                Assert.assertEquals("The stability die roll is wrong.", stabilityDieRoll, sheet.getStabDie().intValue());
+                if (result.newStability != null) {
+                    String box = GameUtil.getStabilityBox(result.newStability);
+                    Assert.assertEquals("The stability counter has moved to the wrong box province.", box, getAttribute(stabDiff, DiffAttributeTypeEnum.PROVINCE_TO));
+                }
+            } else {
+                Assert.assertNull("The modify eco sheet diff is present while it should not.", ecoSheetDiff);
+            }
+
+            DiffEntity nextPhaseDiff = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .findAny()
+                    .orElse(null);
+            DiffEntity nextPlayerDiff = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.VALIDATE && diff.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .findAny()
+                    .orElse(null);
+            if (lastCountry) {
+                Assert.assertNotNull("The next phase diff is missing.", nextPhaseDiff);
+                Assert.assertNull("The next player diff is present while it should not.", nextPlayerDiff);
+            } else {
+                Assert.assertNull("The next phase diff is present while it should not.", nextPhaseDiff);
+                Assert.assertNotNull("The next player diff is missing.", nextPlayerDiff);
+            }
+
+            return this;
+        }
+    }
+
+    static class ImproveStabilityResultBuilder {
+        boolean stabilityMoved;
+        Integer newStability;
+        Integer stabilityCost;
+
+        static ImproveStabilityResultBuilder create() {
+            return new ImproveStabilityResultBuilder();
+        }
+
+        ImproveStabilityResultBuilder stabilityMoved() {
+            this.stabilityMoved = true;
+            return this;
+        }
+
+        ImproveStabilityResultBuilder newStability(Integer newStability) {
+            this.newStability = newStability;
+            return this;
+        }
+
+        ImproveStabilityResultBuilder stabilityCost(Integer stabilityCost) {
+            this.stabilityCost = stabilityCost;
+            return this;
+        }
     }
 }

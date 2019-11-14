@@ -150,6 +150,8 @@ public interface INameConstants {
     String PARAMETER_VALIDATE_EXCHEQUER = "validateExchequer";
     /** Name of the parameter prestige. */
     String PARAMETER_PRESTIGE = "prestige";
+    /** Name of the parameter improveStability. */
+    String PARAMETER_IMPROVE_STABILITY = "improveStability";
 
 
 
@@ -233,10 +235,12 @@ public interface INameConstants {
     String METHOD_LAND_LOOTING = "landLooting";
     /** Name of the method landRedeploy. */
     String METHOD_LAND_REDEPLOY = "landRedeploy";
-    /** Name of the parameter validateRedeploy. */
+    /** Name of the method validateRedeploy. */
     String METHOD_VALIDATE_REDEPLOY = "validateRedeploy";
-    /** Name of the parameter exchequerRepartition. */
+    /** Name of the method exchequerRepartition. */
     String METHOD_EXCHEQUER_REPARTITION = "exchequerRepartition";
-    /** Name of the parameter validateExchequer. */
+    /** Name of the method validateExchequer. */
     String METHOD_VALIDATE_EXCHEQUER = "validateExchequer";
+    /** Name of the method improveStability. */
+    String METHOD_IMPROVE_STABILITY = "improveStability";
 }

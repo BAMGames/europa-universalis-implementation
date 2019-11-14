@@ -207,4 +207,10 @@ public enum DiffAttributeTypeEnum {
     WEALTH,
     /** Economical sheet period wealth. */
     PERIOD_WEALTH,
+    /** Economical sheet stability improvement line. */
+    STAB,
+    /** Economical sheet stability modifier. */
+    STAB_MODIFIER,
+    /** Economical sheet unmodified stability improvement die roll. */
+    STAB_DIE,
 }

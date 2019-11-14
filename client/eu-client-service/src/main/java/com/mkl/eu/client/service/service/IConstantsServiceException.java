@@ -1061,7 +1061,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_INVALID_STACK = "exception.eu.military.land_looting_invalid_stack";
+    String LAND_LOOTING_INVALID_STACK = "exception.eu.inter.land_looting_invalid_stack";
 
     /**
      * <p>
@@ -1075,7 +1075,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_TWICE = "exception.eu.military.land_looting_twice";
+    String LAND_LOOTING_TWICE = "exception.eu.inter.land_looting_twice";
 
     /**
      * <p>
@@ -1090,7 +1090,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_NOT_ENEMY = "exception.eu.military.land_looting_not_enemy";
+    String LAND_LOOTING_NOT_ENEMY = "exception.eu.inter.land_looting_not_enemy";
 
     /**
      * <p>
@@ -1104,7 +1104,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_INSUFFICIENT_FORCES = "exception.eu.military.land_looting_insufficient_forces";
+    String LAND_LOOTING_INSUFFICIENT_FORCES = "exception.eu.inter.land_looting_insufficient_forces";
 
     /**
      * <p>
@@ -1118,7 +1118,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_BURN_TP_NO_TP = "exception.eu.military.land_looting_burn_tp_no_tp";
+    String LAND_LOOTING_BURN_TP_NO_TP = "exception.eu.inter.land_looting_burn_tp_no_tp";
 
     /**
      * <p>
@@ -1132,7 +1132,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_LOOTING_BURN_TP_NO_CONTROL = "exception.eu.military.land_looting_burn_tp_no_control";
+    String LAND_LOOTING_BURN_TP_NO_CONTROL = "exception.eu.inter.land_looting_burn_tp_no_control";
 
     /**
      * <p>
@@ -1147,7 +1147,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String LAND_REDEPLOY_NOT_ENEMY = "exception.eu.military.land_redeploy_not_enemy";
+    String LAND_REDEPLOY_NOT_ENEMY = "exception.eu.inter.land_redeploy_not_enemy";
 
     /**
      * <p>
@@ -1161,7 +1161,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String STACK_MUST_REDEPLOY = "exception.eu.military.stack_must_redeploy";
+    String STACK_MUST_REDEPLOY = "exception.eu.inter.stack_must_redeploy";
 
     /**
      * <p>
@@ -1176,5 +1176,18 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String PRESTIGE_TOO_HIGH = "exception.eu.military.prestige_too_high";
+    String PRESTIGE_TOO_HIGH = "exception.eu.inter.prestige_too_high";
+
+    /**
+     * <p>
+     * Exception thrown when trying to improve stability when stability is already at max.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * </ul>
+     * </p>
+     */
+    String STABILITY_MAX = "exception.eu.inter.stability_max";
 }

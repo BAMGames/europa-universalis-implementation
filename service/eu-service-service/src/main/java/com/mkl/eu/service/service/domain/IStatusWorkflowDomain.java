@@ -66,4 +66,12 @@ public interface IStatusWorkflowDomain {
      * @return the diff corresponding to the switch of the next phase.
      */
     List<DiffEntity> endExchequerPhase(GameEntity game);
+
+    /**
+     * Method to call at the end of the stability phase.
+     *
+     * @param game the game.
+     * @return the diff corresponding to the switch of the next phase.
+     */
+    List<DiffEntity> endStabilityPhase(GameEntity game);
 }

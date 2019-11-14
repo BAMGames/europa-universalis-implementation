@@ -83,6 +83,10 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     private Integer periodWealth;
     /** Stability improvement expense. Line 29 of sheet A. */
     private Integer stab;
+    /** Modifier for stability improvement, without taking into account the investment. */
+    private Integer stabModifier;
+    /** Unmodified die roll for stability improvement. */
+    private Integer stabDie;
     /** Ransom, peace treaties (negative if expense, positive if income). */
     private Integer peace;
     /** Royal treasure after peace. */
@@ -609,6 +613,26 @@ public class EconomicalSheetEntity implements IEntity, Serializable {
     /** @param stab the stab to set. */
     public void setStab(Integer stab) {
         this.stab = stab;
+    }
+
+    /** @return the stabModifier. */
+    public Integer getStabModifier() {
+        return stabModifier;
+    }
+
+    /** @param stabModifier the stabModifier to set. */
+    public void setStabModifier(Integer stabModifier) {
+        this.stabModifier = stabModifier;
+    }
+
+    /** @return the stabDie. */
+    public Integer getStabDie() {
+        return stabDie;
+    }
+
+    /** @param stabDie the stabDie to set. */
+    public void setStabDie(Integer stabDie) {
+        this.stabDie = stabDie;
     }
 
     /** @return the peace. */

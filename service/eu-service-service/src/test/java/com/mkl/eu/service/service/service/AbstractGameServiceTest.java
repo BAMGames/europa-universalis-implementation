@@ -398,13 +398,29 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static Answer<?> removeCounterAnswer() {
-        return invocation -> DiffUtil.createDiff(invocation.getArgumentAt(1, GameEntity.class), DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER,
+        return invocation -> createDiff(invocation.getArgumentAt(1, GameEntity.class), DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER,
                 invocation.getArgumentAt(0, Long.class));
     }
 
     public static Answer<?> switchCounterAnswer() {
-        return invocation -> DiffUtil.createDiff(invocation.getArgumentAt(3, GameEntity.class), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER,
+        return invocation -> createDiff(invocation.getArgumentAt(3, GameEntity.class), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER,
                 invocation.getArgumentAt(0, Long.class),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocation.getArgumentAt(1, CounterFaceTypeEnum.class)));
+    }
+
+    public static Answer<?> moveSpecialCounterAnswer() {
+        return invocation -> createDiff(invocation.getArgumentAt(3, GameEntity.class), DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, invocation.getArgumentAt(2, String.class)));
+    }
+
+    private static DiffEntity createDiff(GameEntity game, DiffTypeEnum type, DiffTypeObjectEnum typeObject, DiffAttributesEntity... attributes) {
+        return createDiff(game, type, typeObject, null, attributes);
+    }
+
+    private static DiffEntity createDiff(GameEntity game, DiffTypeEnum type, DiffTypeObjectEnum typeObject, Long idObject, DiffAttributesEntity... attributes) {
+        if (game != null) {
+            return DiffUtil.createDiff(game, type, typeObject, idObject, attributes);
+        }
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.domain.impl;
 
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Exchequer;
 import com.mkl.eu.client.service.vo.tables.Period;
@@ -8,6 +9,7 @@ import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -34,6 +36,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,6 +66,9 @@ public class StatusWorkflowDomainTest {
 
     @Mock
     private IProvinceDao provinceDao;
+
+    @Mock
+    private ICounterDao counterDao;
 
     @Test
     public void testComputeEndMinorLogisticsNoCountries() throws Exception {
@@ -2173,13 +2180,24 @@ public class StatusWorkflowDomainTest {
         PlayableCountryEntity turkey = new PlayableCountryEntity();
         turkey.setId(2L);
         turkey.setName("turkey");
+        turkey.setUsername("sato");
         turkey.setReady(true);
         game.getCountries().add(turkey);
         PlayableCountryEntity spain = new PlayableCountryEntity();
         spain.setId(3L);
-        spain.setName("spain");
+        spain.setName(PlayableCountry.SPAIN);
         spain.setReady(true);
         game.getCountries().add(spain);
+        PlayableCountryEntity poland = new PlayableCountryEntity();
+        poland.setId(4L);
+        poland.setName("poland");
+        poland.setReady(true);
+        game.getCountries().add(poland);
+        PlayableCountryEntity england = new PlayableCountryEntity();
+        england.setId(5L);
+        england.setName("england");
+        england.setReady(true);
+        game.getCountries().add(england);
 
         EconomicalSheetEntity franceSheet = new EconomicalSheetEntity();
         franceSheet.setId(1L);
@@ -2212,6 +2230,13 @@ public class StatusWorkflowDomainTest {
 
         turkey.getEconomicalSheets().add(new EconomicalSheetEntity());
 
+        EconomicalSheetEntity polandSheet = new EconomicalSheetEntity();
+        polandSheet.setId(3L);
+        polandSheet.setTurn(game.getTurn());
+        polandSheet.setRemainingExpenses(0);
+        polandSheet.setGrossIncome(100);
+        poland.getEconomicalSheets().add(polandSheet);
+
         AbstractBack.TABLES = new Tables();
         Period period = new Period();
         period.setBegin(7);
@@ -2219,10 +2244,23 @@ public class StatusWorkflowDomainTest {
         period.setName(Period.PERIOD_II);
         AbstractBack.TABLES.getPeriods().add(period);
 
+        when(oeUtil.getAdministrativeValue(france)).thenReturn(9);
+        when(oeUtil.getAdministrativeValue(spain)).thenReturn(6);
+        when(oeUtil.getAdministrativeValue(poland)).thenReturn(3);
+        when(oeUtil.getEnemies(france, game)).thenReturn(Collections.emptyList());
+        when(oeUtil.getEnemies(spain, game)).thenReturn(Arrays.asList("hanover", "england"));
+        when(oeUtil.getEnemies(poland, game)).thenReturn(Arrays.asList("crimea", "turkey"));
+        when(counterDao.getNationalTerritoriesUnderAttack(eq(france.getName()), anyList(), anyLong())).thenReturn(Arrays.asList("idf", "orleanais"));
+        when(counterDao.getNationalTerritoriesUnderAttack(eq(spain.getName()), anyList(), anyLong())).thenReturn(Collections.singletonList("catalunya"));
+        when(counterDao.getNationalTerritoriesUnderAttack(eq(poland.getName()), anyList(), anyLong())).thenReturn(Arrays.asList("mazovia", "smolensk"));
+        when(oeUtil.getProsperity(france, game)).thenReturn(1);
+        when(oeUtil.getProsperity(spain, game)).thenReturn(0);
+        when(oeUtil.getProsperity(poland, game)).thenReturn(-1);
+
         List<DiffEntity> diffs = statusWorkflowDomain.endExchequerPhase(game);
 
         Assert.assertEquals(GameStatusEnum.STABILITY, game.getStatus());
-        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(4, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
                 .findAny()
@@ -2246,6 +2284,8 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(408, franceSheet.getWealth().intValue());
         Assert.assertEquals("908", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
         Assert.assertEquals(908, franceSheet.getPeriodWealth().intValue());
+        Assert.assertEquals("12", getAttribute(diff, DiffAttributeTypeEnum.STAB_MODIFIER));
+        Assert.assertEquals(12, franceSheet.getStabModifier().intValue());
         diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
                         && Objects.equals(2L, d.getIdObject()))
@@ -2263,5 +2303,26 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(100, spainSheet.getWealth().intValue());
         Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
         Assert.assertEquals(100, spainSheet.getPeriodWealth().intValue());
+        Assert.assertEquals("1", getAttribute(diff, DiffAttributeTypeEnum.STAB_MODIFIER));
+        Assert.assertEquals(1, spainSheet.getStabModifier().intValue());
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                        && Objects.equals(3L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(poland.getId() + "", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE));
+        Assert.assertEquals(0, polandSheet.getRtBalance().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER));
+        Assert.assertEquals(0, polandSheet.getRtAftExch().intValue());
+        Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.PRESTIGE_VPS));
+        Assert.assertEquals(0, polandSheet.getPrestigeVP().intValue());
+        Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.WEALTH));
+        Assert.assertEquals(100, polandSheet.getWealth().intValue());
+        Assert.assertEquals("100", getAttribute(diff, DiffAttributeTypeEnum.PERIOD_WEALTH));
+        Assert.assertEquals(100, polandSheet.getPeriodWealth().intValue());
+        Assert.assertEquals("-8", getAttribute(diff, DiffAttributeTypeEnum.STAB_MODIFIER));
+        Assert.assertEquals(-8, polandSheet.getStabModifier().intValue());
     }
 }

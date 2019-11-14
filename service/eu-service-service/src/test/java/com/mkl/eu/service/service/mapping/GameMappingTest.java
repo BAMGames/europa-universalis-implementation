@@ -296,6 +296,8 @@ public class GameMappingTest {
         object.setExchequerColumn(666);
         object.setExchequerBonus(667);
         object.setExchequerDie(668);
+        object.setStabModifier(-2);
+        object.setStabDie(1);
         objects.add(object);
 
         return objects;
@@ -806,6 +808,8 @@ public class GameMappingTest {
         object.setExchequerColumn(666);
         object.setExchequerBonus(667);
         object.setExchequerDie(668);
+        object.setStabModifier(-2);
+        object.setStabDie(1);
         objects.add(object);
 
         return objects;

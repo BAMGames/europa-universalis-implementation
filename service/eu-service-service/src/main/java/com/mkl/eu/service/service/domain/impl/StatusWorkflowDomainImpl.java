@@ -4,12 +4,14 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Exchequer;
 import com.mkl.eu.client.service.vo.tables.Result;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
+import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -56,11 +58,14 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     /** Game DAO only for flush purpose because Hibernate poorly handles non technical ids and also to retrieve ids of created entities. */
     @Autowired
     private IGameDao gameDao;
+    /** Counter Dao. */
+    @Autowired
+    private ICounterDao counterDao;
 
     /** {@inheritDoc} */
     @Override
     public List<DiffEntity> computeEndAdministrativeActions(GameEntity game) {
-        // TODO TG-13 check minors at war
+        // TODO TG-18 check minors at war
         return initMilitaryPhase(game);
     }
 
@@ -816,13 +821,16 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                     sheet.setPeriodWealth(CommonUtil.add(previousWealth, sheet.getWealth()));
                 }
 
+                sheet.setStabModifier(getStabilityModifier(country, game));
+
                 diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_BALANCE, sheet.getRtBalance()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_AFTER_EXCHEQUER, sheet.getRtAftExch()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PRESTIGE_VPS, sheet.getPrestigeVP()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WEALTH, sheet.getWealth()),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PERIOD_WEALTH, sheet.getPeriodWealth())));
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PERIOD_WEALTH, sheet.getPeriodWealth()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STAB_MODIFIER, sheet.getStabModifier())));
 
                 country.setReady(false);
             }
@@ -832,6 +840,51 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.STABILITY.name()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false)));
+
+        return diffs;
+    }
+
+    /**
+     * Get stability modifier without investment part.
+     *
+     * @param country the country.
+     * @param game    the game.
+     * @return the stability modifier.
+     */
+    private int getStabilityModifier(PlayableCountryEntity country, GameEntity game) {
+        int modifier = oeUtil.getAdministrativeValue(country);
+        // TODO TG-18 wars
+        List<String> enemies = oeUtil.getEnemies(country, game);
+        // TODO TG-18 limited intervention
+        boolean warWithMajor = game.getCountries().stream()
+                .anyMatch(major -> StringUtils.isNotEmpty(major.getUsername()) && enemies.contains(major.getName()));
+        if (warWithMajor) {
+            modifier -= 3;
+        } else if (!enemies.isEmpty()) {
+            modifier -= 2;
+        }
+        // TODO -5 if enemy army in owned national province
+        if (!enemies.isEmpty()) {
+            List<String> provinces = counterDao.getNationalTerritoriesUnderAttack(country.getName(), enemies, game.getId());
+            if (!provinces.isEmpty()) {
+                if (StringUtils.equals(PlayableCountry.SPAIN, country.getName())) {
+                    // TODO TG-13 some events will restore spain malus to -5
+                    modifier -= 3;
+                } else {
+                    modifier -= 5;
+                }
+            }
+        }
+
+        modifier += 3 * oeUtil.getProsperity(country, game);
+        // TODO TG-13 Events
+        return modifier;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DiffEntity> endStabilityPhase(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
 
         return diffs;
     }

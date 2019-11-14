@@ -137,6 +137,8 @@ public class EconomicalSheetMapping extends AbstractMapping {
         target.setRtStart(source.getRtStart());
         target.setSpecialIncome(source.getSpecialIncome());
         target.setStab(source.getStab());
+        target.setStabModifier(source.getStabModifier());
+        target.setStabDie(source.getStabDie());
         target.setSubsidies(source.getSubsidies());
         target.setTpIncome(source.getTpIncome());
         target.setTradeCenterIncome(source.getTradeCenterIncome());
