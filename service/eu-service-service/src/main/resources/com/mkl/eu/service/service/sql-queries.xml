@@ -347,4 +347,37 @@
 			;
 		]]>
 	</entry>
+	<entry key="game.national_territory_under_attack">
+		<![CDATA[
+			SELECT DISTINCT prov.name FROM
+			(
+				SELECT prov.name FROM r_province_eu proveu
+			  		INNER JOIN r_province prov ON prov.id = proveu.id
+				WHERE proveu.R_COUNTRY = ':country'
+				UNION
+    			SELECT stack.r_province FROM counter counter
+					INNER JOIN stack stack ON stack.id = counter.id_stack
+				WHERE counter.type = 'OWN_NT' and counter.r_country = ':country' AND stack.id_game = :idGame
+			) prov
+				INNER JOIN counter counter ON counter.type = 'ARMY_MINUS' or counter.type = 'ARMY_PLUS'
+  				INNER JOIN stack stack on stack.id = counter.id_stack
+			WHERE stack.r_province = prov.name
+				AND counter.r_country in :enemies AND stack.id_game = :idGame
+				AND NOT EXISTS
+				(
+					SELECT * FROM counter counter
+						INNER JOIN stack stack ON stack.id = counter.id_stack
+					WHERE stack.r_province = prov.name and counter.r_country != ':country'
+	      			AND (counter.type = 'OWN_NT' or counter.type = 'OWN') AND stack.id_game = :idGame
+	      		)
+	      		AND EXISTS
+				(
+					SELECT * FROM counter counter
+						INNER JOIN stack stack ON stack.id = counter.id_stack
+					WHERE stack.r_province = prov.name and counter.r_country in :enemies
+	      			AND counter.type = 'CONTROL' AND stack.id_game = :idGame
+	      		)
+			;
+		]]>
+	</entry>
 </properties>

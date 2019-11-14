@@ -31,4 +31,32 @@
     <COUNTER ID="301" ID_STACK="301" TYPE="OWN" R_COUNTRY="turquie" />
     <STACK ID="302" ID_GAME="1" R_PROVINCE="eBassorah" MOVE="0"/>
     <COUNTER ID="302" ID_STACK="302" TYPE="ARMY_MINUS" R_COUNTRY="turquie" />
+
+    <!-- France army in not controlled eOnega -->
+    <STACK ID="1001" ID_GAME="1" R_PROVINCE="eOnega"/>
+    <COUNTER ID="1001" ID_STACK="1001" TYPE="ARMY_PLUS" R_COUNTRY="france"/>
+    <!-- France army in controlled eNovgorod -->
+    <STACK ID="1011" ID_GAME="1" R_PROVINCE="eNovgorod"/>
+    <COUNTER ID="1011" ID_STACK="1011" TYPE="ARMY_PLUS" R_COUNTRY="france"/>
+    <COUNTER ID="1012" ID_STACK="1011" TYPE="CONTROL" R_COUNTRY="france"/>
+    <!-- France detachement in controlled eYaroslavl -->
+    <STACK ID="1021" ID_GAME="1" R_PROVINCE="eYaroslavl"/>
+    <COUNTER ID="1021" ID_STACK="1021" TYPE="LAND_DETACHMENT" R_COUNTRY="france"/>
+    <COUNTER ID="1022" ID_STACK="1021" TYPE="CONTROL" R_COUNTRY="france"/>
+    <!-- France army in controlled eKaluga owned by poland  -->
+    <STACK ID="1031" ID_GAME="1" R_PROVINCE="eKaluga"/>
+    <COUNTER ID="1031" ID_STACK="1031" TYPE="ARMY_PLUS" R_COUNTRY="france"/>
+    <COUNTER ID="1032" ID_STACK="1031" TYPE="CONTROL" R_COUNTRY="france"/>
+    <COUNTER ID="1033" ID_STACK="1031" TYPE="OWN" R_COUNTRY="poland"/>
+    <!-- France army in controlled ePskov that is owned -->
+    <STACK ID="1041" ID_GAME="1" R_PROVINCE="ePskov"/>
+    <COUNTER ID="1041" ID_STACK="1041" TYPE="ARMY_PLUS" R_COUNTRY="france"/>
+    <COUNTER ID="1042" ID_STACK="1041" TYPE="CONTROL" R_COUNTRY="france"/>
+    <COUNTER ID="1043" ID_STACK="1041" TYPE="OWN" R_COUNTRY="russie"/>
+    <!-- France army in controlled eRyazan that is owned as national territory -->
+    <STACK ID="1051" ID_GAME="1" R_PROVINCE="eRyazan"/>
+    <COUNTER ID="1051" ID_STACK="1051" TYPE="ARMY_PLUS" R_COUNTRY="france"/>
+    <COUNTER ID="1052" ID_STACK="1051" TYPE="CONTROL" R_COUNTRY="france"/>
+    <COUNTER ID="1053" ID_STACK="1051" TYPE="OWN_NT" R_COUNTRY="russie"/>
+
 </dataset>

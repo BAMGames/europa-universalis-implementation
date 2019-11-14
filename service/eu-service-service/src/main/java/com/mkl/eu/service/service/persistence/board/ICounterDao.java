@@ -50,8 +50,16 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
 
     /**
      * @param province province whose we want the neighbor owners.
-     * @param idGame   if of the game.
+     * @param idGame   id of the game.
      * @return the countries owning european provinces bordering the province.
      */
     List<String> getNeighboringOwners(String province, Long idGame);
+
+    /**
+     * @param country country of the national territory.
+     * @param enemies enemies of the country.
+     * @param idGame  id of the game.
+     * @return list of national province names of the country where there is an enemy army.
+     */
+    List<String> getNationalTerritoriesUnderAttack(String country, List<String> enemies, Long idGame);
 }

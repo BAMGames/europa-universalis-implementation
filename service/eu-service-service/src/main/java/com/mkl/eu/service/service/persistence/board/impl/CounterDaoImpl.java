@@ -160,4 +160,22 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
         return countries;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getNationalTerritoriesUnderAttack(String country, List<String> enemies, Long idGame) {
+        List<String> provinces = new ArrayList<>();
+
+        String sql = queryProps.getProperty("game.national_territory_under_attack");
+
+        sql = sql.replace(":country", country);
+        String enemyNames = enemies.stream().collect(Collectors.joining("','", "('", "')"));
+        sql = sql.replace(":enemies", enemyNames);
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+        results.stream().forEach(input -> provinces.add((String) input.get("name")));
+
+        return provinces;
+    }
 }

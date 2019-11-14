@@ -17,6 +17,7 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -130,5 +131,19 @@ public class CounterDaoImplTest {
         neighbors.add("astrakhan");
         neighbors.add("perse");
         Assert.assertEquals(neighbors, counterDao.getNeighboringOwners("sCaspienne", 1L));
+    }
+
+    @Test
+    public void testNationalTerritoryUnderAttack() {
+        List<String> provinces = counterDao.getNationalTerritoriesUnderAttack("france", Arrays.asList("russie", "poland"), 1L);
+        Assert.assertEquals(0, provinces.size());
+        provinces = counterDao.getNationalTerritoriesUnderAttack("russie", Arrays.asList("sweden", "poland"), 1L);
+        Assert.assertEquals(0, provinces.size());
+        provinces = counterDao.getNationalTerritoriesUnderAttack("russie", Arrays.asList("france", "poland"), 2L);
+        Assert.assertEquals(0, provinces.size());
+        provinces = counterDao.getNationalTerritoriesUnderAttack("russie", Arrays.asList("france", "poland"), 1L);
+        Assert.assertEquals(2, provinces.size());
+        Collections.sort(provinces);
+        Assert.assertEquals(Arrays.asList("eNovgorod", "eRyazan"), provinces);
     }
 }
