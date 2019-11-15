@@ -47,9 +47,19 @@ public class Tables {
         return periods;
     }
 
+    /** @param periods the periods to set. */
+    public void setPeriods(List<Period> periods) {
+        this.periods = periods;
+    }
+
     /** @return the techs. */
     public List<Tech> getTechs() {
         return techs;
+    }
+
+    /** @param techs the techs to set. */
+    public void setTechs(List<Tech> techs) {
+        this.techs = techs;
     }
 
     /** @return the foreignTrades. */
@@ -57,9 +67,19 @@ public class Tables {
         return foreignTrades;
     }
 
+    /** @param foreignTrades the foreignTrades to set. */
+    public void setForeignTrades(List<TradeIncome> foreignTrades) {
+        this.foreignTrades = foreignTrades;
+    }
+
     /** @return the domesticTrades. */
     public List<TradeIncome> getDomesticTrades() {
         return domesticTrades;
+    }
+
+    /** @param domesticTrades the domesticTrades to set. */
+    public void setDomesticTrades(List<TradeIncome> domesticTrades) {
+        this.domesticTrades = domesticTrades;
     }
 
     /** @return the basicForces. */
@@ -67,9 +87,19 @@ public class Tables {
         return basicForces;
     }
 
+    /** @param basicForces the basicForces to set. */
+    public void setBasicForces(List<BasicForce> basicForces) {
+        this.basicForces = basicForces;
+    }
+
     /** @return the units. */
     public List<Unit> getUnits() {
         return units;
+    }
+
+    /** @param units the units to set. */
+    public void setUnits(List<Unit> units) {
+        this.units = units;
     }
 
     /** @return the limits. */
@@ -77,9 +107,19 @@ public class Tables {
         return limits;
     }
 
+    /** @param limits the limits to set. */
+    public void setLimits(List<Limit> limits) {
+        this.limits = limits;
+    }
+
     /** @return the results. */
     public List<Result> getResults() {
         return results;
+    }
+
+    /** @param results the results to set. */
+    public void setResults(List<Result> results) {
+        this.results = results;
     }
 
     /** @return the battleTechs. */
@@ -87,9 +127,19 @@ public class Tables {
         return battleTechs;
     }
 
+    /** @param battleTechs the battleTechs to set. */
+    public void setBattleTechs(List<BattleTech> battleTechs) {
+        this.battleTechs = battleTechs;
+    }
+
     /** @return the combatResults. */
     public List<CombatResult> getCombatResults() {
         return combatResults;
+    }
+
+    /** @param combatResults the combatResults to set. */
+    public void setCombatResults(List<CombatResult> combatResults) {
+        this.combatResults = combatResults;
     }
 
     /** @return the armyClasses. */
@@ -97,9 +147,19 @@ public class Tables {
         return armyClasses;
     }
 
+    /** @param armyClasses the armyClasses to set. */
+    public void setArmyClasses(List<ArmyClasse> armyClasses) {
+        this.armyClasses = armyClasses;
+    }
+
     /** @return the armyArtilleries. */
     public List<ArmyArtillery> getArmyArtilleries() {
         return armyArtilleries;
+    }
+
+    /** @param armyArtilleries the armyArtilleries to set. */
+    public void setArmyArtilleries(List<ArmyArtillery> armyArtilleries) {
+        this.armyArtilleries = armyArtilleries;
     }
 
     /** @return the artillerySieges. */
@@ -107,9 +167,19 @@ public class Tables {
         return artillerySieges;
     }
 
+    /** @param artillerySieges the artillerySieges to set. */
+    public void setArtillerySieges(List<ArtillerySiege> artillerySieges) {
+        this.artillerySieges = artillerySieges;
+    }
+
     /** @return the fortressResistances. */
     public List<FortressResistance> getFortressResistances() {
         return fortressResistances;
+    }
+
+    /** @param fortressResistances the fortressResistances to set. */
+    public void setFortressResistances(List<FortressResistance> fortressResistances) {
+        this.fortressResistances = fortressResistances;
     }
 
     /** @return the assaultResults. */
@@ -117,8 +187,18 @@ public class Tables {
         return assaultResults;
     }
 
+    /** @param assaultResults the assaultResults to set. */
+    public void setAssaultResults(List<AssaultResult> assaultResults) {
+        this.assaultResults = assaultResults;
+    }
+
     /** @return the exchequers. */
     public List<Exchequer> getExchequers() {
         return exchequers;
+    }
+
+    /** @param exchequers the exchequers to set. */
+    public void setExchequers(List<Exchequer> exchequers) {
+        this.exchequers = exchequers;
     }
 }
