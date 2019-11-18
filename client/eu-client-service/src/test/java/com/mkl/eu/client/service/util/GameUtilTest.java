@@ -115,6 +115,28 @@ public class GameUtilTest {
         Assert.assertEquals("B_PB_4G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_4G")));
         Assert.assertEquals("B_PB_4D", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_4D")));
         Assert.assertEquals("B_PB_5G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_5G")));
+
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_0G"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_0D"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_1G"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_1D"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_2G"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_2D"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_3G"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_3D"));
+        Assert.assertFalse(GameUtil.isInflationMax("B_PB_4G"));
+        Assert.assertTrue(GameUtil.isInflationMax("B_PB_4D"));
+
+        Assert.assertTrue(GameUtil.isInflationMin("B_PB_0G"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_0D"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_1G"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_1D"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_2G"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_2D"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_3G"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_3D"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_4G"));
+        Assert.assertFalse(GameUtil.isInflationMin("B_PB_4D"));
     }
 
     @Test

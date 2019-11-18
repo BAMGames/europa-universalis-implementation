@@ -187,6 +187,22 @@ public final class GameUtil {
     }
 
     /**
+     * @param provinceBox the province box where the inflation counter is.
+     * @return if the inflation is at its max position.
+     */
+    public static boolean isInflationMax(String provinceBox) {
+        return StringUtils.equals("B_PB_4D", provinceBox);
+    }
+
+    /**
+     * @param provinceBox the province box where the inflation counter is.
+     * @return if the inflation is at its max position.
+     */
+    public static boolean isInflationMin(String provinceBox) {
+        return StringUtils.equals("B_PB_0G", provinceBox);
+    }
+
+    /**
      * Filter to use to filter the provinces which can hold inflation counter.
      *
      * @param provinceBox name of the province/box.
