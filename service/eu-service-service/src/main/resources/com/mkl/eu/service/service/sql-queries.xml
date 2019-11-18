@@ -380,4 +380,19 @@
 			;
 		]]>
 	</entry>
+	<entry key="eco.gold_exploited"><!-- TODO TG-37 Gold exploited et depleted -->
+		<![CDATA[
+			SELECT SUM(gold.value)
+			FROM r_gold gold
+			WHERE gold.r_province IN
+			(
+				SELECT DISTINCT stack.r_province
+				FROM stack stack
+					INNER JOIN counter counter ON counter.id_stack = stack.id
+				WHERE (counter.type = 'COLONY_MINUS' OR counter.type = 'COLONY_PLUS')
+					AND stack.id_game = :idGame
+			)
+			;
+		]]>
+	</entry>
 </properties>

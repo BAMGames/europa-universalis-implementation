@@ -146,4 +146,10 @@ public class CounterDaoImplTest {
         Collections.sort(provinces);
         Assert.assertEquals(Arrays.asList("eNovgorod", "eRyazan"), provinces);
     }
+
+    @Test
+    public void testGoldExploited() {
+        Assert.assertEquals(90, counterDao.getGoldExploitedRotw(1L));
+        Assert.assertEquals(20, counterDao.getGoldExploitedRotw(2L));
+    }
 }

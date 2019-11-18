@@ -62,4 +62,10 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
      * @return list of national province names of the country where there is an enemy army.
      */
     List<String> getNationalTerritoriesUnderAttack(String country, List<String> enemies, Long idGame);
+
+    /**
+     * @param idGame id of the game.
+     * @return the total gold exploited in the Rotw.
+     */
+    int getGoldExploitedRotw(Long idGame);
 }

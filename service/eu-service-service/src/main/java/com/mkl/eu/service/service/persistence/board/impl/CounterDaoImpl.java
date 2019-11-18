@@ -178,4 +178,14 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
         return provinces;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getGoldExploitedRotw(Long idGame) {
+        String sql = queryProps.getProperty("eco.gold_exploited");
+
+        sql = sql.replace(":idGame", Long.toString(idGame));
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
 }
