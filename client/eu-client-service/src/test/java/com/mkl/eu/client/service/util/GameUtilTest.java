@@ -103,6 +103,18 @@ public class GameUtilTest {
         Assert.assertEquals(new Integer(25), GameUtil.getInflation("B_PB_4G", true));
         Assert.assertEquals(new Integer(33), GameUtil.getInflation("B_PB_4D", true));
         Assert.assertEquals(new Integer(0), GameUtil.getInflation("B_PB_5G", true));
+
+        Assert.assertEquals("B_PB_0G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_0G")));
+        Assert.assertEquals("B_PB_0D", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_0D")));
+        Assert.assertEquals("B_PB_1G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_1G")));
+        Assert.assertEquals("B_PB_1D", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_1D")));
+        Assert.assertEquals("B_PB_2G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_2G")));
+        Assert.assertEquals("B_PB_2D", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_2D")));
+        Assert.assertEquals("B_PB_3G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_3G")));
+        Assert.assertEquals("B_PB_3D", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_3D")));
+        Assert.assertEquals("B_PB_4G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_4G")));
+        Assert.assertEquals("B_PB_4D", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_4D")));
+        Assert.assertEquals("B_PB_5G", GameUtil.inflationBoxFromNumber(GameUtil.inflationBoxToNumber("B_PB_5G")));
     }
 
     @Test

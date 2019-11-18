@@ -109,20 +109,9 @@ public final class GameUtil {
      * @return the inflation.
      */
     public static Integer getInflation(String provinceBox, boolean exploitGold) {
-        int internalNumber = -1;
-        if (!StringUtils.isEmpty(provinceBox)) {
-            Matcher matcher = Pattern.compile("B_PB_(\\d)([DG])").matcher(provinceBox);
-            if (matcher.matches()) {
-                int number = Integer.parseInt(matcher.group(1));
-                boolean right = StringUtils.equals("D", matcher.group(2));
-                internalNumber = 2 * number + 1;
-                if (right) {
-                    internalNumber++;
-                }
-                if (!exploitGold) {
-                    internalNumber--;
-                }
-            }
+        int internalNumber = inflationBoxToNumber(provinceBox);
+        if (!exploitGold) {
+            internalNumber--;
         }
 
         Integer inflation;
@@ -154,6 +143,47 @@ public final class GameUtil {
         }
 
         return inflation;
+    }
+
+    /**
+     * Transform the province box where the inflation counter is into an abstract number representing the inflation.
+     *
+     * @param provinceBox the province box where the inflation counter is.
+     * @return abstract representation of inflation box.
+     */
+    public static int inflationBoxToNumber(String provinceBox) {
+        int internalNumber = -1;
+        if (!StringUtils.isEmpty(provinceBox)) {
+            Matcher matcher = Pattern.compile("B_PB_(\\d)([DG])").matcher(provinceBox);
+            if (matcher.matches()) {
+                int number = Integer.parseInt(matcher.group(1));
+                boolean right = StringUtils.equals("D", matcher.group(2));
+                internalNumber = 2 * number + 1;
+                if (right) {
+                    internalNumber++;
+                }
+            }
+        }
+
+        return internalNumber;
+    }
+
+    /**
+     * Transforms an abstract number representing the inflation into the province box where the inflation counter is.
+     *
+     * @param internalNumber the abstract representation of inflation box.
+     * @return the province box where the inflation counter is.
+     */
+    public static String inflationBoxFromNumber(int internalNumber) {
+        StringBuilder sb = new StringBuilder("B_PB_");
+        sb.append((internalNumber - 1) / 2);
+        if ((internalNumber - 1) % 2 == 1) {
+            sb.append("D");
+        } else {
+            sb.append("G");
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -248,7 +278,7 @@ public final class GameUtil {
      * Tells if a specific country is fully at war in a specific game.
      *
      * @param countryName name of the country.
-     * @param game      the game.
+     * @param game        the game.
      * @return if the country is at war.
      */
     public static boolean isAtWar(String countryName, Game game) {
