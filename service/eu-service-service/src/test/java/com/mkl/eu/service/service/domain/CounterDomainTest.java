@@ -12,6 +12,8 @@ import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.AbstractGameServiceTest;
+import com.mkl.eu.service.service.util.IOEUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +21,8 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Optional;
 
 import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
 import static org.mockito.Matchers.anyObject;
@@ -34,6 +38,9 @@ import static org.mockito.Mockito.when;
 public class CounterDomainTest {
     @InjectMocks
     private CounterDomainImpl counterDomain;
+
+    @Mock
+    private IOEUtil oeUtil;
 
     @Mock
     private ICounterDao counterDao;
@@ -696,5 +703,115 @@ public class CounterDomainTest {
         Assert.assertEquals(8L, game.getStacks().get(1).getCounters().get(1).getId().longValue());
         Assert.assertEquals(null, game.getStacks().get(1).getCounters().get(1).getCountry());
         Assert.assertEquals(CounterFaceTypeEnum.TECH_LAND_LATIN, game.getStacks().get(1).getCounters().get(1).getType());
+    }
+
+    @Test
+    public void testIncreaseInflation() {
+        GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setId(5L);
+        stack.setProvince("B_PB_2D");
+        CounterEntity counter = AbstractGameServiceTest.createCounter(1L, null, CounterFaceTypeEnum.INFLATION, stack);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        when(oeUtil.getInflationBox(game)).thenReturn(stack.getProvince());
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stackCreate = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stackCreate.setId(2L);
+
+            return stackCreate;
+        });
+
+        Optional<DiffEntity> diffOpt = counterDomain.increaseInflation(game);
+
+        Assert.assertTrue(diffOpt.isPresent());
+        Assert.assertEquals("B_PB_3G", counter.getOwner().getProvince());
+        DiffEntity diff = diffOpt.get();
+        Assert.assertEquals(DiffTypeEnum.MOVE, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(counter.getId(), diff.getIdObject());
+        Assert.assertEquals("B_PB_3G", AbstractGameServiceTest.getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+    }
+
+    @Test
+    public void testIncreaseInflationOrNot() {
+        GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setId(5L);
+        stack.setProvince("B_PB_4D");
+        CounterEntity counter = AbstractGameServiceTest.createCounter(1L, null, CounterFaceTypeEnum.INFLATION, stack);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        when(oeUtil.getInflationBox(game)).thenReturn(stack.getProvince());
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stackCreate = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stackCreate.setId(2L);
+
+            return stackCreate;
+        });
+
+        Optional<DiffEntity> diffOpt = counterDomain.increaseInflation(game);
+
+        Assert.assertFalse(diffOpt.isPresent());
+        Assert.assertEquals("B_PB_4D", counter.getOwner().getProvince());
+    }
+
+    @Test
+    public void testDecreaseInflation() {
+        GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setId(5L);
+        stack.setProvince("B_PB_2D");
+        CounterEntity counter = AbstractGameServiceTest.createCounter(1L, null, CounterFaceTypeEnum.INFLATION, stack);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        when(oeUtil.getInflationBox(game)).thenReturn(stack.getProvince());
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stackCreate = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stackCreate.setId(2L);
+
+            return stackCreate;
+        });
+
+        Optional<DiffEntity> diffOpt = counterDomain.decreaseInflation(game);
+
+        Assert.assertTrue(diffOpt.isPresent());
+        Assert.assertEquals("B_PB_2G", counter.getOwner().getProvince());
+        DiffEntity diff = diffOpt.get();
+        Assert.assertEquals(DiffTypeEnum.MOVE, diff.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diff.getTypeObject());
+        Assert.assertEquals(counter.getId(), diff.getIdObject());
+        Assert.assertEquals("B_PB_2G", AbstractGameServiceTest.getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+    }
+
+    @Test
+    public void testDecreaseInflationOrNot() {
+        GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setId(5L);
+        stack.setProvince("B_PB_0G");
+        CounterEntity counter = AbstractGameServiceTest.createCounter(1L, null, CounterFaceTypeEnum.INFLATION, stack);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        when(oeUtil.getInflationBox(game)).thenReturn(stack.getProvince());
+        when(stackDao.create(anyObject())).thenAnswer(invocationOnMock -> {
+            StackEntity stackCreate = (StackEntity) invocationOnMock.getArguments()[0];
+
+            stackCreate.setId(2L);
+
+            return stackCreate;
+        });
+
+        Optional<DiffEntity> diffOpt = counterDomain.decreaseInflation(game);
+
+        Assert.assertFalse(diffOpt.isPresent());
+        Assert.assertEquals("B_PB_0G", counter.getOwner().getProvince());
     }
 }

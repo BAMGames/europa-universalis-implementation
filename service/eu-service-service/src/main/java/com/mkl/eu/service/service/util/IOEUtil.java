@@ -350,4 +350,10 @@ public interface IOEUtil {
      * @return the prosperity of the country: -1 for anti prosperous, +1 for prosperous, 0 for neither.
      */
     int getProsperity(PlayableCountryEntity country, GameEntity game);
+
+    /**
+     * @param game the game.
+     * @return the province box where the inflation box is.
+     */
+    String getInflationBox(GameEntity game);
 }

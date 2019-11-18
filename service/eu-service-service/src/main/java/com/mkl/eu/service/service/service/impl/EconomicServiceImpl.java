@@ -1090,6 +1090,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     private int getBonusForDomesticOperation(GameEntity game, PlayableCountryEntity country) {
         int bonus = oeUtil.getStability(game, country.getName());
         if (StringUtils.equals(PlayableCountry.SPAIN, country.getName())) {
+            // TODO TG-37 Gold flow is not inflation > 10, it is 40 gold exploited in rotw and the malus is -2
             CounterEntity inflationCounter = CommonUtil.findFirst(game.getStacks().stream().filter(stack -> GameUtil.isInflationBox(stack.getProvince()))
                             .flatMap(stack -> stack.getCounters().stream()),
                     counter -> counter.getType() == CounterFaceTypeEnum.INFLATION || counter.getType() == CounterFaceTypeEnum.INFLATION_GOLD);

@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.domain.impl;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
@@ -19,6 +20,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.util.DiffUtil;
+import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Cross service class for counter manipulation.
@@ -34,6 +37,9 @@ import java.util.Objects;
  */
 @Component
 public class CounterDomainImpl implements ICounterDomain {
+    /** OEUtil. */
+    @Autowired
+    private IOEUtil oeUtil;
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
@@ -139,11 +145,9 @@ public class CounterDomainImpl implements ICounterDomain {
             game.getStacks().remove(stack);
         }
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, idCounter,
+        return DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, idCounter,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, stack.getProvince()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, stack.getId(), stack.getCounters().isEmpty()));
-
-        return diff;
     }
 
     /** {@inheritDoc} */
@@ -329,5 +333,29 @@ public class CounterDomainImpl implements ICounterDomain {
 
         return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, counter.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newCountry));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Optional<DiffEntity> increaseInflation(GameEntity game) {
+        String inflationBox = oeUtil.getInflationBox(game);
+        if (GameUtil.isInflationMax(inflationBox)) {
+            return Optional.empty();
+        }
+        int inflationNumber = GameUtil.inflationBoxToNumber(inflationBox);
+        String provinceTo = GameUtil.inflationBoxFromNumber(inflationNumber + 1);
+        return Optional.of(moveSpecialCounter(CounterFaceTypeEnum.INFLATION, null, provinceTo, game));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Optional<DiffEntity> decreaseInflation(GameEntity game) {
+        String inflationBox = oeUtil.getInflationBox(game);
+        if (GameUtil.isInflationMin(inflationBox)) {
+            return Optional.empty();
+        }
+        int inflationNumber = GameUtil.inflationBoxToNumber(inflationBox);
+        String provinceTo = GameUtil.inflationBoxFromNumber(inflationNumber - 1);
+        return Optional.of(moveSpecialCounter(CounterFaceTypeEnum.INFLATION, null, provinceTo, game));
     }
 }

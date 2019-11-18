@@ -7,6 +7,8 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Optional;
+
 /**
  * Interface for cross service methods around counter manipulation.
  *
@@ -122,4 +124,20 @@ public interface ICounterDomain {
      * @return the diffs related to the move of the counter.
      */
     DiffEntity changeCounterCountry(CounterEntity counter, String newCountry, GameEntity game);
+
+    /**
+     * Increate the inflation counter by one box.
+     *
+     * @param game the game.
+     * @return the diff, if any, related to the inflation increase.
+     */
+    Optional<DiffEntity> increaseInflation(GameEntity game);
+
+    /**
+     * Increate the inflation counter by one box.
+     *
+     * @param game the game.
+     * @return the diff, if any, related to the inflation increase.
+     */
+    Optional<DiffEntity> decreaseInflation(GameEntity game);
 }

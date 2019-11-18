@@ -1199,4 +1199,17 @@ public final class OEUtilImpl implements IOEUtil {
 
         return prosperity;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getInflationBox(GameEntity game) {
+        return game.getStacks().stream().filter(stack -> GameUtil.isInflationBox(stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.INFLATION || counter.getType() == CounterFaceTypeEnum.INFLATION_GOLD)
+                .map(counter -> counter.getOwner().getProvince())
+                .findAny()
+                .orElse(null);
+    }
 }

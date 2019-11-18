@@ -26,6 +26,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.tables.CombatResultEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -3483,5 +3484,24 @@ public class OEUtilTest {
             Assert.assertEquals(expected, prosperity);
             return this;
         }
+    }
+
+    @Test
+    public void testGetInflationBox() {
+        GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("B_PB_2D");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "null", CounterFaceTypeEnum.INFLATION, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "france", CounterFaceTypeEnum.CONTROL, stack));
+        game.getStacks().add(stack);
+
+        Assert.assertEquals("B_PB_2D", oeUtil.getInflationBox(game));
     }
 }
