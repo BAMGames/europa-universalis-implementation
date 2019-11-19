@@ -3504,4 +3504,73 @@ public class OEUtilTest {
 
         Assert.assertEquals("B_PB_2D", oeUtil.getInflationBox(game));
     }
+
+    @Test
+    public void testGetMinimalInflation() {
+        Tables tables = new Tables();
+        Period periodI = new Period();
+        periodI.setName("I");
+        periodI.setBegin(1);
+        periodI.setEnd(6);
+        tables.getPeriods().add(periodI);
+        Period periodII = new Period();
+        periodII.setName("II");
+        periodII.setBegin(7);
+        periodII.setEnd(14);
+        tables.getPeriods().add(periodII);
+        Period periodIII = new Period();
+        periodIII.setName("III");
+        periodIII.setBegin(15);
+        periodIII.setEnd(25);
+        tables.getPeriods().add(periodIII);
+        Period periodIV = new Period();
+        periodIV.setName("IV");
+        periodIV.setBegin(26);
+        periodIV.setEnd(34);
+        tables.getPeriods().add(periodIV);
+        Period periodV = new Period();
+        periodV.setName("V");
+        periodV.setBegin(35);
+        periodV.setEnd(42);
+        tables.getPeriods().add(periodV);
+        Period periodVI = new Period();
+        periodVI.setName("VI");
+        periodVI.setBegin(43);
+        periodVI.setEnd(52);
+        tables.getPeriods().add(periodVI);
+        Period periodVII = new Period();
+        periodVII.setName("VII");
+        periodVII.setBegin(53);
+        periodVII.setEnd(62);
+        tables.getPeriods().add(periodVII);
+
+        GameEntity game = new GameEntity();
+        game.setTurn(1);
+
+        Assert.assertEquals(5, oeUtil.getMinimalInflation(5, PlayableCountry.SPAIN, tables, game));
+        Assert.assertEquals(3, oeUtil.getMinimalInflation(5, PlayableCountry.POLAND, tables, game));
+        Assert.assertEquals(3, oeUtil.getMinimalInflation(5, PlayableCountry.RUSSIA, tables, game));
+        Assert.assertEquals(5, oeUtil.getMinimalInflation(5, PlayableCountry.SWEDEN, tables, game));
+
+        game.setTurn(25);
+
+        Assert.assertEquals(10, oeUtil.getMinimalInflation(10, PlayableCountry.SPAIN, tables, game));
+        Assert.assertEquals(5, oeUtil.getMinimalInflation(10, PlayableCountry.POLAND, tables, game));
+        Assert.assertEquals(5, oeUtil.getMinimalInflation(10, PlayableCountry.RUSSIA, tables, game));
+        Assert.assertEquals(5, oeUtil.getMinimalInflation(10, PlayableCountry.SWEDEN, tables, game));
+
+        game.setTurn(42);
+
+        Assert.assertEquals(15, oeUtil.getMinimalInflation(15, PlayableCountry.SPAIN, tables, game));
+        Assert.assertEquals(8, oeUtil.getMinimalInflation(15, PlayableCountry.POLAND, tables, game));
+        Assert.assertEquals(8, oeUtil.getMinimalInflation(15, PlayableCountry.RUSSIA, tables, game));
+        Assert.assertEquals(8, oeUtil.getMinimalInflation(15, PlayableCountry.SWEDEN, tables, game));
+
+        game.setTurn(43);
+
+        Assert.assertEquals(15, oeUtil.getMinimalInflation(15, PlayableCountry.SPAIN, tables, game));
+        Assert.assertEquals(8, oeUtil.getMinimalInflation(15, PlayableCountry.POLAND, tables, game));
+        Assert.assertEquals(15, oeUtil.getMinimalInflation(15, PlayableCountry.RUSSIA, tables, game));
+        Assert.assertEquals(15, oeUtil.getMinimalInflation(15, PlayableCountry.SWEDEN, tables, game));
+    }
 }

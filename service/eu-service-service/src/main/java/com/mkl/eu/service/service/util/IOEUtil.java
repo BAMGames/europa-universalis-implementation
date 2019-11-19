@@ -356,4 +356,12 @@ public interface IOEUtil {
      * @return the province box where the inflation box is.
      */
     String getInflationBox(GameEntity game);
+
+    /**
+     * @param inflation the actual inflation.
+     * @param country   the country.
+     * @param game      the game.
+     * @return the minimal inflation lost at the end of the turn.
+     */
+    int getMinimalInflation(int inflation, String country, Tables tables, GameEntity game);
 }

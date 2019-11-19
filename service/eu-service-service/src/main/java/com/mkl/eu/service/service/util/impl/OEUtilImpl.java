@@ -1212,4 +1212,30 @@ public final class OEUtilImpl implements IOEUtil {
                 .findAny()
                 .orElse(null);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getMinimalInflation(int inflation, String country, Tables tables, GameEntity game) {
+        Period PI = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_I, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PIII = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_III, period.getName()))
+                .findAny()
+                .orElse(null);
+        Period PV = tables.getPeriods().stream()
+                .filter(period -> StringUtils.equals(Period.PERIOD_V, period.getName()))
+                .findAny()
+                .orElse(null);
+
+        boolean poorCountry = StringUtils.equals(PlayableCountry.POLAND, country)
+                || StringUtils.equals(PlayableCountry.RUSSIA, country) && between(game.getTurn(), PI, PV)
+                || StringUtils.equals(PlayableCountry.SWEDEN, country) && between(game.getTurn(), PIII, PV);
+
+
+        return poorCountry ? (inflation + 1) / 2 : inflation;
+    }
 }
