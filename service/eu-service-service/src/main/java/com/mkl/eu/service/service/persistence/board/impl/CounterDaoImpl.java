@@ -188,4 +188,11 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getGoldExploitedAmerica(String country, Long idGame) {
+        // TODO conception of America / geographical entities
+        return 0;
+    }
 }

@@ -10,10 +10,12 @@ import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
+import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
@@ -36,10 +38,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.mkl.eu.service.service.service.AbstractGameServiceTest.*;
 import static org.mockito.Matchers.*;
@@ -69,6 +68,9 @@ public class StatusWorkflowDomainTest {
 
     @Mock
     private ICounterDao counterDao;
+
+    @Mock
+    private IEconomicalSheetDao economicalSheetDao;
 
     @Test
     public void testComputeEndMinorLogisticsNoCountries() throws Exception {
@@ -2324,5 +2326,280 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(100, polandSheet.getPeriodWealth().intValue());
         Assert.assertEquals("-8", getAttribute(diff, DiffAttributeTypeEnum.STAB_MODIFIER));
         Assert.assertEquals(-8, polandSheet.getStabModifier().intValue());
+    }
+
+    @Test
+    public void testEndStabilityPhase() {
+        EndStabilityBuilder.create()
+                .inflationDie(6).exploitedGold(99)
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(false);
+        EndStabilityBuilder.create()
+                .inflationDie(7)
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(true);
+        EndStabilityBuilder.create()
+                .inflationDie(7).inflationMax()
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(false);
+
+        EndStabilityBuilder.create()
+                .inflationDie(2).exploitedGold(100)
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(false);
+        EndStabilityBuilder.create()
+                .inflationDie(3).exploitedGold(100)
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(true);
+        EndStabilityBuilder.create()
+                .inflationDie(3).exploitedGold(100).inflationMax()
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(false);
+
+        EndStabilityBuilder.create()
+                .inflationDie(6)
+                .addCountry(EndStabilityCountryBuilder.create().id(1L).rtAfterExch(100).stabExpense(50).exploitedGold(20).minInflation(5))
+                .addCountry(EndStabilityCountryBuilder.create().id(2L).rtAfterExch(100).stabExpense(50).exploitedGold(20).minInflation(10))
+                .addCountry(EndStabilityCountryBuilder.create().id(3L).rtAfterExch(200).stabExpense(50).exploitedGold(20).minInflation(10))
+                .addCountry(EndStabilityCountryBuilder.create().id(4L).rtAfterExch(-200).stabExpense(50).exploitedGold(20).minInflation(10))
+                .addCountry(EndStabilityCountryBuilder.create().id(5L).rtAfterExch(-200).stabExpense(50).minInflation(10))
+                .addCountry(EndStabilityCountryBuilder.create().id(6L).noSheet())
+                .whenEndStability(this, statusWorkflowDomain)
+                .thenExpect(false, EndStabilityResultBuilder.create().id(1L).inflation(5).rtPeace(50).rtEnd(45),
+                        EndStabilityResultBuilder.create().id(2L).inflation(10).rtPeace(50).rtEnd(40),
+                        EndStabilityResultBuilder.create().id(3L).inflation(15).rtPeace(150).rtEnd(135),
+                        EndStabilityResultBuilder.create().id(4L).inflation(25).rtPeace(-250).rtEnd(-275),
+                        EndStabilityResultBuilder.create().id(5L).inflation(13).rtPeace(-250).rtEnd(-263),
+                        EndStabilityResultBuilder.create().id(6L).noSheet());
+    }
+
+    static class EndStabilityBuilder {
+        int exploitedGold;
+        int inflationDie;
+        boolean inflationMax;
+        List<EndStabilityCountryBuilder> countries = new ArrayList<>();
+        GameEntity game;
+        List<DiffEntity> diffs;
+
+        static EndStabilityBuilder create() {
+            return new EndStabilityBuilder();
+        }
+
+        EndStabilityBuilder exploitedGold(int exploitedGold) {
+            this.exploitedGold = exploitedGold;
+            return this;
+        }
+
+        EndStabilityBuilder inflationDie(int inflationDie) {
+            this.inflationDie = inflationDie;
+            return this;
+        }
+
+        EndStabilityBuilder inflationMax() {
+            this.inflationMax = true;
+            return this;
+        }
+
+        EndStabilityBuilder addCountry(EndStabilityCountryBuilder country) {
+            this.countries.add(country);
+            return this;
+        }
+
+        EndStabilityBuilder whenEndStability(StatusWorkflowDomainTest testClass, IStatusWorkflowDomain statusWorkflowDomain) {
+            game = new GameEntity();
+            game.setId(5L);
+            game.setTurn(10);
+
+            when(testClass.counterDao.getGoldExploitedRotw(game.getId())).thenReturn(exploitedGold);
+            when(testClass.oeUtil.rollDie(game)).thenReturn(inflationDie);
+            if (inflationMax) {
+                when(testClass.counterDomain.increaseInflation(game)).thenReturn(Optional.empty());
+            } else {
+                when(testClass.counterDomain.increaseInflation(game)).thenReturn(Optional.of(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER)));
+            }
+
+            for (EndStabilityCountryBuilder countryBuilder : countries) {
+                PlayableCountryEntity country = new PlayableCountryEntity();
+                country.setId(countryBuilder.id);
+                country.setName(country.getId() + "");
+                game.getCountries().add(country);
+                EconomicalSheetEntity sheet = new EconomicalSheetEntity();
+                sheet.setCountry(country);
+                sheet.setTurn(9);
+                country.getEconomicalSheets().add(sheet);
+                if (!countryBuilder.noSheet) {
+                    sheet = new EconomicalSheetEntity();
+                    sheet.setId(country.getId());
+                    sheet.setCountry(country);
+                    sheet.setTurn(10);
+                    sheet.setRtAftExch(countryBuilder.rtAfterExch);
+                    sheet.setStab(countryBuilder.stabExpense);
+                    country.getEconomicalSheets().add(sheet);
+                }
+
+                when(testClass.counterDao.getGoldExploitedAmerica(country.getName(), game.getId())).thenReturn(countryBuilder.exploitedGold);
+                when(testClass.oeUtil.getMinimalInflation(10, country.getName(), AbstractBack.TABLES, game)).thenReturn(countryBuilder.minInflation);
+                when(testClass.oeUtil.getInflationBox(game)).thenReturn("B_PB_1D");
+            }
+
+            diffs = statusWorkflowDomain.endStabilityPhase(game);
+
+            return this;
+        }
+
+        EndStabilityBuilder thenExpect(boolean increaseInflation, EndStabilityResultBuilder... results) {
+            int nbDiffs = 1;
+            DiffEntity diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull("The modify diff event was not created.", diff);
+            Assert.assertEquals("The new status of the game is wrong.", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+            Assert.assertEquals("The new turn of the game is wrong.", "11", getAttribute(diff, DiffAttributeTypeEnum.TURN));
+            Assert.assertEquals("The deactivation attribute was not sent.", "false", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                    .findAny()
+                    .orElse(null);
+            if (increaseInflation) {
+                Assert.assertNotNull("The increase inflation diff event is missing.", diff);
+                nbDiffs++;
+            } else {
+                Assert.assertNull("The increase inflation diff event should not be sent.", diff);
+            }
+
+            for (EndStabilityResultBuilder result : results) {
+                DiffEntity modifySheetDiff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET
+                                && Objects.equals(d.getIdObject(), result.id))
+                        .findAny()
+                        .orElse(null);
+                DiffEntity createSheetDiff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET)
+                        .flatMap(d -> d.getAttributes().stream())
+                        .filter(attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY && Objects.equals(attr.getValue(), result.id + ""))
+                        .map(DiffAttributesEntity::getDiff)
+                        .findAny()
+                        .orElse(null);
+                if (result.noSheet) {
+                    Assert.assertNull("A country without sheet should not trigger any sheet event.", modifySheetDiff);
+                    Assert.assertNull("A country without sheet should not trigger any sheet event.", createSheetDiff);
+                } else {
+                    EconomicalSheetEntity sheet = game.getCountries().stream()
+                            .filter(country -> Objects.equals(country.getId(), result.id))
+                            .flatMap(country -> country.getEconomicalSheets().stream())
+                            .filter(es -> Objects.equals(es.getTurn(), 10))
+                            .findAny()
+                            .orElse(null);
+                    Assert.assertNotNull("The modify eco sheet diff event is missing.", modifySheetDiff);
+                    Assert.assertEquals("The id country attribute in the modify eco sheet is wrong.", result.id + "", getAttribute(modifySheetDiff, DiffAttributeTypeEnum.ID_COUNTRY));
+                    Assert.assertEquals("The RT peace attribute in the modify eco sheet is wrong.", result.rtPeace + "", getAttribute(modifySheetDiff, DiffAttributeTypeEnum.ROYAL_TREASURE_PEACE));
+                    Assert.assertEquals("The RT peace in the eco sheet is wrong.", result.rtPeace, sheet.getRtPeace());
+                    Assert.assertEquals("The inflation attribute in the modify eco sheet is wrong.", result.inflation + "", getAttribute(modifySheetDiff, DiffAttributeTypeEnum.INFLATION));
+                    Assert.assertEquals("The inflation in the eco sheet is wrong.", result.inflation, sheet.getInflation());
+                    Assert.assertEquals("The RT end attribute in the modify eco sheet is wrong.", result.rtEnd + "", getAttribute(modifySheetDiff, DiffAttributeTypeEnum.ROYAL_TREASURE_END));
+                    Assert.assertEquals("The RT end in the eco sheet is wrong.", result.rtEnd, sheet.getRtEnd());
+
+                    EconomicalSheetEntity newSheet = game.getCountries().stream()
+                            .filter(country -> Objects.equals(country.getId(), result.id))
+                            .flatMap(country -> country.getEconomicalSheets().stream())
+                            .filter(es -> Objects.equals(es.getTurn(), 11))
+                            .findAny()
+                            .orElse(null);
+                    Assert.assertNotNull("The add eco sheet diff event is missing.", createSheetDiff);
+                    Assert.assertEquals("The turn attribute in the add eco sheet is wrong.", "11", getAttribute(createSheetDiff, DiffAttributeTypeEnum.TURN));
+                    Assert.assertNotNull("The turn in the new eco sheet is wrong.", newSheet);
+                    Assert.assertEquals("The RT start attribute in the add eco sheet is wrong.", result.rtEnd + "", getAttribute(createSheetDiff, DiffAttributeTypeEnum.ROYAL_TREASURE_START));
+                    Assert.assertEquals("The RT start in the new eco sheet is wrong.", result.rtEnd, newSheet.getRtStart());
+
+                    nbDiffs += 2;
+                }
+            }
+
+            Assert.assertEquals("Number of diffs returned is wrong.", nbDiffs, diffs.size());
+
+            return this;
+        }
+    }
+
+    static class EndStabilityCountryBuilder {
+        Long id;
+        boolean noSheet;
+        Integer rtAfterExch;
+        Integer stabExpense;
+        int exploitedGold;
+        int minInflation;
+
+        static EndStabilityCountryBuilder create() {
+            return new EndStabilityCountryBuilder();
+        }
+
+        EndStabilityCountryBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        EndStabilityCountryBuilder noSheet() {
+            this.noSheet = true;
+            return this;
+        }
+
+        EndStabilityCountryBuilder rtAfterExch(Integer rtAfterExch) {
+            this.rtAfterExch = rtAfterExch;
+            return this;
+        }
+
+        EndStabilityCountryBuilder stabExpense(Integer stabExpense) {
+            this.stabExpense = stabExpense;
+            return this;
+        }
+
+        EndStabilityCountryBuilder exploitedGold(int exploitedGold) {
+            this.exploitedGold = exploitedGold;
+            return this;
+        }
+
+        EndStabilityCountryBuilder minInflation(int minInflation) {
+            this.minInflation = minInflation;
+            return this;
+        }
+    }
+
+    static class EndStabilityResultBuilder {
+        Long id;
+        boolean noSheet;
+        Integer rtPeace;
+        Integer inflation;
+        Integer rtEnd;
+
+        static EndStabilityResultBuilder create() {
+            return new EndStabilityResultBuilder();
+        }
+
+        EndStabilityResultBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        EndStabilityResultBuilder noSheet() {
+            this.noSheet = true;
+            return this;
+        }
+
+        EndStabilityResultBuilder rtPeace(Integer rtPeace) {
+            this.rtPeace = rtPeace;
+            return this;
+        }
+
+        EndStabilityResultBuilder inflation(Integer inflation) {
+            this.inflation = inflation;
+            return this;
+        }
+
+        EndStabilityResultBuilder rtEnd(Integer rtEnd) {
+            this.rtEnd = rtEnd;
+            return this;
+        }
     }
 }

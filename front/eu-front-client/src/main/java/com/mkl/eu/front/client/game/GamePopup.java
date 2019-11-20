@@ -1037,6 +1037,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
      */
     private void updateEcoSheet(Game game, Diff diff) {
         switch (diff.getType()) {
+            case ADD:
+                createSheet(game, diff);
+                break;
             case MODIFY:
                 modifySheet(game, diff);
                 break;
@@ -1047,6 +1050,40 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 LOGGER.error("Unknown diff " + diff);
                 break;
         }
+    }
+
+    /**
+     * Process the add sheet diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add sheet.
+     */
+    private void createSheet(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        if (attribute == null || StringUtils.isEmpty(attribute.getValue())) {
+            LOGGER.error("Missing id country in add sheet event.");
+            return;
+        }
+        Long idCountry = Long.parseLong(attribute.getValue());
+        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.TURN);
+        if (attribute == null || StringUtils.isEmpty(attribute.getValue())) {
+            LOGGER.error("Missing id country in add sheet event.");
+            return;
+        }
+        PlayableCountry country = game.getCountries().stream()
+                .filter(pc -> Objects.equals(idCountry, pc.getId()))
+                .findAny()
+                .orElse(new PlayableCountry());
+        EconomicalSheet sheet = new EconomicalSheet();
+        sheet.setId(diff.getIdObject());
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.TURN, sheet::setTurn);
+        country.getEconomicalSheets().add(sheet);
+
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_START, sheet::setRtStart);
+        // TODO TG-13 events
+        sheet.setRtEvents(sheet.getRtStart());
+        // TODO TG-18 diplo phase
+        sheet.setRtDiplo(sheet.getRtStart());
     }
 
     /**
@@ -1096,6 +1133,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.STAB_MODIFIER, sheet::setStabModifier);
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.STAB, sheet::setStab);
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.STAB_DIE, sheet::setStabDie);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_PEACE, sheet::setRtPeace);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.INFLATION, sheet::setInflation);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_END, sheet::setRtEnd);
     }
 
     /**
@@ -1358,6 +1398,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 game.getCountries().forEach(country -> country.setReady(false));
             }
         });
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.TURN, game::setTurn);
     }
 
     /**

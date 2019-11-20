@@ -213,4 +213,12 @@ public enum DiffAttributeTypeEnum {
     STAB_MODIFIER,
     /** Economical sheet unmodified stability improvement die roll. */
     STAB_DIE,
+    /** Economical sheet royal treasure after peace. */
+    ROYAL_TREASURE_PEACE,
+    /** Economical sheet inflation. */
+    INFLATION,
+    /** Economical sheet royal treasure at the end of turn. */
+    ROYAL_TREASURE_END,
+    /** Economical sheet royal treasure at the start of turn. */
+    ROYAL_TREASURE_START,
 }

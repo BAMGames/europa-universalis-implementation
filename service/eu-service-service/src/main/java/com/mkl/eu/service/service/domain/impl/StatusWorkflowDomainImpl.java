@@ -12,6 +12,7 @@ import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
+import com.mkl.eu.service.service.persistence.eco.IEconomicalSheetDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -61,6 +62,9 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     /** Counter Dao. */
     @Autowired
     private ICounterDao counterDao;
+    /** EconomicalSheet DAO. */
+    @Autowired
+    private IEconomicalSheetDao economicalSheetDao;
 
     /** {@inheritDoc} */
     @Override
@@ -885,6 +889,64 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     @Override
     public List<DiffEntity> endStabilityPhase(GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
+
+        int treshold = counterDao.getGoldExploitedRotw(game.getId()) >= 100 ? 3 : 7;
+        int rollDie = oeUtil.rollDie(game);
+        if (rollDie >= treshold) {
+            Optional<DiffEntity> diff = counterDomain.increaseInflation(game);
+            diff.ifPresent(diffs::add);
+        }
+        String inflationBox = oeUtil.getInflationBox(game);
+
+        for (PlayableCountryEntity country : game.getCountries()) {
+            EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                    .filter(es -> Objects.equals(game.getTurn(), es.getTurn()))
+                    .findAny()
+                    .orElse(null);
+            if (sheet != null) {
+                sheet.setRtPeace(CommonUtil.toInt(sheet.getRtAftExch()) - CommonUtil.toInt(sheet.getStab()));
+
+                int americanGold = counterDao.getGoldExploitedAmerica(country.getName(), game.getId());
+                // TODO TG-131 Turkey before reforms has big inglation
+                int inflation = GameUtil.getInflation(inflationBox, americanGold > 0);
+                int computedInflation = (int) Math.ceil(((double) inflation * Math.abs(sheet.getRtPeace())) / 100);
+                int minInflation = oeUtil.getMinimalInflation(inflation, country.getName(), getTables(), game);
+                int actualInflation = Math.max(minInflation, computedInflation);
+                sheet.setInflation(actualInflation);
+                sheet.setRtEnd(sheet.getRtPeace() - actualInflation);
+
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_PEACE, sheet.getRtPeace()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.INFLATION, sheet.getInflation()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_END, sheet.getRtEnd())));
+
+                EconomicalSheetEntity nextSheet = new EconomicalSheetEntity();
+                nextSheet.setCountry(country);
+                nextSheet.setTurn(game.getTurn() + 1);
+                nextSheet.setRtStart(sheet.getRtEnd());
+                // TODO TG-13 events
+                nextSheet.setRtEvents(nextSheet.getRtStart());
+                // TODO TG-18 diplo phase
+                nextSheet.setRtDiplo(nextSheet.getRtStart());
+
+                economicalSheetDao.create(nextSheet);
+
+                country.getEconomicalSheets().add(nextSheet);
+
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.ECO_SHEET, nextSheet.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, nextSheet.getTurn()),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_START, nextSheet.getRtStart())));
+            }
+        }
+        game.setTurn(game.getTurn() + 1);
+        // TODO TG-13 events
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
 
         return diffs;
     }

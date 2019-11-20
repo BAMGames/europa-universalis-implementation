@@ -68,4 +68,11 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
      * @return the total gold exploited in the Rotw.
      */
     int getGoldExploitedRotw(Long idGame);
+
+    /**
+     * @param country the country.
+     * @param idGame  id of the game.
+     * @return the total gold exploited by a country in America.
+     */
+    int getGoldExploitedAmerica(String country, Long idGame);
 }

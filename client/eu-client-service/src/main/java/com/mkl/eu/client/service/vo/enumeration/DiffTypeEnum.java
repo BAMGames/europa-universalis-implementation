@@ -66,6 +66,13 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#PHASING_OFFENSIVE if the besieging side is the offensive side of the war</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#ECHO_SHEET in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_COUNTRY for the country owning the sheet (mandatory).</li>
+     * <li>DiffAttributeTypeEnum#TURN</li>
+     * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_START for the royal treasure at start line.</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     ADD,
@@ -344,6 +351,12 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#PRESTIGE_VPS for the prestige VPs line.</li>
      * <li>DiffAttributeTypeEnum#WEALTH for the wealth line.</li>
      * <li>DiffAttributeTypeEnum#PERIOD_WEALTH for the period wealth line.</li>
+     * <li>DiffAttributeTypeEnum#STAB for the stab line.</li>
+     * <li>DiffAttributeTypeEnum#STAB_MODIFIER for the modifier on the stab improvement action.</li>
+     * <li>DiffAttributeTypeEnum#STAB_DIE for the unmodified die roll on the stab improvement action.</li>
+     * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_PEACE for the royal treasure at peace line.</li>
+     * <li>DiffAttributeTypeEnum#INFLATION for the inflation line.</li>
+     * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_END for the royal treasure at end line.</li>
      * </ul>
      * </li>
      * </ul>
