@@ -92,14 +92,14 @@ public class StatusWorkflowDomainTest {
         List<DiffEntity> diffs = statusWorkflowDomain.computeEndMinorLogistics(game);
 
         DiffEntity diff = diffs.stream()
-                .filter(d -> d != null && d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d != null && d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
         Assert.assertEquals(DiffTypeEnum.MODIFY, diff.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STATUS, diff.getTypeObject());
+        Assert.assertEquals(DiffTypeObjectEnum.GAME, diff.getTypeObject());
         Assert.assertEquals(null, diff.getIdObject());
         Assert.assertEquals(1, diff.getAttributes().size());
         Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diff.getAttributes().get(0).getType());
@@ -1084,7 +1084,7 @@ public class StatusWorkflowDomainTest {
             Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
             Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
             Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(2).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.STATUS, diffs.get(2).getTypeObject());
+            Assert.assertEquals(DiffTypeObjectEnum.GAME, diffs.get(2).getTypeObject());
             Assert.assertEquals(null, diffs.get(2).getIdObject());
             Assert.assertEquals(1, diffs.get(2).getAttributes().size());
             Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
@@ -1145,7 +1145,7 @@ public class StatusWorkflowDomainTest {
                 .orElse(null);
         Assert.assertNotNull(diff);
         diff = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);
@@ -1534,7 +1534,7 @@ public class StatusWorkflowDomainTest {
         EndMilitaryPhaseBuilder thenExpect(EndMilitaryPhaseResultBuilder result) {
             Assert.assertEquals("The status of the game is not correct.", result.status, game.getStatus());
             DiffEntity changeStatus = diffs.stream()
-                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.GAME)
                     .findAny()
                     .orElse(null);
             if (result.changeStatus) {
@@ -1760,7 +1760,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
         Assert.assertEquals(7, diffs.size());
         DiffEntity diff = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
@@ -1871,7 +1871,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
         Assert.assertEquals(4, diffs.size());
         DiffEntity diff = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
@@ -1970,7 +1970,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(GameStatusEnum.EXCHEQUER, game.getStatus());
         Assert.assertEquals(3, diffs.size());
         DiffEntity diff = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.EXCHEQUER.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
@@ -2128,7 +2128,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(GameStatusEnum.STABILITY, game.getStatus());
         Assert.assertEquals(3, diffs.size());
         DiffEntity diff = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.STABILITY.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
@@ -2264,7 +2264,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(GameStatusEnum.STABILITY, game.getStatus());
         Assert.assertEquals(4, diffs.size());
         DiffEntity diff = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals(GameStatusEnum.STABILITY.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
@@ -2450,7 +2450,7 @@ public class StatusWorkflowDomainTest {
         EndStabilityBuilder thenExpect(boolean increaseInflation, EndStabilityResultBuilder... results) {
             int nbDiffs = 1;
             DiffEntity diff = diffs.stream()
-                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                     .findAny()
                     .orElse(null);
             Assert.assertNotNull("The modify diff event was not created.", diff);

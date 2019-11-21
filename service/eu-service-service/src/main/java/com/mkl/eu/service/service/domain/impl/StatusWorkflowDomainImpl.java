@@ -223,7 +223,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             // Yes -> battle phase !
             game.setStatus(GameStatusEnum.MILITARY_BATTLES);
 
-            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_BATTLES)));
 
             for (String province : provincesAtWar) {
@@ -283,7 +283,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             } else {
                 if (game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
                     game.setStatus(GameStatusEnum.MILITARY_MOVE);
-                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
                 }
@@ -343,7 +343,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                             .min(Comparator.<Integer>naturalOrder())
                             .orElse(null);
 
-                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES)));
 
                     diffs.add(changeActivePlayers(activeSiege, game));
@@ -538,7 +538,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         // TODO TG-5 when leaders implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
-        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                 // TODO TG-5 when leaders implemented, it will be MILITARY_HIERARCHY phase
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
@@ -558,7 +558,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
 
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game));
         game.setStatus(GameStatusEnum.REDEPLOYMENT);
-        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.REDEPLOYMENT)));
         // set the order of position 0 active
         diffs.add(changeActivePlayers(0, game));
@@ -624,7 +624,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             diffs.addAll(adjustSiegeworks(game));
             diffs.addAll(updateEcoSheet(game));
             game.setStatus(GameStatusEnum.EXCHEQUER);
-            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.EXCHEQUER),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false)));
         }
@@ -841,7 +841,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         }
 
         game.setStatus(GameStatusEnum.STABILITY);
-        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.STABILITY.name()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false)));
 
@@ -943,7 +943,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         game.setTurn(game.getTurn() + 1);
         // TODO TG-13 events
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
-        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS,
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));

@@ -6,6 +6,8 @@ package com.mkl.eu.client.service.vo.enumeration;
  * @author MKL.
  */
 public enum DiffTypeObjectEnum {
+    /** Game. */
+    GAME,
     /** Status. */
     STATUS,
     /** Counter. */

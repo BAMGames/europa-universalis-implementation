@@ -210,10 +210,11 @@ public enum DiffTypeEnum {
      * <p>
      * Can be used with:
      * </li>
-     * <li>DiffTypeObjectEnum#STATUS in which case it will use:
+     * <li>DiffTypeObjectEnum#GAME in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#STATUS to know at which new status should be the game.</li>
      * <li>DiffAttributeTypeEnum#ACTIVE at false to un ready every country.</li>
+     * <li>DiffAttributeTypeEnum#TURN the new turn of the game.</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#STACK in which case it will use:

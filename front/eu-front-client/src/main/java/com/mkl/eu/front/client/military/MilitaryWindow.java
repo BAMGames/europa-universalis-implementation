@@ -1240,6 +1240,7 @@ public class MilitaryWindow extends AbstractDiffListenerContainer {
      */
     public void update(Diff diff) {
         switch (diff.getTypeObject()) {
+            case GAME:
             case STATUS:
             case TURN_ORDER:
                 updateInfoPanel();

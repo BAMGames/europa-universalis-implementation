@@ -988,7 +988,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(0).setName("france");
         game.getCountries().get(0).setUsername("MKL");
         game.getCountries().get(0).setReady(false);
-        DiffEntity endRedeploymentPhase = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS);
+        DiffEntity endRedeploymentPhase = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME);
         when(statusWorkflowDomain.endRedeploymentPhase(game)).thenReturn(Collections.singletonList(endRedeploymentPhase));
 
         simulateDiff();
@@ -1366,7 +1366,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(1).setReady(false);
 
         List<DiffEntity> statusDiffs = new ArrayList<>();
-        DiffEntity statusDiff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS);
+        DiffEntity statusDiff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME);
         statusDiffs.add(statusDiff);
         when(statusWorkflowDomain.endExchequerPhase(game)).thenReturn(statusDiffs);
 
@@ -1560,7 +1560,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
             when(testClass.oeUtil.getStability(game, country.getName())).thenReturn(stability);
             when(testClass.oeUtil.rollDie(game, country)).thenReturn(stabilityDieRoll);
-            when(testClass.statusWorkflowDomain.endStabilityPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS)));
+            when(testClass.statusWorkflowDomain.endStabilityPhase(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME)));
             when(testClass.counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenAnswer(moveSpecialCounterAnswer());
 
             testClass.simulateDiff();
@@ -1608,7 +1608,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             }
 
             DiffEntity nextPhaseDiff = diffs.stream()
-                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.GAME)
                     .findAny()
                     .orElse(null);
             DiffEntity nextPlayerDiff = diffs.stream()

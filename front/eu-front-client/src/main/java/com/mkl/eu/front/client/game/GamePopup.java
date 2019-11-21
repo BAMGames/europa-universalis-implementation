@@ -412,6 +412,9 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                     continue;
                 }
                 switch (diff.getTypeObject()) {
+                    case GAME:
+                        updateGame(game, diff);
+                        break;
                     case COUNTRY:
                         updateCountry(game, diff);
                         break;
@@ -490,6 +493,60 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 gameConfig.setMaxIdMessage(opt.get().getId());
             }
         }
+    }
+
+    /**
+     * Process a game diff event.
+     *
+     * @param game to update.
+     * @param diff involving a game.
+     */
+    private void updateGame(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case MODIFY:
+                modifyGame(game, diff);
+                break;
+            default:
+                LOGGER.error("Unknown diff " + diff);
+                break;
+        }
+        updateTitle();
+        updateActivePlayers();
+    }
+
+    /**
+     * Process the modify game action diff event.
+     *
+     * @param game to update.
+     * @param diff involving a modify game.
+     */
+    private void modifyGame(Game game, Diff diff) {
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
+        if (attribute != null) {
+            game.setStatus(GameStatusEnum.valueOf(attribute.getValue()));
+
+            // New turn order for military phase
+            if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
+                SimpleRequest<LoadTurnOrderRequest> request = new SimpleRequest<>();
+                authentHolder.fillAuthentInfo(request);
+                request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame()));
+                try {
+                    List<CountryOrder> orders = gameService.loadTurnOrder(request);
+
+                    game.getOrders().clear();
+                    game.getOrders().addAll(orders);
+                } catch (FunctionalException e) {
+                    LOGGER.error("Can't load turn order.", e);
+                }
+            }
+        }
+
+        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.ACTIVE, active -> {
+            if (!active) {
+                game.getCountries().forEach(country -> country.setReady(false));
+            }
+        });
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.TURN, game::setTurn);
     }
 
     /**
@@ -1349,9 +1406,6 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
      */
     private void updateStatus(Game game, Diff diff) {
         switch (diff.getType()) {
-            case MODIFY:
-                modifyStatus(game, diff);
-                break;
             case VALIDATE:
                 validateStatus(game, diff);
                 break;
@@ -1362,43 +1416,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
                 LOGGER.error("Unknown diff " + diff);
                 break;
         }
-        updateTitle();
         updateActivePlayers();
-    }
-
-    /**
-     * Process the modify status action diff event.
-     *
-     * @param game to update.
-     * @param diff involving a modify status.
-     */
-    private void modifyStatus(Game game, Diff diff) {
-        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
-        if (attribute != null) {
-            game.setStatus(GameStatusEnum.valueOf(attribute.getValue()));
-
-            // New turn order for military phase
-            if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
-                SimpleRequest<LoadTurnOrderRequest> request = new SimpleRequest<>();
-                authentHolder.fillAuthentInfo(request);
-                request.setRequest(new LoadTurnOrderRequest(gameConfig.getIdGame()));
-                try {
-                    List<CountryOrder> orders = gameService.loadTurnOrder(request);
-
-                    game.getOrders().clear();
-                    game.getOrders().addAll(orders);
-                } catch (FunctionalException e) {
-                    LOGGER.error("Can't load turn order.", e);
-                }
-            }
-        }
-
-        doIfAttributeBoolean(diff, DiffAttributeTypeEnum.ACTIVE, active -> {
-            if (!active) {
-                game.getCountries().forEach(country -> country.setReady(false));
-            }
-        });
-        doIfAttributeInteger(diff, DiffAttributeTypeEnum.TURN, game::setTurn);
     }
 
     /**
