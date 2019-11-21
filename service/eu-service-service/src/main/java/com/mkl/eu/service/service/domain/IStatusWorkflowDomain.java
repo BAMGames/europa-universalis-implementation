@@ -74,4 +74,11 @@ public interface IStatusWorkflowDomain {
      * @return the diff corresponding to the switch of the next phase.
      */
     List<DiffEntity> endStabilityPhase(GameEntity game);
+
+    /**
+     * Compute the economical sheets of the active countries for the game turn.
+     *
+     * @param game the game.
+     */
+    DiffEntity computeEconomicalSheets(GameEntity game);
 }

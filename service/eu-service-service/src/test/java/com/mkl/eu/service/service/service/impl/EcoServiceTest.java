@@ -10,7 +10,6 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.util.GameUtil;
-import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -44,11 +43,10 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
-import com.mkl.eu.service.service.service.ListEquals;
+import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.impl.OEUtilImpl;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +58,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
@@ -119,9 +118,6 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     @Mock
     private IOEUtil oeUtil;
 
-    /** Variable used to store something coming from a mock. */
-    private EconomicalSheetEntity sheetEntity;
-
     @Test
     public void testComputeSheets() throws FunctionalException {
         GameEntity game = createGameUsingMocks();
@@ -134,212 +130,16 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         request.getGame().setIdGame(game.getId());
         request.getGame().setVersionGame(game.getVersion());
 
-        Diff diffAfter = new Diff();
-
-        when(diffMapping.oeToVo((DiffEntity) anyObject())).thenReturn(diffAfter);
+        DiffEntity diffEco = DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET);
+        when(statusWorkflowDomain.computeEconomicalSheets(game)).thenReturn(diffEco);
 
         simulateDiff();
 
         economicService.computeEconomicalSheets(request);
 
-        InOrder inOrder = inOrder(gameDao, economicalSheetDao, diffDao, diffMapping);
-
         DiffEntity diffEntity = retrieveDiffCreated();
 
-        inOrder.verify(gameDao).lock(game.getId());
-        inOrder.verify(economicalSheetDao).getTradeCenters(game.getId());
-        inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(diffMapping).oeToVo((DiffEntity) anyObject());
-
-        Assert.assertNull(diffEntity.getIdObject());
-        Assert.assertEquals(DiffTypeEnum.INVALIDATE, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.ECO_SHEET, diffEntity.getTypeObject());
-        Assert.assertEquals(game.getId().longValue(), diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(1, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.TURN, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals(Integer.toString(game.getTurn()), diffEntity.getAttributes().get(0).getValue());
-    }
-
-    @Test
-    public void testComputeSheet1() {
-        testComputeSheet("france", 200, true);
-    }
-
-    @Test
-    public void testComputeSheet2() {
-        testComputeSheet("angleterre", 50, false);
-    }
-
-    private void testComputeSheet(String name, long tradeIncome, boolean createSheet) {
-        Long idGame = 12L;
-        PlayableCountryEntity country = new PlayableCountryEntity();
-        country.setName(name);
-        country.setDti(3);
-        country.setFti(2);
-        country.getEconomicalSheets().add(new EconomicalSheetEntity());
-        country.getEconomicalSheets().get(0).setTurn(0);
-        country.getEconomicalSheets().add(new EconomicalSheetEntity());
-        country.getEconomicalSheets().get(1).setTurn(1);
-        if (!createSheet) {
-            sheetEntity = new EconomicalSheetEntity();
-            sheetEntity.setTurn(2);
-            sheetEntity.setTradeCenterLoss(13);
-            sheetEntity.setCountry(country);
-
-            country.getEconomicalSheets().add(sheetEntity);
-        }
-        Map<String, List<CounterFaceTypeEnum>> centers = new HashMap<>();
-        centers.put("france", new ArrayList<>());
-        centers.get("france").add(CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN);
-        centers.get("france").add(CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC);
-        centers.put("angleterre", new ArrayList<>());
-        centers.get("angleterre").add(CounterFaceTypeEnum.TRADE_CENTER_INDIAN);
-
-        if (createSheet) {
-            when(economicalSheetDao.create(anyObject())).thenAnswer(invocation -> {
-                sheetEntity = (EconomicalSheetEntity) invocation.getArguments()[0];
-                return sheetEntity;
-            });
-        }
-        Map<String, Integer> provinces = new HashMap<>();
-        provinces.put("idf", 12);
-        provinces.put("lyonnais", 5);
-        provinces.put("languedoc", 8);
-        when(economicalSheetDao.getOwnedAndControlledProvinces(name, idGame)).thenReturn(provinces);
-        List<String> vassals = new ArrayList<>();
-        vassals.add("sabaudia");
-        vassals.add("alsacia");
-        when(counterDao.getVassals(name, idGame)).thenReturn(vassals);
-        Map<String, Integer> provincesAlsacia = new HashMap<>();
-        provincesAlsacia.put("alsacia", 9);
-        when(economicalSheetDao.getOwnedAndControlledProvinces("alsacia", idGame)).thenReturn(provincesAlsacia);
-        Map<String, Integer> provincesSabaudia = new HashMap<>();
-        provincesSabaudia.put("bresse", 4);
-        provincesSabaudia.put("nice", 8);
-        when(economicalSheetDao.getOwnedAndControlledProvinces("sabaudia", idGame)).thenReturn(provincesSabaudia);
-        List<String> provinceNames = new ArrayList<>();
-        provinceNames.add("idf");
-        provinceNames.add("lyonnais");
-        provinceNames.add("languedoc");
-        provinceNames.add("bresse");
-        provinceNames.add("nice");
-        provinceNames.add("alsacia");
-        List<String> pillagedProvinces = new ArrayList<>();
-        pillagedProvinces.add("lyonnais");
-        pillagedProvinces.add("nice");
-        when(economicalSheetDao.getPillagedProvinces(argThat(new ListEquals<>(provinceNames)), eq(idGame))).thenReturn(pillagedProvinces);
-        when(economicalSheetDao.getMnuIncome(name, pillagedProvinces, idGame)).thenReturn(60);
-        List<String> provincesOwnedNotPilaged = new ArrayList<>();
-        provincesOwnedNotPilaged.add("idf");
-        provincesOwnedNotPilaged.add("languedoc");
-        when(economicalSheetDao.getGoldIncome(argThat(new ListEquals<>(provincesOwnedNotPilaged)), eq(idGame))).thenReturn(
-                20);
-        when(economicalSheetDao.getFleetLevelIncome(name, idGame)).thenReturn(30);
-        when(economicalSheetDao.getFleetLevelMonopoly(name, idGame)).thenReturn(12);
-        when(economicalSheetDao.getColTpIncome(name, idGame)).thenReturn(new ImmutablePair<>(22, 18));
-        when(economicalSheetDao.getExoResIncome(name, idGame)).thenReturn(8);
-
-        Tables tables = new Tables();
-        List<TradeIncome> domTrades = new ArrayList<>();
-        TradeIncome trade = new TradeIncome();
-        trade.setCountryValue(2);
-        trade.setMinValue(40);
-        trade.setMaxValue(80);
-        trade.setValue(6);
-        domTrades.add(trade);
-        trade = new TradeIncome();
-        trade.setCountryValue(3);
-        trade.setMaxValue(39);
-        trade.setValue(13);
-        domTrades.add(trade);
-        trade = new TradeIncome();
-        trade.setCountryValue(3);
-        trade.setMinValue(40);
-        trade.setMaxValue(79);
-        trade.setValue(16);
-        domTrades.add(trade);
-        trade = new TradeIncome();
-        trade.setCountryValue(3);
-        trade.setMinValue(80);
-        trade.setValue(18);
-        domTrades.add(trade);
-        tables.getDomesticTrades().addAll(domTrades);
-        List<TradeIncome> forTrades = new ArrayList<>();
-        trade = new TradeIncome();
-        trade.setCountryValue(1);
-        trade.setMaxValue(49);
-        trade.setValue(5);
-        forTrades.add(trade);
-        trade = new TradeIncome();
-        trade.setCountryValue(2);
-        trade.setMaxValue(49);
-        trade.setValue(10);
-        forTrades.add(trade);
-        trade = new TradeIncome();
-        trade.setCountryValue(2);
-        trade.setMinValue(50);
-        trade.setMaxValue(100);
-        trade.setValue(12);
-        forTrades.add(trade);
-        trade = new TradeIncome();
-        trade.setCountryValue(3);
-        trade.setMaxValue(49);
-        trade.setValue(15);
-        forTrades.add(trade);
-        tables.getForeignTrades().addAll(forTrades);
-        EconomicServiceImpl.TABLES = tables;
-
-        economicService.computeEconomicalSheet(country, idGame, 2, centers);
-
-        InOrder inOrder = inOrder(economicalSheetDao, counterDao);
-
-        if (createSheet) {
-            inOrder.verify(economicalSheetDao).create(anyObject());
-        }
-        inOrder.verify(economicalSheetDao).getOwnedAndControlledProvinces(name, idGame);
-        inOrder.verify(counterDao).getVassals(name, idGame);
-        inOrder.verify(economicalSheetDao).getOwnedAndControlledProvinces("sabaudia", idGame);
-        inOrder.verify(economicalSheetDao).getOwnedAndControlledProvinces("alsacia", idGame);
-        inOrder.verify(economicalSheetDao).getPillagedProvinces(argThat(new ListEquals<>(provinceNames)), eq(idGame));
-        inOrder.verify(economicalSheetDao).getMnuIncome(name, pillagedProvinces, idGame);
-        inOrder.verify(economicalSheetDao).getGoldIncome(argThat(new ListEquals<>(provincesOwnedNotPilaged)), eq(idGame));
-        inOrder.verify(economicalSheetDao).getFleetLevelIncome(name, idGame);
-        inOrder.verify(economicalSheetDao).getFleetLevelMonopoly(name, idGame);
-        inOrder.verify(economicalSheetDao).getColTpIncome(name, idGame);
-        inOrder.verify(economicalSheetDao).getExoResIncome(name, idGame);
-
-        Assert.assertEquals(3, country.getEconomicalSheets().size());
-        Assert.assertEquals(sheetEntity, country.getEconomicalSheets().get(2));
-        Assert.assertEquals(country, sheetEntity.getCountry());
-        Assert.assertEquals(2, sheetEntity.getTurn().intValue());
-        Assert.assertEquals(25, sheetEntity.getProvincesIncome().longValue());
-        Assert.assertEquals(21, sheetEntity.getVassalIncome().longValue());
-        Assert.assertEquals(13, sheetEntity.getPillages().longValue());
-        Assert.assertEquals(33, sheetEntity.getLandIncome().longValue());
-        Assert.assertEquals(60, sheetEntity.getMnuIncome().longValue());
-        Assert.assertEquals(20, sheetEntity.getGoldIncome().longValue());
-        Assert.assertEquals(80, sheetEntity.getIndustrialIncome().longValue());
-        Assert.assertEquals(16, sheetEntity.getDomTradeIncome().longValue());
-        Assert.assertEquals(10, sheetEntity.getForTradeIncome().longValue());
-        Assert.assertEquals(30, sheetEntity.getFleetLevelIncome().longValue());
-        Assert.assertEquals(12, sheetEntity.getFleetMonopIncome().longValue());
-        Assert.assertEquals(tradeIncome, sheetEntity.getTradeCenterIncome().longValue());
-        if (createSheet) {
-            Assert.assertNull(sheetEntity.getTradeCenterLoss());
-            Assert.assertEquals(tradeIncome + 68, sheetEntity.getTradeIncome().longValue());
-            Assert.assertEquals(tradeIncome + 229, sheetEntity.getIncome().longValue());
-            Assert.assertEquals(tradeIncome + 229, sheetEntity.getGrossIncome().longValue());
-        } else {
-            Assert.assertEquals(13, sheetEntity.getTradeCenterLoss().longValue());
-            Assert.assertEquals(tradeIncome + 55, sheetEntity.getTradeIncome().longValue());
-            Assert.assertEquals(tradeIncome + 216, sheetEntity.getIncome().longValue());
-            Assert.assertEquals(tradeIncome + 216, sheetEntity.getGrossIncome().longValue());
-        }
-        Assert.assertEquals(22, sheetEntity.getColIncome().longValue());
-        Assert.assertEquals(18, sheetEntity.getTpIncome().longValue());
-        Assert.assertEquals(8, sheetEntity.getExoResIncome().longValue());
-        Assert.assertEquals(48, sheetEntity.getRotwIncome().longValue());
+        Assert.assertEquals(diffEco, diffEntity);
     }
 
     @Test

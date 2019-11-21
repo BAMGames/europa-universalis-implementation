@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Exchequer;
 import com.mkl.eu.client.service.vo.tables.Result;
+import com.mkl.eu.client.service.vo.tables.TradeIncome;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
@@ -948,8 +949,131 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
 
-        // TODO call compute Eco sheets or move method here
+        diffs.add(computeEconomicalSheets(game));
 
         return diffs;
+    }
+
+    /** {@inheritDoc} */
+    public DiffEntity computeEconomicalSheets(GameEntity game) {
+        Map<String, List<CounterFaceTypeEnum>> tradeCenters = economicalSheetDao.getTradeCenters(game.getId());
+        for (PlayableCountryEntity country : game.getCountries()) {
+            if (StringUtils.isEmpty(country.getUsername())) {
+                continue;
+            }
+            EconomicalSheetEntity sheet = country.getEconomicalSheets().stream()
+                    .filter(es -> Objects.equals(es.getTurn(), game.getTurn()))
+                    .findAny()
+                    .orElse(null);
+            if (sheet == null) {
+                sheet = new EconomicalSheetEntity();
+                sheet.setCountry(country);
+                sheet.setTurn(game.getTurn());
+
+                economicalSheetDao.create(sheet);
+
+                country.getEconomicalSheets().add(sheet);
+            }
+
+            String name = country.getName();
+
+            Map<String, Integer> allProvinces = new HashMap<>();
+
+            Map<String, Integer> provinces = economicalSheetDao.getOwnedAndControlledProvinces(name, game.getId());
+            sheet.setProvincesIncome(provinces.values().stream().collect(Collectors.summingInt(value -> value)));
+
+            Map<String, Integer> vassalProvinces = new HashMap<>();
+            List<String> vassals = counterDao.getVassals(name, game.getId());
+            for (String vassal : vassals) {
+                vassalProvinces.putAll(economicalSheetDao.getOwnedAndControlledProvinces(vassal, game.getId()));
+            }
+            sheet.setVassalIncome(vassalProvinces.values().stream().collect(Collectors.summingInt(value -> value)));
+
+            List<String> provinceNames = new ArrayList<>();
+            provinceNames.addAll(provinces.keySet());
+            provinceNames.addAll(vassalProvinces.keySet());
+            List<String> pillagedProvinces = economicalSheetDao.getPillagedProvinces(provinceNames, game.getId());
+
+            allProvinces.putAll(provinces);
+            allProvinces.putAll(vassalProvinces);
+
+            Integer pillagedIncome = pillagedProvinces.stream().collect(Collectors.summingInt(allProvinces::get));
+
+            sheet.setPillages(pillagedIncome);
+
+            Integer sum = CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome(), sheet.getEventLandIncome());
+            if (sheet.getPillages() != null) {
+                sum -= sheet.getPillages();
+            }
+            sheet.setLandIncome(sum);
+
+            sheet.setMnuIncome(economicalSheetDao.getMnuIncome(name, pillagedProvinces, game.getId()));
+
+            List<String> provincesOwnedNotPilaged = provinces.keySet().stream().filter(s -> !pillagedProvinces.contains(s)).collect(Collectors.toList());
+            sheet.setGoldIncome(economicalSheetDao.getGoldIncome(provincesOwnedNotPilaged, game.getId()));
+
+            sheet.setIndustrialIncome(CommonUtil.add(sheet.getMnuIncome(), sheet.getGoldIncome()));
+
+            final Integer valueDom = CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome());
+            TradeIncome tradeIncome = CommonUtil.findFirst(getTables().getDomesticTrades(), tradeIncome1 -> tradeIncome1.getCountryValue() == country.getDti()
+                            && (tradeIncome1.getMinValue() == null || tradeIncome1.getMinValue() <= valueDom)
+                            && (tradeIncome1.getMaxValue() == null || tradeIncome1.getMaxValue() >= valueDom)
+            );
+            if (tradeIncome != null) {
+                sheet.setDomTradeIncome(tradeIncome.getValue());
+            }
+
+            // TODO needs War to know the blocked trade
+            // TODO move elsewhere because we need to know the land income
+            // of all countries.
+            final Integer valueFor = 0;
+            tradeIncome = CommonUtil.findFirst(getTables().getForeignTrades(), tradeIncome1 -> tradeIncome1.getCountryValue() == country.getFti()
+                            && (tradeIncome1.getMinValue() == null || tradeIncome1.getMinValue() <= valueFor)
+                            && (tradeIncome1.getMaxValue() == null || tradeIncome1.getMaxValue() >= valueFor)
+            );
+            if (tradeIncome != null) {
+                sheet.setForTradeIncome(tradeIncome.getValue());
+            }
+
+            sheet.setFleetLevelIncome(economicalSheetDao.getFleetLevelIncome(name, game.getId()));
+
+            sheet.setFleetMonopIncome(economicalSheetDao.getFleetLevelMonopoly(name, game.getId()));
+
+            Integer tradeCentersIncome = 0;
+
+            if (tradeCenters.get(name) != null) {
+                for (CounterFaceTypeEnum tradeCenter : tradeCenters.get(name)) {
+                    if (tradeCenter == CounterFaceTypeEnum.TRADE_CENTER_ATLANTIC) {
+                        tradeCentersIncome += 100;
+                    } else if (tradeCenter == CounterFaceTypeEnum.TRADE_CENTER_MEDITERRANEAN) {
+                        tradeCentersIncome += 100;
+                    } else if (tradeCenter == CounterFaceTypeEnum.TRADE_CENTER_INDIAN) {
+                        tradeCentersIncome += 50;
+                    }
+                }
+            }
+
+            sheet.setTradeCenterIncome(tradeCentersIncome);
+
+            sum = CommonUtil.add(sheet.getDomTradeIncome(), sheet.getForTradeIncome(), sheet.getFleetLevelIncome(), sheet.getFleetMonopIncome(), sheet.getTradeCenterIncome());
+            if (sheet.getTradeCenterLoss() != null) {
+                sum -= sheet.getTradeCenterLoss();
+            }
+            sheet.setTradeIncome(sum);
+
+            Pair<Integer, Integer> colTpIncome = economicalSheetDao.getColTpIncome(name, game.getId());
+            sheet.setColIncome(colTpIncome.getLeft());
+            sheet.setTpIncome(colTpIncome.getRight());
+            sheet.setExoResIncome(economicalSheetDao.getExoResIncome(name, game.getId()));
+
+            sheet.setRotwIncome(CommonUtil.add(sheet.getColIncome(), sheet.getTpIncome(), sheet.getExoResIncome()));
+
+            sheet.setIncome(CommonUtil.add(sheet.getLandIncome(), sheet.getIndustrialIncome(), sheet.getTradeIncome(), sheet.getRotwIncome(), sheet.getSpecialIncome()));
+
+            sheet.setGrossIncome(CommonUtil.add(sheet.getIncome(), sheet.getEventIncome()));
+        }
+
+        return DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
     }
 }
