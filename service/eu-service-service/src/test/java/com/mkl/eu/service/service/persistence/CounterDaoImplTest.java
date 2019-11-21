@@ -152,4 +152,15 @@ public class CounterDaoImplTest {
         Assert.assertEquals(90, counterDao.getGoldExploitedRotw(1L));
         Assert.assertEquals(20, counterDao.getGoldExploitedRotw(2L));
     }
+
+    @Test
+    public void testGoldExploitedAmerica() {
+        Assert.assertEquals(90, counterDao.getGoldExploitedAmerica("espagne", 1L));
+        Assert.assertEquals(50, counterDao.getGoldExploitedAmerica("france", 1L));
+        Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("russie", 1L));
+
+        Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("espagne", 2L));
+        Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("france", 2L));
+        Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("russie", 2L));
+    }
 }

@@ -395,4 +395,23 @@
 			;
 		]]>
 	</entry>
+	<entry key="eco.gold_exploited_america"><!-- TODO TG-37 Gold exploited et depleted -->
+		<![CDATA[
+			SELECT IFNULL(SUM(gold.value), 0)
+			FROM r_gold gold
+			INNER JOIN r_province prov ON prov.name = gold.r_province
+			INNER JOIN r_province_rotw provRotw ON provRotw.id = prov.id
+			INNER JOIN r_geo_group geo ON geo.r_region = provRotw.region
+			WHERE geo.name = 'AMERICA' AND gold.r_province IN
+			(
+				SELECT DISTINCT stack.r_province
+				FROM stack stack
+					INNER JOIN counter counter ON counter.id_stack = stack.id
+				WHERE (counter.type = 'COLONY_MINUS' OR counter.type = 'COLONY_PLUS')
+					AND stack.id_game = :idGame
+					AND counter.r_country = ':country'
+			)
+			;
+		]]>
+	</entry>
 </properties>

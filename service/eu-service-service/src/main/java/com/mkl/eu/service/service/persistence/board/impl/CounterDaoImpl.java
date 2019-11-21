@@ -192,7 +192,11 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
     /** {@inheritDoc} */
     @Override
     public int getGoldExploitedAmerica(String country, Long idGame) {
-        // TODO conception of America / geographical entities
-        return 0;
+        String sql = queryProps.getProperty("eco.gold_exploited_america");
+
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        sql = sql.replace(":country", country);
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 }

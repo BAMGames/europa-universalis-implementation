@@ -948,6 +948,8 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn())));
 
+        // TODO call compute Eco sheets or move method here
+
         return diffs;
     }
 }
