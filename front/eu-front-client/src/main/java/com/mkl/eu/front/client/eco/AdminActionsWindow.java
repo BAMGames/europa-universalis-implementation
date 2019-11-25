@@ -27,6 +27,7 @@ import com.mkl.eu.front.client.common.CounterInProvinceCellFactory;
 import com.mkl.eu.front.client.common.CounterInProvinceConverter;
 import com.mkl.eu.front.client.common.EnumConverter;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
+import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
@@ -65,7 +66,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class AdminActionsWindow extends AbstractDiffResponseListenerContainer {
+public class AdminActionsWindow extends AbstractDiffResponseListenerContainer implements IDiffListener {
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
@@ -1413,11 +1414,8 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer {
         return sb.toString();
     }
 
-    /**
-     * Update the window given the diff.
-     *
-     * @param diff that will update the window.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void update(Diff diff) {
         switch (diff.getTypeObject()) {
             case ADM_ACT:

@@ -25,6 +25,7 @@ import com.mkl.eu.front.client.common.CounterConverter;
 import com.mkl.eu.front.client.common.EnumConverter;
 import com.mkl.eu.front.client.common.RedeployLine;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
+import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
@@ -67,7 +68,7 @@ import java.util.stream.Stream;
  */
 @Component
 @Scope(value = "prototype")
-public class MilitaryWindow extends AbstractDiffResponseListenerContainer {
+public class MilitaryWindow extends AbstractDiffResponseListenerContainer implements IDiffListener {
     /** Board service. */
     @Autowired
     private IBoardService boardService;
@@ -1233,11 +1234,8 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer {
         choiceSiege.setItems(FXCollections.observableArrayList(sieges));
     }
 
-    /**
-     * Update the window given the diff.
-     *
-     * @param diff that will update the window.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void update(Diff diff) {
         switch (diff.getTypeObject()) {
             case GAME:

@@ -39,6 +39,7 @@ import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
 import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
+import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffResponseListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
@@ -139,6 +140,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private VBox activeCountries = new VBox();
     /** Title to be refreshed when status changed. */
     private Text info = new Text();
+    /** List of DiffListener that will consume game updates. */
+    private List<IDiffListener> diffListeners = new ArrayList<>();
 
     public GamePopup(Long idGame, Long idCountry, String countryName) {
         gameConfig = new GameConfiguration();
@@ -212,6 +215,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private void initMap(Map<String, Marker> markers) {
         map = context.getBean(InteractiveMap.class, game, gameConfig, markers);
         map.addDiffListener(this);
+        diffListeners.add(map);
     }
 
     /**
@@ -220,6 +224,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private void initChat() {
         chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
         chatWindow.addDiffListener(this);
+        diffListeners.add(chatWindow);
         Tab tab = new Tab(globalConfiguration.getMessage("game.popup.chat"));
         tab.setClosable(false);
         tab.setContent(chatWindow.getTabPane());
@@ -234,6 +239,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private void initEco(List<IMapMarker> mapMarkers) {
         ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
+        diffListeners.add(ecoWindow);
         Tab tab = new Tab(globalConfiguration.getMessage("game.popup.eco"));
         tab.setClosable(false);
         tab.setContent(ecoWindow.getTabPane());
@@ -241,6 +247,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
 
         adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
+        diffListeners.add(adminActionsWindow);
         tab = new Tab(globalConfiguration.getMessage("game.popup.admin_actions"));
         tab.setClosable(false);
         tab.setContent(adminActionsWindow.getTabPane());
@@ -253,6 +260,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private void initMilitary(List<IMapMarker> mapMarkers) {
         militaryWindow = context.getBean(MilitaryWindow.class, game, mapMarkers, gameConfig);
         militaryWindow.addDiffListener(this);
+        diffListeners.add(militaryWindow);
         Tab tab = new Tab(globalConfiguration.getMessage("military.title"));
         tab.setClosable(false);
         tab.setContent(militaryWindow.getTabPane());
@@ -449,13 +457,9 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
                         LOGGER.error("Unknown diff " + diff);
                         break;
                 }
-                map.update(diff);
-                chatWindow.update(diff);
-                ecoWindow.update(diff);
-                adminActionsWindow.update(diff);
-                militaryWindow.update(diff);
+                diffListeners.stream().forEach(listener -> listener.update(diff));
             }
-            ecoWindow.updateComplete();
+            diffListeners.stream().forEach(IDiffListener::updateComplete);
 
             event.getResponse().getMessages().forEach(message -> {
                 if ((message.getIdRoom() == null && message.getId() > gameConfig.getMaxIdGlobalMessage())

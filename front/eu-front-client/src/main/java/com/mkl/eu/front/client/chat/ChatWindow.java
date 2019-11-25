@@ -13,6 +13,7 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
+import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.application.Platform;
@@ -54,7 +55,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class ChatWindow extends AbstractDiffResponseListenerContainer {
+public class ChatWindow extends AbstractDiffResponseListenerContainer implements IDiffListener {
     /** Chat service. */
     @Autowired
     private IChatService chatService;
@@ -364,11 +365,8 @@ public class ChatWindow extends AbstractDiffResponseListenerContainer {
         });
     }
 
-    /**
-     * Update the Map given the diff.
-     *
-     * @param diff that will update the map.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void update(Diff diff) {
         switch (diff.getTypeObject()) {
             case ROOM:

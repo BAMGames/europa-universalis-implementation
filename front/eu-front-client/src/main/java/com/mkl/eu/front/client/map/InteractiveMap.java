@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
+import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.event.IDiffResponseListener;
 import com.mkl.eu.front.client.event.IDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -56,7 +57,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class InteractiveMap extends PApplet implements MapEventListener, ApplicationContextAware {
+public class InteractiveMap extends PApplet implements MapEventListener, ApplicationContextAware, IDiffListener {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractiveMap.class);
     /** Spring application context. */
@@ -330,11 +331,8 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
         }
     }
 
-    /**
-     * Update the Map given the diff.
-     *
-     * @param diff that will update the map.
-     */
+    /** {@inheritDoc} */
+    @Override
     public synchronized void update(Diff diff) {
         switch (diff.getTypeObject()) {
             case COUNTER:
