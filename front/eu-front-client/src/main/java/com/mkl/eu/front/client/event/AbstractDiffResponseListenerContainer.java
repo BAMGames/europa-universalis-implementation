@@ -14,11 +14,11 @@ import java.util.List;
  *
  * @author MKL.
  */
-public class AbstractDiffListenerContainer implements IDiffListenerContainer, IServiceCaller {
+public class AbstractDiffResponseListenerContainer implements IDiffResponseListenerContainer, IServiceCaller {
     /** Logger. */
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
     /** Listeners for diffs event. */
-    private List<IDiffListener> diffListeners = new ArrayList<>();
+    private List<IDiffResponseListener> diffListeners = new ArrayList<>();
     /** Game configuration. */
     protected GameConfiguration gameConfig;
     /** Component holding the authentication information. */
@@ -30,7 +30,7 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer, IS
      *
      * @param gameConfig the gameConfig to set.
      */
-    public AbstractDiffListenerContainer(GameConfiguration gameConfig) {
+    public AbstractDiffResponseListenerContainer(GameConfiguration gameConfig) {
         this.gameConfig = gameConfig;
     }
 
@@ -48,7 +48,7 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer, IS
 
     /** {@inheritDoc} */
     @Override
-    public void addDiffListener(IDiffListener diffListener) {
+    public void addDiffListener(IDiffResponseListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
@@ -56,8 +56,8 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer, IS
 
     /** {@inheritDoc} */
     @Override
-    public void processDiffEvent(DiffEvent event) {
-        for (IDiffListener diffListener : diffListeners) {
+    public void processDiffEvent(DiffResponseEvent event) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }
@@ -65,7 +65,7 @@ public class AbstractDiffListenerContainer implements IDiffListenerContainer, IS
     /** {@inheritDoc} */
     @Override
     public void processExceptionEvent(ExceptionEvent event) {
-        for (IDiffListener diffListener : diffListeners) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
     }

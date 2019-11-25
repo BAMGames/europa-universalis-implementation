@@ -12,7 +12,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
+import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.application.Platform;
@@ -54,7 +54,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class ChatWindow extends AbstractDiffListenerContainer {
+public class ChatWindow extends AbstractDiffResponseListenerContainer {
     /** Chat service. */
     @Autowired
     private IChatService chatService;

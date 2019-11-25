@@ -5,13 +5,13 @@ package com.mkl.eu.front.client.event;
  *
  * @author MKL.
  */
-public interface IDiffListener {
+public interface IDiffResponseListener {
     /**
      * Update the client with the given event.
      *
      * @param event with the diffs and the new version of the game.
      */
-    void update(DiffEvent event);
+    void update(DiffResponseEvent event);
 
     /**
      * Handle an exception.

@@ -37,9 +37,9 @@ import com.mkl.eu.client.service.vo.military.SiegeCounter;
 import com.mkl.eu.front.client.chat.ChatWindow;
 import com.mkl.eu.front.client.eco.AdminActionsWindow;
 import com.mkl.eu.front.client.eco.EcoWindow;
-import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
-import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.event.IDiffResponseListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
@@ -93,7 +93,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class GamePopup implements IDiffListener, ApplicationContextAware {
+public class GamePopup implements IDiffResponseListener, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(GamePopup.class);
     /** Content of this component. */
@@ -396,7 +396,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void update(DiffEvent event) {
+    public synchronized void update(DiffResponseEvent event) {
         UIUtil.doInJavaFx(() -> internalUpdate(event));
     }
 
@@ -405,7 +405,7 @@ public class GamePopup implements IDiffListener, ApplicationContextAware {
      *
      * @param event the event to proceed.
      */
-    private void internalUpdate(DiffEvent event) {
+    private void internalUpdate(DiffResponseEvent event) {
         if (event.getIdGame().equals(game.getId())) {
             for (Diff diff : event.getResponse().getDiffs()) {
                 if (gameConfig.getVersionGame() >= diff.getVersionGame()) {

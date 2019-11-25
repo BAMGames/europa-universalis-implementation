@@ -12,9 +12,9 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
-import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.event.IDiffResponseListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -43,7 +43,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @org.springframework.stereotype.Component
 @Scope(value = "prototype")
-public class GameFrame extends JFrame implements IDiffListener, ApplicationContextAware {
+public class GameFrame extends JFrame implements IDiffResponseListener, ApplicationContextAware {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(GameFrame.class);
     /** Spring application context. */
@@ -97,7 +97,7 @@ public class GameFrame extends JFrame implements IDiffListener, ApplicationConte
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void update(DiffEvent event) {
+    public synchronized void update(DiffResponseEvent event) {
         if (event.getIdGame().equals(game.getId())) {
             for (Diff diff : event.getResponse().getDiffs()) {
                 if (gameConfig.getVersionGame() > diff.getVersionGame()) {

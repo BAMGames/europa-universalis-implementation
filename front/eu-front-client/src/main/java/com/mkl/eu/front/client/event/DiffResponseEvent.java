@@ -7,7 +7,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
  *
  * @author MKL.
  */
-public class DiffEvent {
+public class DiffResponseEvent {
     /** Diffs to spread to the client. */
     private DiffResponse response;
     /** Id of the game (to be sure the correct game is being updated). */
@@ -19,7 +19,7 @@ public class DiffEvent {
      * @param response      the response.
      * @param idGame     the id of the game.
      */
-    public DiffEvent(DiffResponse response, Long idGame) {
+    public DiffResponseEvent(DiffResponse response, Long idGame) {
         this.response = response;
         this.idGame = idGame;
     }

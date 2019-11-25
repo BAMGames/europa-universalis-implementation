@@ -3,8 +3,8 @@ package com.mkl.eu.front.client.socket;
 import com.mkl.eu.client.common.vo.SocketInfo;
 import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
-import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
+import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import javafx.application.Platform;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import java.net.SocketException;
  */
 @Component
 @Scope(value = "prototype")
-public class ClientSocket extends AbstractDiffListenerContainer implements Runnable {
+public class ClientSocket extends AbstractDiffResponseListenerContainer implements Runnable {
     /** Delays between two unsuccessful tries to reconnect to the socket. */
     private final static long[] delays = new long[]{5000l, 10000l, 30000l, 60000l};
     /** Socket to communicate with server. */
@@ -78,7 +78,7 @@ public class ClientSocket extends AbstractDiffListenerContainer implements Runna
 
             while ((response = (DiffResponse) in.readObject()) != null) {
                 LOGGER.info("Receiving a diff for game " + gameConfig.getIdGame());
-                DiffEvent event = new DiffEvent(response, gameConfig.getIdGame());
+                DiffResponseEvent event = new DiffResponseEvent(response, gameConfig.getIdGame());
                 Platform.runLater(() -> processDiffEvent(event));
             }
         } catch (SocketException e) {

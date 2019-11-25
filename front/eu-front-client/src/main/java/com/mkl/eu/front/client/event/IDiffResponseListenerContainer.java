@@ -5,21 +5,21 @@ package com.mkl.eu.front.client.event;
  *
  * @author MKL.
  */
-public interface IDiffListenerContainer {
+public interface IDiffResponseListenerContainer {
 
     /**
      * Add a diff listener.
      *
      * @param diffListener to add.
      */
-    void addDiffListener(IDiffListener diffListener);
+    void addDiffListener(IDiffResponseListener diffListener);
 
     /**
-     * Process a DiffEvent.
+     * Process a DiffResponseEvent.
      *
      * @param event to process.
      */
-    void processDiffEvent(DiffEvent event);
+    void processDiffEvent(DiffResponseEvent event);
 
     /**
      * Process a ExceptionEvent.

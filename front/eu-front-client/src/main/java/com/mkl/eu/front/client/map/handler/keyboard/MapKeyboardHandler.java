@@ -1,9 +1,9 @@
 package com.mkl.eu.front.client.map.handler.keyboard;
 
 import com.mkl.eu.client.service.service.IGameService;
-import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
-import com.mkl.eu.front.client.event.IDiffListener;
+import com.mkl.eu.front.client.event.IDiffResponseListener;
 import com.mkl.eu.front.client.event.IServiceCaller;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.MapConfiguration;
@@ -24,7 +24,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MapKeyboardHandler.class);
     /** Listeners for diffs event. */
-    private List<IDiffListener> diffListeners = new ArrayList<>();
+    private List<IDiffResponseListener> diffListeners = new ArrayList<>();
     /** Board service. */
     private IGameService gameService;
     /** Component holding the authentication information. */
@@ -87,7 +87,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
 
     /** {@inheritDoc} */
     @Override
-    public void addDiffListener(IDiffListener diffListener) {
+    public void addDiffListener(IDiffResponseListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
@@ -95,8 +95,8 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
 
     /** {@inheritDoc} */
     @Override
-    public void processDiffEvent(DiffEvent event) {
-        for (IDiffListener diffListener : diffListeners) {
+    public void processDiffEvent(DiffResponseEvent event) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }
@@ -104,7 +104,7 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
     /** {@inheritDoc} */
     @Override
     public void processExceptionEvent(ExceptionEvent event) {
-        for (IDiffListener diffListener : diffListeners) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
     }

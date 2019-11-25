@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  *
  * @author MKL.
  */
-public interface IServiceCaller extends IDiffListenerContainer {
+public interface IServiceCaller extends IDiffResponseListenerContainer {
     /** Logger. */
     Logger LOGGER = LoggerFactory.getLogger(IServiceCaller.class);
 
@@ -92,7 +92,7 @@ public interface IServiceCaller extends IDiffListenerContainer {
             try {
                 DiffResponse response = service.run(request);
 
-                DiffEvent diff = new DiffEvent(response, idGame);
+                DiffResponseEvent diff = new DiffResponseEvent(response, idGame);
                 if (doIfSuccess != null) {
                     doIfSuccess.run();
                 }

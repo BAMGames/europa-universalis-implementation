@@ -5,10 +5,10 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
-import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
-import com.mkl.eu.front.client.event.IDiffListener;
-import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.event.IDiffResponseListener;
+import com.mkl.eu.front.client.event.IDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.component.IMenuContainer;
@@ -43,7 +43,7 @@ import java.util.List;
  */
 @Component
 @Scope(value = "prototype")
-public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffListenerContainer, IMenuContainer {
+public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffResponseListenerContainer, IMenuContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Board Service. */
@@ -78,7 +78,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Contextual menu. */
     private ContextualMenu menu;
     /** Listeners for diffs event. */
-    private List<IDiffListener> diffListeners = new ArrayList<>();
+    private List<IDiffResponseListener> diffListeners = new ArrayList<>();
     /** Game configuration. */
     private GameConfiguration gameConfig;
 
@@ -380,7 +380,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
 
     /** {@inheritDoc} */
     @Override
-    public void addDiffListener(IDiffListener diffListener) {
+    public void addDiffListener(IDiffResponseListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
         }
@@ -388,9 +388,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
 
     /** {@inheritDoc} */
     @Override
-    public void processDiffEvent(DiffEvent event) {
+    public void processDiffEvent(DiffResponseEvent event) {
         resetContextualMenu();
-        for (IDiffListener diffListener : diffListeners) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.update(event);
         }
     }
@@ -399,7 +399,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     @Override
     public void processExceptionEvent(ExceptionEvent event) {
         resetContextualMenu();
-        for (IDiffListener diffListener : diffListeners) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
     }

@@ -26,7 +26,7 @@ import com.mkl.eu.front.client.common.CounterFaceCellFactory;
 import com.mkl.eu.front.client.common.CounterInProvinceCellFactory;
 import com.mkl.eu.front.client.common.CounterInProvinceConverter;
 import com.mkl.eu.front.client.common.EnumConverter;
-import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
+import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
@@ -65,7 +65,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class AdminActionsWindow extends AbstractDiffListenerContainer {
+public class AdminActionsWindow extends AbstractDiffResponseListenerContainer {
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;

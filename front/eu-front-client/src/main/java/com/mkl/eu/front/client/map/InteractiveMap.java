@@ -12,8 +12,8 @@ import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.front.client.event.IDiffListener;
-import com.mkl.eu.front.client.event.IDiffListenerContainer;
+import com.mkl.eu.front.client.event.IDiffResponseListener;
+import com.mkl.eu.front.client.event.IDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.component.InfoView;
 import com.mkl.eu.front.client.map.component.ViewportRect;
@@ -84,9 +84,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     /** Game configuration. */
     private GameConfiguration gameConfig;
     /** Components that listener to diffs. */
-    private List<IDiffListenerContainer> components = new ArrayList<>();
+    private List<IDiffResponseListenerContainer> components = new ArrayList<>();
     /** List of diffs listeners. */
-    private List<IDiffListener> diffListeners = new ArrayList<>();
+    private List<IDiffResponseListener> diffListeners = new ArrayList<>();
     /** Flag saying that the component has been initialized. */
     private boolean init;
 
@@ -212,7 +212,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
         components.add(info);
         components.add(keyboardHandler);
 
-        for (IDiffListener diffListener : diffListeners) {
+        for (IDiffResponseListener diffListener : diffListeners) {
             markerManager.addDiffListener(diffListener);
             info.addDiffListener(diffListener);
             keyboardHandler.addDiffListener(diffListener);
@@ -321,10 +321,10 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
      *
      * @param diffListener to add.
      */
-    public void addDiffListener(IDiffListener diffListener) {
+    public void addDiffListener(IDiffResponseListener diffListener) {
         if (!diffListeners.contains(diffListener)) {
             diffListeners.add(diffListener);
-            for (IDiffListenerContainer component : components) {
+            for (IDiffResponseListenerContainer component : components) {
                 component.addDiffListener(diffListener);
             }
         }

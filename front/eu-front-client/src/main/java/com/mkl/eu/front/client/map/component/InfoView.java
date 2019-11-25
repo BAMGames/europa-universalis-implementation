@@ -4,8 +4,8 @@ import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
-import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
-import com.mkl.eu.front.client.event.DiffEvent;
+import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
+import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
@@ -37,7 +37,7 @@ import processing.core.PGraphics;
  */
 @Component
 @Scope(value = "prototype")
-public class InfoView extends AbstractDiffListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IMenuContainer {
+public class InfoView extends AbstractDiffResponseListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IMenuContainer {
     /** Board Service. */
     @Autowired
     private IBoardService boardService;
@@ -337,7 +337,7 @@ public class InfoView extends AbstractDiffListenerContainer implements IDragAndD
 
     /** {@inheritDoc} */
     @Override
-    public void processDiffEvent(DiffEvent event) {
+    public void processDiffEvent(DiffResponseEvent event) {
         resetContextualMenu();
         super.processDiffEvent(event);
     }

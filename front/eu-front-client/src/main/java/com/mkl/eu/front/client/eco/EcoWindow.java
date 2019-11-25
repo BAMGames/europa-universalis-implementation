@@ -11,7 +11,7 @@ import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
-import com.mkl.eu.front.client.event.AbstractDiffListenerContainer;
+import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -41,7 +41,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
  */
 @Component
 @Scope(value = "prototype")
-public class EcoWindow extends AbstractDiffListenerContainer {
+public class EcoWindow extends AbstractDiffResponseListenerContainer {
     /** Table configA for sheet A. */
     private static final List<TableConfig<EconomicalSheet>> configA;
     /** Table configB for sheet B. */
@@ -595,7 +595,7 @@ public class EcoWindow extends AbstractDiffListenerContainer {
     }
 
     /**
-     * Method called when all diffs of a DiffEvent have been computed.
+     * Method called when all diffs of a DiffResponseEvent have been computed.
      */
     public void updateComplete() {
         if (tradeFleetModified) {
