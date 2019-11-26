@@ -305,4 +305,13 @@ public class GameUtilTest {
         country.setOffensive(offensive);
         return country;
     }
+
+    @Test
+    public void testTurn() {
+        Assert.assertFalse(GameUtil.isTurnBox(null));
+        Assert.assertFalse(GameUtil.isTurnBox("eIdf"));
+        Assert.assertTrue(GameUtil.isTurnBox("B_Turn_1"));
+        Assert.assertTrue(GameUtil.isTurnBox("B_Turn_12"));
+        Assert.assertTrue(GameUtil.isTurnBox("B_Turn_62"));
+    }
 }

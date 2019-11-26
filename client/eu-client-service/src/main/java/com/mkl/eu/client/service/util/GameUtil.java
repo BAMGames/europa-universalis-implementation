@@ -250,6 +250,16 @@ public final class GameUtil {
     }
 
     /**
+     * Filter to use to filter the provinces which can hold turn counter.
+     *
+     * @param provinceBox name of the province/box.
+     * @return <code>true</code> if the province can hold a turn counter, <code>false</code> otherwise.
+     */
+    public static boolean isTurnBox(String provinceBox) {
+        return !StringUtils.isEmpty(provinceBox) && provinceBox.startsWith("B_Turn_");
+    }
+
+    /**
      * @param province to test.
      * @return <code>true</code> if the province is in the rotw, <code>false</code> otherwise. Does not work for sea provinces.
      */
