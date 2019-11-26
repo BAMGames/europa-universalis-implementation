@@ -260,6 +260,14 @@ public final class GameUtil {
     }
 
     /**
+     * @param turn of the game.
+     * @return the province where the turn counter should be at the given turn.
+     */
+    public static String getTurnBox(int turn) {
+        return "B_Turn_" + Math.max(Math.min(turn, 62), 1);
+    }
+
+    /**
      * @param province to test.
      * @return <code>true</code> if the province is in the rotw, <code>false</code> otherwise. Does not work for sea provinces.
      */

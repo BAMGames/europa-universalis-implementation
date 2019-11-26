@@ -313,5 +313,14 @@ public class GameUtilTest {
         Assert.assertTrue(GameUtil.isTurnBox("B_Turn_1"));
         Assert.assertTrue(GameUtil.isTurnBox("B_Turn_12"));
         Assert.assertTrue(GameUtil.isTurnBox("B_Turn_62"));
+
+        Assert.assertEquals("B_Turn_1", GameUtil.getTurnBox(-1));
+        Assert.assertEquals("B_Turn_1", GameUtil.getTurnBox(0));
+        Assert.assertEquals("B_Turn_1", GameUtil.getTurnBox(1));
+        Assert.assertEquals("B_Turn_5", GameUtil.getTurnBox(5));
+        Assert.assertEquals("B_Turn_12", GameUtil.getTurnBox(12));
+        Assert.assertEquals("B_Turn_62", GameUtil.getTurnBox(62));
+        Assert.assertEquals("B_Turn_62", GameUtil.getTurnBox(63));
+        Assert.assertEquals("B_Turn_62", GameUtil.getTurnBox(127));
     }
 }
