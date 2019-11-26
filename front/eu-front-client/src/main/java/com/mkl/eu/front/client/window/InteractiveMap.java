@@ -1,4 +1,4 @@
-package com.mkl.eu.front.client.map;
+package com.mkl.eu.front.client.window;
 
 import com.jogamp.newt.Window;
 import com.jogamp.newt.event.WindowAdapter;
@@ -97,7 +97,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
      * @param args no args.
      */
     public static void main(String args[]) {
-        PApplet.main(new String[]{"com.mkl.eu.front.client.map.InteractiveMap"});
+        PApplet.main(new String[]{"com.mkl.eu.front.client.window.InteractiveMap"});
     }
 
     /**

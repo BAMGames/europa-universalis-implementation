@@ -1,4 +1,4 @@
-package com.mkl.eu.front.client.eco;
+package com.mkl.eu.front.client.window;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IEconomicService;

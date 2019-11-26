@@ -2,8 +2,8 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
-import com.mkl.eu.front.client.map.InteractiveMap;
 import com.mkl.eu.front.client.vo.Border;
+import com.mkl.eu.front.client.window.InteractiveMap;
 import com.thoughtworks.xstream.XStream;
 import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.GeoJSONReader;
