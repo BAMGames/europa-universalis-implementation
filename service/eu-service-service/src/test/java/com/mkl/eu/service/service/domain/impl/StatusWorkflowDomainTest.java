@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.domain.impl;
 
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
@@ -2419,7 +2420,7 @@ public class StatusWorkflowDomainTest {
             if (inflationMax) {
                 when(testClass.counterDomain.increaseInflation(game)).thenReturn(Optional.empty());
             } else {
-                when(testClass.counterDomain.increaseInflation(game)).thenReturn(Optional.of(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER)));
+                when(testClass.counterDomain.increaseInflation(game)).thenReturn(Optional.of(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, 666L)));
             }
 
             for (EndStabilityCountryBuilder countryBuilder : countries) {
@@ -2445,6 +2446,7 @@ public class StatusWorkflowDomainTest {
                 when(testClass.oeUtil.getMinimalInflation(10, country.getName(), AbstractBack.TABLES, game)).thenReturn(countryBuilder.minInflation);
                 when(testClass.oeUtil.getInflationBox(game)).thenReturn("B_PB_1D");
             }
+            when(testClass.counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TURN, null, GameUtil.getTurnBox(11), game)).thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, 667L));
 
             diffs = statusWorkflowDomain.endStabilityPhase(game);
 
@@ -2452,7 +2454,7 @@ public class StatusWorkflowDomainTest {
         }
 
         EndStabilityBuilder thenExpect(boolean increaseInflation, EndStabilityResultBuilder... results) {
-            int nbDiffs = 2;
+            int nbDiffs = 3;
             DiffEntity diff = diffs.stream()
                     .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
                     .findAny()
@@ -2467,9 +2469,16 @@ public class StatusWorkflowDomainTest {
                     .orElse(null);
             Assert.assertNotNull("The invalidate eco sheet diff event was not created.", diff);
             Assert.assertEquals("The new turn of the eco sheet is wrong.", "11", getAttribute(diff, DiffAttributeTypeEnum.TURN));
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(d.getIdObject(), 667L))
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull("The move turn counter diff event was not created.", diff);
 
             diff = diffs.stream()
-                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(d.getIdObject(), 666L))
                     .findAny()
                     .orElse(null);
             if (increaseInflation) {

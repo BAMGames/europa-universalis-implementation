@@ -942,6 +942,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             }
         }
         game.setTurn(game.getTurn() + 1);
+        diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TURN, null, GameUtil.getTurnBox(game.getTurn()), game));
         // TODO TG-13 events
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
