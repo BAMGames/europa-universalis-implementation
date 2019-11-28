@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.front.client.map.marker.MarkerUtils;
+import com.mkl.eu.front.client.window.InteractiveMap;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -80,19 +81,21 @@ public final class UIUtil {
      * Display an alert dialog displaying the exception.
      *
      * @param ex                  the exception.
+     * @param map                 possible interactive map.
      * @param globalConfiguration global configuration for internationalisation.
      */
-    public static void showException(Exception ex, GlobalConfiguration globalConfiguration) {
-        doInJavaFx(() -> showExceptionInternal(ex, globalConfiguration));
+    public static void showException(Exception ex, InteractiveMap map, GlobalConfiguration globalConfiguration) {
+        doInJavaFx(() -> showExceptionInternal(ex, map, globalConfiguration));
     }
 
     /**
      * Display an alert dialog displaying the exception.
      *
      * @param ex                  the exception.
+     * @param map                 possible interactive map.
      * @param globalConfiguration global configuration for internationalisation.
      */
-    private static void showExceptionInternal(Exception ex, GlobalConfiguration globalConfiguration) {
+    private static void showExceptionInternal(Exception ex, InteractiveMap map, GlobalConfiguration globalConfiguration) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(globalConfiguration.getMessage("exception.dialog.title"));
         alert.setHeaderText(globalConfiguration.getMessage("exception.dialog.header"));
@@ -131,9 +134,11 @@ public final class UIUtil {
         expContent.add(textArea, 0, 1);
 
         alert.getDialogPane().setExpandableContent(expContent);
+        if (map != null) {
+            alert.setOnHidden(event -> map.requestFocus());
+        }
 
         alert.showAndWait();
-
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.mkl.eu.front.client.map.component;
 
-import com.mkl.eu.front.client.event.IServiceCaller;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 
 /**
@@ -8,7 +7,7 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
  *
  * @author MKL.
  */
-public interface IMenuContainer extends IServiceCaller {
+public interface IMenuContainer extends INotJavaFxServiceCaller {
     /**
      * @return a GlobalConfiguration for configuration not related to a specific game.
      */

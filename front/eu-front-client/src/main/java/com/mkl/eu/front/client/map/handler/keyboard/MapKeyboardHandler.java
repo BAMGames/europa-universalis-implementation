@@ -4,10 +4,11 @@ import com.mkl.eu.client.service.service.IGameService;
 import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffResponseListener;
-import com.mkl.eu.front.client.event.IServiceCaller;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.MapConfiguration;
+import com.mkl.eu.front.client.map.component.INotJavaFxServiceCaller;
 import com.mkl.eu.front.client.vo.AuthentHolder;
+import com.mkl.eu.front.client.window.InteractiveMap;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.interactions.KeyboardHandler;
 import org.slf4j.Logger;
@@ -20,9 +21,11 @@ import java.util.List;
 /**
  * @author MKL
  */
-public class MapKeyboardHandler extends KeyboardHandler implements IServiceCaller {
+public class MapKeyboardHandler extends KeyboardHandler implements INotJavaFxServiceCaller {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MapKeyboardHandler.class);
+    /** Interactive map. */
+    private InteractiveMap map;
     /** Listeners for diffs event. */
     private List<IDiffResponseListener> diffListeners = new ArrayList<>();
     /** Board service. */
@@ -35,11 +38,12 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
     /**
      * Creates a KeyboardHandler for the given maps.
      *
-     * @param p    The PApplet.
+     * @param map    The Interactive map.
      * @param maps One or more maps.
      */
-    public MapKeyboardHandler(PApplet p, IGameService gameService, AuthentHolder authentHolder, GameConfiguration gameConfig, UnfoldingMap... maps) {
-        super(p, maps);
+    public MapKeyboardHandler(InteractiveMap map, IGameService gameService, AuthentHolder authentHolder, GameConfiguration gameConfig, UnfoldingMap... maps) {
+        super(map, maps);
+        this.map = map;
         this.gameService = gameService;
         this.authentHolder = authentHolder;
         this.gameConfig = gameConfig;
@@ -107,5 +111,11 @@ public class MapKeyboardHandler extends KeyboardHandler implements IServiceCalle
         for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public InteractiveMap getComponent() {
+        return map;
     }
 }

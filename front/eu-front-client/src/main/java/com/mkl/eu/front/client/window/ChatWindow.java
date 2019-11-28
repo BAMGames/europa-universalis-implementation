@@ -328,12 +328,9 @@ public class ChatWindow extends AbstractDiffResponseListenerContainer implements
         }
     }
 
-    /**
-     * Update the messages in the chat.
-     *
-     * @param messages new messages.
-     */
-    public synchronized void update(List<MessageDiff> messages) {
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void updateMessages(List<MessageDiff> messages) {
         messages.forEach(message -> {
             if ((message.getIdRoom() == null && message.getId() > gameConfig.getMaxIdGlobalMessage())
                     || (message.getIdRoom() != null && message.getId() > gameConfig.getMaxIdMessage())) {

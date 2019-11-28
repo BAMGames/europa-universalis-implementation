@@ -18,6 +18,7 @@ import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.MyMarkerManager;
 import com.mkl.eu.front.client.map.marker.StackMarker;
 import com.mkl.eu.front.client.vo.AuthentHolder;
+import com.mkl.eu.front.client.window.InteractiveMap;
 import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -365,5 +366,11 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
     @Override
     public AuthentHolder getAuthentHolder() {
         return authentHolder;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public InteractiveMap getComponent() {
+        return markerManager.getComponent();
     }
 }

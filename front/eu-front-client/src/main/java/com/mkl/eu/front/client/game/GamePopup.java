@@ -111,18 +111,10 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
-    /** PApplet for the intercative map. */
+    /** PApplet for the interactive map. */
     private InteractiveMap map;
     /** Flag saying that we already initialized the map. */
     private boolean mapInit;
-    /** Window containing all the chat. */
-    private ChatWindow chatWindow;
-    /** Window containing the economics. */
-    private EcoWindow ecoWindow;
-    /** Window containing the administrative actions. */
-    private AdminActionsWindow adminActionsWindow;
-    /** Window containing the battles. */
-    private MilitaryWindow militaryWindow;
     /** Socket listening to server diff on this game. */
     private ClientSocket client;
     /** Component holding the authentication information. */
@@ -170,6 +162,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
                 .collect(Collectors.toList());
         initEco(mapMarkers);
         initMilitary(mapMarkers);
+        initInterPhase(mapMarkers);
     }
 
     /**
@@ -218,7 +211,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
      * Initialize the chat window.
      */
     private void initChat() {
-        chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
+        ChatWindow chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
         chatWindow.addDiffListener(this);
         diffListeners.add(chatWindow);
         Tab tab = new Tab(globalConfiguration.getMessage("game.popup.chat"));
@@ -233,7 +226,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
      * @param mapMarkers displayed on the map.
      */
     private void initEco(List<IMapMarker> mapMarkers) {
-        ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
+        EcoWindow ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
         diffListeners.add(ecoWindow);
         Tab tab = new Tab(globalConfiguration.getMessage("game.popup.eco"));
@@ -241,7 +234,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         tab.setContent(ecoWindow.getTabPane());
         content.getTabs().add(tab);
 
-        adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
+        AdminActionsWindow adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
         diffListeners.add(adminActionsWindow);
         tab = new Tab(globalConfiguration.getMessage("game.popup.admin_actions"));
@@ -254,12 +247,25 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
      * Initialize the battle window.
      */
     private void initMilitary(List<IMapMarker> mapMarkers) {
-        militaryWindow = context.getBean(MilitaryWindow.class, game, mapMarkers, gameConfig);
+        MilitaryWindow militaryWindow = context.getBean(MilitaryWindow.class, game, mapMarkers, gameConfig);
         militaryWindow.addDiffListener(this);
         diffListeners.add(militaryWindow);
         Tab tab = new Tab(globalConfiguration.getMessage("military.title"));
         tab.setClosable(false);
         tab.setContent(militaryWindow.getTabPane());
+        content.getTabs().add(tab);
+    }
+
+    /**
+     * Initialize the battle window.
+     */
+    private void initInterPhase(List<IMapMarker> mapMarkers) {
+        InterPhaseWindow interPhaseWindow = context.getBean(InterPhaseWindow.class, game, mapMarkers, gameConfig);
+        interPhaseWindow.addDiffListener(this);
+        diffListeners.add(interPhaseWindow);
+        Tab tab = new Tab(globalConfiguration.getMessage("interphase.title"));
+        tab.setClosable(false);
+        tab.setContent(interPhaseWindow.getTabPane());
         content.getTabs().add(tab);
     }
 
@@ -395,7 +401,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     /** {@inheritDoc} */
     @Override
     public void handleException(ExceptionEvent event) {
-        UIUtil.showException(event.getException(), globalConfiguration);
+        UIUtil.showException(event.getException(), event.getMap(), globalConfiguration);
     }
 
     /** {@inheritDoc} */
@@ -478,7 +484,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
                 }
             });
 
-            chatWindow.update(event.getResponse().getMessages());
+            diffListeners.stream().forEach(listener -> listener.updateMessages(event.getResponse().getMessages()));
 
             if (event.getResponse().getVersionGame() != null) {
                 game.setVersion(event.getResponse().getVersionGame());
@@ -1139,7 +1145,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.ROYAL_TREASURE_START, sheet::setRtStart);
         // TODO TG-13 events
         sheet.setRtEvents(sheet.getRtStart());
-        // TODO TG-18 diplo phase
+        // TODO TG-18 diplomatic phase
         sheet.setRtDiplo(sheet.getRtStart());
     }
 
@@ -1423,7 +1429,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
      * Process the validate status action diff event.
      *
      * @param game to update.
-     * @param diff involving a validatate status.
+     * @param diff involving a validate status.
      */
     private void validateStatus(Game game, Diff diff) {
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
@@ -1462,10 +1468,10 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private void updateTurnOrder(Game game, Diff diff) {
         switch (diff.getType()) {
             case VALIDATE:
-                validateTurnOrder(game, diff);
+                proceedTurnOrder(game, diff);
                 break;
             case INVALIDATE:
-                invalidateTurnOrder(game, diff);
+                proceedTurnOrder(game, diff);
                 break;
             case MODIFY:
                 modifyTurnOrder(game, diff);
@@ -1478,20 +1484,14 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     }
 
     /**
-     * Process the validate turn order diff event.
+     * Process the validate or invalidate turn order diff event.
      *
-     * @param game to update.
-     * @param diff involving an validate turn order.
+     * @param game     to update.
+     * @param diff     involving a validate or invalidate turn order.
      */
-    private void validateTurnOrder(Game game, Diff diff) {
-        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
-        if (StringUtils.isEmpty(attribute.getValue())) {
-            LOGGER.error("Missing status in modify turn order event.");
-        }
-        GameStatusEnum gameStatus = GameStatusEnum.valueOf(attribute.getValue());
-
+    private void proceedTurnOrder(Game game, Diff diff) {
         Long tmp = null;
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
+        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
         if (attribute != null) {
             tmp = Long.parseLong(attribute.getValue());
         }
@@ -1499,32 +1499,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
 
         game.getOrders().stream()
                 .filter(o -> (idCountry == null || idCountry.equals(o.getCountry().getId())))
-                .forEach(o -> o.setReady(true));
-    }
-
-    /**
-     * Process the invalidate turn order diff event.
-     *
-     * @param game to update.
-     * @param diff involving an invalidate turn order.
-     */
-    private void invalidateTurnOrder(Game game, Diff diff) {
-        DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
-        if (StringUtils.isEmpty(attribute.getValue())) {
-            LOGGER.error("Missing status in modify turn order event.");
-        }
-        GameStatusEnum gameStatus = GameStatusEnum.valueOf(attribute.getValue());
-
-        Long tmp = null;
-        attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
-        if (attribute != null) {
-            tmp = Long.parseLong(attribute.getValue());
-        }
-        Long idCountry = tmp;
-
-        game.getOrders().stream()
-                .filter(o -> (idCountry == null || idCountry.equals(o.getCountry().getId())))
-                .forEach(o -> o.setReady(false));
+                .forEach(o -> o.setReady(diff.getType() == DiffTypeEnum.VALIDATE));
     }
 
     /**
@@ -1535,15 +1510,10 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
      */
     private void modifyTurnOrder(Game game, Diff diff) {
         DiffAttributes attributeActive = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ACTIVE);
-        DiffAttributes attributeStatus = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.STATUS);
         if (StringUtils.isEmpty(attributeActive.getValue())) {
             LOGGER.error("Missing active in modify turn order event.");
         }
-        if (StringUtils.isEmpty(attributeStatus.getValue())) {
-            LOGGER.error("Missing status in modify turn order event.");
-        }
         int position = Integer.valueOf(attributeActive.getValue());
-        GameStatusEnum gameStatus = GameStatusEnum.valueOf(attributeStatus.getValue());
 
         game.getOrders().stream()
                 .forEach(o -> {
@@ -1968,7 +1938,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
 
     /** {@inheritDoc} */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@SuppressWarnings("NullableProblems") ApplicationContext applicationContext) throws BeansException {
         this.context = applicationContext;
     }
 

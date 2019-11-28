@@ -5,7 +5,9 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.main.GameConfiguration;
+import com.mkl.eu.front.client.map.component.INotJavaFxServiceCaller;
 import com.mkl.eu.front.client.vo.AuthentHolder;
+import com.mkl.eu.front.client.window.InteractiveMap;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import org.slf4j.Logger;
@@ -103,7 +105,11 @@ public interface IServiceCaller extends IDiffResponseListenerContainer {
                 if (doIfFailure != null) {
                     doIfFailure.run();
                 }
-                processExceptionEvent(new ExceptionEvent(e));
+                InteractiveMap map = null;
+                if (this instanceof INotJavaFxServiceCaller) {
+                    map = ((INotJavaFxServiceCaller) this).getComponent();
+                }
+                processExceptionEvent(new ExceptionEvent(e, map));
             }
     }
 

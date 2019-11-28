@@ -194,7 +194,7 @@ public class EUApplication extends Application {
             return gameService.findGames(findGames);
         } catch (Exception e) {
             LOGGER.error("Impossible to find games.", e);
-            UIUtil.showException(e, globalConfiguration);
+            UIUtil.showException(e, null, globalConfiguration);
             return new ArrayList<>();
         }
     }

@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.jws.WebParam;
 import javax.jws.WebResult;
+import javax.jws.WebService;
 
 import static com.mkl.eu.client.service.service.INameConstants.*;
 
@@ -22,6 +23,7 @@ import static com.mkl.eu.client.service.service.INameConstants.*;
  *
  * @author MKL.
  */
+@WebService
 public interface IInterPhaseService {
     @WebResult(name = RESPONSE)
     DiffResponse landLooting(@WebParam(name = PARAMETER_LAND_LOOTING) Request<LandLootingRequest> request) throws FunctionalException, TechnicalException;

@@ -19,6 +19,7 @@ import com.mkl.eu.front.client.map.handler.event.HoverEvent;
 import com.mkl.eu.front.client.map.handler.mouse.IContextualMenuAware;
 import com.mkl.eu.front.client.map.handler.mouse.IDragAndDropAware;
 import com.mkl.eu.front.client.vo.AuthentHolder;
+import com.mkl.eu.front.client.window.InteractiveMap;
 import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -46,6 +47,8 @@ import java.util.List;
 public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDropAware<StackMarker, IMapMarker>, IContextualMenuAware<Object>, MapEventListener, IDiffResponseListenerContainer, IMenuContainer {
     /** Logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
+    /** Interactive map. */
+    private InteractiveMap interactiveMap;
     /** Board Service. */
     @Autowired
     private IBoardService boardService;
@@ -85,10 +88,12 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /**
      * Constructor.
      *
+     * @param map        the interactive map.
      * @param gameConfig the gameConfig to set.
      */
-    public MyMarkerManager(GameConfiguration gameConfig) {
+    public MyMarkerManager(InteractiveMap map, GameConfiguration gameConfig) {
         this.gameConfig = gameConfig;
+        this.interactiveMap = map;
     }
 
     /** {@inheritDoc} */
@@ -420,5 +425,11 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     @Override
     public AuthentHolder getAuthentHolder() {
         return authentHolder;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public InteractiveMap getComponent() {
+        return interactiveMap;
     }
 }
