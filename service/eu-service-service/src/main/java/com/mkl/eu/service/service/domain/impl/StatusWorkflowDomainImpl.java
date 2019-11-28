@@ -295,7 +295,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             // There is no other country. If we are in move phase, check siege
             if (game.getStatus() == GameStatusEnum.MILITARY_MOVE || game.getStatus() == GameStatusEnum.MILITARY_BATTLES) {
                 List<String> provincesAtSiege = game.getStacks().stream()
-                        .filter(s -> s.getMovePhase().isBesieging())
+                        .filter(s -> s.getMovePhase() != null && s.getMovePhase().isBesieging())
                         .map(StackEntity::getProvince)
                         .distinct()
                         .collect(Collectors.toList());
@@ -314,7 +314,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                         siege.setGame(game);
 
                         List<CounterEntity> besiegingCounters = game.getStacks().stream()
-                                .filter(s -> (s.getMovePhase().isBesieging()) && StringUtils.equals(province, s.getProvince()))
+                                .filter(s -> s.getMovePhase() != null && s.getMovePhase().isBesieging() && StringUtils.equals(province, s.getProvince()))
                                 .flatMap(s -> s.getCounters().stream())
                                 .collect(Collectors.toList());
                         List<CounterEntity> besiegedCounters = game.getStacks().stream()
