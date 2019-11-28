@@ -83,7 +83,7 @@ public class GameSocket implements Runnable {
      * @param idCountries List of countries that will receive this response.
      */
     public void push(DiffResponse response, List<Long> idCountries) {
-        response.getDiffs().removeIf(diff -> diff.getIdObject() != null && !Objects.equals(diff.getIdObject(), info.getIdCountry()));
+        response.getDiffs().removeIf(diff -> diff.getIdCountry() != null && !Objects.equals(diff.getIdCountry(), info.getIdCountry()));
         if (idCountries == null || idCountries.isEmpty() || idCountries.contains(info.getIdCountry())) {
             try {
                 outStream.writeObject(response);
