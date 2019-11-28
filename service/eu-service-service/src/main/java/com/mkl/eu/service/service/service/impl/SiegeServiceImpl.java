@@ -1008,15 +1008,15 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
     private List<DiffEntity> computeAssault(SiegeEntity siege, PlayableCountryEntity country, boolean breach, List<DiffAttributesEntity> attributes) {
         List<DiffEntity> diffs = new ArrayList<>();
         attributes.addAll(fillSiegeModifiers(siege, breach));
-        computeSequence(true, siege.getPhasing(), siege.getNonPhasing(), true, breach, siege.getGame());
-        computeSequence(true, siege.getNonPhasing(), siege.getPhasing(), false, breach, siege.getGame());
+        attributes.add(computeSequence(true, siege.getPhasing(), siege.getNonPhasing(), true, breach, siege.getGame()));
+        attributes.add(computeSequence(true, siege.getNonPhasing(), siege.getPhasing(), false, breach, siege.getGame()));
         boolean phasingRouted = CommonUtil.subtract(siege.getPhasing().getMoral(), siege.getPhasing().getLosses().getMoraleLoss()) <= 0;
         boolean nonPhasingRouted = CommonUtil.subtract(siege.getNonPhasing().getMoral(), siege.getNonPhasing().getLosses().getMoraleLoss()) <= 0;
         if (!phasingRouted) {
-            computeSequence(false, siege.getPhasing(), siege.getNonPhasing(), true, breach, siege.getGame());
+            attributes.add(computeSequence(false, siege.getPhasing(), siege.getNonPhasing(), true, breach, siege.getGame()));
         }
         if (!nonPhasingRouted) {
-            computeSequence(false, siege.getNonPhasing(), siege.getPhasing(), false, breach, siege.getGame());
+            attributes.add(computeSequence(false, siege.getNonPhasing(), siege.getPhasing(), false, breach, siege.getGame()));
         }
         reduceBesiegerLosses(siege, breach);
         reduceBesiegingLosses(siege);

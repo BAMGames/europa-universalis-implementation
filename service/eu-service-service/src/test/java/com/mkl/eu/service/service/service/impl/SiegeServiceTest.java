@@ -2456,7 +2456,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                         .fire(LossBuilder.create().round(1).morale(1))
                         .shock(LossBuilder.create().round(1)))
                 .whenChooseMode(siegeService, this)
-                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).phasingRoutedAtFire()
                         .phasingLosses(LossBuilder.create().round(2).third(2).morale(1))
                         .nonPhasingLosses(LossBuilder.create()));
         // Besieging routed
@@ -2469,7 +2469,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                         .fire(LossBuilder.create().round(1).morale(1))
                         .shock(LossBuilder.create().noSequence()))
                 .whenChooseMode(siegeService, this)
-                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls().nonPhasingRoutedAtFire()
                         .phasingLosses(LossBuilder.create().round(1).morale(1))
                         .nonPhasingLosses(LossBuilder.create().round(1).morale(3)));
         // Both routed
@@ -2482,7 +2482,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                         .fire(LossBuilder.create().round(1).morale(2))
                         .shock(LossBuilder.create().noSequence()))
                 .whenChooseMode(siegeService, this)
-                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls()
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).fortressFalls().phasingRoutedAtFire().nonPhasingRoutedAtFire()
                         .phasingLosses(LossBuilder.create().round(1).third(2).morale(2))
                         .nonPhasingLosses(LossBuilder.create().morale(3)));
         // Only besieger routed because besieging always veteran
@@ -2495,7 +2495,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                         .fire(LossBuilder.create().round(1).morale(2))
                         .shock(LossBuilder.create().round(1)))
                 .whenChooseMode(siegeService, this)
-                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS)
+                .thenExpect(SiegeAssaultResultBuilder.create().status(SiegeStatusEnum.CHOOSE_LOSS).phasingRoutedAtFire()
                         .phasingLosses(LossBuilder.create().round(2).third(2).morale(2))
                         .nonPhasingLosses(LossBuilder.create().morale(2)));
     }
@@ -2952,6 +2952,22 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 Assert.assertEquals(SiegeUndermineResultEnum.BREACH_TAKEN.name(), getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
                 Assert.assertEquals(SiegeUndermineResultEnum.BREACH_TAKEN, siege.getUndermineResult());
             }
+            if (StringUtils.equals(phasing.tech, Tech.MEDIEVAL)) {
+                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
+            } else {
+                Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
+            }
+            Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
+            if (result.phasingRoutedAtFire) {
+                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
+            } else {
+                Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
+            }
+            if (result.nonPhasingRoutedAtFire) {
+                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+            } else {
+                Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+            }
             DiffEntity removeFortress = diffs.stream()
                     .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 101L)
                     .findAny()
@@ -3155,6 +3171,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         LossBuilder nonPhasingLosses;
         boolean phasingDestroyed;
         boolean nonPhasingDestroyed;
+        boolean phasingRoutedAtFire;
+        boolean nonPhasingRoutedAtFire;
 
         static SiegeAssaultResultBuilder create() {
             return new SiegeAssaultResultBuilder();
@@ -3212,6 +3230,16 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         SiegeAssaultResultBuilder nonPhasingDestroyed() {
             this.nonPhasingDestroyed = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder phasingRoutedAtFire() {
+            this.phasingRoutedAtFire = true;
+            return this;
+        }
+
+        SiegeAssaultResultBuilder nonPhasingRoutedAtFire() {
+            this.nonPhasingRoutedAtFire = true;
             return this;
         }
     }
