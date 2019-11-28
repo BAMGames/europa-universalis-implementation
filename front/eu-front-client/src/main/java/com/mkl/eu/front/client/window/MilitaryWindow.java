@@ -200,7 +200,8 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             }
         });
         choiceBattle.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> chooseBattle.setDisable(newValue == null));
-        chooseBattle.setOnAction(callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the battle to proceed."));
+        chooseBattle.setOnAction(callServiceAsEvent(battleService::chooseBattle, () -> new ChooseProvinceRequest(choiceBattle.getSelectionModel().getSelectedItem().getProvince()),
+                "Error when choosing the battle to proceed.", () -> tabPane.getSelectionModel().select(1), null));
         hBox = new HBox();
         hBox.getChildren().addAll(choiceBattle, chooseBattle);
         vBox.getChildren().add(hBox);
@@ -211,8 +212,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             /** {@inheritDoc} */
             @Override
             public String toString(Siege object) {
-                String province = globalConfiguration.getMessage(object.getProvince());
-                return province;
+                return globalConfiguration.getMessage(object.getProvince());
             }
 
             /** {@inheritDoc} */
@@ -222,7 +222,8 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             }
         });
         choiceSiege.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> chooseSiege.setDisable(newValue == null));
-        chooseSiege.setOnAction(callServiceAsEvent(siegeService::chooseSiege, () -> new ChooseProvinceRequest(choiceSiege.getSelectionModel().getSelectedItem().getProvince()), "Error when choosing the siege to proceed."));
+        chooseSiege.setOnAction(callServiceAsEvent(siegeService::chooseSiege, () -> new ChooseProvinceRequest(choiceSiege.getSelectionModel().getSelectedItem().getProvince()),
+                "Error when choosing the siege to proceed.", () -> tabPane.getSelectionModel().select(2), null));
         hBox = new HBox();
         hBox.getChildren().addAll(choiceSiege, chooseSiege);
         vBox.getChildren().add(hBox);

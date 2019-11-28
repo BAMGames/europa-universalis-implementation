@@ -504,9 +504,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(mustRedeployProvinces.isEmpty())
                 .setCodeError(IConstantsServiceException.STACK_MUST_REDEPLOY)
-                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setMsgFormat("{1}: {0} Some stacks in {2} must redeploy.")
                 .setName(PARAMETER_VALIDATE_REDEPLOY, PARAMETER_REQUEST, PARAMETER_VALIDATE)
-                .setParams(METHOD_VALIDATE_REDEPLOY, mustRedeployProvinces));
+                .setParams(METHOD_VALIDATE_REDEPLOY, mustRedeployProvinces.stream().collect(Collectors.joining(","))));
 
         CountryOrderEntity order = game.getOrders().stream()
                 .filter(o -> o.isActive() && o.getCountry().getId().equals(country.getId()))

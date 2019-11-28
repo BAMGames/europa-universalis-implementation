@@ -328,6 +328,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             case DIPLOMACY:
             case ADMINISTRATIVE_ACTIONS_CHOICE:
             case MILITARY_HIERARCHY:
+            case EXCHEQUER:
+            case STABILITY:
                 List<PlayableCountry> activePlayers = GameUtil.getActivePlayers(game).stream()
                         .collect(Collectors.toList());
                 game.getCountries().stream()
@@ -362,6 +364,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             case MILITARY_BATTLES:
             case MILITARY_SIEGES:
             case MILITARY_NEUTRALS:
+            case REDEPLOYMENT:
                 int activePosition = game.getOrders().stream()
                         .filter(CountryOrder::isActive)
                         .map(CountryOrder::getPosition)
@@ -373,7 +376,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
                             HBox hBox = new HBox();
                             Text text = new Text(order.getCountry().getName());
                             hBox.getChildren().add(text);
-                            if (order.isActive() && (game.getStatus() != GameStatusEnum.MILITARY_MOVE || !order.isReady())) {
+                            if (order.isActive() && (game.getStatus() == GameStatusEnum.MILITARY_BATTLES || !order.isReady())) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);
