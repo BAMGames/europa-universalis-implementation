@@ -1811,6 +1811,15 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             } else {
                 Assert.assertNull("The besieged counter should not have been removed because of not the surrender of the fortress but was.", removeBesieged);
             }
+            DiffEntity modifyStack = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                    .findAny()
+                    .orElse(null);
+            if (result.fortressFalls && result.status == SiegeStatusEnum.DONE) {
+                Assert.assertNotNull("The modify stack diff event has not been received while it should.", modifyStack);
+            } else {
+                Assert.assertNull("The modify stack diff event has been received while it should not.", modifyStack);
+            }
 
             return this;
         }
@@ -3047,6 +3056,15 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 Assert.assertEquals("Phasing counter removed does not match.", notPhasing.counters.size(), notPhasingCounterRemoved);
             } else {
                 Assert.assertEquals("0 non phasing counter should have been removed but was not.", 0l, notPhasingCounterRemoved);
+            }
+            DiffEntity modifyStack = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                    .findAny()
+                    .orElse(null);
+            if (result.fortressFalls && result.status == SiegeStatusEnum.DONE) {
+                Assert.assertNotNull("The modify stack diff event has not been received while it should.", modifyStack);
+            } else {
+                Assert.assertNull("The modify stack diff event has been received while it should not.", modifyStack);
             }
 
             Assert.assertTrue("The round losses of the phasing side does not match: " + siege.getPhasing().getLosses().getRoundLoss(),

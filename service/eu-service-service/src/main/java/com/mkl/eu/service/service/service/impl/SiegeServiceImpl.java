@@ -778,6 +778,17 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             // TODO TG-113 add a rule that remove these neutral fortress 1 counters at end of turn
             diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.FORTRESS_1, null, siege.getProvince(), null, game));
         }
+        List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
+        List<StackEntity> phasingStacks = presentCounters.stream()
+                .filter(counter -> allies.contains(counter.getCountry()) && CounterUtil.isArmy(counter.getType()))
+                .map(CounterEntity::getOwner)
+                .distinct()
+                .collect(Collectors.toList());
+        for (StackEntity phasingStack : phasingStacks) {
+            phasingStack.setMovePhase(MovePhaseEnum.MOVED);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, phasingStack.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+        }
 
         diffs.addAll(cleanUpSiege(siege, attributes));
 
