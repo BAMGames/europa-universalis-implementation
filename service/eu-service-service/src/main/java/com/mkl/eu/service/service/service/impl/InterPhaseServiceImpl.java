@@ -477,16 +477,16 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         List<String> mustRedeployProvinces = new ArrayList<>();
         for (String provinceName : besiegingProvinces) {
             AbstractProvinceEntity province = provinceDao.getProvinceByName(provinceName);
+            String controller = oeUtil.getController(province, game);
             int fortress = oeUtil.getFortressLevel(province, game);
             double size = game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(provinceName, stack.getProvince()))
                     .flatMap(stack -> stack.getCounters().stream())
                     .filter(counter -> allies.contains(counter.getCountry()))
                     .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
-            if (size < fortress) {
-                mustRedeployProvinces.add(provinceName);
-            } else {
-                boolean canStay = game.getStacks().stream()
+            boolean canStay = allies.contains(controller);
+            if (!canStay && size >= fortress) {
+                canStay = game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(provinceName, stack.getProvince()))
                         .flatMap(stack -> stack.getCounters().stream())
                         .anyMatch(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS);
@@ -495,9 +495,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                             .anyMatch(siege -> Objects.equals(game.getTurn(), siege.getTurn()) && StringUtils.equals(provinceName, siege.getProvince())
                                     && siege.isBreach());
                 }
-                if (!canStay) {
-                    mustRedeployProvinces.add(provinceName);
-                }
+            }
+            if (!canStay) {
+                mustRedeployProvinces.add(provinceName);
             }
         }
 

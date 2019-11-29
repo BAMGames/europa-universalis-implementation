@@ -836,9 +836,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.STACK_MUST_REDEPLOY, e.getCode());
             Assert.assertEquals("validateRedeploy.request.validate", e.getParams()[0]);
-            List<String> provinces = (List<String>) e.getParams()[2];
-            Collections.sort(provinces);
-            Assert.assertEquals(Arrays.asList("napoli", "pecs", "ulm"), provinces);
+            Assert.assertEquals("pecs,napoli,ulm", e.getParams()[2]);
         }
     }
 
@@ -853,11 +851,26 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
         game.setStatus(GameStatusEnum.REDEPLOYMENT);
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setId(13L);
-        game.getCountries().get(0).setName("france");
-        game.getCountries().get(0).setUsername("MKL");
-        game.getCountries().get(0).setReady(false);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        game.getCountries().add(france);
+        france.setId(13L);
+        france.setName("france");
+        france.setUsername("MKL");
+        france.setReady(false);
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.setCountry("france");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        stack.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
+        stack.getCounters().add(createCounter(2L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
+        game.getStacks().add(stack);
+
+        when(oeUtil.getAllies(france, game)).thenReturn(Collections.singletonList("france"));
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        when(oeUtil.getFortressLevel(pecs, game)).thenReturn(2);
 
         simulateDiff();
 
@@ -880,11 +893,26 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 13L);
         game.getOrders().get(0).setReady(true);
         game.setStatus(GameStatusEnum.REDEPLOYMENT);
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setId(13L);
-        game.getCountries().get(0).setName("france");
-        game.getCountries().get(0).setUsername("MKL");
-        game.getCountries().get(0).setReady(false);
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        game.getCountries().add(france);
+        france.setId(13L);
+        france.setName("france");
+        france.setUsername("MKL");
+        france.setReady(false);
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.setCountry("france");
+        stack.setMovePhase(MovePhaseEnum.BESIEGING);
+        stack.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
+        game.getStacks().add(stack);
+
+        when(oeUtil.getAllies(france, game)).thenReturn(Collections.singletonList("france"));
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        when(oeUtil.getController(pecs, game)).thenReturn("france");
+        when(oeUtil.getFortressLevel(pecs, game)).thenReturn(4);
 
         simulateDiff();
 
