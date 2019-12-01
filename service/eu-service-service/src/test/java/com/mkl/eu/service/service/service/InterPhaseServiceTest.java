@@ -399,7 +399,11 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             } else {
                 when(testClass.oeUtil.getController(pecs, game)).thenReturn("france");
             }
-            when(testClass.counterDomain.createCounter(CounterFaceTypeEnum.PILLAGE_PLUS, null, pillages.isEmpty() ? null : 15L, game))
+            StackEntity stack = new StackEntity();
+            stack.setId(16L);
+            stack.setProvince("pecs");
+            when(testClass.counterDomain.createStack("pecs", null, game)).thenReturn(stack);
+            when(testClass.counterDomain.createCounter(CounterFaceTypeEnum.PILLAGE_PLUS, null, pillages.isEmpty() ? 16L : 15L, game))
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER));
             when(testClass.counterDomain.switchCounter(anyLong(), any(), anyInt(), any()))
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER));

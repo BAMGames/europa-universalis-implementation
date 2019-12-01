@@ -245,6 +245,9 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         }
 
         if (existingPillages.size() <= 1) {
+            if (idPillageStack == null) {
+                idPillageStack = counterDomain.createStack(province.getName(), null, game).getId();
+            }
             diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.PILLAGE_PLUS, null, idPillageStack, game));
         } else {
             CounterEntity pillageMinus = existingPillages.stream()
