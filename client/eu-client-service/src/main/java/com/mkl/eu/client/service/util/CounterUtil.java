@@ -456,6 +456,15 @@ public final class CounterUtil {
     }
 
     /**
+     * @param stack the stack.
+     * @return <code>true</code> if the stack is an army (land, not naval), <code>false</code> otherwise.
+     */
+    public static boolean isLandArmy(Stack stack) {
+        return !(stack == null || stack.getCounters().isEmpty()) &&
+                stack.getCounters().stream().filter(c -> !CounterUtil.isLandArmy(c.getType())).count() == 0;
+    }
+
+    /**
      * @param face the face.
      * @return <code>true</code> if the counter face type is an army (naval, not land), <code>false</code> otherwise.
      */

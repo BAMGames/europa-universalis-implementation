@@ -246,7 +246,7 @@ public class CounterUtilTest {
 
     @Test
     public void testLandArmy() {
-        Assert.assertEquals(false, CounterUtil.isLandArmy(null));
+        Assert.assertEquals(false, CounterUtil.isLandArmy((CounterFaceTypeEnum) null));
         Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.FORTRESS_3));
 
         Assert.assertEquals(true, CounterUtil.isLandArmy(CounterFaceTypeEnum.ARMY_PLUS));
@@ -271,6 +271,19 @@ public class CounterUtilTest {
         Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_GALLEY));
         Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_TRANSPORT));
         Assert.assertEquals(false, CounterUtil.isLandArmy(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+
+        Assert.assertEquals(false, CounterUtil.isLandArmy((Stack) null));
+        Stack stack = new Stack();
+        Assert.assertEquals(false, CounterUtil.isLandArmy(stack));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.MNU_ART_MINUS));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(stack));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(false, CounterUtil.isLandArmy(stack));
+        stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(stack));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isLandArmy(stack));
     }
 
     @Test
