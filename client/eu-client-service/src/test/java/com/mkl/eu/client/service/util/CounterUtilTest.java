@@ -1,5 +1,7 @@
 package com.mkl.eu.client.service.util;
 
+import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import org.junit.Assert;
@@ -835,7 +837,7 @@ public class CounterUtilTest {
 
     @Test
     public void testMobile() {
-        Assert.assertEquals(false, CounterUtil.isMobile(null));
+        Assert.assertEquals(false, CounterUtil.isMobile((CounterFaceTypeEnum) null));
         Assert.assertEquals(false, CounterUtil.isMobile(CounterFaceTypeEnum.FORTRESS_3));
 
         Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.ARMY_PLUS));
@@ -860,6 +862,27 @@ public class CounterUtilTest {
         Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_GALLEY));
         Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_TRANSPORT));
         Assert.assertEquals(true, CounterUtil.isMobile(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+
+        Assert.assertEquals(false, CounterUtil.isMobile((Stack) null));
+        Stack stack = new Stack();
+        Assert.assertEquals(false, CounterUtil.isMobile(stack));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.MNU_ART_MINUS));
+        Assert.assertEquals(false, CounterUtil.isMobile(stack));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(false, CounterUtil.isMobile(stack));
+        stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(stack));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
+        Assert.assertEquals(true, CounterUtil.isMobile(stack));
+        stack.setBesieged(true);
+        Assert.assertEquals(false, CounterUtil.isMobile(stack));
+    }
+
+    private Counter createCounter(CounterFaceTypeEnum type) {
+        Counter counter = new Counter();
+        counter.setType(type);
+        return counter;
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.mkl.eu.client.service.util;
 
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.*;
 
 import java.util.ArrayList;
@@ -1320,6 +1321,15 @@ public final class CounterUtil {
      */
     public static boolean isMobile(CounterFaceTypeEnum face) {
         return isArmy(face);
+    }
+
+    /**
+     * @param stack the stack.
+     * @return <code>true</code> if the stack is mobile (can be moved), <code>false</code> otherwise.
+     */
+    public static boolean isMobile(Stack stack) {
+        return !(stack == null || stack.getCounters().isEmpty()) && !stack.isBesieged() &&
+                stack.getCounters().stream().filter(c -> !CounterUtil.isMobile(c.getType())).count() == 0;
     }
 
     /**
