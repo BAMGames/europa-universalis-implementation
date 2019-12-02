@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.front.client.main.UIUtil;
@@ -39,8 +40,8 @@ public final class MenuHelper {
     /**
      * Create a Contextual Menu for a Province.
      *
-     * @param province     where the contextual menu is.
-     * @param container    container to call back when services are called.
+     * @param province  where the contextual menu is.
+     * @param container container to call back when services are called.
      * @return a Contextual Menu for a Province.
      */
     public static ContextualMenu createMenuProvince(final IMapMarker province, IMenuContainer container) {
@@ -128,8 +129,8 @@ public final class MenuHelper {
     /**
      * Create a Contextual Menu for a Stack.
      *
-     * @param stack        where the contextual menu is.
-     * @param container    container to call back when services are called.
+     * @param stack     where the contextual menu is.
+     * @param container container to call back when services are called.
      * @return a Contextual Menu for a Stack.
      */
     public static ContextualMenu createMenuStack(final StackMarker stack, IMenuContainer container) {
@@ -175,6 +176,8 @@ public final class MenuHelper {
                             container.callServiceAsEvent(container.getInterPhaseService()::landLooting, () -> new LandLootingRequest(stack.getId(), LandLootTypeEnum.BURN_TP), "Error when burning the trading post with stack.")));
                 }
             }
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(container.getGlobalConfiguration().getMessage("map.menu.stack.redeploy"),
+                    container.notifyClientAsEvent(DiffTypeObjectEnum.REDEPLOY, createDiffAttribute(DiffAttributeTypeEnum.STACK, stack.getId()))));
         }
 
         return menu;
@@ -183,8 +186,8 @@ public final class MenuHelper {
     /**
      * Create a Contextual Menu for a Counter.
      *
-     * @param counter      where the contextual menu is.
-     * @param container    container to call back when services are called.
+     * @param counter   where the contextual menu is.
+     * @param container container to call back when services are called.
      * @return a Contextual Menu for a Counter.
      */
     public static ContextualMenu createMenuCounter(final CounterMarker counter, IMenuContainer container) {
@@ -209,5 +212,30 @@ public final class MenuHelper {
         menus.add(menu);
         menus.add(ContextualMenuItem.createMenuSeparator());
         return menus;
+    }
+
+    /**
+     * Create a diff attribute.
+     *
+     * @param type  of the diff attribute.
+     * @param value of the diff attribute.
+     * @return the diff attribute.
+     */
+    private static DiffAttributes createDiffAttribute(DiffAttributeTypeEnum type, Long value) {
+        return createDiffAttribute(type, value != null ? value.toString() : "");
+    }
+
+    /**
+     * Create a diff attribute.
+     *
+     * @param type  of the diff attribute.
+     * @param value of the diff attribute.
+     * @return the diff attribute.
+     */
+    private static DiffAttributes createDiffAttribute(DiffAttributeTypeEnum type, String value) {
+        DiffAttributes attribute = new DiffAttributes();
+        attribute.setType(type);
+        attribute.setValue(value);
+        return attribute;
     }
 }

@@ -458,6 +458,9 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
                     case SIEGE:
                         updateSiege(game, diff);
                         break;
+                    case REDEPLOY:
+                        applyNotification(diff);
+                        break;
                     default:
                         LOGGER.error("Unknown diff " + diff);
                         break;
@@ -1862,6 +1865,29 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE, value -> siege.getNonPhasing().getModifiers().setFire(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, value -> siege.getNonPhasing().getModifiers().setShockMod(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK, value -> siege.getNonPhasing().getModifiers().setShock(value));
+    }
+
+    /**
+     * Apply a client notification.
+     *
+     * @param diff
+     */
+    private void applyNotification(Diff diff) {
+        if (diff.getType() != DiffTypeEnum.NOTIFY) {
+            LOGGER.error("Unknown diff " + diff);
+            return;
+        }
+
+        switch (diff.getTypeObject()) {
+            case REDEPLOY:
+                content.getSelectionModel().select(5);
+                content.getScene().getWindow().requestFocus();
+                content.requestFocus();
+                break;
+            default:
+                LOGGER.error("Unknown diff " + diff);
+                break;
+        }
     }
 
     /**

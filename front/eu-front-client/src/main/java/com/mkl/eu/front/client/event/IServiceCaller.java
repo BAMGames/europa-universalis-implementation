@@ -3,7 +3,11 @@ package com.mkl.eu.front.client.event;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.vo.diff.Diff;
+import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
+import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.map.component.INotJavaFxServiceCaller;
 import com.mkl.eu.front.client.vo.AuthentHolder;
@@ -13,6 +17,7 @@ import javafx.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 /**
@@ -111,6 +116,34 @@ public interface IServiceCaller extends IDiffResponseListenerContainer {
                 }
                 processExceptionEvent(new ExceptionEvent(e, map));
             }
+    }
+
+    /**
+     * Create an EventHandler that will notify the client.
+     *
+     * @param type       of notification.
+     * @param attributes of the notification.
+     * @return the event handler.
+     */
+    default EventHandler<ActionEvent> notifyClientAsEvent(DiffTypeObjectEnum type, DiffAttributes... attributes) {
+        return event -> notifyClient(type, attributes);
+    }
+
+    /**
+     * Notify the client to update the UI from one component to another.
+     *
+     * @param type       of notification.
+     * @param attributes of the notification.
+     */
+    default void notifyClient(DiffTypeObjectEnum type, DiffAttributes... attributes) {
+        DiffResponse fakeResponse = new DiffResponse();
+        Diff diff = new Diff();
+        diff.setVersionGame(getGameConfig().getVersionGame() + 1);
+        diff.setType(DiffTypeEnum.NOTIFY);
+        diff.setTypeObject(type);
+        diff.getAttributes().addAll(Arrays.asList(attributes));
+        fakeResponse.getDiffs().add(diff);
+        processDiffEvent(new DiffResponseEvent(fakeResponse, getGameConfig().getIdGame()));
     }
 
     /**

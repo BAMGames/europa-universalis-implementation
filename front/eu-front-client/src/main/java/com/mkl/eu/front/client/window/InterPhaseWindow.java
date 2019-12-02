@@ -8,6 +8,8 @@ import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.front.client.common.StackInProvinceCellFactory;
 import com.mkl.eu.front.client.common.StackInProvinceConverter;
@@ -204,8 +206,33 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
             case TURN_ORDER:
                 updateRedeploymentPanel();
                 break;
+            case REDEPLOY:
+                checkNotification(diff);
+                break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * Apply a possible notification from the client.
+     *
+     * @param diff the diff.
+     */
+    private void checkNotification(Diff diff) {
+        if (diff.getType() == DiffTypeEnum.NOTIFY) {
+            Long idStack = diff.getAttributes().stream()
+                    .filter(d -> d.getType() == DiffAttributeTypeEnum.STACK)
+                    .map(d -> Long.valueOf(d.getValue()))
+                    .findAny()
+                    .orElse(null);
+            Stack stack = game.getStacks().stream()
+                    .filter(s -> Objects.equals(s.getId(), idStack))
+                    .findAny()
+                    .orElse(null);
+            redeployStack.getSelectionModel().select(stack);
+            tabPane.getSelectionModel().select(0);
+            tabPane.requestFocus();
         }
     }
 }

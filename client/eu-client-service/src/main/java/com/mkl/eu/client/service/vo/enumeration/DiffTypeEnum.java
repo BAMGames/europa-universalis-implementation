@@ -362,6 +362,21 @@ public enum DiffTypeEnum {
      * </li>
      * </ul>
      */
-    MODIFY
+    MODIFY,
+    /**
+     * <p>
+     * Notify the client (never sent by back, not really a diff).
+     * </p>
+     * <p>
+     * Can be used with:
+     * </li>
+     * <li>DiffTypeObjectEnum#REDEPLOY in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#ID_STACK to know the id of the stack.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     */
+    NOTIFY
 
 }

@@ -27,5 +27,12 @@ public enum DiffTypeObjectEnum {
     /** Battle. */
     BATTLE,
     /** Siege. */
-    SIEGE
+    SIEGE,
+
+
+    /********************************************/
+    /**         Types used by NOTIFY            */
+    /********************************************/
+    /** Redeploy. */
+    REDEPLOY
 }
