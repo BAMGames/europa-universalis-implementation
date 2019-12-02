@@ -378,7 +378,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         failIfFalse(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(enemies.contains(controller))
                 .setCodeError(IConstantsServiceException.LAND_REDEPLOY_NOT_ENEMY)
-                .setMsgFormat("{1}: {0} You must loot redeploy from a province that is controlled by one of your enemy. Current controller of {2} is {3}.")
+                .setMsgFormat("{1}: {0} You must redeploy from a province that is controlled by one of your enemy. Current controller of {2} is {3}.")
                 .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_LAND_REDEPLOY, provinceFrom.getName(), controller));
 
