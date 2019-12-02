@@ -176,7 +176,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             }
         }
 
-        MyMarkerManager markerManager = context.getBean(MyMarkerManager.class, this, gameConfig);
+        MyMarkerManager markerManager = context.getBean(MyMarkerManager.class, this, game, gameConfig);
 
         mapDetail = new UnfoldingMap(this, "detail", 0, 0, 800, 600, true, false, new EUProvider(this), null);
         // Too many inaccessible field to enable tween and no loop.
@@ -194,7 +194,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
 
         mapDetail.addMarkerManager(markerManager);
 
-        info = context.getBean(InfoView.class, this, markerManager, gameConfig);
+        info = context.getBean(InfoView.class, this, markerManager, game, gameConfig);
         info.init(805, 245, 185, 350);
 
         EventDispatcher eventDispatcher = new EventDispatcher();

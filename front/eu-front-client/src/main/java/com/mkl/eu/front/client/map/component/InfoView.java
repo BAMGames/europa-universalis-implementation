@@ -2,8 +2,10 @@ package com.mkl.eu.front.client.map.component;
 
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.MoveCounterRequest;
+import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
@@ -39,6 +41,8 @@ import processing.core.PGraphics;
 @Component
 @Scope(value = "prototype")
 public class InfoView extends AbstractDiffResponseListenerContainer implements IDragAndDropAware<CounterMarker, StackMarker>, IContextualMenuAware<Object>, MapEventListener, IMenuContainer {
+    /** Game. */
+    private Game game;
     /** Board Service. */
     @Autowired
     private IBoardService boardService;
@@ -48,6 +52,9 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
     /** Siege Service. */
     @Autowired
     private ISiegeService siegeService;
+    /** Interphase Service. */
+    @Autowired
+    private IInterPhaseService interPhaseService;
     /** Vertical Padding. */
     private static final float V_PADDING = 20;
     /** Horizontal Padding. */
@@ -87,12 +94,14 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
      *
      * @param pApplet       the pApplet to draw.
      * @param markerManager the markerManager to set.
+     * @param game          the game.
      * @param gameConfig    the gameConfig to set.
      */
-    public InfoView(PApplet pApplet, MyMarkerManager markerManager, GameConfiguration gameConfig) {
+    public InfoView(PApplet pApplet, MyMarkerManager markerManager, Game game, GameConfiguration gameConfig) {
         super(gameConfig);
         this.pApplet = pApplet;
         this.markerManager = markerManager;
+        this.game = game;
     }
 
     /**
@@ -219,7 +228,8 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
         float newY = this.y + V_PADDING + 2 * V_TEXT;
 
         int stackNumber = (int) ((y - newY) / (SIZE + SPACE));
-        if (markerManager.getSelectedMarker() instanceof IMapMarker
+        boolean inInfoView = isHit(x, y);
+        if (inInfoView && markerManager.getSelectedMarker() instanceof IMapMarker
                 && stackNumber >= 0 && stackNumber < ((IMapMarker) markerManager.getSelectedMarker()).getStacks().size()) {
             stack = ((IMapMarker) markerManager.getSelectedMarker()).getStacks().get(stackNumber);
         }
@@ -268,13 +278,13 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof CounterMarker) {
-            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, boardService, this);
+            menu = MenuHelper.createMenuCounter((CounterMarker) contextualized, this);
         } else if (contextualized instanceof StackMarker) {
-            menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
+            menu = MenuHelper.createMenuStack((StackMarker) contextualized, this);
         } else {
             Marker marker = markerManager.getSelectedMarker();
             if (marker instanceof IMapMarker) {
-                menu = MenuHelper.createMenuProvince((IMapMarker) marker, boardService, battleService, siegeService, this);
+                menu = MenuHelper.createMenuProvince((IMapMarker) marker, this);
             }
         }
 
@@ -354,6 +364,36 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
     @Override
     public GlobalConfiguration getGlobalConfiguration() {
         return globalConfiguration;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IBoardService getBoardService() {
+        return boardService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IBattleService getBattleService() {
+        return battleService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ISiegeService getSiegeService() {
+        return siegeService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IInterPhaseService getInterPhaseService() {
+        return interPhaseService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Game getGame() {
+        return game;
     }
 
     /** {@inheritDoc} */

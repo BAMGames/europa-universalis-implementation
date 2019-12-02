@@ -2,8 +2,10 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
+import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.board.MoveStackRequest;
+import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.event.ExceptionEvent;
@@ -49,6 +51,8 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private static final Logger LOGGER = LoggerFactory.getLogger(MyMarkerManager.class);
     /** Interactive map. */
     private InteractiveMap interactiveMap;
+    /** Game. */
+    private Game game;
     /** Board Service. */
     @Autowired
     private IBoardService boardService;
@@ -58,6 +62,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Siege Service. */
     @Autowired
     private ISiegeService siegeService;
+    /** Interphase Service. */
+    @Autowired
+    private IInterPhaseService interPhaseService;
     /** Configuration of the application. */
     @Autowired
     private GlobalConfiguration globalConfiguration;
@@ -89,11 +96,13 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
      * Constructor.
      *
      * @param map        the interactive map.
+     * @param game       the game.
      * @param gameConfig the gameConfig to set.
      */
-    public MyMarkerManager(InteractiveMap map, GameConfiguration gameConfig) {
-        this.gameConfig = gameConfig;
+    public MyMarkerManager(InteractiveMap map, Game game, GameConfiguration gameConfig) {
         this.interactiveMap = map;
+        this.game = game;
+        this.gameConfig = gameConfig;
     }
 
     /** {@inheritDoc} */
@@ -215,9 +224,9 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     private ContextualMenu createMenu() {
         ContextualMenu menu = null;
         if (contextualized instanceof IMapMarker) {
-            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, boardService, battleService, siegeService, this);
+            menu = MenuHelper.createMenuProvince((IMapMarker) contextualized, this);
         } else if (contextualized instanceof StackMarker) {
-            menu = MenuHelper.createMenuStack((StackMarker) contextualized, boardService, this);
+            menu = MenuHelper.createMenuStack((StackMarker) contextualized, this);
         }
 
         return menu;
@@ -431,5 +440,35 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     @Override
     public InteractiveMap getComponent() {
         return interactiveMap;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IBoardService getBoardService() {
+        return boardService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IBattleService getBattleService() {
+        return battleService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ISiegeService getSiegeService() {
+        return siegeService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IInterPhaseService getInterPhaseService() {
+        return interPhaseService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Game getGame() {
+        return game;
     }
 }

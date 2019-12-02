@@ -100,7 +100,7 @@ public interface IServiceCaller extends IDiffResponseListenerContainer {
                 }
                 processDiffEvent(diff);
             } catch (Exception e) {
-                LOGGER.error(errorMessage, e);
+                LOGGER.error(errorMessage + e.getMessage());
 
                 if (doIfFailure != null) {
                     doIfFailure.run();

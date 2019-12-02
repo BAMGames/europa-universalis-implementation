@@ -610,7 +610,8 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
     private void updateEcoSheet(Diff diff) {
         switch (diff.getType()) {
             case INVALIDATE:
-                invalidateSheet(diff);
+            case MODIFY:
+                updatePanels(diff);
                 break;
             default:
                 break;
@@ -618,11 +619,11 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
     }
 
     /**
-     * Process the invalidate sheet diff event.
+     * Update the panels of this component after an economical sheet event.
      *
-     * @param diff involving an invalidate sheet.
+     * @param diff involving a sheet.
      */
-    private void invalidateSheet(Diff diff) {
+    private void updatePanels(Diff diff) {
         Long idCountry = null;
         DiffAttributes attribute = findFirst(diff.getAttributes(), attr -> attr.getType() == DiffAttributeTypeEnum.ID_COUNTRY);
         if (attribute != null && !StringUtils.isEmpty(attribute.getValue())) {
