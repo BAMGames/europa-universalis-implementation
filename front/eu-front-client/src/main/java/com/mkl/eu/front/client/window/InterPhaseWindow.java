@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.WarUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.diff.Diff;
@@ -174,8 +175,13 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * Updates the redeployment tab.
      */
     private void updateRedeploymentPanel() {
+        List<String> allies = WarUtil.getAllies(gameConfig.getCountryName(), game);
+        allies.removeIf(ally -> game.getCountries().stream()
+                .anyMatch(country -> StringUtils.equals(country.getName(), ally) &&
+                        !StringUtils.equals(country.getName(), gameConfig.getCountryName()) &&
+                        StringUtils.isNotEmpty(country.getUsername())));
         List<Stack> stacks = game.getStacks().stream()
-                .filter(stack -> StringUtils.equals(stack.getCountry(), gameConfig.getCountryName()) &&
+                .filter(stack -> allies.contains(stack.getCountry()) &&
                         CounterUtil.isMobile(stack) && CounterUtil.isLandArmy(stack))
                 .collect(Collectors.toList());
         lootStack.setItems(FXCollections.observableList(stacks));
