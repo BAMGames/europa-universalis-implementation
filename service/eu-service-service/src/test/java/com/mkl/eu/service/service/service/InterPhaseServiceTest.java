@@ -148,6 +148,16 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("landLooting.request.idStack", e.getParams()[0]);
         }
 
+        stack.setMovePhase(MovePhaseEnum.LOOTING_BESIEGING);
+
+        try {
+            interPhaseService.landLooting(request);
+            Assert.fail("Should break because stack has already looted");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.LAND_LOOTING_TWICE, e.getCode());
+            Assert.assertEquals("landLooting.request.idStack", e.getParams()[0]);
+        }
+
         stack.setMovePhase(null);
 
         try {

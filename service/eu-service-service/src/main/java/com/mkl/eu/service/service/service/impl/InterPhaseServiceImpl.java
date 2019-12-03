@@ -185,6 +185,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
     private List<DiffEntity> pillageLand(AbstractProvinceEntity province, PlayableCountryEntity country, StackEntity pillageStack, GameEntity game) throws FunctionalException {
         List<String> allies = oeUtil.getAllies(country, game);
         String controller = oeUtil.getController(province, game);
+        MovePhaseEnum movePhaseSpecial = null;
 
         boolean canLoot = allies.contains(controller);
         if (!canLoot) {
@@ -194,7 +195,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                     .filter(counter -> allies.contains(counter.getCountry()))
                     .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
             canLoot = size >= oeUtil.getFortressLevel(province, game);
-            pillageStack.setMovePhase(MovePhaseEnum.LOOTING_BESIEGING);
+            movePhaseSpecial = MovePhaseEnum.LOOTING_BESIEGING;
         }
 
         failIfFalse(new AbstractService.CheckForThrow<Boolean>()
@@ -257,6 +258,10 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
             if (pillageMinus != null) {
                 diffs.add(counterDomain.switchCounter(pillageMinus.getId(), CounterFaceTypeEnum.PILLAGE_PLUS, null, game));
             }
+        }
+
+        if (movePhaseSpecial != null) {
+            pillageStack.setMovePhase(movePhaseSpecial);
         }
 
         return diffs;
