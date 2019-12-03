@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.window;
 
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.Game;
@@ -11,6 +12,8 @@ import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.LandLootTypeEnum;
+import com.mkl.eu.front.client.common.EnumConverter;
 import com.mkl.eu.front.client.common.StackInProvinceCellFactory;
 import com.mkl.eu.front.client.common.StackInProvinceConverter;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
@@ -59,7 +62,13 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     /********************************************/
     /**       Nodes about redeployment          */
     /********************************************/
-    /** The redeployStack combobox. */
+    /** The lootStack combo box. */
+    private ComboBox<Stack> lootStack;
+    /** The type of loot choice box. */
+    private ChoiceBox<LandLootTypeEnum> lootType;
+    /** The loot button. */
+    private Button lootButton;
+    /** The redeployStack combo box. */
     private ComboBox<Stack> redeployStack;
     /** Choice box to select the province to redeploy. */
     private ChoiceBox<String> redeployProvince;
@@ -108,20 +117,30 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         VBox vBox = new VBox();
         tab.setContent(vBox);
 
+        lootStack = new ComboBox<>();
+        lootStack.setCellFactory(new StackInProvinceCellFactory(globalConfiguration));
+        lootStack.converterProperty().set(new StackInProvinceConverter(globalConfiguration));
+        lootType = new ChoiceBox<>();
+        lootType.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        lootType.setItems(FXCollections.observableArrayList(LandLootTypeEnum.values()));
+        lootStack.getSelectionModel().selectedItemProperty().
+                addListener((observable, oldValue, newValue) -> lootButton.setDisable(newValue == null
+                        || lootType.getSelectionModel().getSelectedItem() == null));
+        lootType.getSelectionModel().selectedItemProperty().
+                addListener((observable, oldValue, newValue) -> lootButton.setDisable(newValue == null
+                        || lootStack.getSelectionModel().getSelectedItem() == null));
+        lootButton = new Button(globalConfiguration.getMessage("interphase.info.loot"));
+        lootButton.setOnAction(callServiceAsEvent(interPhaseService::landLooting,
+                () -> new LandLootingRequest(lootStack.getSelectionModel().getSelectedItem().getId(), lootType.getSelectionModel().getSelectedItem()),
+                "Error when looting by land."));
+        HBox hBox = new HBox();
+        hBox.getChildren().addAll(lootStack, lootType, lootButton);
+        vBox.getChildren().add(hBox);
+
         redeployStack = new ComboBox<>();
         redeployStack.setCellFactory(new StackInProvinceCellFactory(globalConfiguration));
         redeployStack.converterProperty().set(new StackInProvinceConverter(globalConfiguration));
-        List<Stack> stacks = game.getStacks().stream()
-                .filter(stack -> StringUtils.equals(stack.getCountry(), gameConfig.getCountryName()) &&
-                        CounterUtil.isMobile(stack) && CounterUtil.isLandArmy(stack))
-                .collect(Collectors.toList());
-        redeployStack.setItems(FXCollections.observableList(stacks));
         redeployProvince = new ChoiceBox<>();
-        List<String> provinces = markers.stream()
-                .filter(province -> StringUtils.equals(province.getController(), gameConfig.getCountryName()))
-                .map(IMapMarker::getId)
-                .collect(Collectors.toList());
-        redeployProvince.setItems(FXCollections.observableList(provinces));
         redeployStack.getSelectionModel().selectedItemProperty().
                 addListener((observable, oldValue, newValue) -> redeployButton.setDisable(newValue == null
                         || redeployProvince.getSelectionModel().getSelectedItem() == null));
@@ -132,7 +151,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         redeployButton.setOnAction(callServiceAsEvent(interPhaseService::landRedeploy,
                 () -> new LandRedeployRequest(redeployStack.getSelectionModel().getSelectedItem().getId(), redeployProvince.getSelectionModel().getSelectedItem()),
                 "Error when redeploying land units."));
-        HBox hBox = new HBox();
+        hBox = new HBox();
         hBox.getChildren().addAll(redeployStack, redeployProvince, redeployButton);
         vBox.getChildren().add(hBox);
 
@@ -155,10 +174,25 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * Updates the redeployment tab.
      */
     private void updateRedeploymentPanel() {
+        List<Stack> stacks = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getCountry(), gameConfig.getCountryName()) &&
+                        CounterUtil.isMobile(stack) && CounterUtil.isLandArmy(stack))
+                .collect(Collectors.toList());
+        lootStack.setItems(FXCollections.observableList(stacks));
+        redeployStack.setItems(FXCollections.observableList(stacks));
+        List<String> provinces = markers.stream()
+                .filter(province -> StringUtils.equals(province.getController(), gameConfig.getCountryName()))
+                .map(IMapMarker::getId)
+                .collect(Collectors.toList());
+        redeployProvince.setItems(FXCollections.observableList(provinces));
+
         CountryOrder countryOrder = game.getOrders().stream()
                 .filter(order -> Objects.equals(order.getCountry().getId(), gameConfig.getIdCountry()))
                 .findAny()
                 .orElse(null);
+        lootStack.setDisable(true);
+        lootType.setDisable(true);
+        lootButton.setDisable(true);
         redeployStack.setDisable(true);
         redeployProvince.setDisable(true);
         redeployButton.setDisable(true);
@@ -167,6 +201,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
 
         if (countryOrder != null && countryOrder.isActive()) {
             if (game.getStatus() == GameStatusEnum.REDEPLOYMENT) {
+                lootStack.setDisable(countryOrder.isReady());
+                lootType.setDisable(countryOrder.isReady());
                 redeployStack.setDisable(countryOrder.isReady());
                 redeployProvince.setDisable(countryOrder.isReady());
                 validateInterPhase.setDisable(countryOrder.isReady());
