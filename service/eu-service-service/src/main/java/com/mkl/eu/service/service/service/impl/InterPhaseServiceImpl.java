@@ -128,7 +128,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         AbstractProvinceEntity province = provinceDao.getProvinceByName(stack.getProvince());
 
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(stack.getMovePhase() == MovePhaseEnum.LOOTING)
+                .setTest(stack.getMovePhase() == MovePhaseEnum.LOOTING || stack.getMovePhase() == MovePhaseEnum.LOOTING_BESIEGING)
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_TWICE)
                 .setMsgFormat("{1}: {0} The stack of id {2} has already looted.")
                 .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
