@@ -370,7 +370,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT)
                 .setName(PARAMETER_LAND_REDEPLOY, PARAMETER_REQUEST, PARAMETER_ID_STACK)
-                .setParams(METHOD_LAND_REDEPLOY, country.getName(), patrons));
+                .setParams(METHOD_LAND_REDEPLOY, country.getName(), patrons.stream().collect(Collectors.joining(","))));
 
         List<String> enemies = oeUtil.getEnemies(country, game);
         String controller = oeUtil.getController(provinceFrom, game);
