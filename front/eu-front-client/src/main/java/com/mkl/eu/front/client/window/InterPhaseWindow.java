@@ -1,19 +1,24 @@
 package com.mkl.eu.front.client.window;
 
+import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.WarUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Stack;
+import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
 import com.mkl.eu.client.service.vo.enumeration.LandLootTypeEnum;
+import com.mkl.eu.client.service.vo.tables.Result;
 import com.mkl.eu.front.client.common.EnumConverter;
 import com.mkl.eu.front.client.common.StackInProvinceCellFactory;
 import com.mkl.eu.front.client.common.StackInProvinceConverter;
@@ -21,11 +26,15 @@ import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +43,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -75,10 +87,24 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     private ChoiceBox<String> redeployProvince;
     /** The redeploy button. */
     private Button redeployButton;
-    /** The validate interphase button. */
-    private Button validateInterPhase;
-    /** The invalidate interphase button. */
-    private Button invalidateInterPhase;
+    /** The validate redeployment button. */
+    private Button validateRedeployment;
+    /** The invalidate redeployment button. */
+    private Button invalidateRedeployment;
+
+    /********************************************/
+    /**        Nodes about exchequer            */
+    /********************************************/
+    /** The exchequer panel. */
+    private HBox exchequerInfo;
+    /** The prestige spent field. */
+    private TextField prestigeField;
+    /** Exchequer repartition button. */
+    private Button exchequerRepartition;
+    /** The validate exchequer button. */
+    private Button validateExchequer;
+    /** The invalidate exchequer button. */
+    private Button invalidateExchequer;
 
 
     /**
@@ -156,14 +182,14 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         hBox.getChildren().addAll(redeployStack, redeployProvince, redeployButton);
         vBox.getChildren().add(hBox);
 
-        Function<Boolean, EventHandler<ActionEvent>> endInterPhase = validate -> callServiceAsEvent(interPhaseService::validateRedeploy, () -> new ValidateRequest(validate), "Error when validating the interphase.");
+        Function<Boolean, EventHandler<ActionEvent>> endRedeployment = validate -> callServiceAsEvent(interPhaseService::validateRedeploy, () -> new ValidateRequest(validate), "Error when validating the redeployment.");
 
-        validateInterPhase = new Button(globalConfiguration.getMessage("interphase.info.validate"));
-        validateInterPhase.setOnAction(endInterPhase.apply(true));
-        invalidateInterPhase = new Button(globalConfiguration.getMessage("interphase.info.invalidate"));
-        invalidateInterPhase.setOnAction(endInterPhase.apply(false));
+        validateRedeployment = new Button(globalConfiguration.getMessage("interphase.info.validate"));
+        validateRedeployment.setOnAction(endRedeployment.apply(true));
+        invalidateRedeployment = new Button(globalConfiguration.getMessage("interphase.info.invalidate"));
+        invalidateRedeployment.setOnAction(endRedeployment.apply(false));
         hBox = new HBox();
-        hBox.getChildren().addAll(validateInterPhase, invalidateInterPhase);
+        hBox.getChildren().addAll(validateRedeployment, invalidateRedeployment);
         vBox.getChildren().add(hBox);
 
         updateRedeploymentPanel();
@@ -202,8 +228,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         redeployStack.setDisable(true);
         redeployProvince.setDisable(true);
         redeployButton.setDisable(true);
-        validateInterPhase.setDisable(true);
-        invalidateInterPhase.setDisable(true);
+        validateRedeployment.setDisable(true);
+        invalidateRedeployment.setDisable(true);
 
         if (countryOrder != null && countryOrder.isActive()) {
             if (game.getStatus() == GameStatusEnum.REDEPLOYMENT) {
@@ -211,8 +237,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
                 lootType.setDisable(countryOrder.isReady());
                 redeployStack.setDisable(countryOrder.isReady());
                 redeployProvince.setDisable(countryOrder.isReady());
-                validateInterPhase.setDisable(countryOrder.isReady());
-                invalidateInterPhase.setDisable(!countryOrder.isReady());
+                validateRedeployment.setDisable(countryOrder.isReady());
+                invalidateRedeployment.setDisable(!countryOrder.isReady());
             }
         }
     }
@@ -225,7 +251,104 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         tab.setClosable(false);
         VBox vBox = new VBox();
         tab.setContent(vBox);
+
+        exchequerInfo = new HBox();
+        vBox.getChildren().add(exchequerInfo);
+
+        prestigeField = new TextField();
+        prestigeField.setTextFormatter(new TextFormatter<String>(change -> change.getText().matches("[0-9]*") ? change : null));
+        exchequerRepartition = new Button(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
+        exchequerRepartition.setOnAction(callServiceAsEvent(interPhaseService::exchequerRepartition, () -> new ExchequerRepartitionRequest(CommonUtil.toInt(prestigeField.getText())), "Error when spending prestige into income."));
+
+        HBox hBox = new HBox();
+        hBox.getChildren().addAll(prestigeField, exchequerRepartition);
+        vBox.getChildren().add(hBox);
+
+        Function<Boolean, EventHandler<ActionEvent>> endExchequer = validate -> callServiceAsEvent(interPhaseService::validateExchequer, () -> new ValidateRequest(validate), "Error when validating the exchequer.");
+
+        validateExchequer = new Button(globalConfiguration.getMessage("interphase.exchequer.validate"));
+        validateExchequer.setOnAction(endExchequer.apply(true));
+        invalidateExchequer = new Button(globalConfiguration.getMessage("interphase.exchequer.invalidate"));
+        invalidateExchequer.setOnAction(endExchequer.apply(false));
+        hBox = new HBox();
+        hBox.getChildren().addAll(validateExchequer, invalidateExchequer);
+        vBox.getChildren().add(hBox);
+
+        updateExchequer();
+        updateExchequerButtons();
+
         return tab;
+    }
+
+    /**
+     * Update the exchequer tab - info panel.
+     */
+    private void updateExchequer() {
+        exchequerRepartition.setText(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
+        EconomicalSheet sheet = game.getCountries().stream()
+                .filter(country -> StringUtils.equals(country.getName(), gameConfig.getCountryName()))
+                .flatMap(country -> country.getEconomicalSheets().stream())
+                .filter(es -> Objects.equals(es.getTurn(), game.getTurn()))
+                .findAny()
+                .orElse(null);
+        if (sheet != null) {
+            Label label = new Label(globalConfiguration.getMessage("interphase.exchequer.info",
+                    sheet.getRtBefExch(), sheet.getGrossIncome(),
+                    sheet.getRegularIncome(), sheet.getPrestigeIncome(), sheet.getMaxNatLoan(),
+                    sheet.getExpenses(), sheet.getRemainingExpenses()));
+            Node tooltip = createExchequerTooltip(sheet);
+            exchequerInfo.getChildren().clear();
+            exchequerInfo.getChildren().addAll(label, tooltip);
+            if (sheet.getRemainingExpenses() != null && sheet.getPrestigeIncome() != null) {
+                exchequerRepartition.setText(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent",
+                        Math.max(Math.min(sheet.getRemainingExpenses(), sheet.getPrestigeIncome()), 0)));
+            }
+            prestigeField.setText(sheet.getPrestigeSpent() + "");
+        }
+    }
+
+    /**
+     * @param sheet the economical sheet.
+     * @return The help tooltip about the exchequer test.
+     */
+    private Node createExchequerTooltip(EconomicalSheet sheet) {
+        Result exchequerResult = globalConfiguration.getTables().getResults().stream()
+                .filter(result -> Objects.equals(result.getColumn(), sheet.getExchequerColumn()) &&
+                        Objects.equals(result.getDie(), sheet.getExchequerDie()))
+                .findAny()
+                .orElse(null);
+        try {
+            ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
+            Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("interphase.exchequer.help",
+                    sheet.getExchequerDie(), sheet.getExchequerBonus(), sheet.getExchequerColumn(), exchequerResult.getResult()));
+            Tooltip.install(img, tooltip);
+            UIUtil.patchTooltipUntilMigrationJava9(tooltip);
+            return img;
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Cannot find help icon.");
+            return null;
+        }
+    }
+
+    /**
+     * Update the exchequer tab - forms.
+     */
+    private void updateExchequerButtons() {
+        PlayableCountry country = game.getCountries().stream()
+                .filter(c -> Objects.equals(c.getId(), gameConfig.getIdCountry()))
+                .findAny()
+                .orElse(null);
+        exchequerRepartition.setDisable(true);
+        validateExchequer.setDisable(true);
+        invalidateExchequer.setDisable(true);
+
+        if (country != null) {
+            if (game.getStatus() == GameStatusEnum.EXCHEQUER) {
+                exchequerRepartition.setDisable(country.isReady());
+                validateExchequer.setDisable(country.isReady());
+                invalidateExchequer.setDisable(!country.isReady());
+            }
+        }
     }
 
     /**
@@ -247,9 +370,13 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
             case STATUS:
             case TURN_ORDER:
                 updateRedeploymentPanel();
+                updateExchequerButtons();
                 break;
             case REDEPLOY:
                 checkNotification(diff);
+                break;
+            case ECO_SHEET:
+                updateExchequer();
                 break;
             default:
                 break;

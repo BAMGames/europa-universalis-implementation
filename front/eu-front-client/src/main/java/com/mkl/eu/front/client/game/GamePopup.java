@@ -12,7 +12,6 @@ import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
-import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -330,15 +329,13 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             case MILITARY_HIERARCHY:
             case EXCHEQUER:
             case STABILITY:
-                List<PlayableCountry> activePlayers = GameUtil.getActivePlayers(game).stream()
-                        .collect(Collectors.toList());
                 game.getCountries().stream()
                         .filter(c -> StringUtils.isNotEmpty(c.getUsername()))
                         .forEach(country -> {
                             HBox hBox = new HBox();
                             Text text = new Text(country.getName());
                             hBox.getChildren().add(text);
-                            if (activePlayers.contains(country)) {
+                            if (!country.isReady()) {
                                 try {
                                     Image img = new Image(new FileInputStream(new File("data/img/cross.png")), 16, 16, true, false);
                                     ImageView imgView = new ImageView(img);

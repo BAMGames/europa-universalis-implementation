@@ -6,14 +6,18 @@ import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.front.client.map.marker.MarkerUtils;
 import com.mkl.eu.front.client.window.InteractiveMap;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
@@ -21,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 
 /**
  * Utility class for UI.
@@ -175,5 +180,35 @@ public final class UIUtil {
             return null;
         }
 
+    }
+
+    /**
+     * Patch to make tooltip lasts longer and display immediately.
+     *
+     * @param tooltip the tooltip to patch.
+     */
+    public static void patchTooltipUntilMigrationJava9(Tooltip tooltip) {
+        // TODO TG-129 remove when migrating to java 9 or above
+        try {
+            Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
+            fieldBehavior.setAccessible(true);
+            Object objBehavior = fieldBehavior.get(tooltip);
+
+            Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
+            fieldTimer.setAccessible(true);
+            Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
+
+            objTimer.getKeyFrames().clear();
+            objTimer.getKeyFrames().add(new KeyFrame(new Duration(250)));
+
+            fieldTimer = objBehavior.getClass().getDeclaredField("hideTimer");
+            fieldTimer.setAccessible(true);
+            objTimer = (Timeline) fieldTimer.get(objBehavior);
+
+            objTimer.getKeyFrames().clear();
+            objTimer.getKeyFrames().add(new KeyFrame(new Duration(60000)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

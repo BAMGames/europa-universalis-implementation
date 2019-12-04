@@ -818,7 +818,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                     sheet.setPeriodWealth(sheet.getWealth());
                 } else {
                     int previousWealth = country.getEconomicalSheets().stream()
-                            .filter(es -> Objects.equals(game.getTurn() - 1, es.getTurn()))
+                            .filter(es -> Objects.equals(game.getTurn() - 1, es.getTurn()) && es.getPeriodWealth() != null)
                             .map(EconomicalSheetEntity::getPeriodWealth)
                             .findAny()
                             .orElse(0);

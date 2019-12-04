@@ -285,6 +285,7 @@ public final class GameUtil {
         switch (game.getStatus()) {
             case ADMINISTRATIVE_ACTIONS_CHOICE:
             case MILITARY_HIERARCHY:
+            case EXCHEQUER:
                 countries = game.getCountries().stream()
                         .filter(country -> StringUtils.isNotEmpty(country.getUsername()) &&
                                 !country.isReady())

@@ -28,11 +28,10 @@ import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
+import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.MarkerUtils;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -42,7 +41,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +52,6 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -394,41 +391,11 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("military.battle.info",
                     side.getTech(), side.getFireColumn(), side.getShockColumn(), side.getMoral(), side.getSize(), side.getSizeDiff(), side.getPursuitMod()));
             Tooltip.install(img, tooltip);
-            patchTooltipUntilMigrationJava9(tooltip);
+            UIUtil.patchTooltipUntilMigrationJava9(tooltip);
             return img;
         } catch (FileNotFoundException e) {
             LOGGER.error("Cannot find help icon.");
             return null;
-        }
-    }
-
-    /**
-     * Patch to make tooltip lasts longer and display immediatly.
-     *
-     * @param tooltip the tooltip to patch.
-     */
-    private void patchTooltipUntilMigrationJava9(Tooltip tooltip) {
-        // TODO TG-129 remove when migrating to java 9 or above
-        try {
-            Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
-            fieldBehavior.setAccessible(true);
-            Object objBehavior = fieldBehavior.get(tooltip);
-
-            Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
-            fieldTimer.setAccessible(true);
-            Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
-
-            objTimer.getKeyFrames().clear();
-            objTimer.getKeyFrames().add(new KeyFrame(new Duration(250)));
-
-            fieldTimer = objBehavior.getClass().getDeclaredField("hideTimer");
-            fieldTimer.setAccessible(true);
-            objTimer = (Timeline) fieldTimer.get(objBehavior);
-
-            objTimer.getKeyFrames().clear();
-            objTimer.getKeyFrames().add(new KeyFrame(new Duration(60000)));
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -462,7 +429,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         sb.append("\n");
         sb.append(getRetreatDamage(against.getRetreat()));
         Tooltip tooltip = new Tooltip(sb.toString());
-        patchTooltipUntilMigrationJava9(tooltip);
+        UIUtil.patchTooltipUntilMigrationJava9(tooltip);
         label.setTooltip(tooltip);
 
         return label;
@@ -901,7 +868,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
             Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("military.siege.info", side.getTech(), side.getMoral(), side.getSize()));
             Tooltip.install(img, tooltip);
-            patchTooltipUntilMigrationJava9(tooltip);
+            UIUtil.patchTooltipUntilMigrationJava9(tooltip);
             return img;
         } catch (FileNotFoundException e) {
             LOGGER.error("Cannot find help icon.");
@@ -950,7 +917,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         sb.append("\n");
         sb.append(getSequenceDamage("military.siege.shock", side.getModifiers().getShock(), side.getModifiers().getShockMod(), false, besieger, breach && !besieger));
         Tooltip tooltip = new Tooltip(sb.toString());
-        patchTooltipUntilMigrationJava9(tooltip);
+        UIUtil.patchTooltipUntilMigrationJava9(tooltip);
         label.setTooltip(tooltip);
 
         return label;
