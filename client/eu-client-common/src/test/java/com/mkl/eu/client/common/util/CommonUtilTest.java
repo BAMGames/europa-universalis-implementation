@@ -274,9 +274,17 @@ public class CommonUtilTest {
 
     @Test
     public void testIntegers() {
-        Assert.assertEquals(0, CommonUtil.toInt(null));
+        Assert.assertEquals(0, CommonUtil.toInt((Integer) null));
         Assert.assertEquals(1, CommonUtil.toInt(new Integer("1")));
         Assert.assertEquals(1, CommonUtil.toInt(1));
+
+        Assert.assertEquals(0, CommonUtil.toInt((String) null));
+        Assert.assertEquals(0, CommonUtil.toInt(""));
+        Assert.assertEquals(0, CommonUtil.toInt("abc"));
+        Assert.assertEquals(0, CommonUtil.toInt("1a2"));
+        Assert.assertEquals(1, CommonUtil.toInt("1"));
+        Assert.assertEquals(-5, CommonUtil.toInt("-5"));
+        Assert.assertEquals(12, CommonUtil.toInt("12"));
 
         Assert.assertEquals(0, CommonUtil.subtract(null));
         Assert.assertEquals(0, CommonUtil.subtract(null, 3));

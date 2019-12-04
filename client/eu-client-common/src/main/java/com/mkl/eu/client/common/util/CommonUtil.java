@@ -282,6 +282,20 @@ public final class CommonUtil {
     }
 
     /**
+     * Transform a String to an int (not decimal and null and empty string will be transformed to 0).
+     *
+     * @param text the string.
+     * @return the int.
+     */
+    public static int toInt(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
      * @param first  parameter.
      * @param second parameter.
      * @return if the two parameters are equals, null parameter standing for 0.
