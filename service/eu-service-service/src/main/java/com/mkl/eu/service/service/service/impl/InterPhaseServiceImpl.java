@@ -603,6 +603,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         if (sheet.getPrestigeSpent() == null || sheet.getPrestigeSpent() != request.getRequest().getPrestige()) {
             sheet.setPrestigeSpent(request.getRequest().getPrestige());
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE_SPENT, sheet.getPrestigeSpent())));
         }
 

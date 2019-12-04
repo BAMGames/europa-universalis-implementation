@@ -1249,6 +1249,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
                         .orElse(null);
 
                 Assert.assertNotNull("The modify eco sheet diff was not created while it should.", diff);
+                Assert.assertEquals("The id country in the modify eco sheet is wrong.", "26", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
                 Assert.assertEquals("The prestige spent attribute in the modify eco sheet diff is wrong.", prestigeSpent + "", getAttribute(diff, DiffAttributeTypeEnum.EXCHEQUER_PRESTIGE_SPENT));
                 Assert.assertEquals("The prestige spent in the eco sheet is wrong.", prestigeSpent, sheet.getPrestigeSpent().intValue());
             } else {
