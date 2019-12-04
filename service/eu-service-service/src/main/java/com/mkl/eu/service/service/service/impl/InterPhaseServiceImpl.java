@@ -589,7 +589,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .setName(PARAMETER_EXCHEQUER_REPARTITION, PARAMETER_REQUEST, PARAMETER_GAME, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_EXCHEQUER_REPARTITION));
 
-        int maxValue = Math.min(CommonUtil.toInt(sheet.getPrestigeIncome()), CommonUtil.toInt(sheet.getRemainingExpenses()));
+        int maxValue = Math.max(Math.min(CommonUtil.toInt(sheet.getPrestigeIncome()), CommonUtil.toInt(sheet.getRemainingExpenses())), 0);
 
         failIfTrue(new CheckForThrow<Boolean>()
                 .setTest(request.getRequest().getPrestige() < 0 ||

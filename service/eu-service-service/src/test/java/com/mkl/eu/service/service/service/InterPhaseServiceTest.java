@@ -1180,6 +1180,10 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
                 .prestigeIncome(100).prestigeSpentBefore(80).prestigeSpent(50)
                 .whenRepartition(this, interPhaseService)
                 .thenExpect(true);
+        ExchequerRepartitionBuilder.create()
+                .prestigeIncome(-7).prestigeSpent(0)
+                .whenRepartition(this, interPhaseService)
+                .thenExpect(true);
     }
 
     static class ExchequerRepartitionBuilder {
