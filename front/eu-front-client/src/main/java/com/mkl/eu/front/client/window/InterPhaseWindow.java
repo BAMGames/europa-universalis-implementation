@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.ExchequerRepartitionRequest;
+import com.mkl.eu.client.service.service.eco.ImproveStabilityRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
@@ -14,10 +15,7 @@ import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
-import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
-import com.mkl.eu.client.service.vo.enumeration.LandLootTypeEnum;
+import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Result;
 import com.mkl.eu.front.client.common.EnumConverter;
 import com.mkl.eu.front.client.common.StackInProvinceCellFactory;
@@ -106,6 +104,12 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     /** The invalidate exchequer button. */
     private Button invalidateExchequer;
 
+    /********************************************/
+    /**        Nodes about stability            */
+    /********************************************/
+    /** The improve stability button. */
+    private Button improveStability;
+
 
     /**
      * Constructor.
@@ -133,6 +137,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         tabPane.getTabs().add(createRedeploymentTab());
         tabPane.getTabs().add(createExchequerTab());
         tabPane.getTabs().add(createStabilityTab());
+
+        updateEcoSheet();
     }
 
     /**
@@ -274,17 +280,17 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         hBox.getChildren().addAll(validateExchequer, invalidateExchequer);
         vBox.getChildren().add(hBox);
 
-        updateExchequer();
         updateExchequerButtons();
 
         return tab;
     }
 
     /**
-     * Update the exchequer tab - info panel.
+     * Update all the fields based on the current economical sheet.
      */
-    private void updateExchequer() {
+    private void updateEcoSheet() {
         exchequerRepartition.setText(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
+        improveStability.setText(globalConfiguration.getMessage("interphase.stab.improve"));
         EconomicalSheet sheet = game.getCountries().stream()
                 .filter(country -> StringUtils.equals(country.getName(), gameConfig.getCountryName()))
                 .flatMap(country -> country.getEconomicalSheets().stream())
@@ -304,6 +310,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
                         Math.max(Math.min(sheet.getRemainingExpenses(), sheet.getPrestigeIncome()), 0)));
             }
             prestigeField.setText(sheet.getPrestigeSpent() + "");
+            improveStability.setText(globalConfiguration.getMessage("interphase.stab.improve", sheet.getStabModifier()));
         }
     }
 
@@ -358,8 +365,39 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         Tab tab = new Tab(globalConfiguration.getMessage("interphase.info.stab"));
         tab.setClosable(false);
         VBox vBox = new VBox();
+
+        ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
+        investChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
+        investChoice.getItems().add(0, null);
+        improveStability = new Button(globalConfiguration.getMessage("interphase.stab.improve"));
+        improveStability.setOnAction(callServiceAsEvent(interPhaseService::improveStability, () -> new ImproveStabilityRequest(investChoice.getValue()), "Error when improving stability."));
+
+        updateStability();
+
+        HBox hBox = new HBox();
+        hBox.getChildren().addAll(investChoice, improveStability);
+        vBox.getChildren().add(hBox);
+
         tab.setContent(vBox);
         return tab;
+    }
+
+    /**
+     * Update the stability panel buttons.
+     */
+    private void updateStability() {
+        PlayableCountry country = game.getCountries().stream()
+                .filter(c -> Objects.equals(c.getId(), gameConfig.getIdCountry()))
+                .findAny()
+                .orElse(null);
+        improveStability.setDisable(true);
+
+        if (country != null) {
+            if (game.getStatus() == GameStatusEnum.STABILITY) {
+                improveStability.setDisable(country.isReady());
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -371,12 +409,13 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
             case TURN_ORDER:
                 updateRedeploymentPanel();
                 updateExchequerButtons();
+                updateStability();
                 break;
             case REDEPLOY:
                 checkNotification(diff);
                 break;
             case ECO_SHEET:
-                updateExchequer();
+                updateEcoSheet();
                 break;
             default:
                 break;
