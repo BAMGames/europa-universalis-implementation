@@ -939,6 +939,8 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, nextSheet.getTurn()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ROYAL_TREASURE_START, nextSheet.getRtStart())));
+
+                country.setReady(false);
             }
         }
         game.setTurn(game.getTurn() + 1);
