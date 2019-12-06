@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.util;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
+import com.mkl.eu.client.service.vo.enumeration.InvestmentEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
 import org.apache.commons.lang3.StringUtils;
 
@@ -340,5 +341,23 @@ public final class GameUtil {
             stabDiff = 1;
         }
         return stabDiff;
+    }
+
+    /**
+     * @param cost of the action.
+     * @return the investment of a domestic, technology or improve stability action given its price.
+     */
+    public static InvestmentEnum reverseInvestment(Integer cost) {
+        if (cost == null) {
+            return null;
+        } else if (cost == 30) {
+            return InvestmentEnum.S;
+        } else if (cost == 50) {
+            return InvestmentEnum.M;
+        } else if (cost == 100) {
+            return InvestmentEnum.L;
+        } else {
+            return null;
+        }
     }
 }

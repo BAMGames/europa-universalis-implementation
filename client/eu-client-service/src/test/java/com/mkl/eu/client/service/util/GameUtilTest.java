@@ -6,6 +6,7 @@ import com.mkl.eu.client.service.vo.diplo.CountryInWar;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
 import com.mkl.eu.client.service.vo.diplo.War;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.client.service.vo.enumeration.InvestmentEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarImplicationEnum;
 import com.mkl.eu.client.service.vo.ref.country.CountryLight;
 import org.junit.Assert;
@@ -356,5 +357,14 @@ public class GameUtilTest {
         Assert.assertEquals(3, GameUtil.improveStability(22));
         Assert.assertEquals(3, GameUtil.improveStability(23));
         Assert.assertEquals(3, GameUtil.improveStability(24));
+    }
+
+    @Test
+    public void testReverseInvestment() {
+        Assert.assertEquals(null, GameUtil.reverseInvestment(null));
+        Assert.assertEquals(InvestmentEnum.S, GameUtil.reverseInvestment(30));
+        Assert.assertEquals(InvestmentEnum.M, GameUtil.reverseInvestment(50));
+        Assert.assertEquals(InvestmentEnum.L, GameUtil.reverseInvestment(100));
+        Assert.assertEquals(null, GameUtil.reverseInvestment(99));
     }
 }

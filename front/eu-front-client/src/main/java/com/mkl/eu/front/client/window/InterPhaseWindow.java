@@ -8,6 +8,7 @@ import com.mkl.eu.client.service.service.eco.ImproveStabilityRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.WarUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Stack;
@@ -93,7 +94,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     /********************************************/
     /**        Nodes about exchequer            */
     /********************************************/
-    /** The exchequer panel. */
+    /** The exchequer info. */
     private HBox exchequerInfo;
     /** The prestige spent field. */
     private TextField prestigeField;
@@ -109,6 +110,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     /********************************************/
     /** The improve stability button. */
     private Button improveStability;
+    /** The stabilit info. */
+    private Label stabInfo;
 
 
     /**
@@ -291,6 +294,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     private void updateEcoSheet() {
         exchequerRepartition.setText(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
         improveStability.setText(globalConfiguration.getMessage("interphase.stab.improve"));
+        stabInfo.setText(null);
         EconomicalSheet sheet = game.getCountries().stream()
                 .filter(country -> StringUtils.equals(country.getName(), gameConfig.getCountryName()))
                 .flatMap(country -> country.getEconomicalSheets().stream())
@@ -311,7 +315,41 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
             }
             prestigeField.setText(sheet.getPrestigeSpent() + "");
             improveStability.setText(globalConfiguration.getMessage("interphase.stab.improve", sheet.getStabModifier()));
+            if (sheet.getStabModifier() != null) {
+                stabInfo.setText(getImproveStabilityInfo("interphase.stab.info", sheet));
+            } else {
+                sheet = game.getCountries().stream()
+                        .filter(country -> StringUtils.equals(country.getName(), gameConfig.getCountryName()))
+                        .flatMap(country -> country.getEconomicalSheets().stream())
+                        .filter(es -> Objects.equals(es.getTurn(), game.getTurn() - 1))
+                        .findAny()
+                        .orElse(null);
+                stabInfo.setText(getImproveStabilityInfo("interphase.stab.info_prev", sheet));
+            }
         }
+    }
+
+    /**
+     * @param code the code of the message to display.
+     * @param sheet the economical sheet.
+     * @return the label to display in the improve stability info node.
+     */
+    private String getImproveStabilityInfo(String code, EconomicalSheet sheet) {
+        String text;
+        if (sheet == null || sheet.getStabDie() == null || sheet.getStabModifier() == null) {
+            text = globalConfiguration.getMessage(code + "_none");
+        } else {
+            InvestmentEnum invest = GameUtil.reverseInvestment(sheet.getStab());
+            int modifier = sheet.getStabModifier();
+            if (invest == InvestmentEnum.L) {
+                modifier += 5;
+            } else if (invest == InvestmentEnum.M) {
+                modifier += 2;
+            }
+            text = globalConfiguration.getMessage(code, sheet.getStabDie(), modifier,
+                    GameUtil.improveStability(sheet.getStabDie() + modifier));
+        }
+        return text;
     }
 
     /**
@@ -319,15 +357,16 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * @return The help tooltip about the exchequer test.
      */
     private Node createExchequerTooltip(EconomicalSheet sheet) {
-        Result exchequerResult = globalConfiguration.getTables().getResults().stream()
+        ResultEnum exchequerResult = globalConfiguration.getTables().getResults().stream()
                 .filter(result -> Objects.equals(result.getColumn(), sheet.getExchequerColumn()) &&
                         Objects.equals(result.getDie(), sheet.getExchequerDie()))
+                .map(Result::getResult)
                 .findAny()
                 .orElse(null);
         try {
             ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
             Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("interphase.exchequer.help",
-                    sheet.getExchequerDie(), sheet.getExchequerBonus(), sheet.getExchequerColumn(), exchequerResult.getResult()));
+                    sheet.getExchequerDie(), sheet.getExchequerBonus(), sheet.getExchequerColumn(), exchequerResult));
             Tooltip.install(img, tooltip);
             UIUtil.patchTooltipUntilMigrationJava9(tooltip);
             return img;
@@ -378,6 +417,9 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         HBox hBox = new HBox();
         hBox.getChildren().addAll(investChoice, improveStability);
         vBox.getChildren().add(hBox);
+
+        stabInfo = new Label();
+        vBox.getChildren().add(stabInfo);
 
         tab.setContent(vBox);
         return tab;
