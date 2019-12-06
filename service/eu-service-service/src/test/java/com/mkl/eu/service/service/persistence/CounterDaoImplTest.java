@@ -151,6 +151,7 @@ public class CounterDaoImplTest {
     public void testGoldExploited() {
         Assert.assertEquals(90, counterDao.getGoldExploitedRotw(1L));
         Assert.assertEquals(20, counterDao.getGoldExploitedRotw(2L));
+        Assert.assertEquals(0, counterDao.getGoldExploitedRotw(3L));
     }
 
     @Test

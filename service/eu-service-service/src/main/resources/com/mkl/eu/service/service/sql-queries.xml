@@ -382,7 +382,7 @@
 	</entry>
 	<entry key="eco.gold_exploited"><!-- TODO TG-37 Gold exploited et depleted -->
 		<![CDATA[
-			SELECT SUM(gold.value)
+			SELECT IFNULL(SUM(gold.value), 0)
 			FROM r_gold gold
 			WHERE gold.r_province IN
 			(
