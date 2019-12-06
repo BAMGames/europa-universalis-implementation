@@ -744,16 +744,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
             }
             int die = oeUtil.rollDie(game, country);
             sheet.setStabDie(die);
-            int stabDiff = 0;
-            if (die + modifier <= 5) {
-                stabDiff = -1;
-            } else if (die + modifier >= 18) {
-                stabDiff = 3;
-            } else if (die + modifier >= 15) {
-                stabDiff = 2;
-            } else if (die + modifier >= 11) {
-                stabDiff = 1;
-            }
+            int stabDiff = GameUtil.improveStability(die + modifier);
 
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ECO_SHEET, sheet.getId(),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()),

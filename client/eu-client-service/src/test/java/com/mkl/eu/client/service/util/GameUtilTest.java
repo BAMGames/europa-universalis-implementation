@@ -323,4 +323,38 @@ public class GameUtilTest {
         Assert.assertEquals("B_Turn_62", GameUtil.getTurnBox(63));
         Assert.assertEquals("B_Turn_62", GameUtil.getTurnBox(127));
     }
+
+    @Test
+    public void testImproveStability() {
+        Assert.assertEquals(-1, GameUtil.improveStability(-5));
+        Assert.assertEquals(-1, GameUtil.improveStability(-4));
+        Assert.assertEquals(-1, GameUtil.improveStability(-3));
+        Assert.assertEquals(-1, GameUtil.improveStability(-2));
+        Assert.assertEquals(-1, GameUtil.improveStability(-1));
+        Assert.assertEquals(-1, GameUtil.improveStability(0));
+        Assert.assertEquals(-1, GameUtil.improveStability(1));
+        Assert.assertEquals(-1, GameUtil.improveStability(2));
+        Assert.assertEquals(-1, GameUtil.improveStability(3));
+        Assert.assertEquals(-1, GameUtil.improveStability(4));
+        Assert.assertEquals(-1, GameUtil.improveStability(5));
+        Assert.assertEquals(0, GameUtil.improveStability(6));
+        Assert.assertEquals(0, GameUtil.improveStability(7));
+        Assert.assertEquals(0, GameUtil.improveStability(8));
+        Assert.assertEquals(0, GameUtil.improveStability(9));
+        Assert.assertEquals(0, GameUtil.improveStability(10));
+        Assert.assertEquals(1, GameUtil.improveStability(11));
+        Assert.assertEquals(1, GameUtil.improveStability(12));
+        Assert.assertEquals(1, GameUtil.improveStability(13));
+        Assert.assertEquals(1, GameUtil.improveStability(14));
+        Assert.assertEquals(2, GameUtil.improveStability(15));
+        Assert.assertEquals(2, GameUtil.improveStability(16));
+        Assert.assertEquals(2, GameUtil.improveStability(17));
+        Assert.assertEquals(3, GameUtil.improveStability(18));
+        Assert.assertEquals(3, GameUtil.improveStability(19));
+        Assert.assertEquals(3, GameUtil.improveStability(20));
+        Assert.assertEquals(3, GameUtil.improveStability(21));
+        Assert.assertEquals(3, GameUtil.improveStability(22));
+        Assert.assertEquals(3, GameUtil.improveStability(23));
+        Assert.assertEquals(3, GameUtil.improveStability(24));
+    }
 }

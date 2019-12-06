@@ -321,4 +321,24 @@ public final class GameUtil {
                 .flatMap(war -> war.getCountries().stream())
                 .anyMatch(country -> country.getImplication() == WarImplicationEnum.FULL && StringUtils.equals(countryName, country.getCountry().getName()));
     }
+
+    /**
+     * Table for improve stability action.
+     *
+     * @param modifiedDie the modified die roll.
+     * @return the stability improve.
+     */
+    public static int improveStability(int modifiedDie) {
+        int stabDiff = 0;
+        if (modifiedDie <= 5) {
+            stabDiff = -1;
+        } else if (modifiedDie >= 18) {
+            stabDiff = 3;
+        } else if (modifiedDie >= 15) {
+            stabDiff = 2;
+        } else if (modifiedDie >= 11) {
+            stabDiff = 1;
+        }
+        return stabDiff;
+    }
 }
