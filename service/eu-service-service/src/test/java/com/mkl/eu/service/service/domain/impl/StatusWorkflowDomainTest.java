@@ -2781,7 +2781,7 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(2, sheetEntity.getTurn().intValue());
         Assert.assertEquals(25, sheetEntity.getProvincesIncome().longValue());
         Assert.assertEquals(21, sheetEntity.getVassalIncome().longValue());
-        Assert.assertEquals(13, sheetEntity.getPillages().longValue());
+        Assert.assertEquals(13, sheetEntity.getLostIncome().longValue());
         Assert.assertEquals(33, sheetEntity.getLandIncome().longValue());
         Assert.assertEquals(60, sheetEntity.getMnuIncome().longValue());
         Assert.assertEquals(20, sheetEntity.getGoldIncome().longValue());

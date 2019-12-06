@@ -1002,18 +1002,18 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
 
             Integer pillagedIncome = pillagedProvinces.stream().collect(Collectors.summingInt(allProvinces::get));
 
-            sheet.setPillages(pillagedIncome);
+            sheet.setLostIncome(pillagedIncome);
 
             Integer sum = CommonUtil.add(sheet.getProvincesIncome(), sheet.getVassalIncome(), sheet.getEventLandIncome());
-            if (sheet.getPillages() != null) {
-                sum -= sheet.getPillages();
+            if (sheet.getLostIncome() != null) {
+                sum -= sheet.getLostIncome();
             }
             sheet.setLandIncome(sum);
 
             sheet.setMnuIncome(economicalSheetDao.getMnuIncome(name, pillagedProvinces, game.getId()));
 
-            List<String> provincesOwnedNotPilaged = provinces.keySet().stream().filter(s -> !pillagedProvinces.contains(s)).collect(Collectors.toList());
-            sheet.setGoldIncome(economicalSheetDao.getGoldIncome(provincesOwnedNotPilaged, game.getId()));
+            List<String> provincesOwnedNotPillaged = provinces.keySet().stream().filter(s -> !pillagedProvinces.contains(s)).collect(Collectors.toList());
+            sheet.setGoldIncome(economicalSheetDao.getGoldIncome(provincesOwnedNotPillaged, game.getId()));
 
             sheet.setIndustrialIncome(CommonUtil.add(sheet.getMnuIncome(), sheet.getGoldIncome()));
 
