@@ -359,12 +359,6 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
 
     /** {@inheritDoc} */
     @Override
-    public GlobalConfiguration getGlobalConfiguration() {
-        return GlobalConfiguration.getInstance();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public IBoardService getBoardService() {
         return boardService;
     }

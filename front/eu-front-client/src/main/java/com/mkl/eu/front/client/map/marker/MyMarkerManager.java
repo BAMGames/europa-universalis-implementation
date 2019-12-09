@@ -12,7 +12,6 @@ import com.mkl.eu.front.client.event.ExceptionEvent;
 import com.mkl.eu.front.client.event.IDiffResponseListener;
 import com.mkl.eu.front.client.event.IDiffResponseListenerContainer;
 import com.mkl.eu.front.client.main.GameConfiguration;
-import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.map.component.IMenuContainer;
 import com.mkl.eu.front.client.map.component.MenuHelper;
 import com.mkl.eu.front.client.map.component.menu.ContextualMenu;
@@ -413,12 +412,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
         for (IDiffResponseListener diffListener : diffListeners) {
             diffListener.handleException(event);
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public GlobalConfiguration getGlobalConfiguration() {
-        return GlobalConfiguration.getInstance();
     }
 
     /** {@inheritDoc} */

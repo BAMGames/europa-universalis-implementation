@@ -5,7 +5,6 @@ import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IInterPhaseService;
 import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.vo.Game;
-import com.mkl.eu.front.client.main.GlobalConfiguration;
 
 /**
  * Interfaces for component wishing to display contextual menu.
@@ -14,17 +13,23 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
  */
 public interface IMenuContainer extends INotJavaFxServiceCaller {
     /**
-     * @return a GlobalConfiguration for configuration not related to a specific game.
-     * TODO Remove.
+     * @return the boardService.
      */
-    GlobalConfiguration getGlobalConfiguration();
-
     IBoardService getBoardService();
 
+    /**
+     * @return the battleService.
+     */
     IBattleService getBattleService();
 
+    /**
+     * @return the siegeService.
+     */
     ISiegeService getSiegeService();
 
+    /**
+     * @return the interPhaseService.
+     */
     IInterPhaseService getInterPhaseService();
 
     /**

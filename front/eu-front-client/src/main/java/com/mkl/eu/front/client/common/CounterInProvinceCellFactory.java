@@ -28,7 +28,7 @@ public class CounterInProvinceCellFactory implements Callback<ListView<Counter>,
                 } else {
                     HBox hBox = new HBox();
                     setGraphic(hBox);
-                    hBox.getChildren().addAll(UIUtil.getImage(item), new Label(" - " + GlobalConfiguration.getInstance().getMessage(item.getOwner().getProvince())));
+                    hBox.getChildren().addAll(UIUtil.getImage(item), new Label(" - " + GlobalConfiguration.getMessage(item.getOwner().getProvince())));
                 }
             }
         };

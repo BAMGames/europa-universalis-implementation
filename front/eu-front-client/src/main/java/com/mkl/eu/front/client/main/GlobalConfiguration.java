@@ -67,7 +67,7 @@ public class GlobalConfiguration {
     /**
      * @return the global instance.
      */
-    public static GlobalConfiguration getInstance() {
+    private static GlobalConfiguration getInstance() {
         return instance;
     }
 
