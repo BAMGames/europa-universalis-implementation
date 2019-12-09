@@ -43,6 +43,7 @@ public class GlobalConfiguration {
                 throw new Error("eu.properties file was not found in jar folder or in config folder.", e1);
             }
         }
+        System.getProperties().putAll(configuration);
 
         String language = configuration.getProperty("locale.language");
         if (StringUtils.isNotEmpty(language)) {
@@ -123,5 +124,13 @@ public class GlobalConfiguration {
      */
     public static String getDataFolder() {
         return getInstance().configuration.getProperty("data.folder");
+    }
+
+    /**
+     * Initialize the GlobalConfiguration so that the configuration can be used
+     * as environment variables.
+     */
+    public static void init() {
+        getInstance();
     }
 }

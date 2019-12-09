@@ -8,33 +8,33 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 
     <jaxws:client id="gameClient"
                   serviceClass="com.mkl.eu.client.service.service.IGameService"
-                  address="http://localhost:8080/eu/services/GameService?wsdl"/>
+                  address="${service.host}/services/GameService?wsdl"/>
 
     <jaxws:client id="boardClient"
                   serviceClass="com.mkl.eu.client.service.service.IBoardService"
-                  address="http://localhost:8080/eu/services/BoardService?wsdl"/>
+                  address="${service.host}/services/BoardService?wsdl"/>
 
     <jaxws:client id="chatClient"
                   serviceClass="com.mkl.eu.client.service.service.IChatService"
-                  address="http://localhost:8080/eu/services/ChatService?wsdl"/>
+                  address="${service.host}/services/ChatService?wsdl"/>
 
     <jaxws:client id="economicClient"
                   serviceClass="com.mkl.eu.client.service.service.IEconomicService"
-                  address="http://localhost:8080/eu/services/EconomicService?wsdl"/>
+                  address="${service.host}/services/EconomicService?wsdl"/>
 
     <jaxws:client id="battleClient"
                   serviceClass="com.mkl.eu.client.service.service.IBattleService"
-                  address="http://localhost:8080/eu/services/BattleService?wsdl"/>
+                  address="${service.host}/services/BattleService?wsdl"/>
 
     <jaxws:client id="siegeClient"
                   serviceClass="com.mkl.eu.client.service.service.ISiegeService"
-                  address="http://localhost:8080/eu/services/SiegeService?wsdl"/>
+                  address="${service.host}/services/SiegeService?wsdl"/>
 
     <jaxws:client id="interPhaseService"
                   serviceClass="com.mkl.eu.client.service.service.IInterPhaseService"
-                  address="http://localhost:8080/eu/services/InterPhaseService?wsdl"/>
+                  address="${service.host}/services/InterPhaseService?wsdl"/>
 
     <jaxws:client id="tablesClient"
                   serviceClass="com.mkl.eu.client.service.service.ITablesService"
-                  address="http://localhost:8080/eu/services/TablesService?wsdl"/>
+                  address="${service.host}/services/TablesService?wsdl"/>
 </beans>

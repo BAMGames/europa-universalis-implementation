@@ -4,19 +4,10 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <context:property-placeholder/>
+
     <import resource="classpath:/com/mkl/eu/front/client/ws-client-applicationContext.xml"/>
 
     <context:annotation-config/>
     <context:component-scan base-package="com.mkl.eu.front.client"/>
-
-    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
-        <property name="defaultEncoding" value="UTF-8"/>
-        <property name="useCodeAsDefaultMessage" value="true"/>
-        <property name="basenames">
-            <list>
-                <value>file:data/msg/messages</value>
-                <value>file:data/msg/messages-provinces</value>
-            </list>
-        </property>
-    </bean>
 </beans>

@@ -48,6 +48,7 @@ public class EUApplication extends Application {
     /** {@inheritDoc} */
     @Override
     public void start(Stage primaryStage) {
+        GlobalConfiguration.init();
         context = new ClassPathXmlApplicationContext("com/mkl/eu/front/client/eu-front-client-applicationContext.xml");
         gameService = context.getBean(IGameService.class);
         ITablesService tablesService = context.getBean(ITablesService.class);
