@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class, parent of services and domains.
@@ -226,7 +228,21 @@ public abstract class AbstractBack implements INameConstants {
 
         /** @return the params. */
         public Object[] getParams() {
+            cleanParams();
             return params;
+        }
+
+        /**
+         * Remove generic classes for developer, but not for cxf, which does not understand these types.
+         */
+        private void cleanParams() {
+            for (int i = 0; i < params.length; i++) {
+                if (params[i] instanceof Collection) {
+                    params[i] = ((Collection<?>) params[i]).stream().map(Object::toString).collect(Collectors.joining(","));
+                } else if (params[i] instanceof Enum) {
+                    params[i] = ((Enum<?>) params[i]).name();
+                }
+            }
         }
 
         /** @param params the params to set. */
