@@ -45,6 +45,22 @@
         <cxf.version>3.0.4</cxf.version>
     </properties>
 
+    <distributionManagement>
+        <!-- use the following if you're not using a snapshot version. -->
+        <repository>
+            <id>artifactory</id>
+            <name>Repository Name</name>
+            <url>http://dl.bintray.com/MKL/maven</url>
+        </repository>
+        <!-- use the following if you ARE using a snapshot version. -->
+        <snapshotRepository>
+            <id>artifactory</id>
+            <name>Repository Name</name>
+            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
     <build>
         <pluginManagement>
             <plugins>
