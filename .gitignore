@@ -16,3 +16,6 @@ target/
 # Intellij
 *.iml
 .idea
+
+# Local repo
+repo/
