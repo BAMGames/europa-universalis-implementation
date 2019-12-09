@@ -65,7 +65,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
             out.writeObject(info);
             connected = true;
         } catch (Exception e) {
-            LOGGER.error("Error when initializing with server.", e);
+            LOGGER.error("Error when initializing with server : " + e.getMessage());
         }
     }
 
@@ -86,7 +86,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
             tryToReconnect();
         } catch (Exception e) {
             if (!terminate) {
-                LOGGER.error("Error when communicating with server.", e);
+                LOGGER.error("Error when communicating with server : " + e.getMessage());
             }
         }
     }
@@ -121,7 +121,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
             out.writeObject("TERMINATE");
             socket.close();
         } catch (IOException e) {
-            LOGGER.error("Error when closing the socket.", e);
+            LOGGER.error("Error when closing the socket : " + e.getMessage());
         }
     }
 }
