@@ -98,9 +98,6 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private boolean closed;
     /** Spring application context. */
     private ApplicationContext context;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Game service. */
     @Autowired
     private IGameService gameService;
@@ -213,7 +210,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         ChatWindow chatWindow = context.getBean(ChatWindow.class, game.getChat(), game.getCountries(), gameConfig);
         chatWindow.addDiffListener(this);
         diffListeners.add(chatWindow);
-        Tab tab = new Tab(globalConfiguration.getMessage("game.popup.chat"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("game.popup.chat"));
         tab.setClosable(false);
         tab.setContent(chatWindow.getTabPane());
         content.getTabs().add(tab);
@@ -228,7 +225,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         EcoWindow ecoWindow = context.getBean(EcoWindow.class, game.getCountries(), game.getTradeFleets(), gameConfig);
         ecoWindow.addDiffListener(this);
         diffListeners.add(ecoWindow);
-        Tab tab = new Tab(globalConfiguration.getMessage("game.popup.eco"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("game.popup.eco"));
         tab.setClosable(false);
         tab.setContent(ecoWindow.getTabPane());
         content.getTabs().add(tab);
@@ -236,7 +233,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         AdminActionsWindow adminActionsWindow = context.getBean(AdminActionsWindow.class, game, mapMarkers, gameConfig);
         adminActionsWindow.addDiffListener(this);
         diffListeners.add(adminActionsWindow);
-        tab = new Tab(globalConfiguration.getMessage("game.popup.admin_actions"));
+        tab = new Tab(GlobalConfiguration.getMessage("game.popup.admin_actions"));
         tab.setClosable(false);
         tab.setContent(adminActionsWindow.getTabPane());
         content.getTabs().add(tab);
@@ -249,7 +246,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         MilitaryWindow militaryWindow = context.getBean(MilitaryWindow.class, game, mapMarkers, gameConfig);
         militaryWindow.addDiffListener(this);
         diffListeners.add(militaryWindow);
-        Tab tab = new Tab(globalConfiguration.getMessage("military.title"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("military.title"));
         tab.setClosable(false);
         tab.setContent(militaryWindow.getTabPane());
         content.getTabs().add(tab);
@@ -262,7 +259,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         InterPhaseWindow interPhaseWindow = context.getBean(InterPhaseWindow.class, game, mapMarkers, gameConfig);
         interPhaseWindow.addDiffListener(this);
         diffListeners.add(interPhaseWindow);
-        Tab tab = new Tab(globalConfiguration.getMessage("interphase.title"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("interphase.title"));
         tab.setClosable(false);
         tab.setContent(interPhaseWindow.getTabPane());
         content.getTabs().add(tab);
@@ -284,7 +281,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
 
         grid.add(activeCountries, 1, 0, 1, 5);
 
-        Button mapBtn = new Button(globalConfiguration.getMessage("game.popup.map"));
+        Button mapBtn = new Button(GlobalConfiguration.getMessage("game.popup.map"));
         mapBtn.setOnAction(event -> {
             if (!mapInit) {
                 PApplet.runSketch(new String[]{"InteractiveMap"}, map);
@@ -299,7 +296,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         });
         grid.add(mapBtn, 0, 1, 1, 1);
 
-        Tab tab = new Tab(globalConfiguration.getMessage("game.popup.global"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("game.popup.global"));
         tab.setClosable(false);
         tab.setContent(grid);
         content.getTabs().add(tab);
@@ -308,10 +305,10 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     private void updateTitle() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(globalConfiguration.getMessage("game.popup.turn", game.getTurn()));
+        sb.append(GlobalConfiguration.getMessage("game.popup.turn", game.getTurn()));
         sb.append("\n");
-        String statusText = globalConfiguration.getMessage(game.getStatus());
-        sb.append(globalConfiguration.getMessage("game.popup.info_phase", statusText));
+        String statusText = GlobalConfiguration.getMessage(game.getStatus());
+        sb.append(GlobalConfiguration.getMessage("game.popup.info_phase", statusText));
 
         info.setText(sb.toString());
     }
@@ -401,7 +398,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     /** {@inheritDoc} */
     @Override
     public void handleException(ExceptionEvent event) {
-        UIUtil.showException(event.getException(), event.getMap(), globalConfiguration);
+        UIUtil.showException(event.getException(), event.getMap());
     }
 
     /** {@inheritDoc} */
@@ -1867,7 +1864,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     /**
      * Apply a client notification.
      *
-     * @param diff
+     * @param diff the notification diff.
      */
     private void applyNotification(Diff diff) {
         if (diff.getType() != DiffTypeEnum.NOTIFY) {

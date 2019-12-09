@@ -136,7 +136,7 @@ public final class MenuHelper {
     public static ContextualMenu createMenuStack(final StackMarker stack, IMenuContainer container) {
         ContextualMenu menu = new ContextualMenu(container.getGlobalConfiguration().getMessage("map.menu.stack"));
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getGlobalConfiguration().getMessage("map.menu.stack")));
-        String owner = UIUtil.getCountryName(stack.getStack().getCountry(), container.getGlobalConfiguration());
+        String owner = UIUtil.getCountryName(stack.getStack().getCountry());
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(container.getGlobalConfiguration().getMessage("map.menu.stack.info", owner, stack.getStack().getMove())));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu(container));
@@ -149,7 +149,7 @@ public final class MenuHelper {
             if (StringUtils.equals(country, stack.getStack().getCountry())) {
                 continue;
             }
-            String countryName = UIUtil.getCountryName(country, container.getGlobalConfiguration());
+            String countryName = UIUtil.getCountryName(country);
             control.addMenuItem(ContextualMenuItem.createMenuItem(countryName, container.callServiceAsEvent(container.getBoardService()::takeStackControl, () -> new TakeStackControlRequest(stack.getId(), country), "Error when taking control of stack.")));
         }
         menu.addMenuItem(control);

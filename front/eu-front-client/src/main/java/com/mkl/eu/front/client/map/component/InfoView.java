@@ -69,9 +69,6 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
     private PApplet pApplet;
     /** Marker manager to obtain the selected province. */
     private MyMarkerManager markerManager;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** The counter being dragged. */
     private CounterMarker dragged;
     /** The new location of the dragged object. */
@@ -140,7 +137,7 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
             if (marker instanceof IMapMarker) {
                 IMapMarker mapMarker = (IMapMarker) marker;
 
-                pg.text(globalConfiguration.getMessage("map.infoview.stacks"), newX, newY);
+                pg.text(GlobalConfiguration.getMessage("map.infoview.stacks"), newX, newY);
                 newY += V_TEXT;
                 pg.imageMode(PConstants.CORNER);
                 for (int i = 0; i < mapMarker.getStacks().size(); i++) {
@@ -363,7 +360,7 @@ public class InfoView extends AbstractDiffResponseListenerContainer implements I
     /** {@inheritDoc} */
     @Override
     public GlobalConfiguration getGlobalConfiguration() {
-        return globalConfiguration;
+        return GlobalConfiguration.getInstance();
     }
 
     /** {@inheritDoc} */

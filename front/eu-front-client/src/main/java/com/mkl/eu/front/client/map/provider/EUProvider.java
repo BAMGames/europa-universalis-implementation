@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.map.provider;
 
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import de.fhpotsdam.unfolding.core.Coordinate;
 import de.fhpotsdam.unfolding.geo.MercatorProjection;
 import de.fhpotsdam.unfolding.geo.Transformation;
@@ -24,6 +25,7 @@ public class EUProvider extends AbstractMapProvider {
 
     /**
      * Default constructor.
+     *
      * @param applet the parent applet.
      */
     public EUProvider(PApplet applet) {
@@ -35,6 +37,7 @@ public class EUProvider extends AbstractMapProvider {
 
     /**
      * Retrieves a string which is part of the final url based on the coordinate.
+     *
      * @param coordinate of the portion of the map.
      * @return part of the final url.
      */
@@ -75,22 +78,22 @@ public class EUProvider extends AbstractMapProvider {
 
     /**
      * Returns the path the portion of the map will be stored on disk.
+     *
      * @param subPath name of the tile.
      * @return the path the portion of the map will be stored on disk.
      */
     private String getImagePath(String subPath) {
-        // TODO TG-15 configure
-        return "data/map/v2/carte/" + subPath + ".png";
+        return GlobalConfiguration.getDataFolder() + "/map/v2/carte/" + subPath + ".png";
     }
 
     /** {@inheritDoc} */
     @Override
     public String[] getTileUrls(Coordinate coordinate) {
+        // Not used, was too slow to run. Maybe later, a light client version without the map tiles but using this ?
         LOGGER.debug("Demande de {} / {} / {}", coordinate.zoom, coordinate.column, coordinate.row);
 
         String subPath = getZoomString(coordinate);
 
-        // TODO TG-15 configure
         String url = "http://old-lipn.univ-paris13.fr/~dubacq/europa/carte/0.6/" + subPath + ".png";
 
 

@@ -39,20 +39,19 @@ public class RedeployLine {
      * @param faces               the list of faces that can be selected.
      * @param provinces           the list of provinces that can be selected.
      * @param listener            the listener to get the add and remove redeploy line events.
-     * @param globalConfiguration the global configuration for internationalisation.
      */
-    public RedeployLine(List<Counter> counterList, List<CounterFaceTypeEnum> faces, List<String> provinces, BiConsumer<RedeployLine, Boolean> listener, GlobalConfiguration globalConfiguration) {
-        counter.converterProperty().set(new CounterConverter(globalConfiguration));
+    public RedeployLine(List<Counter> counterList, List<CounterFaceTypeEnum> faces, List<String> provinces, BiConsumer<RedeployLine, Boolean> listener) {
+        counter.converterProperty().set(new CounterConverter());
         counter.setCellFactory(new CounterCellFactory());
         counter.setItems(FXCollections.observableList(counterList));
         face.setItems(FXCollections.observableList(faces));
         province.setItems(FXCollections.observableList(provinces));
-        button = new Button(globalConfiguration.getMessage("add"));
+        button = new Button(GlobalConfiguration.getMessage("add"));
 
         face.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> counter.setDisable(newValue != null));
         button.setOnAction(event -> {
-                    RedeployLine newLine = new RedeployLine(counterList, faces, provinces, listener, globalConfiguration);
-                    newLine.button.setText(globalConfiguration.getMessage("delete"));
+                    RedeployLine newLine = new RedeployLine(counterList, faces, provinces, listener);
+                    newLine.button.setText(GlobalConfiguration.getMessage("delete"));
                     newLine.button.setOnAction(delEvent -> listener.accept(newLine, false));
                 }
         );

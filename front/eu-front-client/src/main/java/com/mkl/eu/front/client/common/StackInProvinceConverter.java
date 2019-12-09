@@ -12,25 +12,14 @@ import java.util.stream.Collectors;
  * @author MKL.
  */
 public class StackInProvinceConverter extends StringConverter<Stack> {
-    /** The global configuration for internationalisation. */
-    private GlobalConfiguration globalConfiguration;
-
-    /**
-     * Constructor.
-     *
-     * @param globalConfiguration the global configuration.
-     */
-    public StackInProvinceConverter(GlobalConfiguration globalConfiguration) {
-        this.globalConfiguration = globalConfiguration;
-    }
 
     /** {@inheritDoc} */
     @Override
     public String toString(Stack object) {
         return object.getCounters().stream()
-                .map(counter -> globalConfiguration.getMessage(counter.getType()) + " - " + globalConfiguration.getMessage(counter.getCountry()))
+                .map(counter -> GlobalConfiguration.getMessage(counter.getType()) + " - " + GlobalConfiguration.getMessage(counter.getCountry()))
                 .collect(Collectors.joining(", "))
-                + " -> " + globalConfiguration.getMessage(object.getProvince());
+                + " -> " + GlobalConfiguration.getMessage(object.getProvince());
     }
 
     /** {@inheritDoc} */

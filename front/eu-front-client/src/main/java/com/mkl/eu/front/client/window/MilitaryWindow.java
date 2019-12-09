@@ -31,7 +31,6 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
-import com.mkl.eu.front.client.map.marker.MarkerUtils;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -75,9 +74,6 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     /** Siege service. */
     @Autowired
     private ISiegeService siegeService;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Game. */
     private Game game;
     /** Name of the playing country. */
@@ -166,28 +162,28 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      * @return the info tab.
      */
     private Tab createInfoTab() {
-        Tab tab = new Tab(globalConfiguration.getMessage("military.info.title"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("military.info.title"));
         tab.setClosable(false);
         VBox vBox = new VBox();
         tab.setContent(vBox);
 
         Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> callServiceAsEvent(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
 
-        validateMilitaryPhase = new Button(globalConfiguration.getMessage("military.info.validate"));
+        validateMilitaryPhase = new Button(GlobalConfiguration.getMessage("military.info.validate"));
         validateMilitaryPhase.setOnAction(endMilitaryPhase.apply(true));
-        invalidateMilitaryPhase = new Button(globalConfiguration.getMessage("military.info.invalidate"));
+        invalidateMilitaryPhase = new Button(GlobalConfiguration.getMessage("military.info.invalidate"));
         invalidateMilitaryPhase.setOnAction(endMilitaryPhase.apply(false));
         HBox hBox = new HBox();
         hBox.getChildren().addAll(validateMilitaryPhase, invalidateMilitaryPhase);
         vBox.getChildren().add(hBox);
 
         choiceBattle = new ChoiceBox<>();
-        chooseBattle = new Button(globalConfiguration.getMessage("military.info.choose_battle"));
+        chooseBattle = new Button(GlobalConfiguration.getMessage("military.info.choose_battle"));
         choiceBattle.converterProperty().set(new StringConverter<Battle>() {
             /** {@inheritDoc} */
             @Override
             public String toString(Battle object) {
-                return globalConfiguration.getMessage(object.getProvince());
+                return GlobalConfiguration.getMessage(object.getProvince());
             }
 
             /** {@inheritDoc} */
@@ -204,12 +200,12 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         vBox.getChildren().add(hBox);
 
         choiceSiege = new ChoiceBox<>();
-        chooseSiege = new Button(globalConfiguration.getMessage("military.info.choose_siege"));
+        chooseSiege = new Button(GlobalConfiguration.getMessage("military.info.choose_siege"));
         choiceSiege.converterProperty().set(new StringConverter<Siege>() {
             /** {@inheritDoc} */
             @Override
             public String toString(Siege object) {
-                return globalConfiguration.getMessage(object.getProvince());
+                return GlobalConfiguration.getMessage(object.getProvince());
             }
 
             /** {@inheritDoc} */
@@ -263,7 +259,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      * @return the tab for the battles.
      */
     private Tab createBattles() {
-        Tab tab = new Tab(globalConfiguration.getMessage("military.battle.title"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("military.battle.title"));
         tab.setClosable(false);
 
         choiceBattleTurn = new ChoiceBox<>();
@@ -312,16 +308,11 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             HBox nonPhasingCounters = new HBox();
             battle.getCounters().stream()
                     .forEach(counter -> {
-                        try {
-                            FileInputStream fis = new FileInputStream(MarkerUtils.getImagePath(counter.getCounter()));
-                            ImageView image = new ImageView(new Image(fis, 40, 40, true, false));
-                            if (counter.isPhasing()) {
-                                phasingCounters.getChildren().add(image);
-                            } else {
-                                nonPhasingCounters.getChildren().add(image);
-                            }
-                        } catch (FileNotFoundException e) {
-                            LOGGER.error("Can't load image of counter " + counter);
+                        ImageView image = UIUtil.getImage(counter.getCounter());
+                        if (counter.isPhasing()) {
+                            phasingCounters.getChildren().add(image);
+                        } else {
+                            nonPhasingCounters.getChildren().add(image);
                         }
                     });
             phasingCounters.getChildren().add(createBattleTooltip(battle.getPhasing()));
@@ -373,8 +364,8 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 }
             }
 
-            TitledPane battleNode = new TitledPane(globalConfiguration.getMessage(battle.getProvince()) + " - " +
-                    globalConfiguration.getMessage(battle.getStatus()), splitBattle);
+            TitledPane battleNode = new TitledPane(GlobalConfiguration.getMessage(battle.getProvince()) + " - " +
+                    GlobalConfiguration.getMessage(battle.getStatus()), splitBattle);
             vBox.getChildren().add(battleNode);
         }
 
@@ -388,7 +379,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     private Node createBattleTooltip(BattleSide side) {
         try {
             ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
-            Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("military.battle.info",
+            Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.info",
                     side.getTech(), side.getFireColumn(), side.getShockColumn(), side.getMoral(), side.getSize(), side.getSizeDiff(), side.getPursuitMod()));
             Tooltip.install(img, tooltip);
             UIUtil.patchTooltipUntilMigrationJava9(tooltip);
@@ -445,28 +436,28 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      */
     private String getSequenceDamage(String key, String column, Integer die, int modifier, String tech) {
         StringBuilder sb = new StringBuilder();
-        sb.append(globalConfiguration.getMessage(key));
+        sb.append(GlobalConfiguration.getMessage(key));
         sb.append(" : ");
         if (die != null) {
-            int min = globalConfiguration.getTables().getCombatResults().stream()
+            int min = GlobalConfiguration.getTables().getCombatResults().stream()
                     .filter(result -> StringUtils.equals(column, result.getColumn()))
                     .map(CombatResult::getDice)
                     .min(Comparator.naturalOrder())
                     .orElse(3);
-            int max = globalConfiguration.getTables().getCombatResults().stream()
+            int max = GlobalConfiguration.getTables().getCombatResults().stream()
                     .filter(result -> StringUtils.equals(column, result.getColumn()))
                     .map(CombatResult::getDice)
                     .max(Comparator.naturalOrder())
                     .orElse(12);
             int modifiedDie = die + modifier < min ? min : die + modifier > max ? max : die + modifier;
-            CombatResult result = globalConfiguration.getTables().getCombatResults().stream()
+            CombatResult result = GlobalConfiguration.getTables().getCombatResults().stream()
                     .filter(cr -> StringUtils.equals(cr.getColumn(), column) && cr.getDice() == modifiedDie)
                     .findAny()
                     .orElse(null);
             String localDamage = getDamage(result.adjustToTech(tech));
-            sb.append(globalConfiguration.getMessage("military.battle.damage", die, modifier, localDamage));
+            sb.append(GlobalConfiguration.getMessage("military.battle.damage", die, modifier, localDamage));
         } else {
-            sb.append(globalConfiguration.getMessage("military.battle.no_damage"));
+            sb.append(GlobalConfiguration.getMessage("military.battle.no_damage"));
         }
         return sb.toString();
     }
@@ -477,15 +468,15 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      */
     private String getRetreatDamage(Integer die) {
         StringBuilder sb = new StringBuilder();
-        sb.append(globalConfiguration.getMessage("military.battle.retreat"));
+        sb.append(GlobalConfiguration.getMessage("military.battle.retreat"));
         sb.append(" : ");
         if (die != null) {
             // cap die to [1-8)
             int modifiedDie = Math.max(1, Math.min(8, die));
             String localDamage = getDamage(AbstractWithLoss.create((modifiedDie - 1) / 2));
-            sb.append(globalConfiguration.getMessage("military.battle.damage", die, 0, localDamage));
+            sb.append(GlobalConfiguration.getMessage("military.battle.damage", die, 0, localDamage));
         } else {
-            sb.append(globalConfiguration.getMessage("military.battle.no_damage"));
+            sb.append(GlobalConfiguration.getMessage("military.battle.no_damage"));
         }
         return sb.toString();
 
@@ -526,7 +517,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         List<Long> selectedCounters = new ArrayList<>();
 
         Node counters = createMultiSelectCounterNode(battle, phasing, "military.battle.counters", selectedCounters);
-        Button withdraw = new Button(globalConfiguration.getMessage("military.battle.select"));
+        Button withdraw = new Button(GlobalConfiguration.getMessage("military.battle.select"));
         withdraw.setOnAction(callServiceAsEvent(battleService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the battle."));
 
         hBox.getChildren().addAll(counters, withdraw);
@@ -566,14 +557,12 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 .filter(counter -> allies.contains(counter.getCountry()))
                 .collect(Collectors.toList());
 
-        MenuButton counters = new MenuButton(globalConfiguration.getMessage(key));
+        MenuButton counters = new MenuButton(GlobalConfiguration.getMessage(key));
         for (Counter counter : counterList) {
             CheckBox check = new CheckBox();
-            try {
-                FileInputStream fis = new FileInputStream(MarkerUtils.getImagePath(counter));
-                ImageView image = new ImageView(new Image(fis, 40, 40, true, false));
-                check.setGraphic(image);
-            } catch (FileNotFoundException e) {
+            ImageView image = UIUtil.getImage(counter);
+            check.setGraphic(image);
+            if (image == null) {
                 LOGGER.error("Cannot load counter image for " + counter.getCountry() + " - " + counter.getType());
                 check.setText(counter.getCountry() + " - " + counter.getType());
             }
@@ -609,7 +598,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 .map(IMapMarker::getId)
                 .collect(Collectors.toList())));
         provinces.getItems().add(0, null);
-        Button withdraw = new Button(globalConfiguration.getMessage("military.battle.withdraw"));
+        Button withdraw = new Button(GlobalConfiguration.getMessage("military.battle.withdraw"));
         withdraw.setOnAction(callServiceAsEvent(battleService::withdrawBeforeBattle, () -> {
             String province = provinces.getSelectionModel().getSelectedItem();
             return new WithdrawBeforeBattleRequest(StringUtils.isNotEmpty(province), province);
@@ -633,9 +622,9 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             @Override
             public String toString(Boolean object) {
                 if (object != null && object) {
-                    return globalConfiguration.getMessage("military.battle.retreat");
+                    return GlobalConfiguration.getMessage("military.battle.retreat");
                 }
-                return globalConfiguration.getMessage("military.battle.stay");
+                return GlobalConfiguration.getMessage("military.battle.stay");
             }
 
             @Override
@@ -643,7 +632,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 return null;
             }
         });
-        Button retreat = new Button(globalConfiguration.getMessage("military.battle.retreat_first_day"));
+        Button retreat = new Button(GlobalConfiguration.getMessage("military.battle.retreat_first_day"));
         retreat.setOnAction(callServiceAsEvent(battleService::retreatFirstDay, () -> {
             Boolean choice = choices.getSelectionModel().getSelectedItem();
             return new ValidateRequest(choice);
@@ -677,7 +666,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         Node counters = createMultiSelectCounterNode(battle, phasing, "military.battle.retreat_in_fortress", selectedCounters);
 
 
-        Button withdraw = new Button(globalConfiguration.getMessage("military.battle.retreat"));
+        Button withdraw = new Button(GlobalConfiguration.getMessage("military.battle.retreat"));
         withdraw.setOnAction(callServiceAsEvent(battleService::retreatAfterBattle, () -> {
             String province = provinces.getSelectionModel().getSelectedItem();
             boolean disband = StringUtils.equals("disband", province);
@@ -724,7 +713,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 lines.remove(newLine);
             }
         });
-        Button chooseLoss = new Button(globalConfiguration.getMessage("military.battle.choose_losses"));
+        Button chooseLoss = new Button(GlobalConfiguration.getMessage("military.battle.choose_losses"));
         chooseLoss.setOnAction(callServiceAsEvent(service, () -> line.toRequest(lines), "Error when choosing losses."));
 
         lines.get(0).node.getChildren().add(chooseLoss);
@@ -738,7 +727,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      * @return the tab for the sieges.
      */
     private Tab createSieges() {
-        Tab tab = new Tab(globalConfiguration.getMessage("military.siege.title"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("military.siege.title"));
         tab.setClosable(false);
 
         choiceSiegeTurn = new ChoiceBox<>();
@@ -790,25 +779,15 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                     .map(IMapMarker::getController)
                     .findAny()
                     .orElse(null);
-            try {
-                FileInputStream fis = new FileInputStream(MarkerUtils.getImagePath(controller, CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false).name()));
-                ImageView image = new ImageView(new Image(fis, 40, 40, true, false));
-                nonPhasingCounters.getChildren().add(image);
-            } catch (FileNotFoundException e) {
-                LOGGER.error("Can't load image of fortress counter.");
-            }
+            ImageView image = UIUtil.getImage(controller, CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false));
+            nonPhasingCounters.getChildren().add(image);
             siege.getCounters().stream()
                     .forEach(counter -> {
-                        try {
-                            FileInputStream fis = new FileInputStream(MarkerUtils.getImagePath(counter.getCounter()));
-                            ImageView image = new ImageView(new Image(fis, 40, 40, true, false));
-                            if (counter.isPhasing()) {
-                                phasingCounters.getChildren().add(image);
-                            } else {
-                                nonPhasingCounters.getChildren().add(image);
-                            }
-                        } catch (FileNotFoundException e) {
-                            LOGGER.error("Can't load image of counter " + counter);
+                        ImageView imageCounter = UIUtil.getImage(counter.getCounter());
+                        if (counter.isPhasing()) {
+                            phasingCounters.getChildren().add(imageCounter);
+                        } else {
+                            nonPhasingCounters.getChildren().add(imageCounter);
                         }
                     });
             try {
@@ -851,8 +830,8 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 nonPhasingNode.getChildren().add(createSiegeRedeploy(siege));
             }
 
-            TitledPane battleNode = new TitledPane(globalConfiguration.getMessage(siege.getProvince()) + " - " +
-                    globalConfiguration.getMessage(siege.getStatus()), splitBattle);
+            TitledPane battleNode = new TitledPane(GlobalConfiguration.getMessage(siege.getProvince()) + " - " +
+                    GlobalConfiguration.getMessage(siege.getStatus()), splitBattle);
             vBox.getChildren().add(battleNode);
         }
 
@@ -866,7 +845,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     private Node createSiegeTooltip(SiegeSide side) {
         try {
             ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
-            Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("military.siege.info", side.getTech(), side.getMoral(), side.getSize()));
+            Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.siege.info", side.getTech(), side.getMoral(), side.getSize()));
             Tooltip.install(img, tooltip);
             UIUtil.patchTooltipUntilMigrationJava9(tooltip);
             return img;
@@ -883,14 +862,14 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     private Label createSiegeUndermine(Siege siege) {
 
         if (siege.getUndermineDie() == 0) {
-            return new Label(globalConfiguration.getMessage("military.siege.undermine_not_done", siege.getBonus()));
+            return new Label(GlobalConfiguration.getMessage("military.siege.undermine_not_done", siege.getBonus()));
         }
 
-        String result = globalConfiguration.getMessage(siege.getUndermineResult());
+        String result = GlobalConfiguration.getMessage(siege.getUndermineResult());
         if (result == null) {
-            result = globalConfiguration.getMessage("nothing");
+            result = GlobalConfiguration.getMessage("nothing");
         }
-        return new Label(globalConfiguration.getMessage("military.siege.undermine_done", siege.getUndermineDie(), siege.getBonus(), result));
+        return new Label(GlobalConfiguration.getMessage("military.siege.undermine_done", siege.getUndermineDie(), siege.getBonus(), result));
     }
 
     /**
@@ -934,28 +913,28 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      */
     private String getSequenceDamage(String key, Integer die, int modifier, boolean fire, boolean besieger, boolean breach) {
         StringBuilder sb = new StringBuilder();
-        sb.append(globalConfiguration.getMessage(key));
+        sb.append(GlobalConfiguration.getMessage(key));
         sb.append(" : ");
         if (die != null) {
-            int min = globalConfiguration.getTables().getAssaultResults().stream()
+            int min = GlobalConfiguration.getTables().getAssaultResults().stream()
                     .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach)
                     .map(AssaultResult::getDice)
                     .min(Comparator.naturalOrder())
                     .orElse(3);
-            int max = globalConfiguration.getTables().getAssaultResults().stream()
+            int max = GlobalConfiguration.getTables().getAssaultResults().stream()
                     .filter(result -> result.isFire() == fire && result.isBesieger() == besieger && result.isBreach() == breach)
                     .map(AssaultResult::getDice)
                     .max(Comparator.naturalOrder())
                     .orElse(12);
             int modifiedDie = die + modifier < min ? min : die + modifier > max ? max : die + modifier;
-            AssaultResult result = globalConfiguration.getTables().getAssaultResults().stream()
+            AssaultResult result = GlobalConfiguration.getTables().getAssaultResults().stream()
                     .filter(cr -> cr.isFire() == fire && cr.isBesieger() == besieger && cr.isBreach() == breach && cr.getDice() == modifiedDie)
                     .findAny()
                     .orElse(null);
             String localDamage = getDamage(result);
-            sb.append(globalConfiguration.getMessage("military.battle.damage", die, modifier, localDamage));
+            sb.append(GlobalConfiguration.getMessage("military.battle.damage", die, modifier, localDamage));
         } else {
-            sb.append(globalConfiguration.getMessage("military.battle.no_damage"));
+            sb.append(GlobalConfiguration.getMessage("military.battle.no_damage"));
         }
         return sb.toString();
     }
@@ -978,7 +957,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 .map(c -> c.getCountry().getName())
                 .collect(Collectors.toList());
         Node counters = createMultiSelectCounterNode(allies, siege.getProvince(), "military.battle.counters", selectedCounters);
-        Button select = new Button(globalConfiguration.getMessage("military.battle.select"));
+        Button select = new Button(GlobalConfiguration.getMessage("military.battle.select"));
         select.setOnAction(callServiceAsEvent(siegeService::selectForces, () -> new SelectForcesRequest(selectedCounters), "Error when selecting forces at the start of the siege."));
 
         hBox.getChildren().addAll(counters, select);
@@ -993,7 +972,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         HBox hBox = new HBox();
 
         ChoiceBox<SiegeModeEnum> mode = new ChoiceBox<>();
-        mode.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        mode.converterProperty().set(new EnumConverter<>());
         mode.setItems(FXCollections.observableArrayList(SiegeModeEnum.values()));
         ChoiceBox<String> provinces = new ChoiceBox<>();
         IMapMarker marker = markers.stream()
@@ -1010,7 +989,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             provinces.setDisable(newValue != SiegeModeEnum.REDEPLOY);
         });
 
-        Button choose = new Button(globalConfiguration.getMessage("military.siege.choose_mode"));
+        Button choose = new Button(GlobalConfiguration.getMessage("military.siege.choose_mode"));
         choose.setOnAction(callServiceAsEvent(siegeService::chooseMode, () -> new ChooseModeForSiegeRequest(mode.getValue(), provinces.getValue()), "Error when choosing mode of the siege."));
 
         hBox.getChildren().addAll(mode, provinces, choose);
@@ -1025,10 +1004,10 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         HBox hBox = new HBox();
 
         ChoiceBox<ChooseBreachForSiegeRequest.ChoiceBreachEnum> breach = new ChoiceBox<>();
-        breach.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        breach.converterProperty().set(new EnumConverter<>());
         breach.setItems(FXCollections.observableArrayList(ChooseBreachForSiegeRequest.ChoiceBreachEnum.values()));
 
-        Button choose = new Button(globalConfiguration.getMessage("military.siege.choose_breach"));
+        Button choose = new Button(GlobalConfiguration.getMessage("military.siege.choose_breach"));
         choose.setOnAction(callServiceAsEvent(siegeService::chooseBreach, () -> new ChooseBreachForSiegeRequest(breach.getValue()), "Error when choosing to take the breach of the siege."));
 
         hBox.getChildren().addAll(breach, choose);
@@ -1059,10 +1038,10 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         counterList.add(0, null);
         ComboBox<Counter> counter = new ComboBox<>();
         counter.setCellFactory(new CounterCellFactory());
-        counter.converterProperty().set(new CounterConverter(globalConfiguration));
+        counter.converterProperty().set(new CounterConverter());
         counter.setItems(FXCollections.observableArrayList(counterList));
 
-        Button choose = new Button(globalConfiguration.getMessage("military.siege.choose_man"));
+        Button choose = new Button(GlobalConfiguration.getMessage("military.siege.choose_man"));
         choose.setOnAction(callServiceAsEvent(siegeService::chooseMan, () -> new ChooseManForSiegeRequest(counter.getValue() != null, counter.getValue() != null ? counter.getValue().getId() : null), "Error when choosing to man the fortress."));
 
         counter.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
@@ -1070,7 +1049,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
             if (newValue == null) {
                 key = "military.siege.choose_no_man";
             }
-            choose.setText(globalConfiguration.getMessage(key));
+            choose.setText(GlobalConfiguration.getMessage(key));
         });
 
         hBox.getChildren().addAll(counter, choose);
@@ -1133,10 +1112,10 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 lines.remove(line);
                 vBox.getChildren().remove(line.getNode());
             }
-        }, globalConfiguration);
+        });
 
 
-        Button redeploy = new Button(globalConfiguration.getMessage("military.siege.redeploy"));
+        Button redeploy = new Button(GlobalConfiguration.getMessage("military.siege.redeploy"));
         redeploy.setOnAction(callServiceAsEvent(siegeService::redeploy, () -> RedeployLine.toRequest(lines, controller), "Error when redeploying forces."));
 
         lines.get(0).getNode().getChildren().add(redeploy);
@@ -1248,14 +1227,14 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
          * @param listener    the listener to get the add and remove redeploy line events.
          */
         private ChooseLossLine(List<Counter> counterList, List<Integer> rounds, List<Integer> thirds, BiConsumer<ChooseLossLine, Boolean> listener) {
-            counters.converterProperty().set(new CounterConverter(globalConfiguration));
+            counters.converterProperty().set(new CounterConverter());
             counters.setItems(FXCollections.observableList(counterList));
             round.setItems(FXCollections.observableList(rounds));
             third.setItems(FXCollections.observableList(thirds));
-            button = new Button(globalConfiguration.getMessage("add"));
+            button = new Button(GlobalConfiguration.getMessage("add"));
             button.setOnAction(event -> {
                         ChooseLossLine newLine = new ChooseLossLine(counterList, rounds, thirds, listener);
-                        newLine.button.setText(globalConfiguration.getMessage("delete"));
+                        newLine.button.setText(GlobalConfiguration.getMessage("delete"));
                         newLine.button.setOnAction(delEvent -> listener.accept(newLine, false));
                         listener.accept(newLine, true);
                     }

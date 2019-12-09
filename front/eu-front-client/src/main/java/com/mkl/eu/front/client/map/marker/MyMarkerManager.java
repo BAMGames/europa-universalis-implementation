@@ -65,9 +65,6 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** Interphase Service. */
     @Autowired
     private IInterPhaseService interPhaseService;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Component holding the authentication information. */
     @Autowired
     private AuthentHolder authentHolder;
@@ -421,7 +418,7 @@ public class MyMarkerManager extends MarkerManager<Marker> implements IDragAndDr
     /** {@inheritDoc} */
     @Override
     public GlobalConfiguration getGlobalConfiguration() {
-        return globalConfiguration;
+        return GlobalConfiguration.getInstance();
     }
 
     /** {@inheritDoc} */

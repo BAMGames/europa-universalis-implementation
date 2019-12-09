@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.vo.Border;
 import com.mkl.eu.front.client.window.InteractiveMap;
 import com.thoughtworks.xstream.XStream;
@@ -47,15 +48,13 @@ public final class MarkerUtils {
      * @return the markers to add to the maps.
      */
     public static Map<String, Marker> createMarkers(Game game) {
-        // TODO TG-15 configure externalization
-        List<Feature> countries = GeoJSONReader.loadDataFromJSON(null, GeoJSONReaderUtil.readJson("data/map/v2/countries.geo.json"));
+        List<Feature> countries = GeoJSONReader.loadDataFromJSON(null, GeoJSONReaderUtil.readJson(GlobalConfiguration.getDataFolder() + "/map/v2/countries.geo.json"));
 
         XStream xstream = new XStream();
         xstream.processAnnotations(Border.class);
 
-        // TODO TG-15 configure externalization
         //noinspection unchecked
-        List<Border> borders = (List<Border>) xstream.fromXML(new File("data/map/v2/borders.xml"));
+        List<Border> borders = (List<Border>) xstream.fromXML(new File(GlobalConfiguration.getDataFolder() + "/map/v2/borders.xml"));
         MarkerFactory markerFactory = new MarkerFactory();
         markerFactory.setPolygonClass(ProvinceMarker.class);
         markerFactory.setMultiClass(MultiProvinceMarker.class);
@@ -146,7 +145,7 @@ public final class MarkerUtils {
      * Retrieves the image of the counter.
      *
      * @param counter the counter.
-     * @param pApplet     pApplet rendering the image.
+     * @param pApplet pApplet rendering the image.
      * @return the image of the counter.
      */
     public static PImage getImageFromCounter(CounterMarker counter, InteractiveMap pApplet) {
@@ -185,8 +184,7 @@ public final class MarkerUtils {
      * @return the image path of the counter.
      */
     public static String getImagePath(String country, String type) {
-        // TODO TG-15 configure externalization
-        StringBuilder path = new StringBuilder("data/counters/v2/counter_8/");
+        StringBuilder path = new StringBuilder(GlobalConfiguration.getDataFolder() + "/counters/v2/counter_8/");
         if (country != null) {
             path.append(country)
                     .append("/").append(country).append("_");

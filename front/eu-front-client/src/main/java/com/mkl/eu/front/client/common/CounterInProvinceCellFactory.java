@@ -15,17 +15,6 @@ import javafx.util.Callback;
  * @author MKL.
  */
 public class CounterInProvinceCellFactory implements Callback<ListView<Counter>, ListCell<Counter>> {
-    /** The global configuration for internationalisation. */
-    private GlobalConfiguration globalConfiguration;
-
-    /**
-     * Constructor.
-     *
-     * @param globalConfiguration the global configuration.
-     */
-    public CounterInProvinceCellFactory(GlobalConfiguration globalConfiguration) {
-        this.globalConfiguration = globalConfiguration;
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -39,7 +28,7 @@ public class CounterInProvinceCellFactory implements Callback<ListView<Counter>,
                 } else {
                     HBox hBox = new HBox();
                     setGraphic(hBox);
-                    hBox.getChildren().addAll(UIUtil.getImage(item), new Label(" - " + globalConfiguration.getMessage(item.getOwner().getProvince())));
+                    hBox.getChildren().addAll(UIUtil.getImage(item), new Label(" - " + GlobalConfiguration.getInstance().getMessage(item.getOwner().getProvince())));
                 }
             }
         };

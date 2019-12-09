@@ -50,9 +50,6 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Countries in the game. */
     private List<PlayableCountry> countries;
     /** Trade fleets in the game. */
@@ -202,7 +199,7 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
      * @return the tab for the royal treasure sheet.
      */
     private Tab createSheetA(PlayableCountry country) {
-        Tab tab = new Tab(globalConfiguration.getMessage("eco.sheetA"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("eco.sheetA"));
         tab.setClosable(false);
 
         choiceA = new ChoiceBox<>();
@@ -260,7 +257,7 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
      * @return the tab for the income sheet.
      */
     private Tab createSheetB(PlayableCountry country) {
-        Tab tab = new Tab(globalConfiguration.getMessage("eco.sheetB"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("eco.sheetB"));
         tab.setClosable(false);
 
         choiceB = new ChoiceBox<>();
@@ -288,7 +285,7 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
             }
         });
 
-        Button update = new Button(globalConfiguration.getMessage("eco.update"));
+        Button update = new Button(GlobalConfiguration.getMessage("eco.update"));
         update.setOnAction(event -> callService(economicService::computeEconomicalSheets, () -> null, "Error when updating economical sheets."));
 
         HBox hBox = new HBox();
@@ -324,8 +321,8 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
         List<List<String>> datas = new ArrayList<>();
         for (TableConfig<EconomicalSheet> configItem : config) {
             datas.add(new ArrayList<>());
-            datas.get(configItem.getIndex()).add(globalConfiguration.getMessage(configItem.getMessageColumn1()));
-            datas.get(configItem.getIndex()).add(globalConfiguration.getMessage(configItem.getMessageColumn2()));
+            datas.get(configItem.getIndex()).add(GlobalConfiguration.getMessage(configItem.getMessageColumn1()));
+            datas.get(configItem.getIndex()).add(GlobalConfiguration.getMessage(configItem.getMessageColumn2()));
         }
 
         int currentTurn = country.getEconomicalSheets().stream()
@@ -346,13 +343,13 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
             }
         }
 
-        TableColumn<List<String>, String> column = new TableColumn<>(globalConfiguration.getMessage("eco.sheet.#"));
+        TableColumn<List<String>, String> column = new TableColumn<>(GlobalConfiguration.getMessage("eco.sheet.#"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
         column.setSortable(false);
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(0)));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.sheet.turnNumber"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.sheet.turnNumber"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.33));
         column.setSortable(false);
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().get(1)));
@@ -383,20 +380,20 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
      * @return the tab for the trade fleets.
      */
     private Tab createTradeFleets() {
-        Tab tab = new Tab(globalConfiguration.getMessage("eco.tfs"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("eco.tfs"));
         tab.setClosable(false);
 
-        Text titleMed = new Text(globalConfiguration.getMessage("eco.tfs.mediterranean"));
+        Text titleMed = new Text(GlobalConfiguration.getMessage("eco.tfs.mediterranean"));
         tableTFMed = new TableView<>();
         configureTableTradeFleet(tableTFMed);
         tableTFMed.setPrefHeight(150);
 
-        Text titleAtl = new Text(globalConfiguration.getMessage("eco.tfs.atlantic"));
+        Text titleAtl = new Text(GlobalConfiguration.getMessage("eco.tfs.atlantic"));
         tableTFAtl = new TableView<>();
         configureTableTradeFleet(tableTFAtl);
         tableTFAtl.setPrefHeight(230);
 
-        Text titleInd = new Text(globalConfiguration.getMessage("eco.tfs.indian"));
+        Text titleInd = new Text(GlobalConfiguration.getMessage("eco.tfs.indian"));
         tableTFInd = new TableView<>();
         configureTableTradeFleet(tableTFInd);
         tableTFInd.setPrefHeight(160);
@@ -485,72 +482,72 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
         table.setPrefWidth(750);
         TableColumn<TradeFleetSheet, String> column;
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.country"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.country"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
-        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(globalConfiguration.getMessage(param.getValue().getTradeZone())));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(GlobalConfiguration.getMessage(param.getValue().getTradeZone())));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.england"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.england"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelEngland"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.holland"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.holland"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelHolland"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.france"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.france"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelFrance"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.venice"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.venice"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelVenice"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.turkey"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.turkey"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelTurkey"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.spain"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.spain"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelSpain"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.portugal"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.portugal"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelPortugal"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.sweden"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.sweden"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelSweden"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.poland"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.poland"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelPoland"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.prusse"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.prusse"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelPrusse"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.habsbourg"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.habsbourg"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelHabsbourg"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.russia"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.russia"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("levelRussia"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("eco.tfs.others"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("eco.tfs.others"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.2));
         column.setCellValueFactory(param -> {
             StringBuilder sb = new StringBuilder();
@@ -558,7 +555,7 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
                 if (sb.length() > 0) {
                     sb.append("\n");
                 }
-                sb.append(globalConfiguration.getMessage(entry.getKey()))
+                sb.append(GlobalConfiguration.getMessage(entry.getKey()))
                         .append(" ")
                         .append(entry.getValue());
             }

@@ -61,9 +61,6 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     /** InterPhase service. */
     @Autowired
     private IInterPhaseService interPhaseService;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Game. */
     private Game game;
     /** Markers of the loaded game. */
@@ -148,16 +145,16 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * @return the redeployment tab.
      */
     private Tab createRedeploymentTab() {
-        Tab tab = new Tab(globalConfiguration.getMessage("interphase.info.title"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("interphase.info.title"));
         tab.setClosable(false);
         VBox vBox = new VBox();
         tab.setContent(vBox);
 
         lootStack = new ComboBox<>();
-        lootStack.setCellFactory(new StackInProvinceCellFactory(globalConfiguration));
-        lootStack.converterProperty().set(new StackInProvinceConverter(globalConfiguration));
+        lootStack.setCellFactory(new StackInProvinceCellFactory());
+        lootStack.converterProperty().set(new StackInProvinceConverter());
         lootType = new ChoiceBox<>();
-        lootType.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        lootType.converterProperty().set(new EnumConverter<>());
         lootType.setItems(FXCollections.observableArrayList(LandLootTypeEnum.values()));
         lootStack.getSelectionModel().selectedItemProperty().
                 addListener((observable, oldValue, newValue) -> lootButton.setDisable(newValue == null
@@ -165,7 +162,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         lootType.getSelectionModel().selectedItemProperty().
                 addListener((observable, oldValue, newValue) -> lootButton.setDisable(newValue == null
                         || lootStack.getSelectionModel().getSelectedItem() == null));
-        lootButton = new Button(globalConfiguration.getMessage("interphase.info.loot"));
+        lootButton = new Button(GlobalConfiguration.getMessage("interphase.info.loot"));
         lootButton.setOnAction(callServiceAsEvent(interPhaseService::landLooting,
                 () -> new LandLootingRequest(lootStack.getSelectionModel().getSelectedItem().getId(), lootType.getSelectionModel().getSelectedItem()),
                 "Error when looting by land."));
@@ -174,8 +171,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         vBox.getChildren().add(hBox);
 
         redeployStack = new ComboBox<>();
-        redeployStack.setCellFactory(new StackInProvinceCellFactory(globalConfiguration));
-        redeployStack.converterProperty().set(new StackInProvinceConverter(globalConfiguration));
+        redeployStack.setCellFactory(new StackInProvinceCellFactory());
+        redeployStack.converterProperty().set(new StackInProvinceConverter());
         redeployProvince = new ChoiceBox<>();
         redeployStack.getSelectionModel().selectedItemProperty().
                 addListener((observable, oldValue, newValue) -> redeployButton.setDisable(newValue == null
@@ -183,7 +180,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
         redeployProvince.getSelectionModel().selectedItemProperty().
                 addListener((observable, oldValue, newValue) -> redeployButton.setDisable(newValue == null
                         || redeployStack.getSelectionModel().getSelectedItem() == null));
-        redeployButton = new Button(globalConfiguration.getMessage("interphase.info.redeploy"));
+        redeployButton = new Button(GlobalConfiguration.getMessage("interphase.info.redeploy"));
         redeployButton.setOnAction(callServiceAsEvent(interPhaseService::landRedeploy,
                 () -> new LandRedeployRequest(redeployStack.getSelectionModel().getSelectedItem().getId(), redeployProvince.getSelectionModel().getSelectedItem()),
                 "Error when redeploying land units."));
@@ -193,9 +190,9 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
 
         Function<Boolean, EventHandler<ActionEvent>> endRedeployment = validate -> callServiceAsEvent(interPhaseService::validateRedeploy, () -> new ValidateRequest(validate), "Error when validating the redeployment.");
 
-        validateRedeployment = new Button(globalConfiguration.getMessage("interphase.info.validate"));
+        validateRedeployment = new Button(GlobalConfiguration.getMessage("interphase.info.validate"));
         validateRedeployment.setOnAction(endRedeployment.apply(true));
-        invalidateRedeployment = new Button(globalConfiguration.getMessage("interphase.info.invalidate"));
+        invalidateRedeployment = new Button(GlobalConfiguration.getMessage("interphase.info.invalidate"));
         invalidateRedeployment.setOnAction(endRedeployment.apply(false));
         hBox = new HBox();
         hBox.getChildren().addAll(validateRedeployment, invalidateRedeployment);
@@ -256,7 +253,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * @return the exchequer tab.
      */
     private Tab createExchequerTab() {
-        Tab tab = new Tab(globalConfiguration.getMessage("interphase.info.exchequer"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("interphase.info.exchequer"));
         tab.setClosable(false);
         VBox vBox = new VBox();
         tab.setContent(vBox);
@@ -266,7 +263,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
 
         prestigeField = new TextField();
         prestigeField.setTextFormatter(new TextFormatter<String>(change -> change.getText().matches("[0-9]*") ? change : null));
-        exchequerRepartition = new Button(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
+        exchequerRepartition = new Button(GlobalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
         exchequerRepartition.setOnAction(callServiceAsEvent(interPhaseService::exchequerRepartition, () -> new ExchequerRepartitionRequest(CommonUtil.toInt(prestigeField.getText())), "Error when spending prestige into income."));
 
         HBox hBox = new HBox();
@@ -275,9 +272,9 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
 
         Function<Boolean, EventHandler<ActionEvent>> endExchequer = validate -> callServiceAsEvent(interPhaseService::validateExchequer, () -> new ValidateRequest(validate), "Error when validating the exchequer.");
 
-        validateExchequer = new Button(globalConfiguration.getMessage("interphase.exchequer.validate"));
+        validateExchequer = new Button(GlobalConfiguration.getMessage("interphase.exchequer.validate"));
         validateExchequer.setOnAction(endExchequer.apply(true));
-        invalidateExchequer = new Button(globalConfiguration.getMessage("interphase.exchequer.invalidate"));
+        invalidateExchequer = new Button(GlobalConfiguration.getMessage("interphase.exchequer.invalidate"));
         invalidateExchequer.setOnAction(endExchequer.apply(false));
         hBox = new HBox();
         hBox.getChildren().addAll(validateExchequer, invalidateExchequer);
@@ -292,8 +289,8 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * Update all the fields based on the current economical sheet.
      */
     private void updateEcoSheet() {
-        exchequerRepartition.setText(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
-        improveStability.setText(globalConfiguration.getMessage("interphase.stab.improve"));
+        exchequerRepartition.setText(GlobalConfiguration.getMessage("interphase.info.exchequer.prestige_spent"));
+        improveStability.setText(GlobalConfiguration.getMessage("interphase.stab.improve"));
         stabInfo.setText(null);
         EconomicalSheet sheet = game.getCountries().stream()
                 .filter(country -> StringUtils.equals(country.getName(), gameConfig.getCountryName()))
@@ -302,7 +299,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
                 .findAny()
                 .orElse(null);
         if (sheet != null) {
-            Label label = new Label(globalConfiguration.getMessage("interphase.exchequer.info",
+            Label label = new Label(GlobalConfiguration.getMessage("interphase.exchequer.info",
                     sheet.getRtBefExch(), sheet.getGrossIncome(),
                     sheet.getRegularIncome(), sheet.getPrestigeIncome(), sheet.getMaxNatLoan(),
                     sheet.getExpenses(), sheet.getRemainingExpenses()));
@@ -310,11 +307,11 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
             exchequerInfo.getChildren().clear();
             exchequerInfo.getChildren().addAll(label, tooltip);
             if (sheet.getRemainingExpenses() != null && sheet.getPrestigeIncome() != null) {
-                exchequerRepartition.setText(globalConfiguration.getMessage("interphase.info.exchequer.prestige_spent",
+                exchequerRepartition.setText(GlobalConfiguration.getMessage("interphase.info.exchequer.prestige_spent",
                         Math.max(Math.min(sheet.getRemainingExpenses(), sheet.getPrestigeIncome()), 0)));
             }
             prestigeField.setText(sheet.getPrestigeSpent() + "");
-            improveStability.setText(globalConfiguration.getMessage("interphase.stab.improve", sheet.getStabModifier()));
+            improveStability.setText(GlobalConfiguration.getMessage("interphase.stab.improve", sheet.getStabModifier()));
             if (sheet.getStabModifier() != null) {
                 stabInfo.setText(getImproveStabilityInfo("interphase.stab.info", sheet));
             } else {
@@ -337,7 +334,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
     private String getImproveStabilityInfo(String code, EconomicalSheet sheet) {
         String text;
         if (sheet == null || sheet.getStabDie() == null || sheet.getStabModifier() == null) {
-            text = globalConfiguration.getMessage(code + "_none");
+            text = GlobalConfiguration.getMessage(code + "_none");
         } else {
             InvestmentEnum invest = GameUtil.reverseInvestment(sheet.getStab());
             int modifier = sheet.getStabModifier();
@@ -346,7 +343,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
             } else if (invest == InvestmentEnum.M) {
                 modifier += 2;
             }
-            text = globalConfiguration.getMessage(code, sheet.getStabDie(), modifier,
+            text = GlobalConfiguration.getMessage(code, sheet.getStabDie(), modifier,
                     GameUtil.improveStability(sheet.getStabDie() + modifier));
         }
         return text;
@@ -357,7 +354,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * @return The help tooltip about the exchequer test.
      */
     private Node createExchequerTooltip(EconomicalSheet sheet) {
-        ResultEnum exchequerResult = globalConfiguration.getTables().getResults().stream()
+        ResultEnum exchequerResult = GlobalConfiguration.getTables().getResults().stream()
                 .filter(result -> Objects.equals(result.getColumn(), sheet.getExchequerColumn()) &&
                         Objects.equals(result.getDie(), sheet.getExchequerDie()))
                 .map(Result::getResult)
@@ -365,7 +362,7 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
                 .orElse(null);
         try {
             ImageView img = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
-            Tooltip tooltip = new Tooltip(globalConfiguration.getMessage("interphase.exchequer.help",
+            Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("interphase.exchequer.help",
                     sheet.getExchequerDie(), sheet.getExchequerBonus(), sheet.getExchequerColumn(), exchequerResult));
             Tooltip.install(img, tooltip);
             UIUtil.patchTooltipUntilMigrationJava9(tooltip);
@@ -401,15 +398,15 @@ public class InterPhaseWindow extends AbstractDiffResponseListenerContainer impl
      * @return the stability tab.
      */
     private Tab createStabilityTab() {
-        Tab tab = new Tab(globalConfiguration.getMessage("interphase.info.stab"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("interphase.info.stab"));
         tab.setClosable(false);
         VBox vBox = new VBox();
 
         ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
-        investChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        investChoice.converterProperty().set(new EnumConverter<>());
         investChoice.setItems(FXCollections.observableArrayList(InvestmentEnum.values()));
         investChoice.getItems().add(0, null);
-        improveStability = new Button(globalConfiguration.getMessage("interphase.stab.improve"));
+        improveStability = new Button(GlobalConfiguration.getMessage("interphase.stab.improve"));
         improveStability.setOnAction(callServiceAsEvent(interPhaseService::improveStability, () -> new ImproveStabilityRequest(investChoice.getValue()), "Error when improving stability."));
 
         updateStability();

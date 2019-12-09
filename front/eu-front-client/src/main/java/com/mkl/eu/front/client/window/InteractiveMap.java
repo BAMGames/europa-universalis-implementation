@@ -69,9 +69,6 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
     /** Component holding the authentication information. */
     @Autowired
     private AuthentHolder authentHolder;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Interactive map. */
     private UnfoldingMap mapDetail;
 
@@ -140,7 +137,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
 
         if (surface != null) {
             surface.setResizable(true);
-            surface.setTitle(globalConfiguration.getMessage("map.title", gameConfig.getIdGame(), gameConfig.getCountryName()));
+            surface.setTitle(GlobalConfiguration.getMessage("map.title", gameConfig.getIdGame(), gameConfig.getCountryName()));
 
             // We remove the listener that closes the sketch when
             // the window is closed and replaces it by a setVisible(false)

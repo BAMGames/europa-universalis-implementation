@@ -9,17 +9,11 @@ import javafx.util.StringConverter;
  * @author MKL.
  */
 public class EnumConverter<T extends Enum<T>> extends StringConverter<T> {
-    /** Configuration of the application. */
-    private GlobalConfiguration globalConfiguration;
-
-    public EnumConverter(GlobalConfiguration globalConfiguration) {
-        this.globalConfiguration = globalConfiguration;
-    }
 
     /** {@inheritDoc} */
     @Override
     public String toString(T object) {
-        return globalConfiguration.getMessage(object);
+        return GlobalConfiguration.getMessage(object);
     }
 
     /** {@inheritDoc} */

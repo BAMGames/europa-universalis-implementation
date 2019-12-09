@@ -10,22 +10,11 @@ import javafx.util.StringConverter;
  * @author MKL.
  */
 public class CounterConverter extends StringConverter<Counter> {
-    /** The global configuration for internationalisation. */
-    private GlobalConfiguration globalConfiguration;
-
-    /**
-     * Constructor.
-     *
-     * @param globalConfiguration the global configuration.
-     */
-    public CounterConverter(GlobalConfiguration globalConfiguration) {
-        this.globalConfiguration = globalConfiguration;
-    }
 
     /** {@inheritDoc} */
     @Override
     public String toString(Counter object) {
-        return globalConfiguration.getMessage(object.getType()) + " - " + globalConfiguration.getMessage(object.getCountry());
+        return GlobalConfiguration.getMessage(object.getType()) + " - " + GlobalConfiguration.getMessage(object.getCountry());
     }
 
     /** {@inheritDoc} */

@@ -54,16 +54,15 @@ public final class UIUtil {
     }
 
     /**
-     * @param countryCode         code of the country.
-     * @param globalConfiguration global configuration for internationalisation.
+     * @param countryCode code of the country.
      * @return the country name to be displayed given the country code and the locale.
      */
-    public static String getCountryName(String countryCode, GlobalConfiguration globalConfiguration) {
+    public static String getCountryName(String countryCode) {
         if (StringUtils.isEmpty(countryCode)) {
             countryCode = "none";
         }
 
-        return globalConfiguration.getMessage(countryCode);
+        return GlobalConfiguration.getMessage(countryCode);
     }
 
     /**
@@ -85,25 +84,23 @@ public final class UIUtil {
     /**
      * Display an alert dialog displaying the exception.
      *
-     * @param ex                  the exception.
-     * @param map                 possible interactive map.
-     * @param globalConfiguration global configuration for internationalisation.
+     * @param ex  the exception.
+     * @param map possible interactive map.
      */
-    public static void showException(Exception ex, InteractiveMap map, GlobalConfiguration globalConfiguration) {
-        doInJavaFx(() -> showExceptionInternal(ex, map, globalConfiguration));
+    public static void showException(Exception ex, InteractiveMap map) {
+        doInJavaFx(() -> showExceptionInternal(ex, map));
     }
 
     /**
      * Display an alert dialog displaying the exception.
      *
-     * @param ex                  the exception.
-     * @param map                 possible interactive map.
-     * @param globalConfiguration global configuration for internationalisation.
+     * @param ex  the exception.
+     * @param map possible interactive map.
      */
-    private static void showExceptionInternal(Exception ex, InteractiveMap map, GlobalConfiguration globalConfiguration) {
+    private static void showExceptionInternal(Exception ex, InteractiveMap map) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(globalConfiguration.getMessage("exception.dialog.title"));
-        alert.setHeaderText(globalConfiguration.getMessage("exception.dialog.header"));
+        alert.setTitle(GlobalConfiguration.getMessage("exception.dialog.title"));
+        alert.setHeaderText(GlobalConfiguration.getMessage("exception.dialog.header"));
 
         String code = "exception.unknown";
         Object[] params = null;
@@ -114,7 +111,7 @@ public final class UIUtil {
             code = ((FunctionalException) ex).getCode();
             params = ((FunctionalException) ex).getParams();
         }
-        alert.setContentText(globalConfiguration.getMessage(code, params));
+        alert.setContentText(GlobalConfiguration.getMessage(code, params));
 
 
         StringWriter sw = new StringWriter();
@@ -122,7 +119,7 @@ public final class UIUtil {
         ex.printStackTrace(pw);
         String exceptionText = sw.toString();
 
-        Label label = new Label(globalConfiguration.getMessage("exception.dialog.stacktrace"));
+        Label label = new Label(GlobalConfiguration.getMessage("exception.dialog.stacktrace"));
 
         TextArea textArea = new TextArea(exceptionText);
         textArea.setEditable(false);

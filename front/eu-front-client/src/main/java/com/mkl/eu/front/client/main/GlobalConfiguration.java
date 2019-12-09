@@ -2,57 +2,98 @@ package com.mkl.eu.front.client.main;
 
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.tables.Tables;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Component;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
+import java.io.FileInputStream;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  * Global configuration.
  *
  * @author MKL.
  */
-@Component
 public class GlobalConfiguration {
+    /** Global instance. */
+    private static GlobalConfiguration instance = new GlobalConfiguration();
     /** Locale of the application. */
     private Locale locale = Locale.getDefault();
     /** Tables. */
     private Tables tables;
     /** Referential. */
     private Referential referential;
-    @Autowired
     /** Internationalisation. */
     private MessageSource message;
+    /** Configuration of the application. */
+    private Properties configuration = new Properties();
 
-    /** @return the locale. */
-    public Locale getLocale() {
-        return locale;
+    /**
+     * Constructor that will retrieve the eu configuration file and parse it.
+     * Then it will search for internationalization message sources and load them.
+     */
+    public GlobalConfiguration() {
+        try {
+            configuration.load(new FileInputStream("eu.properties"));
+        } catch (Exception e) {
+            try {
+                configuration.load(new FileInputStream("config/eu.properties"));
+            } catch (Exception e1) {
+                throw new Error("eu.properties file was not found in jar folder or in config folder.", e1);
+            }
+        }
+
+        String language = configuration.getProperty("locale.language");
+        if (StringUtils.isNotEmpty(language)) {
+            String country = configuration.getProperty("locale.country");
+            if (StringUtils.isEmpty(country)) {
+                locale = new Locale(language);
+            } else {
+                locale = new Locale(language, country);
+            }
+        }
+
+        ReloadableResourceBundleMessageSource message = new ReloadableResourceBundleMessageSource();
+        message.setFallbackToSystemLocale(false);
+        message.setDefaultEncoding("UTF-8");
+        message.setUseCodeAsDefaultMessage(true);
+        message.setBasenames("file:" + configuration.getProperty("data.folder") + "/msg/messages",
+                "file:" + configuration.getProperty("data.folder") + "/msg/messages-provinces");
+
+        this.message = message;
     }
 
-    /** @param locale the locale to set. */
-    public void setLocale(Locale locale) {
-        this.locale = locale;
+    /**
+     * @return the global instance.
+     */
+    public static GlobalConfiguration getInstance() {
+        return instance;
+    }
+
+    /** @return the locale. */
+    public static Locale getLocale() {
+        return getInstance().locale;
     }
 
     /** @return the tables. */
-    public Tables getTables() {
-        return tables;
+    public static Tables getTables() {
+        return getInstance().tables;
     }
 
     /** @param tables the tables to set. */
-    public void setTables(Tables tables) {
-        this.tables = tables;
+    public static void setTables(Tables tables) {
+        getInstance().tables = tables;
     }
 
     /** @return the referential. */
-    public Referential getReferential() {
-        return referential;
+    public static Referential getReferential() {
+        return getInstance().referential;
     }
 
     /** @param referential the referential to set. */
-    public void setReferential(Referential referential) {
-        this.referential = referential;
+    public static void setReferential(Referential referential) {
+        getInstance().referential = referential;
     }
 
     /**
@@ -62,18 +103,25 @@ public class GlobalConfiguration {
      * @param args the arguments of the message.
      * @return the resolved message.
      */
-    public String getMessage(String code, Object... args) {
-        return message.getMessage(code, args, getLocale());
+    public static String getMessage(String code, Object... args) {
+        return getInstance().message.getMessage(code, args, getLocale());
     }
 
     /**
      * @param object the enum to translate.
      * @return the enum translated in the client language.
      */
-    public String getMessage(Enum object) {
+    public static String getMessage(Enum object) {
         if (object == null) {
             return null;
         }
         return getMessage(object.getClass().getSimpleName() + "." + object.name());
+    }
+
+    /**
+     * @return the data folder for all the resources (images, internationalization, etc..).
+     */
+    public static String getDataFolder() {
+        return getInstance().configuration.getProperty("data.folder");
     }
 }

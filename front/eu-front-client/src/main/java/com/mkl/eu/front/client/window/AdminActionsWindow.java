@@ -70,9 +70,6 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
-    /** Configuration of the application. */
-    @Autowired
-    private GlobalConfiguration globalConfiguration;
     /** Game. */
     private Game game;
     /** Markers of the loaded game. */
@@ -189,7 +186,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
      * @return the tab for the form of the current administrative actions.
      */
     private Tab createAdminForm(PlayableCountry country) {
-        Tab tab = new Tab(globalConfiguration.getMessage("admin_action.form"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("admin_action.form"));
         tab.setClosable(false);
 
         Node unitMaintenancePane = createMaintenanceNode(country);
@@ -228,16 +225,16 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         HBox hBox = new HBox();
 
         maintenanceCountersChoice = new ComboBox<>();
-        maintenanceCountersChoice.setCellFactory(new CounterInProvinceCellFactory(globalConfiguration));
-        maintenanceCountersChoice.converterProperty().set(new CounterInProvinceConverter(globalConfiguration));
+        maintenanceCountersChoice.setCellFactory(new CounterInProvinceCellFactory());
+        maintenanceCountersChoice.converterProperty().set(new CounterInProvinceConverter());
 
         ChoiceBox<AdminActionTypeEnum> choiceType = new ChoiceBox<>();
-        choiceType.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        choiceType.converterProperty().set(new EnumConverter<>());
 
         ComboBox<CounterFaceTypeEnum> toCounterChoice = new ComboBox<>();
         toCounterChoice.setVisible(false);
         toCounterChoice.setCellFactory(new CounterFaceCellFactory(gameConfig.getCountryName()));
-        toCounterChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        toCounterChoice.converterProperty().set(new EnumConverter<>());
 
         choiceType.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
@@ -274,7 +271,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             }
         });
 
-        Button btn = new Button(globalConfiguration.getMessage("add"));
+        Button btn = new Button(GlobalConfiguration.getMessage("add"));
         btn.setOnAction(event -> {
             Counter counter = maintenanceCountersChoice.getSelectionModel().getSelectedItem();
             AdminActionTypeEnum type = choiceType.getSelectionModel().getSelectedItem();
@@ -416,13 +413,13 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         });
 
         Map<CounterFaceTypeEnum, Long> forces = counters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
-        List<BasicForce> basicForces = globalConfiguration.getTables().getBasicForces().stream()
+        List<BasicForce> basicForces = GlobalConfiguration.getTables().getBasicForces().stream()
                 .filter(basicForce -> StringUtils.equals(basicForce.getCountry(), country.getName()) &&
                         basicForce.getPeriod().getBegin() <= game.getTurn() &&
                         basicForce.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.toList());
 
         boolean atWar = GameUtil.isAtWar(country.getName(), game);
-        List<Unit> units = globalConfiguration.getTables().getUnits().stream()
+        List<Unit> units = GlobalConfiguration.getTables().getUnits().stream()
                 .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
                         ((unit.getAction() == UnitActionEnum.MAINT_WAR && atWar) || (unit.getAction() == UnitActionEnum.MAINT_PEACE && !atWar) || unit.getAction() == UnitActionEnum.MAINT) &&
                         !unit.isSpecial() &&
@@ -430,18 +427,18 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         Integer unitMaintenanceCost = MaintenanceUtil.computeUnitMaintenance(forces, basicForces, units);
 
         Map<CounterFaceTypeEnum, Long> conscriptForces = conscriptCounters.stream().collect(Collectors.groupingBy(Counter::getType, Collectors.counting()));
-        List<Unit> conscriptUnits = globalConfiguration.getTables().getUnits().stream()
+        List<Unit> conscriptUnits = GlobalConfiguration.getTables().getUnits().stream()
                 .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
                         unit.getAction() == UnitActionEnum.MAINT_WAR &&
                         unit.isSpecial() &&
                         StringUtils.equals(unit.getTech().getName(), country.getLandTech())).collect(Collectors.toList());
         Integer unitMaintenanceConscriptCost = MaintenanceUtil.computeUnitMaintenance(conscriptForces, null, conscriptUnits);
 
-        Tech ownerLandTech = CommonUtil.findFirst(globalConfiguration.getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
+        Tech ownerLandTech = CommonUtil.findFirst(GlobalConfiguration.getTables().getTechs(), tech -> StringUtils.equals(tech.getName(), country.getLandTech()));
 
         Integer fortressesMaintenance = MaintenanceUtil.computeFortressesMaintenance(
                 orderedFortresses,
-                globalConfiguration.getTables().getTechs(),
+                GlobalConfiguration.getTables().getTechs(),
                 ownerLandTech,
                 game.getTurn());
 
@@ -452,7 +449,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
 
         Integer missionMaintenance = missions.size();
 
-        maintenancePane.setText(globalConfiguration.getMessage("admin_action.form.unit_maintenance", add(unitMaintenanceCost, unitMaintenanceConscriptCost), fortressesMaintenance, missionMaintenance));
+        maintenancePane.setText(GlobalConfiguration.getMessage("admin_action.form.unit_maintenance", add(unitMaintenanceCost, unitMaintenanceConscriptCost), fortressesMaintenance, missionMaintenance));
         maintenanceTable.setItems(FXCollections.observableArrayList(actions));
         ObservableList<Counter> counterList = FXCollections.observableArrayList(counters);
         counterList.addAll(fortresses);
@@ -487,7 +484,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             /** {@inheritDoc} */
             @Override
             public String toString(IMapMarker object) {
-                return globalConfiguration.getMessage(object.getId());
+                return GlobalConfiguration.getMessage(object.getId());
             }
 
             /** {@inheritDoc} */
@@ -499,9 +496,9 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
 
         ComboBox<CounterFaceTypeEnum> purchaseTypeChoice = new ComboBox<>();
         purchaseTypeChoice.setCellFactory(new CounterFaceCellFactory(gameConfig.getCountryName()));
-        purchaseTypeChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        purchaseTypeChoice.converterProperty().set(new EnumConverter<>());
 
-        Button btn = new Button(globalConfiguration.getMessage("add"));
+        Button btn = new Button(GlobalConfiguration.getMessage("add"));
         btn.setOnAction(event -> {
             IMapMarker province = purchaseProvincesChoice.getSelectionModel().getSelectedItem();
             CounterFaceTypeEnum type = purchaseTypeChoice.getSelectionModel().getSelectedItem();
@@ -521,7 +518,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
                 .filter(marker -> StringUtils.equals(country.getName(), marker.getOwner()) &&
                         StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
 
-        List<Unit> forces = globalConfiguration.getTables().getUnits().stream()
+        List<Unit> forces = GlobalConfiguration.getTables().getUnits().stream()
                 .filter(unit -> StringUtils.equals(unit.getCountry(), country.getName()) &&
                         unit.getAction() == UnitActionEnum.PURCHASE &&
                         (StringUtils.equals(unit.getTech().getName(), country.getLandTech()) || StringUtils.equals(unit.getTech().getName(), country.getNavalTech()))).collect(Collectors.toList());
@@ -570,12 +567,12 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         Map<Boolean, Double> currentPurchase = actions.stream()
                 .filter(a -> !CounterUtil.isFortress(a.getCounterFaceType()))
                 .collect(Collectors.groupingBy(action -> isLand(action.getCounterFaceType()), Collectors.summingDouble(action -> CounterUtil.getSizeFromType(action.getCounterFaceType()))));
-        Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
+        Map<LimitTypeEnum, Integer> maxPurchase = GlobalConfiguration.getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getPeriod().getBegin() <= game.getTurn() &&
                         limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
 
-        purchasePane.setText(globalConfiguration.getMessage("admin_action.form.unit_purchase", currentPurchase.get(true), maxPurchase.get(LimitTypeEnum.PURCHASE_LAND_TROOPS), currentPurchase.get(false), maxPurchase.get(LimitTypeEnum.PURCHASE_NAVAL_TROOPS)));
+        purchasePane.setText(GlobalConfiguration.getMessage("admin_action.form.unit_purchase", currentPurchase.get(true), maxPurchase.get(LimitTypeEnum.PURCHASE_LAND_TROOPS), currentPurchase.get(false), maxPurchase.get(LimitTypeEnum.PURCHASE_NAVAL_TROOPS)));
         purchaseTable.setItems(FXCollections.observableArrayList(actions));
     }
 
@@ -677,7 +674,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             /** {@inheritDoc} */
             @Override
             public String toString(IMapMarker object) {
-                return globalConfiguration.getMessage(object.getId());
+                return GlobalConfiguration.getMessage(object.getId());
             }
 
             /** {@inheritDoc} */
@@ -688,9 +685,9 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         });
 
         ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
-        investChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        investChoice.converterProperty().set(new EnumConverter<>());
 
-        Button btn = new Button(globalConfiguration.getMessage("add"));
+        Button btn = new Button(GlobalConfiguration.getMessage("add"));
         btn.setOnAction(event -> {
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
@@ -729,7 +726,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
 
         Long currentTfis = actions.stream()
                 .collect(Collectors.counting());
-        Limit limitTfis = CommonUtil.findFirst(globalConfiguration.getTables().getLimits().stream(),
+        Limit limitTfis = CommonUtil.findFirst(GlobalConfiguration.getTables().getLimits().stream(),
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getPeriod().getBegin() <= game.getTurn() &&
                         limit.getPeriod().getEnd() >= game.getTurn() &&
@@ -739,7 +736,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             maxTfis = limitTfis.getNumber();
         }
 
-        tfiPane.setText(globalConfiguration.getMessage("admin_action.form.tfi", currentTfis, maxTfis));
+        tfiPane.setText(GlobalConfiguration.getMessage("admin_action.form.tfi", currentTfis, maxTfis));
         tfiTable.setItems(FXCollections.observableArrayList(actions));
     }
 
@@ -759,7 +756,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         HBox hBox = new HBox();
 
         ChoiceBox<AdminActionTypeEnum> typesChoice = new ChoiceBox<>();
-        typesChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        typesChoice.converterProperty().set(new EnumConverter<>());
 
         ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
         provincesChoice.setVisible(false);
@@ -767,7 +764,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             /** {@inheritDoc} */
             @Override
             public String toString(IMapMarker object) {
-                return globalConfiguration.getMessage(object.getId());
+                return GlobalConfiguration.getMessage(object.getId());
             }
 
             /** {@inheritDoc} */
@@ -780,11 +777,11 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         ComboBox<CounterFaceTypeEnum> faceChoice = new ComboBox<>();
         faceChoice.setVisible(false);
         faceChoice.setCellFactory(new CounterFaceCellFactory(gameConfig.getCountryName()));
-        faceChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        faceChoice.converterProperty().set(new EnumConverter<>());
 
         ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
         investChoice.setVisible(false);
-        investChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        investChoice.converterProperty().set(new EnumConverter<>());
 
         typesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
@@ -794,7 +791,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
                             .filter(marker -> StringUtils.equals(country.getName(), marker.getOwner()) &&
                                     StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
                     faceChoice.setVisible(true);
-                    CountryReferential countryRef = CommonUtil.findFirst(globalConfiguration.getReferential().getCountries(),
+                    CountryReferential countryRef = CommonUtil.findFirst(GlobalConfiguration.getReferential().getCountries(),
                             c -> StringUtils.equals(c.getName(), country.getName()));
                     List<CounterFaceTypeEnum> mnus = countryRef.getLimits().stream()
                             .filter(l -> CounterUtil.isManufacture(l.getType()))
@@ -821,7 +818,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             }
         });
 
-        Button btn = new Button(globalConfiguration.getMessage("add"));
+        Button btn = new Button(GlobalConfiguration.getMessage("add"));
         btn.setOnAction(event -> {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
@@ -862,7 +859,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         Long currentDoms = actions.stream()
                 .collect(Collectors.counting());
 
-        domesticPane.setText(globalConfiguration.getMessage("admin_action.form.domestic_operations", currentDoms, 1));
+        domesticPane.setText(GlobalConfiguration.getMessage("admin_action.form.domestic_operations", currentDoms, 1));
         domesticTable.setItems(FXCollections.observableArrayList(actions));
     }
 
@@ -882,14 +879,14 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         HBox hBox = new HBox();
 
         ChoiceBox<AdminActionTypeEnum> typesChoice = new ChoiceBox<>();
-        typesChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        typesChoice.converterProperty().set(new EnumConverter<>());
 
         ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
         provincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
             /** {@inheritDoc} */
             @Override
             public String toString(IMapMarker object) {
-                return globalConfiguration.getMessage(object.getId());
+                return GlobalConfiguration.getMessage(object.getId());
             }
 
             /** {@inheritDoc} */
@@ -900,9 +897,9 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         });
 
         ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
-        investChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        investChoice.converterProperty().set(new EnumConverter<>());
 
-        Button btn = new Button(globalConfiguration.getMessage("add"));
+        Button btn = new Button(GlobalConfiguration.getMessage("add"));
         btn.setOnAction(event -> {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
@@ -944,13 +941,13 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
 
         Map<AdminActionTypeEnum, Long> currentActions = actions.stream()
                 .collect(Collectors.groupingBy(AdministrativeAction::getType, Collectors.counting()));
-        Map<LimitTypeEnum, Integer> maxPurchase = globalConfiguration.getTables().getLimits().stream().filter(
+        Map<LimitTypeEnum, Integer> maxPurchase = GlobalConfiguration.getTables().getLimits().stream().filter(
                 limit -> StringUtils.equals(limit.getCountry(), country.getName()) &&
                         limit.getPeriod().getBegin() <= game.getTurn() &&
                         limit.getPeriod().getEnd() >= game.getTurn()).collect(Collectors.groupingBy(Limit::getType, Collectors.summingInt(Limit::getNumber)));
 
 
-        establishmentPane.setText(globalConfiguration.getMessage("admin_action.form.establishment",
+        establishmentPane.setText(GlobalConfiguration.getMessage("admin_action.form.establishment",
                 currentActions.get(AdminActionTypeEnum.COL), maxPurchase.get(LimitTypeEnum.ACTION_COL),
                 currentActions.get(AdminActionTypeEnum.TP), maxPurchase.get(LimitTypeEnum.ACTION_TP)));
         establishmentTable.setItems(FXCollections.observableArrayList(actions));
@@ -972,12 +969,12 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         HBox hBox = new HBox();
 
         ChoiceBox<AdminActionTypeEnum> typesChoice = new ChoiceBox<>();
-        typesChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        typesChoice.converterProperty().set(new EnumConverter<>());
 
         ChoiceBox<InvestmentEnum> investChoice = new ChoiceBox<>();
-        investChoice.converterProperty().set(new EnumConverter<>(globalConfiguration));
+        investChoice.converterProperty().set(new EnumConverter<>());
 
-        Button btn = new Button(globalConfiguration.getMessage("add"));
+        Button btn = new Button(GlobalConfiguration.getMessage("add"));
         btn.setOnAction(event -> {
             AdminActionTypeEnum type = typesChoice.getSelectionModel().getSelectedItem();
             InvestmentEnum investment = investChoice.getSelectionModel().getSelectedItem();
@@ -1015,7 +1012,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         Map<AdminActionTypeEnum, Long> currentActions = actions.stream()
                 .collect(Collectors.groupingBy(AdministrativeAction::getType, Collectors.counting()));
 
-        technologyPane.setText(globalConfiguration.getMessage("admin_action.form.technology",
+        technologyPane.setText(GlobalConfiguration.getMessage("admin_action.form.technology",
                 currentActions.get(AdminActionTypeEnum.ELT), 1,
                 currentActions.get(AdminActionTypeEnum.ENT), 1));
         technologyTable.setItems(FXCollections.observableArrayList(actions));
@@ -1036,11 +1033,11 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
     private Node createActionsNode() {
         HBox actions = new HBox();
 
-        Button validation = new Button(globalConfiguration.getMessage("validate"));
+        Button validation = new Button(GlobalConfiguration.getMessage("validate"));
         validation.setOnAction(callServiceAsEvent(economicService::validateAdminActions, () -> new ValidateRequest(true), "Error when validating administrative actions."));
         actions.getChildren().add(validation);
 
-        Button invalidation = new Button(globalConfiguration.getMessage("invalidate"));
+        Button invalidation = new Button(GlobalConfiguration.getMessage("invalidate"));
         invalidation.setOnAction(callServiceAsEvent(economicService::validateAdminActions, () -> new ValidateRequest(false), "Error when invalidating administrative actions."));
         actions.getChildren().add(invalidation);
 
@@ -1054,7 +1051,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
      * @return the tab for the administrative actions already done
      */
     private Tab createAdminList(PlayableCountry country) {
-        Tab tab = new Tab(globalConfiguration.getMessage("admin_action.list"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("admin_action.list"));
         tab.setClosable(false);
 
         choiceListCountry = new ChoiceBox<>();
@@ -1158,45 +1155,45 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         TableColumn<AdministrativeAction, String> column;
 
         if (callback == null) {
-            column = new TableColumn<>(globalConfiguration.getMessage("admin_action.turn"));
+            column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.turn"));
             column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
             column.setCellValueFactory(new PropertyValueFactory<>("turn"));
             table.getColumns().add(column);
         }
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.action"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.action"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(globalConfiguration.getMessage(param.getValue().getType())));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(GlobalConfiguration.getMessage(param.getValue().getType())));
         table.getColumns().add(column);
 
-        TableColumn<AdministrativeAction, AdministrativeAction> columnCustom = new TableColumn<>(globalConfiguration.getMessage("admin_action.info"));
+        TableColumn<AdministrativeAction, AdministrativeAction> columnCustom = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.info"));
         columnCustom.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
         columnCustom.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue()));
         columnCustom.setCellFactory(param -> getInfo());
         table.getColumns().add(columnCustom);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.cost"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.cost"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("cost"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.column"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.column"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("column"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.bonus"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.bonus"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
         column.setCellValueFactory(new PropertyValueFactory<>("bonus"));
         table.getColumns().add(column);
 
         if (callback == null) {
-            column = new TableColumn<>(globalConfiguration.getMessage("admin_action.die"));
+            column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.die"));
             column.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
             column.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getDie() == null ? "" : param.getValue().getDie().toString()));
             table.getColumns().add(column);
 
-            column = new TableColumn<>(globalConfiguration.getMessage("admin_action.result"));
+            column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.result"));
             column.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
             column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getResult(param.getValue().getResult(), param.getValue().getSecondaryDie(),
                     param.getValue().isSecondaryResult())));
@@ -1204,7 +1201,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         }
 
         if (callback != null) {
-            column = new TableColumn<>(globalConfiguration.getMessage("admin_action.actions"));
+            column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.actions"));
             column.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
             column.setCellValueFactory(new PropertyValueFactory<>("NONE"));
             Callback<TableColumn<AdministrativeAction, String>, TableCell<AdministrativeAction, String>> cellFactory = new Callback<TableColumn<AdministrativeAction, String>, TableCell<AdministrativeAction, String>>() {
@@ -1218,7 +1215,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
                                 setGraphic(null);
                                 setText(null);
                             } else {
-                                Button btn = new Button(globalConfiguration.getMessage("delete"));
+                                Button btn = new Button(GlobalConfiguration.getMessage("delete"));
                                 btn.setOnAction(event -> {
                                     AdministrativeAction adminAction = getTableView().getItems().get(getIndex());
                                     callback.accept(adminAction);
@@ -1250,14 +1247,14 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
                         Counter counter = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
                                 .filter(counter1 -> counter1.getId().equals(action.getIdObject()))).findFirst().orElse(null);
                         if (counter != null) {
-                            Label label = new Label(globalConfiguration.getMessage(counter.getOwner().getProvince()) + " - ");
+                            Label label = new Label(GlobalConfiguration.getMessage(counter.getOwner().getProvince()) + " - ");
                             hBox.getChildren().addAll(label, UIUtil.getImage(counter));
                         }
                         if (action.getCounterFaceType() != null) {
                             hBox.getChildren().addAll(new Label(" -> "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType()));
                         }
                     } else if (StringUtils.isNotEmpty(action.getProvince())) {
-                        hBox.getChildren().add(new Label(globalConfiguration.getMessage(action.getProvince())));
+                        hBox.getChildren().add(new Label(GlobalConfiguration.getMessage(action.getProvince())));
                         if (action.getCounterFaceType() != null) {
                             hBox.getChildren().addAll(new Label(" - "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType()));
                         }
@@ -1273,7 +1270,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
      * @return the tab for the competitions.
      */
     private Tab createCompetition() {
-        Tab tab = new Tab(globalConfiguration.getMessage("admin_action.competitions"));
+        Tab tab = new Tab(GlobalConfiguration.getMessage("admin_action.competitions"));
         tab.setClosable(false);
 
         choiceCompetitionTurn = new ChoiceBox<>();
@@ -1283,8 +1280,8 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
             /** {@inheritDoc} */
             @Override
             public String toString(Competition object) {
-                String province = globalConfiguration.getMessage(object.getProvince());
-                String type = globalConfiguration.getMessage(object.getType());
+                String province = GlobalConfiguration.getMessage(object.getProvince());
+                String type = GlobalConfiguration.getMessage(object.getType());
                 return province + " - " + type;
             }
 
@@ -1364,27 +1361,27 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         table.setPrefWidth(750);
         TableColumn<CompetitionRound, String> column;
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.competition.round"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.competition.round"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         column.setCellValueFactory(new PropertyValueFactory<>("round"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.competition.country"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.competition.country"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(globalConfiguration.getMessage(param.getValue().getCountry())));
+        column.setCellValueFactory(param -> new ReadOnlyStringWrapper(GlobalConfiguration.getMessage(param.getValue().getCountry())));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.competition.column"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.competition.column"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         column.setCellValueFactory(new PropertyValueFactory<>("column"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.competition.die"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.competition.die"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         column.setCellValueFactory(new PropertyValueFactory<>("die"));
         table.getColumns().add(column);
 
-        column = new TableColumn<>(globalConfiguration.getMessage("admin_action.competition.result"));
+        column = new TableColumn<>(GlobalConfiguration.getMessage("admin_action.competition.result"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
         column.setCellValueFactory(param -> new ReadOnlyStringWrapper(getResult(param.getValue().getResult(), param.getValue().getSecondaryDie(),
                 param.getValue().isSecondaryResult())));
@@ -1402,12 +1399,12 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
     private String getResult(ResultEnum result, Integer secondaryDie, Boolean secondaryResult) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(globalConfiguration.getMessage(result));
+        sb.append(GlobalConfiguration.getMessage(result));
         if (secondaryDie != null && secondaryResult != null) {
             sb.append(" (")
                     .append(secondaryDie)
                     .append(" -> ")
-                    .append(globalConfiguration.getMessage("admin_action.secondary_result." + secondaryResult))
+                    .append(GlobalConfiguration.getMessage("admin_action.secondary_result." + secondaryResult))
                     .append(")");
         }
 

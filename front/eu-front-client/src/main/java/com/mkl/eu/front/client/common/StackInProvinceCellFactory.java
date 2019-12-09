@@ -16,17 +16,6 @@ import javafx.util.Callback;
  * @author MKL.
  */
 public class StackInProvinceCellFactory implements Callback<ListView<Stack>, ListCell<Stack>> {
-    /** The global configuration for internationalisation. */
-    private GlobalConfiguration globalConfiguration;
-
-    /**
-     * Constructor.
-     *
-     * @param globalConfiguration the global configuration.
-     */
-    public StackInProvinceCellFactory(GlobalConfiguration globalConfiguration) {
-        this.globalConfiguration = globalConfiguration;
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -43,7 +32,7 @@ public class StackInProvinceCellFactory implements Callback<ListView<Stack>, Lis
                     for (Counter counter : item.getCounters()) {
                         hBox.getChildren().add(UIUtil.getImage(counter));
                     }
-                    hBox.getChildren().add(new Label(" - " + globalConfiguration.getMessage(item.getProvince())));
+                    hBox.getChildren().add(new Label(" - " + GlobalConfiguration.getMessage(item.getProvince())));
                 }
             }
         };

@@ -15,6 +15,7 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
 public interface IMenuContainer extends INotJavaFxServiceCaller {
     /**
      * @return a GlobalConfiguration for configuration not related to a specific game.
+     * TODO Remove.
      */
     GlobalConfiguration getGlobalConfiguration();
 
