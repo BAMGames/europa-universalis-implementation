@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -238,7 +239,7 @@ public abstract class AbstractBack implements INameConstants {
         private void cleanParams() {
             for (int i = 0; i < params.length; i++) {
                 if (params[i] instanceof Collection) {
-                    params[i] = ((Collection<?>) params[i]).stream().map(Object::toString).collect(Collectors.joining(","));
+                    params[i] = ((Collection<?>) params[i]).stream().map(Objects::toString).collect(Collectors.joining(","));
                 } else if (params[i] instanceof Enum) {
                     params[i] = ((Enum<?>) params[i]).name();
                 }
