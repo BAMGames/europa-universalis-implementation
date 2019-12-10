@@ -205,39 +205,39 @@
             <!--</goals>-->
             <!--<configuration>-->
             <!--<tasks>-->
-            <!--<echo message=" - Creation of distribution folder ... "/>-->
-            <!--<mkdir dir="${project.build.directory}/${artifactId}-${project.version}"/>-->
+            <!--<echo message=" - Creation of distribution folder ... " />-->
+            <!--<mkdir dir="${project.build.directory}/${artifactId}-${project.version}" />-->
             <!--<move file="${project.build.directory}/${artifactId}-${project.version}.jar"-->
-            <!--tofile="${project.build.directory}/${name}.jar"/>-->
-            <!--<echo message=" - Copy of client jar : ${name}.jar ... "/>-->
+            <!--tofile="${project.build.directory}/${name}.jar" />-->
+            <!--<echo message=" - Copy of client jar : ${name}.jar ... " />-->
             <!--<copy overwrite="true"-->
             <!--todir="${project.build.directory}/${artifactId}-${project.version}"-->
-            <!--file="${project.build.directory}/${name}.jar"/>-->
+            <!--file="${project.build.directory}/${name}.jar" />-->
             <!--<move file="${project.build.directory}/${name}.jar"-->
-            <!--tofile="${project.build.directory}/${artifactId}-${project.version}.jar"/>-->
+            <!--tofile="${project.build.directory}/${artifactId}-${project.version}.jar" />-->
             <!--<copy overwrite="true"-->
             <!--todir="${project.build.directory}/${artifactId}-${project.version}"-->
             <!--filtering="true">-->
             <!--<fileset dir="${project.basedir}/config/">-->
-            <!--<include name="**/*"/>-->
+            <!--<include name="**/*" />-->
             <!--</fileset>-->
             <!--<filterset>-->
-            <!--<filter token="artifactId" value="${artifactId}"/>-->
-            <!--<filter token="version" value="${version}"/>-->
-            <!--<filter token="name" value="${name}"/>-->
+            <!--<filter token="artifactId" value="${artifactId}" />-->
+            <!--<filter token="version" value="${version}" />-->
+            <!--<filter token="name" value="${name}" />-->
             <!--</filterset>-->
             <!--</copy>-->
             <!--<copy overwrite="true"-->
             <!--todir="${project.build.directory}/${artifactId}-${project.version}/data"-->
             <!--filtering="true">-->
             <!--<fileset dir="${project.basedir}/data/">-->
-            <!--<include name="**/*"/>-->
+            <!--<include name="**/*" />-->
             <!--</fileset>-->
             <!--</copy>-->
-            <!--<echo message=" - Creation of zip with all the content of ${artifactId}-${project.version} ... "/>-->
+            <!--<echo message=" - Creation of zip with all the content of ${artifactId}-${project.version} ... " />-->
             <!--<zip destfile="${project.build.directory}/${artifactId}-${project.version}.zip"-->
             <!--basedir="${project.build.directory}/${artifactId}-${project.version}"-->
-            <!--update="true"/>-->
+            <!--update="true" />-->
             <!--</tasks>-->
             <!--</configuration>-->
             <!--</execution>-->
