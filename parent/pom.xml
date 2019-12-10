@@ -3,7 +3,7 @@
     <groupId>com.mkl.eu.parent</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>EU Parent</name>
     <url>http://maven.apache.org</url>
 
