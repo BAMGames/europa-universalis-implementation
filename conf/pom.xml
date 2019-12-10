@@ -3,14 +3,14 @@
     <parent>
         <groupId>com.mkl.eu.parent</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
         <relativePath>../parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mkl.eu.conf</groupId>
     <artifactId>conf</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>Pom parent des configurations de Nautil</name>
     <url>http://maven.apache.org</url>
 
