@@ -60,6 +60,11 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <scm>
+        <url>https://github.com/BAMGames/europa-universalis-implementation.git</url>
+        <connection>scm:git:git://github.com/BAMGames/europa-universalis-implementation.git</connection>
+        <developerConnection>scm:git:git@github.com:BAMGames/europa-universalis-implementation.git</developerConnection>
+    </scm>
 
     <build>
         <pluginManagement>
