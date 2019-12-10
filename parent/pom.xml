@@ -8,9 +8,6 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <client-version>1.0.1-SNAPSHOT</client-version>
-        <conf-version>1.0.1-SNAPSHOT</conf-version>
-        <service-version>1.0.1-SNAPSHOT</service-version>
 
         <jogl.version>2.3.2</jogl.version>
         <org.slf4j-version>1.7.7</org.slf4j-version>
@@ -205,37 +202,37 @@
             <dependency>
                 <groupId>com.mkl.eu.client</groupId>
                 <artifactId>eu-client-common</artifactId>
-                <version>${client-version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.mkl.eu.client</groupId>
                 <artifactId>eu-client-habilitations</artifactId>
-                <version>${client-version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.mkl.eu.client</groupId>
                 <artifactId>eu-client-service</artifactId>
-                <version>${client-version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.mkl.eu.conf</groupId>
                 <artifactId>eu-conf-scripts</artifactId>
-                <version>${conf-version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.mkl.eu.service</groupId>
                 <artifactId>eu-service-habilitations</artifactId>
-                <version>${service-version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.mkl.eu.service</groupId>
                 <artifactId>eu-service-service</artifactId>
-                <version>${service-version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
