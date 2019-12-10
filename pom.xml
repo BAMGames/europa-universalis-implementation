@@ -13,6 +13,12 @@
     <name>EU reactor</name>
     <url>http://maven.apache.org</url>
 
+    <scm>
+        <url>https://github.com/BAMGames/europa-universalis-implementation.git</url>
+        <connection>scm:git:git://github.com/BAMGames/europa-universalis-implementation.git</connection>
+        <developerConnection>scm:git:git@github.com:BAMGames/europa-universalis-implementation.git</developerConnection>
+    </scm>
+
     <profiles>
         <profile>
             <id>default</id>
