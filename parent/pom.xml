@@ -73,6 +73,13 @@
                         <!-- Skip tests uniquement lors du perform -->
                         <goals>deploy -Dmaven.test.skip</goals>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.scm</groupId>
+                            <artifactId>maven-scm-provider-gitexe</artifactId>
+                            <version>1.11.2</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
