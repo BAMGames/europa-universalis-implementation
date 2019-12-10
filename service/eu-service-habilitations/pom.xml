@@ -4,14 +4,14 @@
     <parent>
         <groupId>com.mkl.eu.service</groupId>
         <artifactId>service</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mkl.eu.service</groupId>
     <artifactId>eu-service-habilitations</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>eu-service-habilitations</name>
     <url>http://maven.apache.org</url>
     <properties>
