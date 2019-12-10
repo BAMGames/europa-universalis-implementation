@@ -8,6 +8,10 @@ External links:
  - [Rules](http://old.bamgames.org/Europa/EU8/dev/master/)
  - [Backlog](https://tree.taiga.io/project/fogiafr-eu/epics)
 
+Download (latest stable version):
+ - [Client](https://dl.bintray.com/mkl/eu/com/mkl/eu/front/eu-front-client/1.0.0/:eu-front-client-1.0.0-zip.zip)
+ - [Global](https://dl.bintray.com/mkl/eu/com/mkl/eu/)
+
 Download Snapshot (not stable version):
  - [Client](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/front/eu-front-client/)
  - [Global](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/)
