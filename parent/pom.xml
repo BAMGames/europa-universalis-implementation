@@ -46,7 +46,7 @@
         <repository>
             <id>artifactory</id>
             <name>Repository Name</name>
-            <url>http://dl.bintray.com/MKL/maven</url>
+            <url>https://api.bintray.com/maven/mkl/eu/com.mkl.eu/;publish=1</url>
         </repository>
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
