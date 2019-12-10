@@ -4,12 +4,12 @@
         <groupId>com.mkl.eu.parent</groupId>
         <artifactId>parent</artifactId>
         <relativePath>./parent/pom.xml</relativePath>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <groupId>com.mkl.eu</groupId>
     <artifactId>eu</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>EU reactor</name>
     <url>http://maven.apache.org</url>
 
@@ -17,7 +17,8 @@
         <url>https://github.com/BAMGames/europa-universalis-implementation.git</url>
         <connection>scm:git:git://github.com/BAMGames/europa-universalis-implementation.git</connection>
         <developerConnection>scm:git:git@github.com:BAMGames/europa-universalis-implementation.git</developerConnection>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <profiles>
         <profile>
