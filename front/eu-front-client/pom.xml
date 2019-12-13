@@ -3,11 +3,11 @@
     <parent>
         <groupId>com.mkl.eu.front</groupId>
         <artifactId>front</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
     <groupId>com.mkl.eu.front</groupId>
     <artifactId>eu-front-client</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>eu-client</name>
