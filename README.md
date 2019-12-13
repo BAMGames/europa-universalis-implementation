@@ -13,5 +13,5 @@ Download (latest stable version):
  - [Global](https://dl.bintray.com/mkl/eu/com/mkl/eu/)
 
 Download Snapshot (not stable version):
- - [Client](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/front/eu-front-client/)
+ - [Client](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/front/eu-front-client/1.0.1-SNAPSHOT)
  - [Global](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/)
