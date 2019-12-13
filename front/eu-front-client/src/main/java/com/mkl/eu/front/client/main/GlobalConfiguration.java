@@ -120,6 +120,13 @@ public class GlobalConfiguration {
     }
 
     /**
+     * @return the host to call for socket diffs.
+     */
+    public static String getSocketHost() {
+        return getInstance().configuration.getProperty("socket.host");
+    }
+
+    /**
      * @return the data folder for all the resources (images, internationalization, etc..).
      */
     public static String getDataFolder() {

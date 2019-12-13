@@ -6,13 +6,13 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.DiffResponseEvent;
 import com.mkl.eu.front.client.main.GameConfiguration;
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import javafx.application.Platform;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -53,7 +53,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
     @PostConstruct
     public void init() {
         try {
-            socket = new Socket("127.0.0.1", 2009);
+            socket = new Socket(GlobalConfiguration.getSocketHost(), 2009);
 
             SocketInfo info = new SocketInfo();
             info.setUsername(authentHolder.getUsername());
@@ -120,7 +120,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject("TERMINATE");
             socket.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("Error when closing the socket : " + e.getMessage());
         }
     }

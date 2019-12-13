@@ -164,6 +164,9 @@ public class EUApplication extends Application {
         table.getColumns().add(column);
 
         List<GameLight> games = findGames();
+        if (games == null) {
+            games = new ArrayList<>();
+        }
         table.setItems(FXCollections.observableList(games));
 
         Tab tab = new Tab(GlobalConfiguration.getMessage("game.games"));
