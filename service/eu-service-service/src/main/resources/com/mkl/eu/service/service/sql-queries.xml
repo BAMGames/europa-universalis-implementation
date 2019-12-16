@@ -6,14 +6,14 @@
 			SELECT
 				p.NAME AS PROVINCE,
 				peu.INCOME AS INCOME
-			FROM r_province_eu peu
-				INNER JOIN r_province p ON peu.id = p.id
+			FROM R_PROVINCE_EU peu
+				INNER JOIN R_PROVINCE p ON peu.id = p.id
 			WHERE R_COUNTRY = ':countryName'
-				AND  p.name NOT IN
+				AND  p.NAME NOT IN
 					(SELECT
 						s.R_PROVINCE
-					FROM counter c
-						INNER JOIN stack s ON c.ID_STACK = s.id
+					FROM COUNTER c
+						INNER JOIN STACK s ON c.ID_STACK = s.ID
 					WHERE c.R_COUNTRY <> ':countryName'
 						AND s.ID_GAME = :idGame
 						AND c.TYPE = 'OWN'
@@ -25,14 +25,14 @@
         <![CDATA[
 			SELECT
 				s.R_PROVINCE as PROVINCE,
-				peu.income as INCOME
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.id
-				INNER JOIN r_province p ON p.name = s.r_province
-				INNER JOIN r_province_eu peu ON peu.id = p.id
+				peu.INCOME as INCOME
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
+				INNER JOIN R_PROVINCE p ON p.NAME = s.R_PROVINCE
+				INNER JOIN R_PROVINCE_EU peu ON peu.ID = p.ID
 			WHERE c.R_COUNTRY = ':countryName'
 				AND s.ID_GAME = :idGame
-				AND c.type = 'OWN'
+				AND c.TYPE = 'OWN'
 			;
 		]]>
     </entry>
@@ -40,8 +40,8 @@
         <![CDATA[
 			SELECT
 				s.R_PROVINCE AS PROVINCE
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.id
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
 			WHERE (c.TYPE = 'REVOLT_MINUS'
 					OR c.TYPE = 'REVOLT_PLUS'
 					OR c.TYPE = 'PILLAGE_MINUS'
@@ -56,10 +56,10 @@
 	<entry key="income.mnu">
 		<![CDATA[
 			SELECT
-				SUM(m.value)
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.ID
-				INNER JOIN t_mnu m ON m.R_COUNTRY = c.R_COUNTRY AND m.TYPE = c.TYPE
+				SUM(m.VALUE)
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
+				INNER JOIN T_MNU m ON m.R_COUNTRY = c.R_COUNTRY AND m.TYPE = c.TYPE
 			WHERE s.ID_GAME = :idGame
 				AND c.R_COUNTRY = ':countryName'
 				AND s.R_PROVINCE NOT IN :provinceNames
@@ -69,8 +69,8 @@
 	<entry key="income.innergold">
 		<![CDATA[
 			SELECT
-				SUM(g.value)
-			FROM r_gold g
+				SUM(g.VALUE)
+			FROM R_GOLD g
 			WHERE g.R_PROVINCE IN :provinceNames;
 		]]>
 	</entry>
@@ -78,8 +78,8 @@
 		<![CDATA[
 			SELECT
 				20 * COUNT(*)
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.ID
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
 			WHERE s.ID_GAME = :idGame
 				AND s.R_PROVINCE IN :provinceNames
 				AND c.TYPE = 'GOLD_MINE'
@@ -89,9 +89,9 @@
 	<entry key="income.tflevels">
 		<![CDATA[
 			SELECT
-				SUM(tf.level * (CASE tz.TYPE WHEN 'ZP' THEN 2 ELSE 1 END))
-			FROM trade_fleet tf
-				INNER JOIN r_province p ON tf.R_PROVINCE = p.NAME
+				SUM(tf.LEVEL * (CASE tz.TYPE WHEN 'ZP' THEN 2 ELSE 1 END))
+			FROM TRADE_FLEET tf
+				INNER JOIN R_PROVINCE p ON tf.R_PROVINCE = p.NAME
 				INNER JOIN R_PROVINCE_TZ tz ON tz.ID = p.ID
 			WHERE tf.R_COUNTRY = ':countryName'
 				AND tf.ID_GAME = :idGame
@@ -109,8 +109,8 @@
         				ELSE 0
         			END
         		)
-			FROM trade_fleet tf
-				INNER JOIN r_province p ON tf.R_PROVINCE = p.NAME
+			FROM TRADE_FLEET tf
+				INNER JOIN R_PROVINCE p ON tf.R_PROVINCE = p.NAME
 				INNER JOIN R_PROVINCE_TZ tz ON tz.ID = p.ID
 			WHERE tf.R_COUNTRY = ':countryName'
 				AND tf.ID_GAME = :idGame
@@ -122,10 +122,10 @@
 			SELECT
 				c.TYPE as TYPE,
 				COALESCE(GROUP_CONCAT(cp.R_COUNTRY SEPARATOR ','), peu.R_COUNTRY) as COUNTRY
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.ID
-				INNER JOIN r_province p ON s.R_PROVINCE = p.NAME
-				INNER JOIN r_province_eu peu ON p.ID = peu.ID
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
+				INNER JOIN R_PROVINCE p ON s.R_PROVINCE = p.NAME
+				INNER JOIN R_PROVINCE_EU peu ON p.ID = peu.ID
   				LEFT OUTER JOIN STACK sp ON sp.R_PROVINCE = p.NAME AND sp.ID_GAME = :idGame
   				LEFT OUTER JOIN COUNTER cp ON cp.ID_STACK = sp.ID AND cp.TYPE = 'OWN'
 			WHERE c.TYPE LIKE 'TRADE_CENTER%'
@@ -143,10 +143,10 @@
 						WHEN 'COLONY' THEN LEVEL + (CASE WHEN LEVEL >=4 THEN 2 WHEN LEVEL >= 1 THEN 1 ELSE 0 END) * r.INCOME
 						ELSE CASE WHEN LEVEL >= 4 THEN 2 WHEN LEVEL >=1 THEN 1 ELSE 0 END
 					END) AS INCOME
-			FROM establishment e
-				INNER JOIN r_region r ON e.R_REGION = r.NAME
-				INNER JOIN counter c0 ON e.ID_COUNTER = c0.ID
-				INNER JOIN stack s ON c0.ID_STACK = s.id
+			FROM ESTABLISHMENT e
+				INNER JOIN R_REGION r ON e.R_REGION = r.NAME
+				INNER JOIN COUNTER c0 ON e.ID_COUNTER = c0.ID
+				INNER JOIN STACK s ON c0.ID_STACK = s.ID
 			WHERE c0.R_COUNTRY = ':countryName'
 				AND s.ID_GAME = :idGame
 			GROUP BY e.TYPE
@@ -156,15 +156,15 @@
 	<entry key="income.exoRes">
 		<![CDATA[
 			SELECT
-				SUM(price)
+				SUM(PRICE)
 			FROM (
   				SELECT
   					SUM(er.NUMBER) * CAST(SUBSTRING(s.R_PROVINCE, 6, 1) AS SIGNED INTEGER) AS PRICE
-  				FROM exotic_resources er
-  					INNER JOIN establishment e ON er.ID_ESTABLISHMENT = e.ID
-  					INNER JOIN counter c0 ON e.ID_COUNTER = c0.ID
-  					INNER JOIN counter c1 ON c1.type = concat(er.RESOURCE, '_PRICE')
-  					INNER JOIN stack s ON c1.ID_STACK = s.ID
+  				FROM EXOTIC_RESOURCES er
+  					INNER JOIN ESTABLISHMENT e ON er.ID_ESTABLISHMENT = e.ID
+  					INNER JOIN COUNTER c0 ON e.ID_COUNTER = c0.ID
+  					INNER JOIN COUNTER c1 ON c1.TYPE = concat(er.RESOURCE, '_PRICE')
+  					INNER JOIN STACK s ON c1.ID_STACK = s.ID
   				WHERE c0.R_COUNTRY = ':countryName'
   					AND s.ID_GAME = :idGame
   				GROUP BY er.RESOURCE, s.R_PROVINCE
@@ -176,28 +176,28 @@
 		<![CDATA[
 			SELECT
 				p.NAME AS PROVINCE
-			FROM r_province_eu peu
-				INNER JOIN r_province p ON peu.id = p.id
+			FROM R_PROVINCE_EU peu
+				INNER JOIN R_PROVINCE p ON peu.ID = p.ID
 			WHERE R_COUNTRY = ':countryName'
-				AND  p.name NOT IN
+				AND  p.NAME NOT IN
 					(SELECT
 						s.R_PROVINCE
-					FROM counter c
-						INNER JOIN stack s ON c.ID_STACK = s.id
+					FROM COUNTER c
+						INNER JOIN STACK s ON c.ID_STACK = s.ID
 					WHERE c.R_COUNTRY <> ':countryName'
+						AND c.TYPE = 'OWN'
 						AND s.ID_GAME = :idGame
-						AND (c.TYPE = 'OWN')
 					)
 			UNION
 			SELECT
 				s.R_PROVINCE AS PROVINCE
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.id
-				INNER JOIN r_province p ON p.name = s.r_province
-				INNER JOIN r_province_eu peu ON peu.id = p.id
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
+				INNER JOIN R_PROVINCE p ON p.NAME = s.R_PROVINCE
+				INNER JOIN R_PROVINCE_EU peu ON peu.ID = p.ID
 			WHERE c.R_COUNTRY = ':countryName'
 				AND s.ID_GAME = :idGame
-				AND c.type = 'OWN'
+				AND c.TYPE = 'OWN'
 			;
 		]]>
 	</entry>
@@ -205,20 +205,20 @@
 		<![CDATA[
 			SELECT
   				DISTINCT p.NAME AS PROVINCE
-			FROM r_province_eu peu
-  				INNER JOIN r_province p ON peu.id = p.id
-  				INNER JOIN stack s on s.R_PROVINCE = p.NAME AND s.ID_GAME = :idGame
-  				INNER JOIN counter c on c.ID_STACK = s.ID
+			FROM R_PROVINCE_EU peu
+  				INNER JOIN R_PROVINCE p ON peu.ID = p.ID
+  				INNER JOIN STACK s ON s.R_PROVINCE = p.NAME AND s.ID_GAME = :idGame
+  				INNER JOIN COUNTER c ON c.ID_STACK = s.ID
 			WHERE peu.R_COUNTRY = ':countryName'
   				AND c.R_COUNTRY in :enemies
-      			AND  p.name NOT IN (
+      			AND  p.NAME NOT IN (
            			SELECT
               			s.R_PROVINCE
-            		FROM counter c
-              			INNER JOIN stack s ON c.ID_STACK = s.id
+            		FROM COUNTER c
+              			INNER JOIN STACK s ON c.ID_STACK = s.ID
             		WHERE c.R_COUNTRY <> ':countryName'
+                  		AND c.TYPE = 'OWN'
                   		AND s.ID_GAME = :idGame
-                  		AND (c.TYPE = 'OWN')
            			)
            	;
 		]]>
@@ -227,26 +227,26 @@
 		<![CDATA[
 			SELECT
 				DISTINCT c.R_COUNTRY AS OWNER
-			FROM r_province_rotw pr
-  				INNER JOIN r_province p ON pr.id = p.id
+			FROM R_PROVINCE_ROTW pr
+  				INNER JOIN R_PROVINCE p ON pr.ID = p.ID
  				LEFT OUTER JOIN STACK s ON s.R_PROVINCE = p.NAME
  				LEFT OUTER JOIN COUNTER c ON c.ID_STACK = s.ID
     		WHERE s.ID_GAME = :idGame
     			AND (c.TYPE = 'COLONY_PLUS' OR c.TYPE = 'MISSION')
-    			AND pr.region IN (
+    			AND pr.REGION IN (
   					SELECT
-  						DISTINCT pr1.region
-  					FROM r_province_rotw pr
-    					INNER JOIN r_province p ON pr.id = p.id
-    					INNER JOIN r_border b1 ON b1.ID_R_PROVINCE_FROM = p.ID
-    					INNER JOIN r_province p1 ON b1.ID_R_PROVINCE_TO = p1.ID
-    					INNER JOIN r_province_rotw pr1 ON pr1.ID = p1.ID
-  					WHERE pr.region = (
+  						DISTINCT pr1.REGION
+  					FROM R_PROVINCE_ROTW pr
+    					INNER JOIN R_PROVINCE p ON pr.ID = p.ID
+    					INNER JOIN R_BORDER b1 ON b1.ID_R_PROVINCE_FROM = p.ID
+    					INNER JOIN R_PROVINCE p1 ON b1.ID_R_PROVINCE_TO = p1.ID
+    					INNER JOIN R_PROVINCE_ROTW pr1 ON pr1.ID = p1.ID
+  					WHERE pr.REGION = (
     					SELECT
     						pr.REGION
-    				FROM r_province_rotw pr
-      					INNER JOIN r_province p ON pr.id = p.id
-    				WHERE p.name = ':province'
+    				FROM R_PROVINCE_ROTW pr
+      					INNER JOIN R_PROVINCE p ON pr.ID = p.ID
+    				WHERE p.NAME = ':province'
   					)
 				)
 			;
@@ -256,19 +256,19 @@
 		<![CDATA[
 			SELECT
 				DISTINCT IFNULL(c.R_COUNTRY, pe1.R_COUNTRY) AS OWNER
-			FROM r_province_rotw pr
-  				INNER JOIN r_province p ON pr.id = p.id
-  				INNER JOIN r_border b1 ON b1.ID_R_PROVINCE_FROM = p.ID
-  				INNER JOIN r_province p1 ON b1.ID_R_PROVINCE_TO = p1.ID
-  				INNER JOIN r_province_eu pe1 ON pe1.ID = p1.ID
-  				LEFT OUTER JOIN stack s ON s.R_PROVINCE = p1.NAME AND s.ID_GAME = :idGame
-  				LEFT OUTER JOIN counter c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
-			WHERE pr.region = (
+			FROM R_PROVINCE_ROTW pr
+  				INNER JOIN R_PROVINCE p ON pr.ID = p.ID
+  				INNER JOIN R_BORDER b1 ON b1.ID_R_PROVINCE_FROM = p.ID
+  				INNER JOIN R_PROVINCE p1 ON b1.ID_R_PROVINCE_TO = p1.ID
+  				INNER JOIN R_PROVINCE_EU pe1 ON pe1.ID = p1.ID
+  				LEFT OUTER JOIN STACK s ON s.R_PROVINCE = p1.NAME AND s.ID_GAME = :idGame
+  				LEFT OUTER JOIN COUNTER c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
+			WHERE pr.REGION = (
   				SELECT
   					pr.REGION
-  				FROM r_province_rotw pr
-    				INNER JOIN r_province p ON pr.id = p.id
-  				WHERE p.name = ':province'
+  				FROM R_PROVINCE_ROTW pr
+    				INNER JOIN R_PROVINCE p ON pr.ID = p.ID
+  				WHERE p.NAME = ':province'
 				)
 			;
 		]]>
@@ -277,14 +277,14 @@
 		<![CDATA[
 			SELECT
 				COUNT(*) AS NUMBER
-			FROM counter c
-				INNER JOIN stack s ON c.ID_STACK = s.ID
-				INNER JOIN r_province p ON s.R_PROVINCE = p.NAME
-				INNER JOIN r_province_rotw pr ON pr.id = p.id
+			FROM COUNTER c
+				INNER JOIN STACK s ON c.ID_STACK = s.ID
+				INNER JOIN R_PROVINCE p ON s.R_PROVINCE = p.NAME
+				INNER JOIN R_PROVINCE_ROTW pr ON pr.ID = p.ID
 			WHERE s.ID_GAME = :idGame
 				AND c.R_COUNTRY <> ':countryName'
 				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_PLUS')
-				AND pr.region = ':region'
+				AND pr.REGION = ':region'
 			;
 		]]>
 	</entry>
@@ -292,26 +292,26 @@
 		<![CDATA[
 			SELECT
 				DISTINCT c.R_COUNTRY AS OWNER
-			FROM counter c
- 				INNER JOIN stack s ON c.ID_STACK = s.ID
+			FROM COUNTER c
+ 				INNER JOIN STACK s ON c.ID_STACK = s.ID
 			WHERE
 				s.ID_GAME = :idGame
   				AND (c.TYPE = 'TRADING_POST_MINUS' OR c.TYPE = 'TRADING_POST_PLUS' OR c.TYPE = 'COLONY_MINUS' OR c.TYPE = 'COLONY_PLUS')
   				AND s.R_PROVINCE IN (
   					SELECT
   						DISTINCT p.NAME
-  					FROM r_province_rotw pr
-    					INNER JOIN r_province p ON p.ID = pr.ID
-    					LEFT OUTER JOIN r_border b ON b.ID_R_PROVINCE_FROM = p.ID
+  					FROM R_PROVINCE_ROTW pr
+    					INNER JOIN R_PROVINCE p ON p.ID = pr.ID
+    					LEFT OUTER JOIN R_BORDER b ON b.ID_R_PROVINCE_FROM = p.ID
     					INNER JOIN R_PROVINCE p2 ON b.ID_R_PROVINCE_TO = p2.ID
   					WHERE p2.NAME = ':province'
   						OR p2.NAME IN (
     						SELECT
     							p2.NAME
-    						FROM r_province_tz ptz
-      							INNER JOIN r_province p1 ON ptz.R_PROVINCE = p1.NAME
+    						FROM R_PROVINCE_TZ ptz
+      							INNER JOIN R_PROVINCE p1 ON ptz.R_PROVINCE = p1.NAME
       							INNER JOIN R_PROVINCE_SEA ps1 ON p1.ID = ps1.ID
-      							LEFT OUTER JOIN r_border b ON b.ID_R_PROVINCE_FROM = p1.ID
+      							LEFT OUTER JOIN R_BORDER b ON b.ID_R_PROVINCE_FROM = p1.ID
       							INNER JOIN R_PROVINCE p2 ON b.ID_R_PROVINCE_TO = p2.ID
       							INNER JOIN R_PROVINCE_SEA ps2 ON p2.ID = ps2.ID
     						WHERE ptz.R_PROVINCE = ':province'
@@ -324,12 +324,12 @@
 		<![CDATA[
 			SELECT
 				DISTINCT COALESCE(GROUP_CONCAT(c.R_COUNTRY), pe1.R_COUNTRY) AS OWNER
-  			FROM r_province p
-  				INNER JOIN r_border b1 ON b1.ID_R_PROVINCE_FROM = p.ID
-  				INNER JOIN r_province p1 ON b1.ID_R_PROVINCE_TO = p1.ID
-  				INNER JOIN r_province_eu pe1 ON pe1.ID = p1.ID
-  				LEFT OUTER JOIN stack s ON s.R_PROVINCE = p1.NAME AND s.ID_GAME = :idGame
-  				LEFT OUTER JOIN counter c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
+  			FROM R_PROVINCE p
+  				INNER JOIN R_BORDER b1 ON b1.ID_R_PROVINCE_FROM = p.ID
+  				INNER JOIN R_PROVINCE p1 ON b1.ID_R_PROVINCE_TO = p1.ID
+  				INNER JOIN R_PROVINCE_EU pe1 ON pe1.ID = p1.ID
+  				LEFT OUTER JOIN STACK s ON s.R_PROVINCE = p1.NAME AND s.ID_GAME = :idGame
+  				LEFT OUTER JOIN COUNTER c ON c.ID_STACK = s.ID AND c.TYPE = 'OWN'
 			WHERE p.NAME = ':province'
 			GROUP BY pe1.R_COUNTRY;
 		]]>
@@ -337,79 +337,79 @@
 	<entry key="tech.culture">
 		<![CDATA[
 			SELECT
-  				max(CAST(SUBSTRING(stack.r_province, 8, 2) AS SIGNED INTEGER))
-			FROM counter counter
-    			INNER JOIN stack stack ON counter.id_stack = stack.id
-    			INNER JOIN r_country country ON counter.r_country = country.name
-			WHERE counter.type = ':techType'
-    			AND country.culture in :cultures
+  				max(CAST(SUBSTRING(stack.R_PROVINCE, 8, 2) AS SIGNED INTEGER))
+			FROM COUNTER counter
+    			INNER JOIN STACK stack ON counter.ID_STACK = stack.ID
+    			INNER JOIN R_COUNTRY country ON counter.R_COUNTRY = country.NAME
+			WHERE counter.TYPE = ':techType'
+    			AND country.CULTURE in :cultures
     			AND stack.ID_GAME = :idGame
 			;
 		]]>
 	</entry>
 	<entry key="game.national_territory_under_attack">
 		<![CDATA[
-			SELECT DISTINCT prov.name FROM
+			SELECT DISTINCT prov.NAME FROM
 			(
-				SELECT prov.name FROM r_province_eu proveu
-			  		INNER JOIN r_province prov ON prov.id = proveu.id
+				SELECT prov.NAME FROM R_PROVINCE_EU proveu
+			  		INNER JOIN R_PROVINCE prov ON prov.ID = proveu.ID
 				WHERE proveu.R_COUNTRY = ':country'
 				UNION
-    			SELECT stack.r_province FROM counter counter
-					INNER JOIN stack stack ON stack.id = counter.id_stack
-				WHERE counter.type = 'OWN_NT' and counter.r_country = ':country' AND stack.id_game = :idGame
+    			SELECT stack.R_PROVINCE FROM COUNTER counter
+					INNER JOIN STACK stack ON stack.ID = counter.ID_STACK
+				WHERE counter.TYPE = 'OWN_NT' and counter.R_COUNTRY = ':country' AND stack.ID_GAME = :idGame
 			) prov
-				INNER JOIN counter counter ON counter.type = 'ARMY_MINUS' or counter.type = 'ARMY_PLUS'
-  				INNER JOIN stack stack on stack.id = counter.id_stack
-			WHERE stack.r_province = prov.name
-				AND counter.r_country in :enemies AND stack.id_game = :idGame
+				INNER JOIN COUNTER counter ON counter.TYPE = 'ARMY_MINUS' or counter.TYPE = 'ARMY_PLUS'
+  				INNER JOIN STACK stack on stack.ID = counter.ID_STACK
+			WHERE stack.R_PROVINCE = prov.NAME
+				AND counter.R_COUNTRY in :enemies AND stack.ID_GAME = :idGame
 				AND NOT EXISTS
 				(
-					SELECT * FROM counter counter
-						INNER JOIN stack stack ON stack.id = counter.id_stack
-					WHERE stack.r_province = prov.name and counter.r_country != ':country'
-	      			AND (counter.type = 'OWN_NT' or counter.type = 'OWN') AND stack.id_game = :idGame
+					SELECT * FROM COUNTER counter
+						INNER JOIN STACK stack ON stack.ID = counter.ID_STACK
+					WHERE stack.R_PROVINCE = prov.NAME and counter.R_COUNTRY != ':country'
+	      			AND (counter.TYPE = 'OWN_NT' or counter.TYPE = 'OWN') AND stack.ID_GAME = :idGame
 	      		)
 	      		AND EXISTS
 				(
-					SELECT * FROM counter counter
-						INNER JOIN stack stack ON stack.id = counter.id_stack
-					WHERE stack.r_province = prov.name and counter.r_country in :enemies
-	      			AND counter.type = 'CONTROL' AND stack.id_game = :idGame
+					SELECT * FROM COUNTER counter
+						INNER JOIN STACK stack ON stack.ID = counter.ID_STACK
+					WHERE stack.R_PROVINCE = prov.NAME and counter.R_COUNTRY in :enemies
+	      			AND counter.TYPE = 'CONTROL' AND stack.ID_GAME = :idGame
 	      		)
 			;
 		]]>
 	</entry>
 	<entry key="eco.gold_exploited"><!-- TODO TG-37 Gold exploited et depleted -->
 		<![CDATA[
-			SELECT IFNULL(SUM(gold.value), 0)
-			FROM r_gold gold
-			WHERE gold.r_province IN
+			SELECT IFNULL(SUM(gold.VALUE), 0)
+			FROM R_GOLD gold
+			WHERE gold.R_PROVINCE IN
 			(
-				SELECT DISTINCT stack.r_province
-				FROM stack stack
-					INNER JOIN counter counter ON counter.id_stack = stack.id
-				WHERE (counter.type = 'COLONY_MINUS' OR counter.type = 'COLONY_PLUS')
-					AND stack.id_game = :idGame
+				SELECT DISTINCT stack.R_PROVINCE
+				FROM STACK stack
+					INNER JOIN COUNTER counter ON counter.ID_STACK = stack.ID
+				WHERE (counter.TYPE = 'COLONY_MINUS' OR counter.TYPE = 'COLONY_PLUS')
+					AND stack.ID_GAME = :idGame
 			)
 			;
 		]]>
 	</entry>
 	<entry key="eco.gold_exploited_america"><!-- TODO TG-37 Gold exploited et depleted -->
 		<![CDATA[
-			SELECT IFNULL(SUM(gold.value), 0)
-			FROM r_gold gold
-			INNER JOIN r_province prov ON prov.name = gold.r_province
-			INNER JOIN r_province_rotw provRotw ON provRotw.id = prov.id
-			INNER JOIN r_geo_group geo ON geo.r_region = provRotw.region
-			WHERE geo.name = 'AMERICA' AND gold.r_province IN
+			SELECT IFNULL(SUM(gold.VALUE), 0)
+			FROM R_GOLD gold
+			INNER JOIN R_PROVINCE prov ON prov.NAME = gold.R_PROVINCE
+			INNER JOIN R_PROVINCE_ROTW provRotw ON provRotw.ID = prov.ID
+			INNER JOIN R_GEO_GROUP geo ON geo.R_REGION = provRotw.REGION
+			WHERE geo.NAME = 'AMERICA' AND gold.R_PROVINCE IN
 			(
-				SELECT DISTINCT stack.r_province
-				FROM stack stack
-					INNER JOIN counter counter ON counter.id_stack = stack.id
-				WHERE (counter.type = 'COLONY_MINUS' OR counter.type = 'COLONY_PLUS')
-					AND stack.id_game = :idGame
-					AND counter.r_country = ':country'
+				SELECT DISTINCT stack.R_PROVINCE
+				FROM STACK stack
+					INNER JOIN COUNTER counter ON counter.ID_STACK = stack.ID
+				WHERE (counter.TYPE = 'COLONY_MINUS' OR counter.TYPE = 'COLONY_PLUS')
+					AND stack.ID_GAME = :idGame
+					AND counter.R_COUNTRY = ':country'
 			)
 			;
 		]]>
