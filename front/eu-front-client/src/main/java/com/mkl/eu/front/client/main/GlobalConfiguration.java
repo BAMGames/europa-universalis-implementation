@@ -134,6 +134,13 @@ public class GlobalConfiguration {
     }
 
     /**
+     * @return the login (temporary).
+     */
+    public static String getLogin() {
+        return getInstance().configuration.getProperty("login");
+    }
+
+    /**
      * Initialize the GlobalConfiguration so that the configuration can be used
      * as environment variables.
      */

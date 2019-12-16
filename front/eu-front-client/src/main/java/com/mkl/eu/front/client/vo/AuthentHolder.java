@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.vo;
 
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.SimpleRequest;
+import com.mkl.eu.front.client.main.GlobalConfiguration;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthentHolder {
     /** Username of the logged client. */
-    private String username = "Sato";
+    private String username = GlobalConfiguration.getLogin();
     /** Password of the logged client. */
     private String password;
 

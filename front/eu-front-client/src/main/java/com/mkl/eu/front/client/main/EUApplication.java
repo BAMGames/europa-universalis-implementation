@@ -164,9 +164,6 @@ public class EUApplication extends Application {
         table.getColumns().add(column);
 
         List<GameLight> games = findGames();
-        if (games == null) {
-            games = new ArrayList<>();
-        }
         table.setItems(FXCollections.observableList(games));
 
         Tab tab = new Tab(GlobalConfiguration.getMessage("game.games"));
@@ -190,14 +187,18 @@ public class EUApplication extends Application {
     private List<GameLight> findGames() {
         SimpleRequest<FindGamesRequest> findGames = new SimpleRequest<>();
         findGames.setRequest(new FindGamesRequest());
-        findGames.getRequest().setUsername("Sato");
+        findGames.getRequest().setUsername(GlobalConfiguration.getLogin());
+        List<GameLight> games = null;
         try {
-            return gameService.findGames(findGames);
+            games = gameService.findGames(findGames);
         } catch (Exception e) {
             LOGGER.error("Impossible to find games.", e);
             UIUtil.showException(e, null);
-            return new ArrayList<>();
         }
+        if (games == null) {
+            games = new ArrayList<>();
+        }
+        return games;
     }
 
     /**
