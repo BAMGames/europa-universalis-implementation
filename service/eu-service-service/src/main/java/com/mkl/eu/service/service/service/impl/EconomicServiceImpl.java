@@ -1539,11 +1539,10 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         adminActionDao.delete(action);
 
-        List<DiffEntity> diffs = gameDiffs.getDiffs();
-
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.ADM_ACT, action.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, action.getCountry().getId()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, action.getType()));
+        diff.setIdCountry(action.getCountry().getId());
 
         return createDiff(diff, gameDiffs, request);
     }
