@@ -32,7 +32,6 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.GameServiceImpl;
-import com.mkl.eu.service.service.socket.SocketHandler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,9 +88,6 @@ public class GameServiceTest {
 
     @Mock
     private DiffMapping diffMapping;
-
-    @Mock
-    private SocketHandler socketHandler;
 
     @Test
     public void testFindGamesSimple() throws Exception {

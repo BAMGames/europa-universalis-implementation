@@ -22,7 +22,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.socket.AfterCommitTransaction;
-import com.mkl.eu.service.service.socket.SocketHandler;
+import com.mkl.eu.service.service.socket.WebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -36,9 +36,6 @@ import java.util.stream.Collectors;
  * @author MKL.
  */
 public abstract class AbstractService extends AbstractBack {
-    /** Socket Handler. */
-    @Autowired
-    private SocketHandler socketHandler;
     /** Game DAO. */
     @Autowired
     protected IGameDao gameDao;
@@ -271,7 +268,7 @@ public abstract class AbstractService extends AbstractBack {
         response.getDiffs().addAll(diffs);
         response.setVersionGame(versionGame);
 
-        TransactionSynchronizationManager.registerSynchronization((AfterCommitTransaction) () -> socketHandler.push(idGame, response, null));
+        TransactionSynchronizationManager.registerSynchronization((AfterCommitTransaction) () -> WebSocketServer.push(idGame, response, null));
     }
 
     /**
@@ -285,7 +282,7 @@ public abstract class AbstractService extends AbstractBack {
         DiffResponse response = new DiffResponse();
         response.getMessages().add(message);
 
-        TransactionSynchronizationManager.registerSynchronization((AfterCommitTransaction) () -> socketHandler.push(idGame, response, idCountries));
+        TransactionSynchronizationManager.registerSynchronization((AfterCommitTransaction) () -> WebSocketServer.push(idGame, response, idCountries));
     }
 
     /**

@@ -42,7 +42,7 @@ import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import com.mkl.eu.front.client.map.marker.MarkerUtils;
-import com.mkl.eu.front.client.socket.ClientSocket;
+import com.mkl.eu.front.client.socket.ClientWebSocket;
 import com.mkl.eu.front.client.vo.AuthentHolder;
 import com.mkl.eu.front.client.window.*;
 import de.fhpotsdam.unfolding.marker.Marker;
@@ -112,7 +112,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
     /** Flag saying that we already initialized the map. */
     private boolean mapInit;
     /** Socket listening to server diff on this game. */
-    private ClientSocket client;
+    private ClientWebSocket client;
     /** Component holding the authentication information. */
     @Autowired
     private AuthentHolder authentHolder;
@@ -186,10 +186,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         }
         gameConfig.setMaxIdMessage(maxIdMessage);
 
-        client = context.getBean(ClientSocket.class, gameConfig);
+        client = context.getBean(ClientWebSocket.class, gameConfig);
         client.addDiffListener(this);
-
-        new Thread(client).start();
     }
 
     /**

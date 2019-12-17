@@ -1,7 +1,7 @@
 package com.mkl.eu.front.client.socket;
 
-import com.mkl.eu.client.common.vo.SocketInfo;
 import com.mkl.eu.client.service.service.IGameService;
+import com.mkl.eu.client.service.socket.DiffResponseEncoder;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.DiffResponseEvent;
@@ -13,10 +13,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.net.SocketException;
+import javax.websocket.*;
+import java.net.URI;
 
 /**
  * Socket for the server client side.
@@ -25,11 +23,12 @@ import java.net.SocketException;
  */
 @Component
 @Scope(value = "prototype")
-public class ClientSocket extends AbstractDiffResponseListenerContainer implements Runnable {
+@ClientEndpoint
+public class ClientWebSocket extends AbstractDiffResponseListenerContainer {
     /** Delays between two unsuccessful tries to reconnect to the socket. */
     private final static long[] delays = new long[]{5000l, 10000l, 30000l, 60000l};
     /** Socket to communicate with server. */
-    private Socket socket;
+    private Session userSession = null;
     /** Terminate this process. */
     private boolean terminate;
     /** Flag saying the client is currently connected to the server. */
@@ -43,7 +42,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
      *
      * @param gameConfig the gameConfig to set.
      */
-    public ClientSocket(GameConfiguration gameConfig) {
+    public ClientWebSocket(GameConfiguration gameConfig) {
         super(gameConfig);
     }
 
@@ -52,38 +51,52 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
      */
     @PostConstruct
     public void init() {
+        StringBuilder uri = new StringBuilder(GlobalConfiguration.getSocketHost());
+        if (!uri.toString().startsWith("ws://")) {
+            uri.insert(0, "ws://");
+        }
+        if (!uri.toString().endsWith("/")) {
+            uri.append("/");
+        }
+        uri.append("diff/")
+                .append(gameConfig.getIdGame())
+                .append("/")
+                .append(gameConfig.getIdCountry());
         try {
-            socket = new Socket(GlobalConfiguration.getSocketHost(), 2009);
-
-            SocketInfo info = new SocketInfo();
-            info.setUsername(authentHolder.getUsername());
-            info.setPassword(authentHolder.getPassword());
-            info.setIdGame(gameConfig.getIdGame());
-            info.setIdCountry(gameConfig.getIdCountry());
-
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(info);
+            URI endpointURI = new URI(uri.toString());
+            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+            container.connectToServer(this, endpointURI);
+            LOGGER.info("Connected to server.");
             connected = true;
         } catch (Exception e) {
-            LOGGER.error("Error when initializing with server : " + e.getMessage());
+            LOGGER.error("Error when initializing with server " + uri.toString() + " for : " + e.getMessage());
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void run() {
-        try {
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            DiffResponse response;
+    /**
+     * Callback hook for Connection open events.
+     *
+     * @param userSession the userSession which is opened.
+     */
+    @OnOpen
+    public void onOpen(Session userSession) {
+        this.userSession = userSession;
+    }
 
-            while ((response = (DiffResponse) in.readObject()) != null) {
-                LOGGER.info("Receiving a diff for game " + gameConfig.getIdGame());
-                DiffResponseEvent event = new DiffResponseEvent(response, gameConfig.getIdGame());
-                Platform.runLater(() -> processDiffEvent(event));
-            }
-        } catch (SocketException e) {
-            connected = false;
-            tryToReconnect();
+    /**
+     * Callback hook for Message Events. This method will be invoked when a
+     * client send a message.
+     *
+     * @param message The text message
+     */
+    @OnMessage
+    public void onMessage(String message) {
+        try {
+            DiffResponse response = DiffResponseEncoder.decode(message);
+
+            LOGGER.info("Receiving a diff for game " + gameConfig.getIdGame());
+            DiffResponseEvent event = new DiffResponseEvent(response, gameConfig.getIdGame());
+            Platform.runLater(() -> processDiffEvent(event));
         } catch (Exception e) {
             if (!terminate) {
                 LOGGER.error("Error when communicating with server : " + e.getMessage());
@@ -91,11 +104,19 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
         }
     }
 
+    @OnClose
+    public void onClose() {
+        if (!terminate) {
+            LOGGER.error("Server disconnected.");
+            connected = false;
+            tryToReconnect();
+        }
+    }
+
     /**
      * If the connection to the server was lost, then we try to reconnect it.
      */
     private void tryToReconnect() {
-        setTerminate(terminate);
         int nbRetry = 0;
         while (!connected) {
             long delay = nbRetry >= delays.length ? delays[delays.length - 1] : delays[nbRetry];
@@ -103,13 +124,12 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.error("Error during sleep ?");
             }
             init();
             nbRetry++;
         }
         callService(gameService::updateGame, () -> null, "Error when updating the game.");
-        run();
     }
 
     /** @param terminate the terminate to set. */
@@ -117,9 +137,7 @@ public class ClientSocket extends AbstractDiffResponseListenerContainer implemen
         this.terminate = terminate;
 
         try {
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject("TERMINATE");
-            socket.close();
+            userSession.close();
         } catch (Exception e) {
             LOGGER.error("Error when closing the socket : " + e.getMessage());
         }

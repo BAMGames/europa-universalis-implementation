@@ -36,6 +36,12 @@
             <groupId>org.jadira.usertype</groupId>
             <artifactId>usertype.core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+        </dependency>
+
         <!-- Spring Framework -->
         <dependency>
             <groupId>org.springframework</groupId>

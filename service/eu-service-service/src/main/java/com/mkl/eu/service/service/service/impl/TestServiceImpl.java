@@ -6,8 +6,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.ITestService;
 import com.mkl.eu.client.service.service.test.TestDiffRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
-import com.mkl.eu.service.service.socket.SocketHandler;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.mkl.eu.service.service.socket.WebSocketServer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class TestServiceImpl extends AbstractService implements ITestService {
-    /** Socket Handler. */
-    @Autowired
-    private SocketHandler socketHandler;
 
     /** {@inheritDoc} */
     @Override
@@ -29,7 +25,7 @@ public class TestServiceImpl extends AbstractService implements ITestService {
         DiffResponse response = new DiffResponse();
         response.setDiffs(request.getRequest().getDiffs());
         response.setVersionGame(request.getGame().getVersionGame());
-        socketHandler.push(request.getGame().getIdGame(), response, null);
+        WebSocketServer.push(request.getGame().getIdGame(), response, null);
         return response;
     }
 }
