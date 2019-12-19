@@ -53,6 +53,8 @@ public class LeaderEntity implements IEntity, Serializable {
     private boolean main;
     /** If the leader is anonymous. */
     private boolean anonymous;
+    /** Number of LD that this leader stands for. Only used by PACHA. */
+    private Integer size;
     /** Other side of the leader for double side leaders. */
     private String otherSide;
 
@@ -250,6 +252,16 @@ public class LeaderEntity implements IEntity, Serializable {
     /** @param anonymous the anonymous to set. */
     public void setAnonymous(boolean anonymous) {
         this.anonymous = anonymous;
+    }
+
+    /** @return the size. */
+    public Integer getSize() {
+        return size;
+    }
+
+    /** @param size the size to set. */
+    public void setSize(Integer size) {
+        this.size = size;
     }
 
     /** @return the otherSide. */

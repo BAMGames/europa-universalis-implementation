@@ -21,6 +21,8 @@ public enum LeaderTypeEnum {
     /** Governor : land leader in Rotw. */
     GOVERNOR,
     /** Privateer : naval special. */
-    PRIVATEER
+    PRIVATEER,
+    /** Pacha : general special for turkey. */
+    PACHA
 
 }
