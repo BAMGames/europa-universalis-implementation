@@ -17,6 +17,8 @@ import java.io.Serializable;
 public class LeaderEntity implements IEntity, Serializable {
     /** Id. */
     private Long id;
+    /** Code of the leader. */
+    private String code;
     /** Name of the leader. */
     private String name;
     /** Country of the leader. */
@@ -47,6 +49,10 @@ public class LeaderEntity implements IEntity, Serializable {
     private boolean america;
     /** If the leader is also a privateer. */
     private boolean privateer;
+    /** If it is the main side of the leader. */
+    private boolean main;
+    /** Other side of the leader for double side leaders. */
+    private String otherSide;
 
     /** @return the id. */
     @Id
@@ -71,6 +77,16 @@ public class LeaderEntity implements IEntity, Serializable {
     /** @param country the country to set. */
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
+    }
+
+    /** @param code the code to set. */
+    public void setCode(String code) {
+        this.code = code;
     }
 
     /** @return the name. */
@@ -212,5 +228,26 @@ public class LeaderEntity implements IEntity, Serializable {
     /** @param privateer the privateer to set. */
     public void setPrivateer(boolean privateer) {
         this.privateer = privateer;
+    }
+
+    /** @return the main. */
+    public boolean isMain() {
+        return main;
+    }
+
+    /** @param main the main to set. */
+    public void setMain(boolean main) {
+        this.main = main;
+    }
+
+    /** @return the otherSide. */
+    @Column(name = "T_LEADER")
+    public String getOtherSide() {
+        return otherSide;
+    }
+
+    /** @param otherSide the otherSide to set. */
+    public void setOtherSide(String otherSide) {
+        this.otherSide = otherSide;
     }
 }
