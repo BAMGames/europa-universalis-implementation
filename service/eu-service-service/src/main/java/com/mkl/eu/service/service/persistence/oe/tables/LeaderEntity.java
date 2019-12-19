@@ -51,6 +51,8 @@ public class LeaderEntity implements IEntity, Serializable {
     private boolean privateer;
     /** If it is the main side of the leader. */
     private boolean main;
+    /** If the leader is anonymous. */
+    private boolean anonymous;
     /** Other side of the leader for double side leaders. */
     private String otherSide;
 
@@ -238,6 +240,16 @@ public class LeaderEntity implements IEntity, Serializable {
     /** @param main the main to set. */
     public void setMain(boolean main) {
         this.main = main;
+    }
+
+    /** @return the anonymous. */
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    /** @param anonymous the anonymous to set. */
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
     }
 
     /** @return the otherSide. */
