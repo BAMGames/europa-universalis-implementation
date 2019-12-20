@@ -428,8 +428,11 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isAnonymous());
         Assert.assertEquals(true, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
-        Assert.assertNotNull(leader.getOtherSide());
-        leader = leader.getOtherSide();
+        Assert.assertEquals("Albuquerque-2", leader.getOtherSide());
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Albuquerque-2"))
+                .findAny()
+                .orElse(null);
         Assert.assertEquals("Albuquerque", leader.getName());
         Assert.assertEquals("porviceroy", leader.getCountry());
         Assert.assertEquals(null, leader.getEvent());
@@ -449,7 +452,7 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isAnonymous());
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
-        Assert.assertNotNull(leader.getOtherSide());
+        Assert.assertEquals("Albuquerque", leader.getOtherSide());
 
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "Barbaros2"))
@@ -475,8 +478,11 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isAnonymous());
         Assert.assertEquals(true, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
-        Assert.assertNotNull(leader.getOtherSide());
-        leader = leader.getOtherSide();
+        Assert.assertEquals("Barbaros2-2", leader.getOtherSide());
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Barbaros2-2"))
+                .findAny()
+                .orElse(null);
         Assert.assertEquals("Barbaros2", leader.getName());
         Assert.assertEquals("turquie", leader.getCountry());
         Assert.assertEquals(null, leader.getEvent());
@@ -496,7 +502,7 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isAnonymous());
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
-        Assert.assertNotNull(leader.getOtherSide());
+        Assert.assertEquals("Barbaros2", leader.getOtherSide());
 
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "timar_Israf"))
@@ -522,8 +528,11 @@ public class TableDaoImplTest {
         Assert.assertEquals(true, leader.isAnonymous());
         Assert.assertEquals(true, leader.isMain());
         Assert.assertEquals(2, leader.getSize().intValue());
-        Assert.assertNotNull(leader.getOtherSide());
-        leader = leader.getOtherSide();
+        Assert.assertEquals("timar_Israf-2", leader.getOtherSide());
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "timar_Israf-2"))
+                .findAny()
+                .orElse(null);
         Assert.assertEquals("timar_Israf", leader.getName());
         Assert.assertEquals("turquie", leader.getCountry());
         Assert.assertEquals(null, leader.getEvent());
@@ -543,6 +552,6 @@ public class TableDaoImplTest {
         Assert.assertEquals(true, leader.isAnonymous());
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
-        Assert.assertNotNull(leader.getOtherSide());
+        Assert.assertEquals("timar_Israf", leader.getOtherSide());
     }
 }

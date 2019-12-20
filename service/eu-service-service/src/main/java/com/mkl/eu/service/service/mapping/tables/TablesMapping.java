@@ -4,13 +4,11 @@ import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.WithLossMapping;
 import com.mkl.eu.service.service.persistence.oe.tables.*;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Mapping between VO and OE for the tables.
@@ -593,19 +591,6 @@ public class TablesMapping extends AbstractMapping {
             for (LeaderEntity source : sources) {
                 tables.getLeaders().add(oeToVo(source));
             }
-            for (LeaderEntity leaderSource : sources) {
-                if (StringUtils.isNotEmpty(leaderSource.getOtherSide())) {
-                    Leader leader = tables.getLeaders().stream()
-                            .filter(l -> Objects.equals(l.getId(), leaderSource.getId()))
-                            .findAny()
-                            .orElse(null);
-                    Leader leaderOther = tables.getLeaders().stream()
-                            .filter(l -> StringUtils.equals(l.getCode(), leaderSource.getOtherSide()))
-                            .findAny()
-                            .orElse(null);
-                    leader.setOtherSide(leaderOther);
-                }
-            }
         }
     }
 
@@ -643,6 +628,7 @@ public class TablesMapping extends AbstractMapping {
         target.setMain(source.isMain());
         target.setAnonymous(source.isAnonymous());
         target.setSize(source.getSize());
+        target.setOtherSide(source.getOtherSide());
 
         return target;
     }

@@ -50,7 +50,7 @@ public class Leader extends EuObject {
     /** Number of LD that this leader stands for. Only used by PACHA. */
     private Integer size;
     /** Other side of the leader for double side leaders. */
-    private Leader otherSide;
+    private String otherSide;
 
     /** @return the country. */
     public String getCountry() {
@@ -253,12 +253,12 @@ public class Leader extends EuObject {
     }
 
     /** @return the otherSide. */
-    public Leader getOtherSide() {
+    public String getOtherSide() {
         return otherSide;
     }
 
     /** @param otherSide the otherSide to set. */
-    public void setOtherSide(Leader otherSide) {
+    public void setOtherSide(String otherSide) {
         this.otherSide = otherSide;
     }
 }
