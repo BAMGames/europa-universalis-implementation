@@ -779,7 +779,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                     .map(IMapMarker::getController)
                     .findAny()
                     .orElse(null);
-            ImageView image = UIUtil.getImage(controller, CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false));
+            ImageView image = UIUtil.getImage(controller, CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false), null);
             nonPhasingCounters.getChildren().add(image);
             siege.getCounters().stream()
                     .forEach(counter -> {

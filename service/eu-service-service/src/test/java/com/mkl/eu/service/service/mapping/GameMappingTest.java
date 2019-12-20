@@ -421,6 +421,7 @@ public class GameMappingTest {
         subObject = new Counter();
         subObject.setId(3L);
         subObject.setType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        subObject.setCode("MNU");
         subObject.setCountry("FRA");
         subObject.setOwner(object);
         subObjects.add(subObject);
@@ -934,6 +935,7 @@ public class GameMappingTest {
         subObject = new CounterEntity();
         subObject.setId(3L);
         subObject.setType(CounterFaceTypeEnum.MNU_ART_MINUS);
+        subObject.setCode("MNU");
         subObject.setCountry("FRA");
         subObject.setOwner(object);
         subObjects.add(subObject);

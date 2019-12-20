@@ -24,6 +24,8 @@ public class CounterEntity implements IEntity, Serializable {
     private StackEntity owner;
     /** Type of the counter. */
     private CounterFaceTypeEnum type;
+    /** Code of the counter for leaders. */
+    private String code;
     /** Number of veterans in the counter. */
     private Double veterans;
     /** If the counter is an establishment, all the info about. */
@@ -76,6 +78,16 @@ public class CounterEntity implements IEntity, Serializable {
     /** @param type the type to set. */
     public void setType(CounterFaceTypeEnum type) {
         this.type = type;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
+    }
+
+    /** @param code the code to set. */
+    public void setCode(String code) {
+        this.code = code;
     }
 
     /** @return the veterans. */

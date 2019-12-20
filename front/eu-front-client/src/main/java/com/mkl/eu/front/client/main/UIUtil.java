@@ -155,10 +155,11 @@ public final class UIUtil {
     /**
      * @param country of the counter.
      * @param face    of the counter.
+     * @param code    of the leader counter.
      * @return an image of the counter.
      */
-    public static ImageView getImage(String country, CounterFaceTypeEnum face) {
-        String path = MarkerUtils.getImagePath(country, face.name());
+    public static ImageView getImage(String country, CounterFaceTypeEnum face, String code) {
+        String path = MarkerUtils.getImagePath(country, face.name(), code);
         return getImage(path);
     }
 

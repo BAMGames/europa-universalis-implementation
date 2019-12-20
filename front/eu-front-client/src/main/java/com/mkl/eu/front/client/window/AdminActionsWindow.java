@@ -1251,12 +1251,12 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
                             hBox.getChildren().addAll(label, UIUtil.getImage(counter));
                         }
                         if (action.getCounterFaceType() != null) {
-                            hBox.getChildren().addAll(new Label(" -> "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType()));
+                            hBox.getChildren().addAll(new Label(" -> "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType(), null));
                         }
                     } else if (StringUtils.isNotEmpty(action.getProvince())) {
                         hBox.getChildren().add(new Label(GlobalConfiguration.getMessage(action.getProvince())));
                         if (action.getCounterFaceType() != null) {
-                            hBox.getChildren().addAll(new Label(" - "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType()));
+                            hBox.getChildren().addAll(new Label(" - "), UIUtil.getImage(gameConfig.getCountryName(), action.getCounterFaceType(), null));
                         }
                     }
                 }

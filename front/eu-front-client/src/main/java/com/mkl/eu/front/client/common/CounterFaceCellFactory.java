@@ -34,7 +34,7 @@ public class CounterFaceCellFactory implements Callback<ListView<CounterFaceType
                 if (item == null || empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(UIUtil.getImage(country, item));
+                    setGraphic(UIUtil.getImage(country, item, null));
                 }
             }
         };

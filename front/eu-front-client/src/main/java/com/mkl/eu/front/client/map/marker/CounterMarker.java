@@ -19,6 +19,8 @@ public class CounterMarker {
     private String country;
     /** Type of the counter. */
     private CounterFaceTypeEnum type;
+    /** Code of the leader counter. */
+    private String code;
 
     /**
      * Constructor.
@@ -26,10 +28,11 @@ public class CounterMarker {
      * @param id    the id.
      * @param image the image.
      */
-    public CounterMarker(Long id, String country, CounterFaceTypeEnum type, PImage image) {
+    public CounterMarker(Long id, String country, CounterFaceTypeEnum type, String code, PImage image) {
         this.id = id;
         this.country = country;
         this.type = type;
+        this.code = code;
         this.image = image;
     }
 
@@ -51,6 +54,11 @@ public class CounterMarker {
     /** @param type the type to set. */
     public void setType(CounterFaceTypeEnum type) {
         this.type = type;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
     }
 
     /** @param image the image to set. */

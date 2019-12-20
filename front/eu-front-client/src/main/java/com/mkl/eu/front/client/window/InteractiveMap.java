@@ -427,7 +427,7 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
                     return newStack;
                 });
 
-        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, MarkerUtils.getImageFromCounter(nameCountry, type.name(), this)));
+        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, null, MarkerUtils.getImageFromCounter(nameCountry, type.name(), null, this)));
     }
 
     /**

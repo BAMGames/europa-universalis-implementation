@@ -2,6 +2,7 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.front.client.main.GlobalConfiguration;
 import com.mkl.eu.front.client.vo.Border;
 import com.mkl.eu.front.client.window.InteractiveMap;
@@ -11,6 +12,7 @@ import de.fhpotsdam.unfolding.data.GeoJSONReader;
 import de.fhpotsdam.unfolding.data.MarkerFactory;
 import de.fhpotsdam.unfolding.marker.Marker;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -94,7 +96,7 @@ public final class MarkerUtils {
                     StackMarker stackMarker = new StackMarker(stack, mapMarker);
                     for (Counter counter : stack.getCounters()) {
                         // Images will be loaded later
-                        stackMarker.addCounter(new CounterMarker(counter.getId(), counter.getCountry(), counter.getType(), null));
+                        stackMarker.addCounter(new CounterMarker(counter.getId(), counter.getCountry(), counter.getType(), counter.getCode(), null));
                     }
                     mapMarker.addStack(stackMarker);
                 });
@@ -149,7 +151,7 @@ public final class MarkerUtils {
      * @return the image of the counter.
      */
     public static PImage getImageFromCounter(CounterMarker counter, InteractiveMap pApplet) {
-        return getImageFromCounter(counter.getCountry(), counter.getType().name(), pApplet);
+        return getImageFromCounter(counter.getCountry(), counter.getType().name(), counter.getCode(), pApplet);
     }
 
     /**
@@ -157,14 +159,15 @@ public final class MarkerUtils {
      *
      * @param type        of the counter.
      * @param nameCountry name of the country of the counter.
+     * @param code        of the leader counter.
      * @param pApplet     pApplet rendering the image.
      * @return the image of the counter.
      */
-    public static PImage getImageFromCounter(String nameCountry, String type, InteractiveMap pApplet) {
-        PImage image = getImageFromCache(nameCountry, type);
+    public static PImage getImageFromCounter(String nameCountry, String type, String code, InteractiveMap pApplet) {
+        PImage image = getImageFromCache(nameCountry, type, code);
         if (image == null && pApplet.isInit()) {
-            image = pApplet.loadImage(getImagePath(nameCountry, type));
-            putImageInCache(nameCountry, type, image);
+            image = pApplet.loadImage(getImagePath(nameCountry, type, code));
+            putImageInCache(nameCountry, type, code, image);
         }
 
         return image;
@@ -175,21 +178,30 @@ public final class MarkerUtils {
      * @return the image path of the counter.
      */
     public static String getImagePath(Counter counter) {
-        return getImagePath(counter.getCountry(), counter.getType().name());
+        return getImagePath(counter.getCountry(), counter.getType().name(), counter.getCode());
     }
 
     /**
      * @param country of the counter.
      * @param type    of the counter.
+     * @param code    of the leader counter.
      * @return the image path of the counter.
      */
-    public static String getImagePath(String country, String type) {
+    public static String getImagePath(String country, String type, String code) {
         StringBuilder path = new StringBuilder(GlobalConfiguration.getDataFolder() + "/counters/v2/counter_8/");
-        if (country != null) {
-            path.append(country)
-                    .append("/").append(country).append("_");
+        if (StringUtils.equals(CounterFaceTypeEnum.LEADER.name(), type) ||
+                StringUtils.equals(CounterFaceTypeEnum.PACHA.name(), type)) {
+            path.append(country).append("/")
+                    .append(WordUtils.capitalize(type.toLowerCase()))
+                    .append("_").append(country).append("_")
+                    .append(code).append(".png");
+        } else {
+            if (country != null) {
+                path.append(country)
+                        .append("/").append(country).append("_");
+            }
+            path.append(type).append(".png");
         }
-        path.append(type).append(".png");
         return path.toString();
     }
 
@@ -198,14 +210,16 @@ public final class MarkerUtils {
      *
      * @param country of the counter.
      * @param type    of the counter.
+     * @param code    of the leader counter.
      * @return the image of the counter from the cache.
      */
-    private static PImage getImageFromCache(String country, String type) {
+    private static PImage getImageFromCache(String country, String type, String code) {
         PImage image = null;
 
         Map<String, PImage> countryImages = countersImage.get(country);
         if (countryImages != null) {
-            image = countryImages.get(type);
+            String key = code == null ? type : code;
+            image = countryImages.get(key);
         }
 
         return image;
@@ -216,15 +230,17 @@ public final class MarkerUtils {
      *
      * @param country of the counter.
      * @param type    of the counter.
+     * @param code    of the leader counter.
      * @param image   to store.
      */
-    private synchronized static void putImageInCache(String country, String type, PImage image) {
+    private synchronized static void putImageInCache(String country, String type, String code, PImage image) {
         Map<String, PImage> countryImages = countersImage.get(country);
         if (countryImages == null) {
             countryImages = new HashMap<>();
             countersImage.put(country, countryImages);
         }
 
-        countryImages.put(type, image);
+        String key = code == null ? type : code;
+        countryImages.put(key, image);
     }
 }

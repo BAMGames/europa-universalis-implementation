@@ -6,6 +6,10 @@ package com.mkl.eu.client.service.vo.enumeration;
  * @author MKL
  */
 public enum CounterFaceTypeEnum {
+    /** Leader. */
+    LEADER,
+    /** Pacha. */
+    PACHA,
     /** A-. */
     ARMY_MINUS,
     /** A+. */
