@@ -109,6 +109,9 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
         tablesMapping.fillAssaultResultTables(assaultResults, TABLES);
         List<ExchequerEntity> exchequers = tablesDao.getExchequers();
         tablesMapping.fillExchequerTables(exchequers, TABLES);
+        List<LeaderEntity> leaders = tablesDao.getLeaders();
+        tablesMapping.fillLeadersTables(leaders, TABLES);
+
     }
 
     /**

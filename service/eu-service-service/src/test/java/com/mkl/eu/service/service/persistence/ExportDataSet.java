@@ -37,7 +37,8 @@ public class ExportDataSet {
             // The driver doesn't seem to be mandatory.
             // Class driverClass = Class.forName("com.mysql.jdbc.Driver");
             // database connection, try to avoid the commit of the password, even if it is a localhost database.
-            Connection jdbcConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/eu", "eu", "");
+            Connection jdbcConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/eu?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
+                    "eu", "");
             connection = new DatabaseConnection(jdbcConnection);
 
             // DBUnit does not like circular reference. So we drop the foreign key and recreate it later.
@@ -49,8 +50,10 @@ public class ExportDataSet {
             exportChat(connection);
             exportReferentiel(connection);
         } finally {
-            Statement statement = connection.getConnection().createStatement();
-            statement.execute("ALTER TABLE COUNTRY ADD CONSTRAINT FK_COUNTRY_MONARCH FOREIGN KEY (ID_MONARCH) REFERENCES MONARCH (ID)");
+            if (connection != null) {
+                Statement statement = connection.getConnection().createStatement();
+                statement.execute("ALTER TABLE COUNTRY ADD CONSTRAINT FK_COUNTRY_MONARCH FOREIGN KEY (ID_MONARCH) REFERENCES MONARCH (ID)");
+            }
         }
     }
 
@@ -61,7 +64,7 @@ public class ExportDataSet {
      * @throws Exception exception.
      */
     private static void exportTables(IDatabaseConnection connection) throws Exception {
-        export(new String[]{"T_PERIOD", "T_TECH", "T_TRADE", "T_BASIC_FORCE", "T_UNIT", "T_LIMIT", "T_RESULT", "T_BATTLE_TECH", "T_COMBAT_RESULT", "T_ARMY_CLASS", "T_ARMY_ARTILLERY", "T_ARTILLERY_SIEGE", "T_FORTRESS_RESISTANCE", "T_ASSAULT_RESULT", "T_EXCHEQUER"},
+        export(new String[]{"T_PERIOD", "T_TECH", "T_TRADE", "T_BASIC_FORCE", "T_UNIT", "T_LIMIT", "T_RESULT", "T_BATTLE_TECH", "T_COMBAT_RESULT", "T_ARMY_CLASS", "T_ARMY_ARTILLERY", "T_ARTILLERY_SIEGE", "T_FORTRESS_RESISTANCE", "T_ASSAULT_RESULT", "T_EXCHEQUER", "T_LEADER"},
                "src/test/resources/com/mkl/eu/service/service/persistence/tables", connection);
     }
 

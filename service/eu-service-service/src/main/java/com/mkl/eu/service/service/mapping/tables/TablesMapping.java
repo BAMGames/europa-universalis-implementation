@@ -4,11 +4,13 @@ import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.mapping.AbstractMapping;
 import com.mkl.eu.service.service.mapping.WithLossMapping;
 import com.mkl.eu.service.service.persistence.oe.tables.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Mapping between VO and OE for the tables.
@@ -576,6 +578,71 @@ public class TablesMapping extends AbstractMapping {
         target.setPrestige(source.getPrestige());
         target.setNatLoan(source.getNatLoan());
         target.setInterLoan(source.getInterLoan());
+
+        return target;
+    }
+
+    /**
+     * Fill the leader tables.
+     *
+     * @param sources List of leaders entity.
+     * @param tables  the target tables.
+     */
+    public void fillLeadersTables(List<LeaderEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (LeaderEntity source : sources) {
+                tables.getLeaders().add(oeToVo(source));
+            }
+            for (LeaderEntity leaderSource : sources) {
+                if (StringUtils.isNotEmpty(leaderSource.getOtherSide())) {
+                    Leader leader = tables.getLeaders().stream()
+                            .filter(l -> Objects.equals(l.getId(), leaderSource.getId()))
+                            .findAny()
+                            .orElse(null);
+                    Leader leaderOther = tables.getLeaders().stream()
+                            .filter(l -> StringUtils.equals(l.getCode(), leaderSource.getOtherSide()))
+                            .findAny()
+                            .orElse(null);
+                    leader.setOtherSide(leaderOther);
+                }
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public Leader oeToVo(LeaderEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        Leader target = new Leader();
+
+        target.setId(source.getId());
+        target.setCode(source.getCode());
+        target.setName(source.getName());
+        target.setCountry(source.getCountry());
+        target.setEvent(source.getEvent());
+        target.setBegin(source.getBegin());
+        target.setEnd(source.getEnd());
+        target.setRank(source.getRank());
+        target.setManoeuvre(source.getManoeuvre());
+        target.setFire(source.getFire());
+        target.setShock(source.getShock());
+        target.setSiege(source.getSiege());
+        target.setType(source.getType());
+        target.setRotw(source.isRotw());
+        target.setAsia(source.isAsia());
+        target.setAmerica(source.isAmerica());
+        target.setMediterranee(source.isMediterranee());
+        target.setPrivateer(source.isPrivateer());
+        target.setMain(source.isMain());
+        target.setAnonymous(source.isAnonymous());
+        target.setSize(source.getSize());
 
         return target;
     }

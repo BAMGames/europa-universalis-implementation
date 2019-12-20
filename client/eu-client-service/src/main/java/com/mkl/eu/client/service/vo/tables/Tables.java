@@ -41,6 +41,8 @@ public class Tables {
     private List<AssaultResult> assaultResults = new ArrayList<>();
     /** Results of exchequer. */
     private List<Exchequer> exchequers = new ArrayList<>();
+    /** Leaders. */
+    private List<Leader> leaders = new ArrayList<>();
 
     /** @return the periods. */
     public List<Period> getPeriods() {
@@ -200,5 +202,15 @@ public class Tables {
     /** @param exchequers the exchequers to set. */
     public void setExchequers(List<Exchequer> exchequers) {
         this.exchequers = exchequers;
+    }
+
+    /** @return the leaders. */
+    public List<Leader> getLeaders() {
+        return leaders;
+    }
+
+    /** @param leaders the leaders to set. */
+    public void setLeaders(List<Leader> leaders) {
+        this.leaders = leaders;
     }
 }

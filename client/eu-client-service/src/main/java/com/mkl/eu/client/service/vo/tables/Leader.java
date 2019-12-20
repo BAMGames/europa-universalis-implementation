@@ -1,22 +1,14 @@
-package com.mkl.eu.service.service.persistence.oe.tables;
+package com.mkl.eu.client.service.vo.tables;
 
+import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.LeaderTypeEnum;
-import com.mkl.eu.service.service.persistence.oe.IEntity;
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 /**
- * Entity for the leader table.
+ * VO for the leader table.
  *
  * @author MKL.
  */
-@Entity
-@Table(name = "T_LEADER")
-public class LeaderEntity implements IEntity, Serializable {
-    /** Id. */
-    private Long id;
+public class Leader extends EuObject {
     /** Code of the leader. */
     private String code;
     /** Name of the leader. */
@@ -58,24 +50,9 @@ public class LeaderEntity implements IEntity, Serializable {
     /** Number of LD that this leader stands for. Only used by PACHA. */
     private Integer size;
     /** Other side of the leader for double side leaders. */
-    private String otherSide;
-
-    /** @return the id. */
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
-    @GenericGenerator(name = "native", strategy = "native")
-    @Column(name = "ID")
-    public Long getId() {
-        return id;
-    }
-
-    /** @param id the id to set. */
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private Leader otherSide;
 
     /** @return the country. */
-    @Column(name = "R_COUNTRY")
     public String getCountry() {
         return country;
     }
@@ -186,7 +163,6 @@ public class LeaderEntity implements IEntity, Serializable {
     }
 
     /** @return the type. */
-    @Enumerated(EnumType.STRING)
     public LeaderTypeEnum getType() {
         return type;
     }
@@ -277,13 +253,12 @@ public class LeaderEntity implements IEntity, Serializable {
     }
 
     /** @return the otherSide. */
-    @Column(name = "T_LEADER")
-    public String getOtherSide() {
+    public Leader getOtherSide() {
         return otherSide;
     }
 
     /** @param otherSide the otherSide to set. */
-    public void setOtherSide(String otherSide) {
+    public void setOtherSide(Leader otherSide) {
         this.otherSide = otherSide;
     }
 }

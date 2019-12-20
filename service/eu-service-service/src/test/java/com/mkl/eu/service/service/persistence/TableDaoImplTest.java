@@ -369,4 +369,180 @@ public class TableDaoImplTest {
         Assert.assertEquals(20, exchequer.getNatLoan().intValue());
         Assert.assertEquals(100, exchequer.getInterLoan().intValue());
     }
+
+    @Test
+    public void testLeaders() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+        List<Leader> leaders = tables.getLeaders();
+
+        Assert.assertEquals(620, leaders.size());
+
+        Leader leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Bonaparte"))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(leader);
+        Assert.assertEquals("Bonaparte", leader.getName());
+        Assert.assertEquals("revolutionnaires", leader.getCountry());
+        Assert.assertEquals("VII-5(2)", leader.getEvent());
+        Assert.assertEquals(null, leader.getBegin());
+        Assert.assertEquals(null, leader.getEnd());
+        Assert.assertEquals("B", leader.getRank());
+        Assert.assertEquals(6, leader.getManoeuvre());
+        Assert.assertEquals(6, leader.getFire());
+        Assert.assertEquals(6, leader.getShock());
+        Assert.assertEquals(3, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.GENERAL, leader.getType());
+        Assert.assertEquals(false, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(false, leader.isMediterranee());
+        Assert.assertEquals(false, leader.isPrivateer());
+        Assert.assertEquals(false, leader.isAnonymous());
+        Assert.assertEquals(false, leader.isMain());
+        Assert.assertEquals(null, leader.getSize());
+        Assert.assertNull(leader.getOtherSide());
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Albuquerque"))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(leader);
+        Assert.assertEquals("Albuquerque", leader.getName());
+        Assert.assertEquals("porviceroy", leader.getCountry());
+        Assert.assertEquals(null, leader.getEvent());
+        Assert.assertEquals(5, leader.getBegin().intValue());
+        Assert.assertEquals(9, leader.getEnd().intValue());
+        Assert.assertEquals("B", leader.getRank());
+        Assert.assertEquals(5, leader.getManoeuvre());
+        Assert.assertEquals(5, leader.getFire());
+        Assert.assertEquals(5, leader.getShock());
+        Assert.assertEquals(3, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.CONQUISTADOR, leader.getType());
+        Assert.assertEquals(true, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(false, leader.isMediterranee());
+        Assert.assertEquals(false, leader.isPrivateer());
+        Assert.assertEquals(false, leader.isAnonymous());
+        Assert.assertEquals(true, leader.isMain());
+        Assert.assertEquals(null, leader.getSize());
+        Assert.assertNotNull(leader.getOtherSide());
+        leader = leader.getOtherSide();
+        Assert.assertEquals("Albuquerque", leader.getName());
+        Assert.assertEquals("porviceroy", leader.getCountry());
+        Assert.assertEquals(null, leader.getEvent());
+        Assert.assertEquals(5, leader.getBegin().intValue());
+        Assert.assertEquals(9, leader.getEnd().intValue());
+        Assert.assertEquals("B", leader.getRank());
+        Assert.assertEquals(5, leader.getManoeuvre());
+        Assert.assertEquals(5, leader.getFire());
+        Assert.assertEquals(5, leader.getShock());
+        Assert.assertEquals(0, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.EXPLORER, leader.getType());
+        Assert.assertEquals(true, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(false, leader.isMediterranee());
+        Assert.assertEquals(true, leader.isPrivateer());
+        Assert.assertEquals(false, leader.isAnonymous());
+        Assert.assertEquals(false, leader.isMain());
+        Assert.assertEquals(null, leader.getSize());
+        Assert.assertNotNull(leader.getOtherSide());
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Barbaros2"))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(leader);
+        Assert.assertEquals("Barbaros2", leader.getName());
+        Assert.assertEquals("algerie", leader.getCountry());
+        Assert.assertEquals(null, leader.getEvent());
+        Assert.assertEquals(5, leader.getBegin().intValue());
+        Assert.assertEquals(11, leader.getEnd().intValue());
+        Assert.assertEquals("A", leader.getRank());
+        Assert.assertEquals(5, leader.getManoeuvre());
+        Assert.assertEquals(4, leader.getFire());
+        Assert.assertEquals(5, leader.getShock());
+        Assert.assertEquals(0, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.ADMIRAL, leader.getType());
+        Assert.assertEquals(false, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(true, leader.isMediterranee());
+        Assert.assertEquals(true, leader.isPrivateer());
+        Assert.assertEquals(false, leader.isAnonymous());
+        Assert.assertEquals(true, leader.isMain());
+        Assert.assertEquals(null, leader.getSize());
+        Assert.assertNotNull(leader.getOtherSide());
+        leader = leader.getOtherSide();
+        Assert.assertEquals("Barbaros2", leader.getName());
+        Assert.assertEquals("turquie", leader.getCountry());
+        Assert.assertEquals(null, leader.getEvent());
+        Assert.assertEquals(5, leader.getBegin().intValue());
+        Assert.assertEquals(11, leader.getEnd().intValue());
+        Assert.assertEquals("A", leader.getRank());
+        Assert.assertEquals(5, leader.getManoeuvre());
+        Assert.assertEquals(4, leader.getFire());
+        Assert.assertEquals(5, leader.getShock());
+        Assert.assertEquals(0, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.ADMIRAL, leader.getType());
+        Assert.assertEquals(false, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(true, leader.isMediterranee());
+        Assert.assertEquals(true, leader.isPrivateer());
+        Assert.assertEquals(false, leader.isAnonymous());
+        Assert.assertEquals(false, leader.isMain());
+        Assert.assertEquals(null, leader.getSize());
+        Assert.assertNotNull(leader.getOtherSide());
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "timar_Israf"))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(leader);
+        Assert.assertEquals("timar_Israf", leader.getName());
+        Assert.assertEquals("turquie", leader.getCountry());
+        Assert.assertEquals(null, leader.getEvent());
+        Assert.assertEquals(null, leader.getBegin());
+        Assert.assertEquals(null, leader.getEnd());
+        Assert.assertEquals("S", leader.getRank());
+        Assert.assertEquals(4, leader.getManoeuvre());
+        Assert.assertEquals(4, leader.getFire());
+        Assert.assertEquals(4, leader.getShock());
+        Assert.assertEquals(0, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.PACHA, leader.getType());
+        Assert.assertEquals(false, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(false, leader.isMediterranee());
+        Assert.assertEquals(false, leader.isPrivateer());
+        Assert.assertEquals(true, leader.isAnonymous());
+        Assert.assertEquals(true, leader.isMain());
+        Assert.assertEquals(2, leader.getSize().intValue());
+        Assert.assertNotNull(leader.getOtherSide());
+        leader = leader.getOtherSide();
+        Assert.assertEquals("timar_Israf", leader.getName());
+        Assert.assertEquals("turquie", leader.getCountry());
+        Assert.assertEquals(null, leader.getEvent());
+        Assert.assertEquals(null, leader.getBegin());
+        Assert.assertEquals(null, leader.getEnd());
+        Assert.assertEquals(null, leader.getRank());
+        Assert.assertEquals(0, leader.getManoeuvre());
+        Assert.assertEquals(0, leader.getFire());
+        Assert.assertEquals(0, leader.getShock());
+        Assert.assertEquals(0, leader.getSiege());
+        Assert.assertEquals(LeaderTypeEnum.PACHA, leader.getType());
+        Assert.assertEquals(false, leader.isRotw());
+        Assert.assertEquals(false, leader.isAmerica());
+        Assert.assertEquals(false, leader.isAsia());
+        Assert.assertEquals(false, leader.isMediterranee());
+        Assert.assertEquals(false, leader.isPrivateer());
+        Assert.assertEquals(true, leader.isAnonymous());
+        Assert.assertEquals(false, leader.isMain());
+        Assert.assertEquals(null, leader.getSize());
+        Assert.assertNotNull(leader.getOtherSide());
+    }
 }
