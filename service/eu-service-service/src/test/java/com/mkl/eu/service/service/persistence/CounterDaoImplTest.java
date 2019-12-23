@@ -35,7 +35,7 @@ import java.util.List;
 })
 @ContextConfiguration(locations = {"classpath:com/mkl/eu/service/service/eu-service-service-applicationContext.xml",
         "classpath:com/mkl/eu/service/service/test-database-applicationContext.xml"})
-@DataSet(value = {"/com/mkl/eu/service/service/persistence/provinces.xml", "counter.xml"}, columnSensing = true, tearDownOperation = DBOperation.DELETE_ALL)
+@DataSet(value = {"/com/mkl/eu/service/service/persistence/provinces.xml", "counter.xml", "tables.xml"}, columnSensing = true, tearDownOperation = DBOperation.DELETE_ALL)
 public class CounterDaoImplTest {
 
     @Autowired
@@ -163,5 +163,14 @@ public class CounterDaoImplTest {
         Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("espagne", 2L));
         Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("france", 2L));
         Assert.assertEquals(0, counterDao.getGoldExploitedAmerica("russie", 2L));
+    }
+
+    @Test
+    public void testGovernorInRegion() {
+        Assert.assertFalse(counterDao.isGovernorInSameRegion("toto", "tata", 1L));
+        Assert.assertTrue(counterDao.isGovernorInSameRegion("Azteca", "espagne", 1L));
+        Assert.assertFalse(counterDao.isGovernorInSameRegion("Azteca", "france", 1L));
+        Assert.assertFalse(counterDao.isGovernorInSameRegion("Inca", "espagne", 1L));
+        Assert.assertFalse(counterDao.isGovernorInSameRegion("Azteca", "espagne", 2L));
     }
 }

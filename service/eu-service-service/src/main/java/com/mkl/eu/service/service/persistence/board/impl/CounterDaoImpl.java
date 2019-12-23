@@ -199,4 +199,16 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
 
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isGovernorInSameRegion(String region, String country, Long idGame) {
+        String sql = queryProps.getProperty("col_tp.governor_region");
+
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        sql = sql.replace(":country", country);
+        sql = sql.replace(":region", region);
+
+        return jdbcTemplate.queryForObject(sql, Boolean.class);
+    }
 }

@@ -288,6 +288,18 @@
 			;
 		]]>
 	</entry>
+	<entry key="col_tp.governor_region">
+		<![CDATA[
+			SELECT COUNT(*) > 0 FROM COUNTER counter
+ 				INNER JOIN STACK stack ON stack.ID = counter.ID_STACK
+  				INNER JOIN R_PROVINCE province ON province.NAME = stack.R_PROVINCE
+  				INNER JOIN R_PROVINCE_ROTW provinceRotw ON provinceRotw.ID = province.ID
+  				INNER JOIN T_LEADER leader ON leader.CODE = counter.CODE
+			WHERE counter.TYPE = 'LEADER' AND leader.TYPE = 'GOVERNOR' AND counter.R_COUNTRY = ':country'
+		      AND provinceRotw.REGION = ':region' AND stack.ID_GAME = :idGame
+			;
+		]]>
+	</entry>
 	<entry key="tz.trade_fleet_access_rotw">
 		<![CDATA[
 			SELECT

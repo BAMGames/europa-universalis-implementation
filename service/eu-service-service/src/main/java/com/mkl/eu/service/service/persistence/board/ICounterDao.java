@@ -75,4 +75,12 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
      * @return the total gold exploited by a country in America.
      */
     int getGoldExploitedAmerica(String country, Long idGame);
+
+    /**
+     * @param region  the region.
+     * @param country owner of a potential governor.
+     * @param idGame  id of the game.
+     * @return if there is a governor of the country in the region.
+     */
+    boolean isGovernorInSameRegion(String region, String country, Long idGame);
 }
