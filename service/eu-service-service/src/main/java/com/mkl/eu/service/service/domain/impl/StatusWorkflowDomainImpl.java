@@ -536,11 +536,11 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
 
-        // TODO TG-5 when leaders implemented, it will be MILITARY_HIERARCHY phase
+        // TODO TG-58 when hierarchy implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
-                // TODO TG-5 when leaders implemented, it will be MILITARY_HIERARCHY phase
+                // TODO TG-58 when hierarchy implemented, it will be MILITARY_HIERARCHY phase
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
         // set the order of position 0 active

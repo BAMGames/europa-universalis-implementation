@@ -1751,6 +1751,16 @@ public class OEUtilTest {
         counters.add(explo);
 
         Assert.assertTrue(oeUtil.isStackVeteran(counters));
+
+        counters.clear();
+        counters.add(army);
+        army.setVeterans(4d);
+
+        Assert.assertTrue(oeUtil.isStackVeteran(counters));
+
+        counters.add(createCounter(CounterFaceTypeEnum.PACHA_1));
+
+        Assert.assertFalse(oeUtil.isStackVeteran(counters));
     }
 
     @Test

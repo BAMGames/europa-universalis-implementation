@@ -37,8 +37,12 @@ public final class CounterUtil {
                 case ARMY_PLUS:
                     size = 4;
                     break;
+                case PACHA_3:
+                    size = 3;
+                    break;
                 case FLEET_MINUS:
                 case ARMY_MINUS:
+                case PACHA_2:
                     size = 2;
                     break;
                 case LAND_DETACHMENT:
@@ -47,6 +51,7 @@ public final class CounterUtil {
                 case NAVAL_DETACHMENT:
                 case NAVAL_TRANSPORT:
                 case NAVAL_GALLEY:
+                case PACHA_1:
                     size = 1;
                     break;
                 case NAVAL_DETACHMENT_EXPLORATION:
@@ -56,7 +61,6 @@ public final class CounterUtil {
                 case LAND_SEPOY_EXPLORATION:
                     size = THIRD;
                     break;
-                // TODO TG-5 Pashas
                 default:
                     break;
             }
@@ -1362,5 +1366,33 @@ public final class CounterUtil {
         }
 
         return explo;
+    }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is a pacha, <code>false</code> otherwise.
+     */
+    public static boolean isPacha(CounterFaceTypeEnum face) {
+        boolean pacha = false;
+
+        if (face != null) {
+            switch (face) {
+                case PACHA_1:
+                case PACHA_2:
+                case PACHA_3:
+                    pacha = true;
+                    break;
+            }
+        }
+
+        return pacha;
+    }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is a pacha, <code>false</code> otherwise.
+     */
+    public static boolean isPacha(String face) {
+        return face != null && face.startsWith("PACHA");
     }
 }

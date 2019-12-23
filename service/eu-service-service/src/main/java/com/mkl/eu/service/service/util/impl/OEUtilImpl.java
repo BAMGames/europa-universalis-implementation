@@ -1058,9 +1058,10 @@ public final class OEUtilImpl implements IOEUtil {
         Double total = counters.stream()
                 .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType())));
 
-        // TODO TG-5 pasha always conscript
+        boolean pacha = counters.stream()
+                .anyMatch(counter -> CounterUtil.isPacha(counter.getType()));
 
-        return veterans > total / 2;
+        return !pacha && veterans > total / 2;
     }
 
     /**

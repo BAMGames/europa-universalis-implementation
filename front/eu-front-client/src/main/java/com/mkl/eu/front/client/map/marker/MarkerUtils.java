@@ -1,5 +1,6 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
@@ -190,7 +191,7 @@ public final class MarkerUtils {
     public static String getImagePath(String country, String type, String code) {
         StringBuilder path = new StringBuilder(GlobalConfiguration.getDataFolder() + "/counters/v2/counter_8/");
         if (StringUtils.equals(CounterFaceTypeEnum.LEADER.name(), type) ||
-                StringUtils.equals(CounterFaceTypeEnum.PACHA.name(), type)) {
+                CounterUtil.isPacha(type)) {
             path.append(country).append("/")
                     .append(WordUtils.capitalize(type.toLowerCase()))
                     .append("_").append(country).append("_")

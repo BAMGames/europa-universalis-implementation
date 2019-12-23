@@ -31,9 +31,13 @@ public class CounterUtilTest {
         Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.NAVAL_DETACHMENT), EPSILON);
         Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.NAVAL_TRANSPORT), EPSILON);
         Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.NAVAL_GALLEY), EPSILON);
+        Assert.assertEquals(1, CounterUtil.getSizeFromType(CounterFaceTypeEnum.PACHA_1), EPSILON);
 
         Assert.assertEquals(2, CounterUtil.getSizeFromType(CounterFaceTypeEnum.FLEET_MINUS), EPSILON);
         Assert.assertEquals(2, CounterUtil.getSizeFromType(CounterFaceTypeEnum.ARMY_MINUS), EPSILON);
+        Assert.assertEquals(2, CounterUtil.getSizeFromType(CounterFaceTypeEnum.PACHA_2), EPSILON);
+
+        Assert.assertEquals(3, CounterUtil.getSizeFromType(CounterFaceTypeEnum.PACHA_3), EPSILON);
 
         Assert.assertEquals(4, CounterUtil.getSizeFromType(CounterFaceTypeEnum.FLEET_PLUS), EPSILON);
         Assert.assertEquals(4, CounterUtil.getSizeFromType(CounterFaceTypeEnum.ARMY_PLUS), EPSILON);
@@ -115,8 +119,6 @@ public class CounterUtilTest {
         Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
         Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_TRANSPORT));
         Assert.assertEquals(null, CounterUtil.getSizeThirdFromType(CounterFaceTypeEnum.NAVAL_GALLEY));
-
-        // TODO TG-5 test pashas
     }
 
     @Test
@@ -908,5 +910,19 @@ public class CounterUtilTest {
         Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_INDIAN_EXPLORATION));
         Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.LAND_SEPOY_EXPLORATION));
         Assert.assertEquals(true, CounterUtil.isExploration(CounterFaceTypeEnum.NAVAL_DETACHMENT_EXPLORATION));
+    }
+
+    @Test
+    public void testPacha() {
+        Assert.assertFalse(CounterUtil.isPacha((CounterFaceTypeEnum) null));
+        Assert.assertFalse(CounterUtil.isPacha((String) null));
+        Assert.assertFalse(CounterUtil.isPacha(CounterFaceTypeEnum.LEADER));
+        Assert.assertFalse(CounterUtil.isPacha(CounterFaceTypeEnum.LEADER.name()));
+        Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_1));
+        Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_1.name()));
+        Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_2));
+        Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_2.name()));
+        Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_3));
+        Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_3.name()));
     }
 }

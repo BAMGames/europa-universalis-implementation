@@ -8,8 +8,12 @@ package com.mkl.eu.client.service.vo.enumeration;
 public enum CounterFaceTypeEnum {
     /** Leader. */
     LEADER,
-    /** Pacha. */
-    PACHA,
+    /** Pacha of size 1. */
+    PACHA_1,
+    /** Pacha of size 2. */
+    PACHA_2,
+    /** Pacha of size 3. */
+    PACHA_3,
     /** A-. */
     ARMY_MINUS,
     /** A+. */
