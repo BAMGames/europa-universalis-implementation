@@ -1172,7 +1172,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             bonus += 2;
         }
         // TODO battles
-        // TODO TG-5 leaders
+        bonus += getBonusFromLeader(country.getName(), rotwProv, game);
 
         AdministrativeActionEntity admAct = new AdministrativeActionEntity();
         admAct.setCountry(country);
@@ -1187,6 +1187,50 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         admAct.setBonus(bonus);
 
         return admAct;
+    }
+
+    /**
+     * @param countryName name of the country doing the operation.
+     * @param rotwProv    the rotw province where the operation is done.
+     * @param game        the game.
+     * @return the bonus given by a leader for an external operation.
+     */
+    private int getBonusFromLeader(String countryName, RotwProvinceEntity rotwProv, GameEntity game) {
+        List<String> leaderCodes = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), rotwProv.getName()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> StringUtils.equals(counter.getCountry(), countryName) &&
+                        counter.getType() == CounterFaceTypeEnum.LEADER)
+                .map(CounterEntity::getCode)
+                .collect(Collectors.toList());
+        List<Leader> leaders = getTables().getLeaders().stream()
+                .filter(l -> leaderCodes.contains(l.getCode()))
+                .collect(Collectors.toList());
+        int bonusLeader = leaders.stream()
+                .map(this::getBonusLeader)
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(0);
+        if (bonusLeader < 1 && counterDao.isGovernorInSameRegion(rotwProv.getRegion(), countryName, game.getId())) {
+            bonusLeader = 1;
+        }
+
+        return bonusLeader;
+    }
+
+    /**
+     * @param leader in the province.
+     * @return the bonus given by the leader for an external operation.
+     */
+    private int getBonusLeader(Leader leader) {
+        switch (leader.getType()) {
+            case CONQUISTADOR:
+            case GOVERNOR:
+                return leader.getManoeuvre();
+            case EXPLORER:
+                return leader.getManoeuvre() / 2;
+            default:
+                return 0;
+        }
     }
 
     /**
@@ -1297,7 +1341,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             bonus += 2;
         }
         // TODO battles
-        // TODO TG-5 leaders
+        bonus += getBonusFromLeader(country.getName(), rotwProv, game);
 
         AdministrativeActionEntity admAct = new AdministrativeActionEntity();
         admAct.setCountry(country);

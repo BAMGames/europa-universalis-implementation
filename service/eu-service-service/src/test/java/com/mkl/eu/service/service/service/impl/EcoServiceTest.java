@@ -47,6 +47,7 @@ import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.impl.OEUtilImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -3366,7 +3367,50 @@ public class EcoServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testAddAdmActColSuccess() throws FunctionalException {
+    public void testAddAdmActColSuccessWithoutLeader() throws FunctionalException {
+        testAddAdmActColSuccess(new ArrayList<>(), false, 0);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithExplorer() throws FunctionalException {
+        testAddAdmActColSuccess(Collections.singletonList(new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 2)), false, 1);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithBadExplorer() throws FunctionalException {
+        testAddAdmActColSuccess(Collections.singletonList(new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 1)), false, 0);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithExplorers() throws FunctionalException {
+        testAddAdmActColSuccess(Arrays.asList(new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 2),
+                new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 5)), true, 2);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithExplorerAndConq() throws FunctionalException {
+        testAddAdmActColSuccess(Arrays.asList(new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 2),
+                new ImmutablePair<>(LeaderTypeEnum.CONQUISTADOR, 2)), true, 2);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithAll() throws FunctionalException {
+        testAddAdmActColSuccess(Arrays.asList(new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 2),
+                new ImmutablePair<>(LeaderTypeEnum.CONQUISTADOR, 2),
+                new ImmutablePair<>(LeaderTypeEnum.GOVERNOR, 3)), true, 3);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithGovernorInRegion() throws FunctionalException {
+        testAddAdmActColSuccess(new ArrayList<>(), true, 1);
+    }
+
+    @Test
+    public void testAddAdmActColSuccessWithBadExplorerButGovernorInRegion() throws FunctionalException {
+        testAddAdmActColSuccess(Collections.singletonList(new ImmutablePair<>(LeaderTypeEnum.EXPLORER, 1)), true, 1);
+    }
+
+    private void testAddAdmActColSuccess(List<Pair<LeaderTypeEnum, Integer>> leaders, boolean governorInProvince, int bonusFromLeader) throws FunctionalException {
         Request<AddAdminActionRequest> request = new Request<>();
         request.setAuthent(new AuthentInfo());
         request.setGame(createGameInfo());
@@ -3426,11 +3470,45 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         EstablishmentEntity establishment = new EstablishmentEntity();
         establishment.setLevel(2);
         game.getStacks().get(1).getCounters().get(0).setEstablishment(establishment);
+        int index = 1;
+        Tables tables = new Tables();
+        CounterEntity counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.LEADER);
+        counter.setCountry("espagne");
+        String code = "Leader-" + index;
+        counter.setCode(code);
+        counter.setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(counter);
+
+        Leader lead = new Leader();
+        lead.setCode(code);
+        lead.setType(LeaderTypeEnum.CONQUISTADOR);
+        lead.setManoeuvre(5);
+        tables.getLeaders().add(lead);
+        index++;
+        for (Pair<LeaderTypeEnum, Integer> leader : leaders) {
+            counter = new CounterEntity();
+            counter.setType(CounterFaceTypeEnum.LEADER);
+            counter.setCountry("france");
+            code = "Leader-" + index;
+            counter.setCode(code);
+            counter.setOwner(game.getStacks().get(1));
+            game.getStacks().get(1).getCounters().add(counter);
+
+            lead = new Leader();
+            lead.setCode(code);
+            lead.setType(leader.getLeft());
+            lead.setManoeuvre(leader.getRight());
+            tables.getLeaders().add(lead);
+
+            index++;
+        }
         game.getOtherForces().add(new OtherForcesEntity());
         game.getOtherForces().get(0).setProvince("quebec");
         game.getOtherForces().get(0).setType(OtherForcesTypeEnum.NATIVES);
 
-        Tables tables = new Tables();
+        when(counterDao.isGovernorInSameRegion("Canada", "france", game.getId())).thenReturn(governorInProvince);
+
         List<Limit> limits = new ArrayList<>();
         Limit limit = new Limit();
         limit.setCountry("angleterre");
@@ -3545,7 +3623,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.COLUMN, diffEntity.getAttributes().get(6).getType());
         Assert.assertEquals("-1", diffEntity.getAttributes().get(6).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(7).getType());
-        Assert.assertEquals("2", diffEntity.getAttributes().get(7).getValue());
+        Assert.assertEquals(2 + bonusFromLeader + "", diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
@@ -3814,12 +3892,27 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(4).getCounters().get(0).setOwner(game.getStacks().get(4));
         EstablishmentEntity establishment = new EstablishmentEntity();
         establishment.setLevel(2);
+
+        Tables tables = new Tables();
+        CounterEntity counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.LEADER);
+        counter.setCountry("france");
+        String code = "Leader-1";
+        counter.setCode(code);
+        counter.setOwner(game.getStacks().get(1));
+        game.getStacks().get(1).getCounters().add(counter);
+
+        Leader lead = new Leader();
+        lead.setCode(code);
+        lead.setType(LeaderTypeEnum.CONQUISTADOR);
+        lead.setManoeuvre(1);
+        tables.getLeaders().add(lead);
+
         game.getStacks().get(1).getCounters().get(0).setEstablishment(establishment);
         game.getOtherForces().add(new OtherForcesEntity());
         game.getOtherForces().get(0).setProvince("quebec");
         game.getOtherForces().get(0).setType(OtherForcesTypeEnum.NATIVES);
 
-        Tables tables = new Tables();
         List<Limit> limits = new ArrayList<>();
         Limit limit = new Limit();
         limit.setCountry("angleterre");
@@ -3919,7 +4012,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.COLUMN, diffEntity.getAttributes().get(6).getType());
         Assert.assertEquals("1", diffEntity.getAttributes().get(6).getValue());
         Assert.assertEquals(DiffAttributeTypeEnum.BONUS, diffEntity.getAttributes().get(7).getType());
-        Assert.assertEquals("-2", diffEntity.getAttributes().get(7).getValue());
+        Assert.assertEquals("-1", diffEntity.getAttributes().get(7).getValue());
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
