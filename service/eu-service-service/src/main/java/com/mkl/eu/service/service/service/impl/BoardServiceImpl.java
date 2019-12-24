@@ -494,6 +494,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                 .setParams(METHOD_MOVE_COUNTER, game.getId()));
 
+        StackEntity oldStack = counter.getOwner();
         List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(patrons.contains(country.getName()))
@@ -512,18 +513,18 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         if (stackOpt != null && stackOpt.isPresent()) {
             stack = stackOpt.get();
         } else {
-            stack = counterDomain.createStack(counter.getOwner().getProvince(), counter.getCountry(), game);
+            stack = counterDomain.createStack(oldStack.getProvince(), counter.getCountry(), game);
         }
 
         failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(StringUtils.equals(counter.getOwner().getProvince(), stack.getProvince()))
+                .setTest(StringUtils.equals(oldStack.getProvince(), stack.getProvince()))
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_NOT_SAME_PROVINCE)
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
-                .setParams(METHOD_MOVE_COUNTER, counter.getOwner().getProvince(), stack.getProvince()));
+                .setParams(METHOD_MOVE_COUNTER, oldStack.getProvince(), stack.getProvince()));
 
         failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(counter.getOwner() != stack)
+                .setTest(oldStack != stack)
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_NOT_SAME_STACK)
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
@@ -542,10 +543,24 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_COUNTER, stack.getId(), futureNbCounters, futureSize));
 
+        List<DiffEntity> diffs = new ArrayList<>();
 
-        DiffEntity diff = counterDomain.changeCounterOwner(counter, stack, game);
+        diffs.add(counterDomain.changeCounterOwner(counter, stack, game));
 
-        return createDiff(diff, gameDiffs, request);
+        String oldStackController = oeUtil.getController(oldStack);
+        if (!StringUtils.equals(oldStackController, oldStack.getCountry())) {
+            oldStack.setCountry(oldStackController);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, oldStack.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, oldStackController)));
+        }
+        String newStackController = oeUtil.getController(stack);
+        if (!StringUtils.equals(newStackController, stack.getCountry())) {
+            stack.setCountry(newStackController);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController)));
+        }
+
+        return createDiffs(diffs, gameDiffs, request);
     }
 
     /** {@inheritDoc} */

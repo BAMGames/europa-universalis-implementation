@@ -43,6 +43,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -942,14 +943,16 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 666L);
 
+        StackEntity stackTo = new StackEntity();
+        stackTo.setProvince("IdF");
+        stackTo.setId(8L);
+        stackTo.setCountry("france");
+        game.getStacks().add(stackTo);
+
         StackEntity stack = new StackEntity();
         stack.setProvince("IdF");
-        stack.setId(8L);
-        game.getStacks().add(stack);
-
-        stack = new StackEntity();
-        stack.setProvince("IdF");
         stack.setId(9L);
+        stack.setCountry("genes");
         CounterEntity counter = new CounterEntity();
         counter.setId(13L);
         counter.setOwner(stack);
@@ -976,21 +979,16 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
         when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
+        when(oeUtil.getController(stack)).thenReturn("genes");
+        when(oeUtil.getController(stackTo)).thenReturn("france");
 
         simulateDiff();
 
-        DiffResponse response = boardService.moveCounter(request);
+        boardService.moveCounter(request);
 
-        DiffEntity diffEntity = retrieveDiffCreated();
-
-        InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
-
-        inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 666L, 1L);
-        inOrder.verify(counterDao).getCounter(13L, 12L);
-        inOrder.verify(counterDao).getPatrons("genes", 12L);
-        inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(diffMapping).oesToVos(anyObject());
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+        Assert.assertEquals(1, diffs.size());
+        DiffEntity diffEntity = diffs.get(0);
 
         Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
@@ -1008,8 +1006,108 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(3).getType());
         Assert.assertEquals("IdF", diffEntity.getAttributes().get(3).getValue());
 
-        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(getDiffAfter(), response.getDiffs());
+        Assert.assertEquals("genes", stack.getCountry());
+        Assert.assertEquals("france", stackTo.getCountry());
+    }
+
+    @Test
+    public void testMoveCounterSuccessSwitchingControllers() throws Exception {
+        Request<MoveCounterRequest> request = new Request<>();
+        request.setRequest(new MoveCounterRequest());
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(12L);
+        request.getGame().setVersionGame(1L);
+        request.getGame().setIdCountry(666L);
+        request.getRequest().setIdCounter(13L);
+        request.getRequest().setIdStack(8L);
+
+        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 666L);
+
+        StackEntity stackTo = new StackEntity();
+        stackTo.setProvince("IdF");
+        stackTo.setId(8L);
+        stackTo.setCountry("france");
+        game.getStacks().add(stackTo);
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince("IdF");
+        stack.setId(9L);
+        stack.setCountry("genes");
+        CounterEntity counter = new CounterEntity();
+        counter.setId(13L);
+        counter.setOwner(stack);
+        counter.setCountry("genes");
+        stack.getCounters().add(counter);
+        stack.getCounters().add(new CounterEntity());
+        game.getStacks().add(stack);
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setName("france");
+        country.setUsername("toto");
+        country.setId(666L);
+        game.getCountries().add(country);
+
+        List<String> patrons = new ArrayList<>();
+        patrons.add("france");
+
+        List<DiffEntity> diffBefore = new ArrayList<>();
+        diffBefore.add(new DiffEntity());
+        diffBefore.add(new DiffEntity());
+
+        when(diffDao.getDiffsSince(12L, 666L, 1L)).thenReturn(diffBefore);
+
+        when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
+
+        when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
+        when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
+        when(oeUtil.getController(stack)).thenReturn("france");
+        when(oeUtil.getController(stackTo)).thenReturn("genes");
+
+        simulateDiff();
+
+        boardService.moveCounter(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+        Assert.assertEquals(3, diffs.size());
+
+        DiffEntity diffEntity = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffEntity);
+        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(DiffTypeEnum.MOVE, diffEntity.getType());
+        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
+        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
+        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diffEntity.getAttributes().get(0).getType());
+        Assert.assertEquals("9", diffEntity.getAttributes().get(0).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diffEntity.getAttributes().get(1).getType());
+        Assert.assertEquals("8", diffEntity.getAttributes().get(1).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diffEntity.getAttributes().get(2).getType());
+        Assert.assertEquals("IdF", diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(3).getType());
+        Assert.assertEquals("IdF", diffEntity.getAttributes().get(3).getValue());
+
+        diffEntity = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(d.getIdObject(), stack.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffEntity);
+        Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+
+        diffEntity = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(d.getIdObject(), stackTo.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffEntity);
+        Assert.assertEquals("genes", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+
+        Assert.assertEquals("france", stack.getCountry());
+        Assert.assertEquals("genes", stackTo.getCountry());
     }
 
     @Test
