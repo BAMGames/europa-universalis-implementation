@@ -364,4 +364,10 @@ public interface IOEUtil {
      * @return the minimal inflation lost at the end of the turn.
      */
     int getMinimalInflation(int inflation, String country, Tables tables, GameEntity game);
+
+    /**
+     * @param stack the stack.
+     * @return the country that should control this stack given the counters. In case of tie, choose a random one.
+     */
+    String getController(StackEntity stack);
 }

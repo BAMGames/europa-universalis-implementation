@@ -1239,4 +1239,28 @@ public final class OEUtilImpl implements IOEUtil {
 
         return poorCountry ? (inflation + 1) / 2 : inflation;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getController(StackEntity stack) {
+        Map<String, Double> countersByCountry = stack.getCounters().stream()
+                .collect(Collectors.groupingBy(CounterEntity::getCountry, Collectors.summingDouble(value -> CounterUtil.getSizeFromType(value.getType()))));
+        Double max = countersByCountry.values().stream().max(Comparator.<Double>naturalOrder()).orElse(null);
+        if (max == null || max == 0) {
+            return null;
+        }
+        List<String> controllers = countersByCountry.entrySet().stream()
+                .filter(key -> Math.abs(key.getValue() - max) < EPSILON)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        if (controllers.contains(stack.getCountry())) {
+            return stack.getCountry();
+        } else {
+            return controllers.get(0);
+        }
+    }
+
 }

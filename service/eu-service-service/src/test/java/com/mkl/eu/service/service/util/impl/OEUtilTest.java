@@ -3583,4 +3583,117 @@ public class OEUtilTest {
         Assert.assertEquals(15, oeUtil.getMinimalInflation(15, PlayableCountry.RUSSIA, tables, game));
         Assert.assertEquals(15, oeUtil.getMinimalInflation(15, PlayableCountry.SWEDEN, tables, game));
     }
+
+    @Test
+    public void testGetStackController() {
+        StackControllerBuilder.create()
+                .whenGetController(oeUtil)
+                .thenExpect(null);
+        StackControllerBuilder.create()
+                .addCounter(CounterFaceTypeEnum.MNU_ART_MINUS, "france")
+                .whenGetController(oeUtil)
+                .thenExpect(null);
+        StackControllerBuilder.create()
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .whenGetController(oeUtil)
+                .thenExpect("france");
+        StackControllerBuilder.create()
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("france");
+        StackControllerBuilder.create().controller("france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("france");
+        StackControllerBuilder.create().controller("espagne")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("espagne");
+        StackControllerBuilder.create().controller("france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("espagne");
+        StackControllerBuilder.create().controller("espagne")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("france");
+        StackControllerBuilder.create().controller("france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("france");
+        StackControllerBuilder.create().controller("espagne")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "france")
+                .addCounter(CounterFaceTypeEnum.ARMY_MINUS, "espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "espagne")
+                .whenGetController(oeUtil)
+                .thenExpect("espagne");
+        StackControllerBuilder.create().controller("france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "angleterre")
+                .whenGetController(oeUtil)
+                .thenExpect("france");
+        StackControllerBuilder.create().controller("espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "angleterre")
+                .whenGetController(oeUtil)
+                .thenExpect("espagne");
+        StackControllerBuilder.create().controller("angleterre")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "france")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "espagne")
+                .addCounter(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION, "angleterre")
+                .whenGetController(oeUtil)
+                .thenExpect("angleterre");
+    }
+
+    static class StackControllerBuilder {
+        List<CounterEntity> counters = new ArrayList<>();
+        String controller;
+        String result;
+
+        static StackControllerBuilder create() {
+            return new StackControllerBuilder();
+        }
+
+        StackControllerBuilder addCounter(CounterFaceTypeEnum face, String country) {
+            CounterEntity counterEntity = new CounterEntity();
+            counterEntity.setType(face);
+            counterEntity.setCountry(country);
+            counters.add(counterEntity);
+            return this;
+        }
+
+        StackControllerBuilder controller(String controller) {
+            this.controller = controller;
+            return this;
+        }
+
+        StackControllerBuilder whenGetController(IOEUtil oeUtil) {
+            StackEntity stack = new StackEntity();
+            stack.setCountry(controller);
+            stack.getCounters().addAll(counters);
+
+            result = oeUtil.getController(stack);
+
+            return this;
+        }
+
+        StackControllerBuilder thenExpect(String expected) {
+            Assert.assertEquals("Wrong controller returned.", expected, result);
+
+            return this;
+        }
+    }
 }
