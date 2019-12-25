@@ -1698,6 +1698,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         List<DiffEntity> diffs = new ArrayList<>();
 
         Map<String, Integer> costs = new HashMap<>();
+        List<StackEntity> stacksThatMayChangeController = new ArrayList<>();
 
         // We stock the techs because if there is a technology advance, the maintenance should be of former technology.
         String landTech = country.getLandTech();
@@ -1716,7 +1717,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     diffs.add(executeLowerFortress(action, game));
                     break;
                 case DIS:
-                    diffs.add(executeDisband(action, game));
+                    diffs.add(executeDisband(action, game, stacksThatMayChangeController));
                     break;
                 case PU:
                     diffs.add(executePurchase(action, game, country, costs));
@@ -1754,6 +1755,17 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             }
 
             action.setStatus(AdminActionStatusEnum.DONE);
+        }
+
+        for (StackEntity stack : stacksThatMayChangeController) {
+            if (stack.getGame() != null) {
+                String newStackController = oeUtil.getController(stack);
+                if (!StringUtils.equals(newStackController, stack.getCountry())) {
+                    stack.setCountry(newStackController);
+                    diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController)));
+                }
+            }
         }
 
         EconomicalSheetEntity sheet = CommonUtil.findFirst(country.getEconomicalSheets(), economicalSheetEntity -> economicalSheetEntity.getTurn().equals(game.getTurn()));
@@ -1877,7 +1889,15 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @param game   the game.
      * @return a List of Diff related to the action.
      */
-    private DiffEntity executeDisband(AdministrativeActionEntity action, GameEntity game) {
+    private DiffEntity executeDisband(AdministrativeActionEntity action, GameEntity game, List<StackEntity> stacks) {
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(s -> s.getCounters().stream())
+                .filter(c -> c.getId().equals(action.getIdObject()))
+                .findAny()
+                .orElse(null);
+        if (!stacks.contains(counter.getOwner())) {
+            stacks.add(counter.getOwner());
+        }
         return counterDomain.removeCounter(action.getIdObject(), game);
     }
 

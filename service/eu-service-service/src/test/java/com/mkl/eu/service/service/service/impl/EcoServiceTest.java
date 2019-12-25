@@ -4636,6 +4636,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().add(new StackEntity());
         game.getStacks().get(2).setId(102L);
         game.getStacks().get(2).setProvince("rAzteca~E");
+        game.getStacks().get(2).setCountry("france");
+        game.getStacks().get(2).setGame(game);
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(0).setId(102L);
         game.getStacks().get(2).getCounters().get(0).setCountry("france");
@@ -4643,6 +4645,11 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
         game.getStacks().get(2).getCounters().get(0).setEstablishment(new EstablishmentEntity());
         game.getStacks().get(2).getCounters().get(0).getEstablishment().setLevel(1);
+        game.getStacks().get(2).getCounters().add(new CounterEntity());
+        game.getStacks().get(2).getCounters().get(1).setId(103L);
+        game.getStacks().get(2).getCounters().get(1).setCountry("france");
+        game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
+        game.getStacks().get(2).getCounters().get(1).setOwner(game.getStacks().get(2));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(3).setId(201L);
         game.getStacks().get(3).setProvince("rAzteca~S");
@@ -4994,6 +5001,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         DiffEntity diffRemove = new DiffEntity();
         when(counterDomain.removeCounter(103L, game)).thenReturn(diffRemove);
+        when(oeUtil.getController(game.getStacks().get(2))).thenReturn("espagne");
 
         DiffEntity diffAddLand = new DiffEntity();
         when(counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game)).thenReturn(diffAddLand);
@@ -5276,7 +5284,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(696, france.getEconomicalSheets().get(0).getAdmTotalExpense().intValue());
         Assert.assertEquals(15, france.getEconomicalSheets().get(0).getExcTaxesMod().intValue());
 
-        Assert.assertEquals(21, diffs.size());
+        Assert.assertEquals(22, diffs.size());
         Assert.assertEquals(diffVeteran, diffs.get(0));
         Assert.assertEquals(diffLowerFortress, diffs.get(1));
         Assert.assertEquals(diffRemove, diffs.get(2));
@@ -5321,6 +5329,9 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffAttributeTypeEnum.TECH_NAVAL, diffs.get(19).getAttributes().get(0).getType());
         Assert.assertEquals(Tech.NAE_GALEON, diffs.get(19).getAttributes().get(0).getValue());
         Assert.assertEquals(diffTechLand, diffs.get(20));
+        Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(21).getType());
+        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffs.get(21).getTypeObject());
+        Assert.assertEquals("espagne", getAttribute(diffs.get(21), DiffAttributeTypeEnum.COUNTRY));
 
         Assert.assertEquals(1, newTfis.size());
         Assert.assertEquals(1, newTfis.get("ZPfrance").size());
