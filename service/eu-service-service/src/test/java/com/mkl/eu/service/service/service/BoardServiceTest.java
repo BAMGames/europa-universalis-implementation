@@ -31,6 +31,7 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1521,21 +1522,68 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testRemoveCounterSuccess() throws Exception {
+    public void testRemoveCounterNoControllerChange() throws Exception {
+        testRemoveCounterSuccess("france", "france", false);
+    }
+
+    @Test
+    public void testRemoveCounterNoControllerChangeStackDestroyed() throws Exception {
+        testRemoveCounterSuccess("france", "france", true);
+    }
+
+    @Test
+    public void testRemoveCounterControllerChange() throws Exception {
+        testRemoveCounterSuccess("france", "espagne", false);
+    }
+
+    @Test
+    public void testRemoveCounterControllerChangeStackDestroyed() throws Exception {
+        testRemoveCounterSuccess("france", "espagne", true);
+    }
+
+    private void testRemoveCounterSuccess(String controllerBefore, String controllerAfter, boolean noStackAfter) throws Exception {
         Pair<Request<RemoveCounterRequest>, GameEntity> pair = testCheckGame(boardService::removeCounter, "removeCounter");
         Request<RemoveCounterRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
         request.setRequest(new RemoveCounterRequest());
         request.getRequest().setIdCounter(25L);
+        StackEntity stack = new StackEntity();
+        stack.setId(24L);
+        stack.setCountry(controllerBefore);
+        stack.setGame(noStackAfter ? null : game);
+        game.getStacks().add(stack);
+        stack.getCounters().add(createCounter(25L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
 
         DiffEntity diffRemove = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER);
         when(counterDomain.removeCounter(25L, game)).thenReturn(diffRemove);
+        when(oeUtil.getController(stack)).thenReturn(controllerAfter);
 
         simulateDiff();
 
         boardService.removeCounter(request);
 
-        DiffEntity diff = retrieveDiffCreated();
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        boolean stackChangeController = !StringUtils.equals(controllerBefore, controllerAfter) && !noStackAfter;
+        Assert.assertEquals(stackChangeController ? 2 : 1, diffs.size());
+
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
         Assert.assertEquals(diff, diffRemove);
+
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(d.getIdObject(), stack.getId()))
+                .findAny()
+                .orElse(null);
+        if (stackChangeController) {
+            Assert.assertNotNull(diff);
+            Assert.assertEquals(controllerAfter, getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
+        } else {
+            Assert.assertNull(diff);
+        }
     }
 }

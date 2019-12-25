@@ -713,11 +713,27 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         failIfNull(new CheckForThrow<>().setTest(request.getRequest().getIdCounter()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_REMOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER));
 
-        DiffEntity diff = counterDomain.removeCounter(request.getRequest().getIdCounter(), game);
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(s -> s.getCounters().stream())
+                .filter(c -> c.getId().equals(request.getRequest().getIdCounter()))
+                .findAny()
+                .orElse(null);
 
-        failIfNull(new CheckForThrow<>().setTest(diff).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+        failIfNull(new CheckForThrow<>().setTest(counter).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_REMOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER).setParams(METHOD_REMOVE_COUNTER, request.getRequest().getIdCounter()));
 
-        return createDiff(diff, gameDiffs, request);
+        StackEntity stack = counter.getOwner();
+        List<DiffEntity> diffs = new ArrayList<>();
+        diffs.add(counterDomain.removeCounter(request.getRequest().getIdCounter(), game));
+        if (stack.getGame() != null) {
+            String newStackController = oeUtil.getController(stack);
+            if (!StringUtils.equals(newStackController, stack.getCountry())) {
+                stack.setCountry(newStackController);
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController)));
+            }
+        }
+
+        return createDiffs(diffs, gameDiffs, request);
     }
 }
