@@ -841,29 +841,30 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         stack1.setId(1l);
         stack1.setProvince("pecs");
         stack1.setCountry("france");
-        stack1.getCounters().add(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_PLUS));
-        stack1.getCounters().add(createCounter(11l, "france", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack1.getCounters().add(createCounter(1l, "france", CounterFaceTypeEnum.ARMY_PLUS, stack1));
+        stack1.getCounters().add(createCounter(11l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, stack1));
         game.getStacks().add(stack1);
         StackEntity stack2 = new StackEntity();
         stack2.setId(2l);
         stack2.setProvince("pecs");
         stack2.setCountry("spain");
-        stack2.getCounters().add(createCounter(2l, "spain", CounterFaceTypeEnum.ARMY_MINUS));
+        stack2.getCounters().add(createCounter(2l, "spain", CounterFaceTypeEnum.ARMY_MINUS, stack2));
         game.getStacks().add(stack2);
         StackEntity stack3 = new StackEntity();
         stack3.setId(3l);
         stack3.setProvince("pecs");
         stack3.setCountry("savoie");
-        stack3.getCounters().add(createCounter(3l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack3.getCounters().add(createCounter(3l, "savoie", CounterFaceTypeEnum.LAND_DETACHMENT, stack3));
         game.getStacks().add(stack3);
         StackEntity stack4 = new StackEntity();
         stack4.setId(3l);
         stack4.setProvince("pecs");
         stack4.setCountry("france");
-        stack4.getCounters().add(createCounter(4l, "france", CounterFaceTypeEnum.MNU_ART_MINUS));
+        stack4.getCounters().add(createCounter(4l, "france", CounterFaceTypeEnum.MNU_ART_MINUS, stack4));
         game.getStacks().add(stack4);
 
         SiegeEntity siege = new SiegeEntity();
+        siege.setGame(game);
         siege.setFortressLevel(0);
         siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
         siege.setProvince("pecs");
@@ -908,6 +909,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         when(oeUtil.isMobile(stack2)).thenReturn(true);
         when(oeUtil.isMobile(stack3)).thenReturn(true);
         when(oeUtil.getWarAllies(country, siege.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getController(stack2)).thenReturn("genes");
 
         simulateDiff();
 
@@ -916,7 +918,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertTrue(siege.getStatus() == SiegeStatusEnum.DONE);
         Assert.assertFalse(siege.isFortressFalls());
         List<DiffEntity> diffs = retrieveDiffsCreated();
-        Assert.assertEquals(3, diffs.size());
+        Assert.assertEquals(4, diffs.size());
         DiffEntity diffSiege = diffs.stream()
                 .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.SIEGE)
                 .findAny()
@@ -942,6 +944,13 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("pecs", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_FROM));
         Assert.assertEquals("idf", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_TO));
         Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack3, DiffAttributeTypeEnum.MOVE_PHASE));
+        DiffEntity diffStack2 = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK
+                        && Objects.equals(diff.getIdObject(), stack2.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffStack2);
+        Assert.assertEquals("genes", getAttribute(diffStack2, DiffAttributeTypeEnum.COUNTRY));
     }
 
     @Test
@@ -1162,6 +1171,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         country.setName("france");
         game.getCountries().add(country);
         SiegeEntity siege = new SiegeEntity();
+        siege.setGame(game);
         siege.setFortressLevel(0);
         siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
         siege.setBonus(2);
@@ -3736,6 +3746,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         game.getSieges().add(new SiegeEntity());
         SiegeEntity siege = game.getSieges().get(0);
+        siege.setGame(game);
         siege.setStatus(SiegeStatusEnum.CHOOSE_LOSS);
         siege.setProvince("idf");
         StackEntity stack = new StackEntity();

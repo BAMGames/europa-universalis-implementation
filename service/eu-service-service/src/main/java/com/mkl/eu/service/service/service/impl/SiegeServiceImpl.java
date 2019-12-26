@@ -802,10 +802,31 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
      * @return the diffs.
      */
     private List<DiffEntity> cleanUpSiege(SiegeEntity siege, List<DiffAttributesEntity> attributes) {
+        List<DiffEntity> diffs = new ArrayList<>();
         siege.setStatus(SiegeStatusEnum.DONE);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.DONE));
 
-        return statusWorkflowDomain.endMilitaryPhase(siege.getGame());
+        List<Long> countersId = siege.getCounters().stream()
+                .map(SiegeCounterEntity::getCounter)
+                .collect(Collectors.toList());
+
+        siege.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> countersId.contains(counter.getId()))
+                .map(CounterEntity::getOwner)
+                .distinct()
+                .forEach(stack -> {
+                    String newStackController = oeUtil.getController(stack);
+                    if (!StringUtils.equals(newStackController, stack.getCountry())) {
+                        diffs.add(DiffUtil.createDiff(siege.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController)));
+                    }
+                    stack.setCountry(newStackController);
+                });
+
+        diffs.addAll(statusWorkflowDomain.endMilitaryPhase(siege.getGame()));
+        return diffs;
     }
 
     /** {@inheritDoc} */
