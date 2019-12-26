@@ -1304,22 +1304,31 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .collect(Collectors.toList());
 
         battle.getGame().getStacks().stream()
-                .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && stack.getMovePhase() == MovePhaseEnum.FIGHTING)
+                .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()))
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> countersId.contains(counter.getId()))
                 .map(CounterEntity::getOwner)
                 .distinct()
                 .forEach(stack -> {
-                    List<String> enemies = oeUtil.getEnemies(stack.getCountry(), battle.getGame());
-                    MovePhaseEnum movePhase;
-                    if (enemies.contains(controller)) {
-                        movePhase = MovePhaseEnum.BESIEGING;
-                    } else {
-                        movePhase = MovePhaseEnum.MOVED;
+                    String newStackController = oeUtil.getController(stack);
+                    boolean changeController = !StringUtils.equals(newStackController, stack.getCountry());
+                    MovePhaseEnum movePhase = stack.getMovePhase();
+                    if (stack.getMovePhase() == MovePhaseEnum.FIGHTING) {
+                        List<String> enemies = oeUtil.getEnemies(stack.getCountry(), battle.getGame());
+                        if (enemies.contains(controller)) {
+                            movePhase = MovePhaseEnum.BESIEGING;
+                        } else {
+                            movePhase = MovePhaseEnum.MOVED;
+                        }
+                    }
+                    boolean changeMovePhase = movePhase != stack.getMovePhase();
+                    if (changeController || changeMovePhase) {
+                        diffs.add(DiffUtil.createDiff(battle.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase, changeMovePhase),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, changeController)));
                     }
                     stack.setMovePhase(movePhase);
-                    diffs.add(DiffUtil.createDiff(battle.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
-                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase)));
+                    stack.setCountry(newStackController);
                 });
         diffs.addAll(statusWorkflowDomain.endMilitaryPhase(battle.getGame()));
         return diffs;

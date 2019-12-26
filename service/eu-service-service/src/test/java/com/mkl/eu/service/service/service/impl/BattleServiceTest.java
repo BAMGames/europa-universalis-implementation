@@ -949,6 +949,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         when(oeUtil.lossesMitigation(anyDouble(), anyBoolean(), any())).thenReturn(AbstractWithLossEntity.create(0));
         when(oeUtil.lossModificationSize(any(), anyInt())).thenReturn(AbstractWithLossEntity.create(0));
         when(oeUtil.retreat(anyInt())).thenReturn(AbstractWithLossEntity.create(0));
+        when(oeUtil.getController(stack1)).thenReturn("france");
+        when(oeUtil.getController(stack2)).thenReturn("spain");
         testCheckStatus(pair.getRight(), request, battleService::withdrawBeforeBattle, "withdrawBeforeBattle", GameStatusEnum.MILITARY_BATTLES);
         request.getGame().setIdCountry(27L);
         request.setRequest(new WithdrawBeforeBattleRequest());
@@ -2075,8 +2077,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             when(testClass.provinceDao.getProvinceByName("idf")).thenReturn(province);
             battle.setTurn(1);
             long counterId = 72;
-            StackEntity stack = new StackEntity();
-            stack.setProvince(battle.getProvince());
+            StackEntity stackPhasing = new StackEntity();
+            stackPhasing.setId(1L);
+            stackPhasing.setProvince(battle.getProvince());
+            stackPhasing.setCountry(phasingCountry.getName());
+            stackPhasing.setMovePhase(MovePhaseEnum.FIGHTING);
             for (CounterEntity counter : phasing.counters) {
                 BattleCounterEntity bc = new BattleCounterEntity();
                 counter.setId(counterId++);
@@ -2087,9 +2092,13 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 bc.setBattle(battle);
                 bc.setPhasing(true);
                 battle.getCounters().add(bc);
-                stack.getCounters().add(counter);
-                counter.setOwner(stack);
+                stackPhasing.getCounters().add(counter);
+                counter.setOwner(stackPhasing);
             }
+            StackEntity stackNotPhasing = new StackEntity();
+            stackNotPhasing.setId(2L);
+            stackNotPhasing.setProvince(battle.getProvince());
+            stackNotPhasing.setCountry(nonPhasingCountry.getName());
             for (CounterEntity counter : nonPhasing.counters) {
                 BattleCounterEntity bc = new BattleCounterEntity();
                 counter.setId(counterId++);
@@ -2100,11 +2109,12 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 bc.setBattle(battle);
                 bc.setPhasing(false);
                 battle.getCounters().add(bc);
-                stack.getCounters().add(counter);
-                counter.setOwner(stack);
+                stackNotPhasing.getCounters().add(counter);
+                counter.setOwner(stackNotPhasing);
             }
             game.getBattles().add(battle);
-            game.getStacks().add(stack);
+            game.getStacks().add(stackPhasing);
+            game.getStacks().add(stackNotPhasing);
             Request<WithdrawBeforeBattleRequest> request = pair.getLeft();
             request.setRequest(new WithdrawBeforeBattleRequest());
             request.getRequest().setWithdraw(false);
@@ -2176,6 +2186,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 diff.setIdObject(invocation.getArgumentAt(0, Long.class));
                 return diff;
             });
+            when(testClass.oeUtil.getController(stackPhasing)).thenReturn(rotw ? nonPhasingCountry.getName() : phasingCountry.getName());
+            when(testClass.oeUtil.getController(stackNotPhasing)).thenReturn(rotw ? phasingCountry.getName() : nonPhasingCountry.getName());
             DiffEntity endDiff = new DiffEntity();
             endDiff.setType(DiffTypeEnum.VALIDATE);
             endDiff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
@@ -2462,14 +2474,33 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 Assert.assertTrue(diffsLastDay.stream()
                         .anyMatch(d -> d.getType() == DiffTypeEnum.VALIDATE && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER));
                 diffsSize++;
-                if (result.winner == BattleWinnerEnum.PHASING) {
-                    DiffEntity stackMovePhase = diffsLastDay.stream()
-                            .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK)
-                            .findAny()
-                            .orElse(null);
-                    Assert.assertNotNull(stackMovePhase);
-                    Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(stackMovePhase, DiffAttributeTypeEnum.MOVE_PHASE));
+                DiffEntity stackPhasingkMovePhase = diffsLastDay.stream()
+                        .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK &&
+                                Objects.equals(diff.getIdObject(), 1L))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull(stackPhasingkMovePhase);
+                Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(stackPhasingkMovePhase, DiffAttributeTypeEnum.MOVE_PHASE));
+                if (rotw) {
+                    Assert.assertEquals("spain", getAttribute(stackPhasingkMovePhase, DiffAttributeTypeEnum.COUNTRY));
+                } else {
+                    Assert.assertFalse(stackPhasingkMovePhase.getAttributes().stream()
+                            .anyMatch(attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY));
+                }
+                diffsSize++;
+                DiffEntity stackNotPhasingkMovePhase = diffsLastDay.stream()
+                        .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK &&
+                                Objects.equals(diff.getIdObject(), 2L))
+                        .findAny()
+                        .orElse(null);
+                if (rotw) {
+                    Assert.assertNotNull(stackNotPhasingkMovePhase);
+                    Assert.assertFalse(stackNotPhasingkMovePhase.getAttributes().stream()
+                            .anyMatch(attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE));
+                    Assert.assertEquals("france", getAttribute(stackNotPhasingkMovePhase, DiffAttributeTypeEnum.COUNTRY));
                     diffsSize++;
+                } else {
+                    Assert.assertNull(stackNotPhasingkMovePhase);
                 }
             }
             Assert.assertEquals(diffsSize, diffsLastDay.size());
