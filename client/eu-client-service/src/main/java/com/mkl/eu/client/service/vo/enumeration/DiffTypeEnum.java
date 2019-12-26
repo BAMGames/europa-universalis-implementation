@@ -112,6 +112,7 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#MOVE_POINTS - optional attribute</li>
      * <li>DiffAttributeTypeEnum#MOVE_PHASE - optional attribute</li>
      * <li>DiffAttributeTypeEnum#BESIEGED - optional attribute</li>
+     * <li>DiffAttributeTypeEnum#COUNTRY to know the new controller of the stack.</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:

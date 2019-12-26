@@ -937,6 +937,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.MOVE_POINTS, stack::setMove);
         doIfAttributeEnum(diff, DiffAttributeTypeEnum.MOVE_PHASE, stack::setMovePhase, MovePhaseEnum.class);
         doIfAttributeBoolean(diff, DiffAttributeTypeEnum.BESIEGED, stack::setBesieged);
+        doIfAttribute(diff, DiffAttributeTypeEnum.COUNTRY, stack::setCountry);
     }
 
     /**

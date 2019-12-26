@@ -3656,6 +3656,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
         when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(spain, battle.getWar(), true)).thenReturn(true);
+        when(oeUtil.getController(stackNonPhasing)).thenReturn("savoie");
 
         request.setRequest(new RetreatAfterBattleRequest());
         request.getRequest().getRetreatInFortress().add(3L);
@@ -3712,10 +3713,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);
-        Assert.assertEquals(3, diff.getAttributes().size());
+        Assert.assertEquals(4, diff.getAttributes().size());
         Assert.assertEquals("idf", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_FROM));
         Assert.assertEquals("orleans", getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
         Assert.assertEquals("MOVED", getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+        Assert.assertEquals("savoie", getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
     }
 
     @Test

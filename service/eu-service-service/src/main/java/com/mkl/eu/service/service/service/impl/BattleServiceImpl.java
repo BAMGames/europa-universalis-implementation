@@ -1708,12 +1708,15 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                     .setParams(METHOD_RETREAT_AFTER_BATTLE, province.getName()));
 
             Consumer<StackEntity> retreatStack = stack -> {
+                String newStackController = oeUtil.getController(stack);
                 newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, battle.getProvince()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, !StringUtils.equals(newStackController, stack.getCountry()))));
                 stack.setMovePhase(MovePhaseEnum.MOVED);
                 stack.setProvince(provinceTo);
+                stack.setCountry(newStackController);
             };
             game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
