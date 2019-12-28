@@ -4650,6 +4650,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(2).getCounters().get(1).setCountry("france");
         game.getStacks().get(2).getCounters().get(1).setType(CounterFaceTypeEnum.ARMY_MINUS);
         game.getStacks().get(2).getCounters().get(1).setOwner(game.getStacks().get(2));
+        CounterEntity counterArmy = game.getStacks().get(2).getCounters().get(1);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(3).setId(201L);
         game.getStacks().get(3).setProvince("rAzteca~S");
@@ -4658,6 +4659,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(3).getCounters().get(0).setCountry("angleterre");
         game.getStacks().get(3).getCounters().get(0).setType(CounterFaceTypeEnum.FORT);
         game.getStacks().get(3).getCounters().get(0).setOwner(game.getStacks().get(3));
+        CounterEntity counterFort = game.getStacks().get(3).getCounters().get(0);
         game.getStacks().get(3).getCounters().add(new CounterEntity());
         game.getStacks().get(3).getCounters().get(1).setId(201L);
         game.getStacks().get(3).getCounters().get(1).setCountry("france");
@@ -4988,7 +4990,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         // To isolate unexpected calls
         DiffEntity diffOther = new DiffEntity();
-        when(counterDomain.removeCounter(any(), any())).thenReturn(diffOther);
+        when(counterDomain.removeCounter(any())).thenReturn(diffOther);
         when(counterDomain.switchCounter(any(), any(), any(), any())).thenReturn(diffOther);
         when(counterDomain.createCounter(any(), any(), any(), any(), any())).thenReturn(diffOther);
         when(counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenReturn(diffOther);
@@ -5000,7 +5002,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.FORTRESS_1, null, game)).thenReturn(diffLowerFortress);
 
         DiffEntity diffRemove = new DiffEntity();
-        when(counterDomain.removeCounter(103L, game)).thenReturn(diffRemove);
+        when(counterDomain.removeCounter(counterArmy)).thenReturn(diffRemove);
         when(oeUtil.getController(game.getStacks().get(2))).thenReturn("espagne");
 
         DiffEntity diffAddLand = new DiffEntity();
@@ -5036,7 +5038,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.TRADING_POST_MINUS, 2, game)).thenReturn(diffUpTp2);
 
         DiffEntity diffDestroyFort = new DiffEntity();
-        when(counterDomain.removeCounter(200L, game)).thenReturn(diffDestroyFort);
+        when(counterDomain.removeCounter(counterFort)).thenReturn(diffDestroyFort);
 
         DiffEntity diffAddCol = new DiffEntity();
         when(counterDomain.createCounter(CounterFaceTypeEnum.COLONY_MINUS, "france", "rAzteca~S", 1, game)).thenReturn(diffAddCol);
@@ -5667,7 +5669,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         // To isolate unexpected calls
         DiffEntity diffOther = new DiffEntity();
-        when(counterDomain.removeCounter(any(), any())).thenReturn(diffOther);
+        when(counterDomain.removeCounter(any())).thenReturn(diffOther);
         when(counterDomain.switchCounter(any(), any(), any(), any())).thenReturn(diffOther);
         when(counterDomain.createCounter(any(), any(), any(), any(), any())).thenReturn(diffOther);
 
@@ -5675,7 +5677,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.switchCounter(100L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 6, game)).thenReturn(diffSwitch56);
 
         DiffEntity diffRemove10 = new DiffEntity();
-        when(counterDomain.removeCounter(101L, game)).thenReturn(diffRemove10);
+        when(counterDomain.removeCounter(game.getStacks().get(0).getCounters().get(1))).thenReturn(diffRemove10);
 
         DiffEntity diffSwitch54 = new DiffEntity();
         when(counterDomain.switchCounter(200L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game)).thenReturn(diffSwitch54);
@@ -5684,7 +5686,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.switchCounter(201L, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game)).thenReturn(diffSwitch43);
 
         DiffEntity diffRemove10Ang = new DiffEntity();
-        when(counterDomain.removeCounter(202L, game)).thenReturn(diffRemove10Ang);
+        when(counterDomain.removeCounter(game.getStacks().get(1).getCounters().get(2))).thenReturn(diffRemove10Ang);
 
         DiffEntity diffAdd01 = new DiffEntity();
         when(counterDomain.createCounter(CounterFaceTypeEnum.TRADING_FLEET_MINUS, "suede", "ZMCaraibes", 1, game)).thenReturn(diffAdd01);
@@ -6156,26 +6158,26 @@ public class EcoServiceTest extends AbstractGameServiceTest {
 
         // To isolate unexpected calls
         DiffEntity diffOther = new DiffEntity();
-        when(counterDomain.removeCounter(any(), any())).thenReturn(diffOther);
+        when(counterDomain.removeCounter(any())).thenReturn(diffOther);
         when(counterDomain.switchCounter(any(), any(), any(), any())).thenReturn(diffOther);
 
         DiffEntity remove101 = new DiffEntity();
-        when(counterDomain.removeCounter(101L, game)).thenReturn(remove101);
+        when(counterDomain.removeCounter(game.getStacks().get(0).getCounters().get(1))).thenReturn(remove101);
 
         DiffEntity remove102 = new DiffEntity();
-        when(counterDomain.removeCounter(102L, game)).thenReturn(remove102);
+        when(counterDomain.removeCounter(game.getStacks().get(0).getCounters().get(2))).thenReturn(remove102);
 
         DiffEntity remove202 = new DiffEntity();
-        when(counterDomain.removeCounter(202L, game)).thenReturn(remove202);
+        when(counterDomain.removeCounter(game.getStacks().get(1).getCounters().get(2))).thenReturn(remove202);
 
         DiffEntity remove203 = new DiffEntity();
-        when(counterDomain.removeCounter(203L, game)).thenReturn(remove203);
+        when(counterDomain.removeCounter(game.getStacks().get(1).getCounters().get(3))).thenReturn(remove203);
 
         DiffEntity remove201 = new DiffEntity();
-        when(counterDomain.removeCounter(201L, game)).thenReturn(remove201);
+        when(counterDomain.removeCounter(game.getStacks().get(1).getCounters().get(1))).thenReturn(remove201);
 
         DiffEntity remove300 = new DiffEntity();
-        when(counterDomain.removeCounter(300L, game)).thenReturn(remove300);
+        when(counterDomain.removeCounter(game.getStacks().get(2).getCounters().get(0))).thenReturn(remove300);
 
         DiffEntity switch301 = new DiffEntity();
         when(counterDomain.switchCounter(301L, CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(switch301);

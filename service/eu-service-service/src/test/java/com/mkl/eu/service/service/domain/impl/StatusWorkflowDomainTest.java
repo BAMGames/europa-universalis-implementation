@@ -1112,24 +1112,29 @@ public class StatusWorkflowDomainTest {
     public void testEndRound() {
         GameEntity game = new GameEntity();
         StackEntity stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("idf");
         stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.PILLAGE_MINUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("orleans");
         stack.getCounters().add(createCounter(2L, null, CounterFaceTypeEnum.PILLAGE_PLUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("picardie");
         stack.getCounters().add(createCounter(3L, null, CounterFaceTypeEnum.PILLAGE_PLUS, stack));
         stack.getCounters().add(createCounter(4L, null, CounterFaceTypeEnum.PILLAGE_MINUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("vendee");
         stack.getCounters().add(createCounter(5L, null, CounterFaceTypeEnum.PILLAGE_MINUS, stack));
         stack.getCounters().add(createCounter(6L, null, CounterFaceTypeEnum.PILLAGE_PLUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("auvergne");
         stack.getCounters().add(createCounter(7L, null, CounterFaceTypeEnum.REVOLT_MINUS, stack));
         game.getStacks().add(stack);
@@ -1138,7 +1143,7 @@ public class StatusWorkflowDomainTest {
         DiffEntity end = new DiffEntity();
         end.setId(1L);
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game)).thenReturn(end);
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(removeCounterAnswer());
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.switchCounter(anyLong(), any(), anyInt(), any())).thenAnswer(switchCounterAnswer());
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
@@ -1714,50 +1719,59 @@ public class StatusWorkflowDomainTest {
         game.getOrders().add(order);
 
         StackEntity stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("pecs");
         stack.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
         stack.getCounters().add(createCounter(2L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
         game.getStacks().add(stack);
 
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("idf");
         stack.getCounters().add(createCounter(11L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("idf");
         stack.setMovePhase(MovePhaseEnum.BESIEGING);
         game.getStacks().add(stack);
 
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("silesie");
         stack.getCounters().add(createCounter(21L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("silesie");
         stack.setMovePhase(MovePhaseEnum.BESIEGING);
         game.getStacks().add(stack);
 
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("orleanais");
         stack.getCounters().add(createCounter(31L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
         stack.getCounters().add(createCounter(32L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("orleanais");
         stack.setMovePhase(MovePhaseEnum.BESIEGING);
         game.getStacks().add(stack);
 
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("vendee");
         stack.getCounters().add(createCounter(41L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
         stack.getCounters().add(createCounter(42L, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
         game.getStacks().add(stack);
         stack = new StackEntity();
+        stack.setGame(game);
         stack.setProvince("vendee");
         stack.setMovePhase(MovePhaseEnum.BESIEGING);
         game.getStacks().add(stack);
 
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(removeCounterAnswer());
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.switchCounter(anyLong(), any(), any(), any())).thenAnswer(switchCounterAnswer());
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);

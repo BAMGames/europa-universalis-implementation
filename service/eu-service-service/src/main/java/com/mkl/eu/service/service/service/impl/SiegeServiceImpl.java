@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
@@ -660,15 +661,23 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         // if annihilated, remove all counters
         boolean testLosses = siege.getUndermineDie() == 0 || siege.getUndermineResult() == SiegeUndermineResultEnum.BREACH_TAKEN;
+        Function<SiegeCounterEntity, CounterEntity> toCounter = source -> siege.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> Objects.equals(counter.getId(), source.getCounter()))
+                .findAny()
+                .orElse(null);
         if (testLosses && siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize())) {
             siege.getCounters().stream()
                     .filter(SiegeCounterEntity::isPhasing)
-                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter(), siege.getGame())));
+                    .map(toCounter)
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
         if ((testLosses && siege.getNonPhasing().getLosses().isGreaterThanSize(siege.getNonPhasing().getSize())) || siege.getUndermineResult() == SiegeUndermineResultEnum.SURRENDER) {
             siege.getCounters().stream()
                     .filter(SiegeCounterEntity::isNotPhasing)
-                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getCounter(), siege.getGame())));
+                    .map(toCounter)
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
 
         if (!phasingLossesAuto || !nonPhasingLossesAuto) {
@@ -728,7 +737,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .flatMap(stack -> stack.getCounters().stream())
                 .collect(Collectors.toList());
 
-        Consumer<CounterEntity> deleteCounter = counter -> diffs.add(counterDomain.removeCounter(counter.getId(), game));
+        Consumer<CounterEntity> deleteCounter = counter -> diffs.add(counterDomain.removeCounter(counter));
         presentCounters.stream()
                 .filter(HAS_SIEGEWORK)
                 .forEach(deleteCounter);
@@ -748,7 +757,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.CONTROL, country.getName(), siege.getProvince(), null, game));
             }
         } else {
-            diffs.add(counterDomain.removeCounter(control.getId(), game));
+            diffs.add(counterDomain.removeCounter(control));
         }
         // TODO TG-130 use case of praesidios
         CounterEntity fortress = presentCounters.stream()
@@ -761,7 +770,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         if (fortress != null) {
             // TODO TG-130 special fortresses
             CounterFaceTypeEnum newFortress = CounterUtil.getFortressesFromLevel(level, CounterUtil.isArsenal(fortress.getType()));
-            diffs.add(counterDomain.removeCounter(fortress.getId(), game));
+            diffs.add(counterDomain.removeCounter(fortress));
             if (level > naturalFortressLevel) {
                 String newController;
                 if (enemies.contains(owner)) {
@@ -933,7 +942,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                         .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
                         .collect(Collectors.toList()));
             }
-            diffs.add(counterDomain.removeCounter(request.getRequest().getIdCounter(), game));
+            diffs.add(counterDomain.removeCounter(counter));
         }
 
         diffs.addAll(endSiege(siege, country, attributes, request.getRequest().isMan()));
@@ -1656,7 +1665,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter(), lossSize, lossMax));
 
             if (lossMax - lossSize <= EPSILON) {
-                diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                diffs.add(counterDomain.removeCounter(counter));
                 thirdDiff -= loss.getThirdLosses();
             } else {
                 List<CounterFaceTypeEnum> faces = new ArrayList<>();
@@ -1682,12 +1691,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 // TODO check if round and third are 0 ?
                 faces.removeIf(o -> o == null);
                 if (faces.isEmpty()) {
-                    diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                    diffs.add(counterDomain.removeCounter(counter));
                 } else {
                     diffs.addAll(faces.stream()
                             .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
                             .collect(Collectors.toList()));
-                    diffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                    diffs.add(counterDomain.removeCounter(counter));
                 }
             }
         }

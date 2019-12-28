@@ -587,7 +587,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                     .findAny()
                     .orElse(null);
             if (pillageMinus != null) {
-                diffs.add(counterDomain.removeCounter(pillageMinus.getId(), game));
+                diffs.add(counterDomain.removeCounter(pillageMinus));
             } else {
                 CounterEntity pillagePlus = pillages.stream()
                         .filter(counter -> counter.getType() == CounterFaceTypeEnum.PILLAGE_PLUS)
@@ -653,7 +653,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                             && StringUtils.equals(province, stack.getProvince()));
             if (!besieged) {
                 siegeworks.stream()
-                        .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework.getId(), game)));
+                        .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework)));
             } else {
                 CounterEntity siegeworkRemain = siegeworks.stream()
                         .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS)
@@ -664,7 +664,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                                 .orElse(null));
                 siegeworks.stream()
                         .filter(siegework -> !Objects.equals(siegeworkRemain.getId(), siegework.getId()))
-                        .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework.getId(), game)));
+                        .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework)));
                 if (siegeworkRemain.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS) {
                     diffs.add(counterDomain.switchCounter(siegeworkRemain.getId(), CounterFaceTypeEnum.SIEGEWORK_MINUS, null, game));
                 }

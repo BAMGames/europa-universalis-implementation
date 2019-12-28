@@ -363,20 +363,23 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
 
             StackEntity lootingStack = new StackEntity();
             lootingStack.setId(4L);
+            lootingStack.setGame(game);
             String countryName = minor ? "sabaudia" : "france";
             lootingStack.setCountry(countryName);
             lootingStack.setProvince("pecs");
-            lootingStack.getCounters().add(createCounter(11L, countryName, army ? CounterFaceTypeEnum.ARMY_MINUS : CounterFaceTypeEnum.LAND_DETACHMENT));
+            lootingStack.getCounters().add(createCounter(11L, countryName, army ? CounterFaceTypeEnum.ARMY_MINUS : CounterFaceTypeEnum.LAND_DETACHMENT, lootingStack));
             game.getStacks().add(lootingStack);
             if (type == LandLootTypeEnum.BURN_TP) {
                 StackEntity stack = new StackEntity();
+                stack.setGame(game);
                 stack.setProvince("pecs");
-                stack.getCounters().add(createCounter(12L, "spain", CounterFaceTypeEnum.TRADING_POST_MINUS));
+                stack.getCounters().add(createCounter(12L, "spain", CounterFaceTypeEnum.TRADING_POST_MINUS, stack));
                 game.getStacks().add(stack);
             }
             if (!pillages.isEmpty()) {
                 StackEntity stack = new StackEntity();
                 stack.setId(15L);
+                stack.setGame(game);
                 stack.setProvince("pecs");
                 for (CounterFaceTypeEnum pillage : pillages) {
                     CounterEntity counter = createCounter(666L, null, pillage);
@@ -417,8 +420,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER));
             when(testClass.counterDomain.switchCounter(anyLong(), any(), anyInt(), any()))
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER));
-            when(testClass.counterDomain.removeCounter(12L, game))
-                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, 12L));
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
 
             testClass.simulateDiff();
 
@@ -661,18 +663,21 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         GameEntity game = pair.getRight();
         StackEntity stack = new StackEntity();
         stack.setId(4L);
+        stack.setGame(game);
         stack.setCountry("france");
         stack.setProvince("pecs");
         stack.setMovePhase(MovePhaseEnum.LOOTING);
         game.getStacks().add(stack);
         StackEntity stackSiegeworks = new StackEntity();
         stackSiegeworks.setId(3L);
+        stackSiegeworks.setGame(game);
         stackSiegeworks.setProvince("milano");
         stackSiegeworks.getCounters().add(createCounter(1L, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stackSiegeworks));
         game.getStacks().add(stackSiegeworks);
         if (siegeworks != null && siegeworks.length > 0) {
             stackSiegeworks = new StackEntity();
             stackSiegeworks.setId(5L);
+            stackSiegeworks.setGame(game);
             stackSiegeworks.setProvince("pecs");
             for (CounterFaceTypeEnum siegework : siegeworks) {
                 stackSiegeworks.getCounters().add(createCounter(1L, null, siegework, stackSiegeworks));
@@ -697,7 +702,7 @@ public class InterPhaseServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getEnemies(country, game)).thenReturn(Collections.singletonList("spain"));
         when(oeUtil.getController(pecs, game)).thenReturn("spain");
         when(oeUtil.canRetreat(idf, false, 0d, country, game)).thenReturn(true);
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(removeCounterAnswer());
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
 
         simulateDiff();
 

@@ -724,7 +724,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         StackEntity stack = counter.getOwner();
         List<DiffEntity> diffs = new ArrayList<>();
-        diffs.add(counterDomain.removeCounter(request.getRequest().getIdCounter(), game));
+        diffs.add(counterDomain.removeCounter(counter));
         if (stack.getGame() != null) {
             String newStackController = oeUtil.getController(stack);
             if (!StringUtils.equals(newStackController, stack.getCountry())) {

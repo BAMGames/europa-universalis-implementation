@@ -22,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
@@ -238,13 +239,6 @@ public class CounterDomainTest {
     }
 
     @Test
-    public void testRemoveCounter1() throws Exception {
-        DiffEntity diff = counterDomain.removeCounter(99L, new GameEntity());
-
-        Assert.assertNull(diff);
-    }
-
-    @Test
     public void testRemoveCounter2() throws Exception {
         abstractRemoveCounter(101L, "idf", null);
     }
@@ -260,6 +254,7 @@ public class CounterDomainTest {
         game.setVersion(5L);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setId(1L);
+        game.getStacks().get(0).setGame(game);
         game.getStacks().get(0).setProvince("idf");
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(0).setId(100L);
@@ -269,12 +264,18 @@ public class CounterDomainTest {
         game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setId(2L);
+        game.getStacks().get(1).setGame(game);
         game.getStacks().get(1).setProvince("languedoc");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setId(200L);
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
 
-        DiffEntity diff = counterDomain.removeCounter(idCounter, game);
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), idCounter))
+                .findAny()
+                .orElse(null);
+        DiffEntity diff = counterDomain.removeCounter(counter);
 
         InOrder inOrder = inOrder(counterDao);
         inOrder.verify(counterDao).delete(anyObject());
@@ -316,6 +317,7 @@ public class CounterDomainTest {
         game.getTradeFleets().get(2).setLevel(2);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setId(1L);
+        game.getStacks().get(0).setGame(game);
         game.getStacks().get(0).setProvince("idf");
         game.getStacks().get(0).getCounters().add(new CounterEntity());
         game.getStacks().get(0).getCounters().get(0).setId(100L);
@@ -325,6 +327,7 @@ public class CounterDomainTest {
         game.getStacks().get(0).getCounters().get(1).setOwner(game.getStacks().get(0));
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setId(2L);
+        game.getStacks().get(1).setGame(game);
         game.getStacks().get(1).setProvince("ZPFrance");
         game.getStacks().get(1).getCounters().add(new CounterEntity());
         game.getStacks().get(1).getCounters().get(0).setId(200L);
@@ -332,7 +335,7 @@ public class CounterDomainTest {
         game.getStacks().get(1).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_FLEET_MINUS);
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
 
-        DiffEntity diff = counterDomain.removeCounter(200L, game);
+        DiffEntity diff = counterDomain.removeCounter(game.getStacks().get(1).getCounters().get(0));
 
         InOrder inOrder = inOrder(counterDao);
         inOrder.verify(counterDao).delete(anyObject());

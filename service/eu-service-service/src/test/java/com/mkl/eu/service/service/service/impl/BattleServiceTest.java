@@ -2079,6 +2079,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             long counterId = 72;
             StackEntity stackPhasing = new StackEntity();
             stackPhasing.setId(1L);
+            stackPhasing.setGame(game);
             stackPhasing.setProvince(battle.getProvince());
             stackPhasing.setCountry(phasingCountry.getName());
             stackPhasing.setMovePhase(MovePhaseEnum.FIGHTING);
@@ -2097,6 +2098,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             }
             StackEntity stackNotPhasing = new StackEntity();
             stackNotPhasing.setId(2L);
+            stackNotPhasing.setGame(game);
             stackNotPhasing.setProvince(battle.getProvince());
             stackNotPhasing.setCountry(nonPhasingCountry.getName());
             for (CounterEntity counter : nonPhasing.counters) {
@@ -2177,15 +2179,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 when(testClass.oeUtil.retreat(nonPhasing.retreat)).thenReturn(AbstractWithLossEntity.create(nonPhasing.retreatLosses));
             }
 
-            when(testClass.counterDomain.removeCounter(anyLong(), any())).thenAnswer(invocation -> {
-                DiffEntity diff = new DiffEntity();
-                diff.setIdGame(game.getId());
-                diff.setVersionGame(game.getVersion());
-                diff.setType(DiffTypeEnum.REMOVE);
-                diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-                diff.setIdObject(invocation.getArgumentAt(0, Long.class));
-                return diff;
-            });
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
             when(testClass.oeUtil.getController(stackPhasing)).thenReturn(rotw ? nonPhasingCountry.getName() : phasingCountry.getName());
             when(testClass.oeUtil.getController(stackNotPhasing)).thenReturn(rotw ? phasingCountry.getName() : nonPhasingCountry.getName());
             DiffEntity endDiff = new DiffEntity();
@@ -3029,9 +3023,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.getGame().setIdCountry(27L);
         StackEntity stack = new StackEntity();
+        stack.setId(10L);
+        stack.setGame(game);
         stack.setProvince(battle.getProvince());
-        stack.getCounters().add(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, 10L));
-        stack.getCounters().add(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, 10L));
+        stack.getCounters().add(createCounter(1l, "france", CounterFaceTypeEnum.LAND_DETACHMENT, stack));
+        stack.getCounters().add(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, stack));
         game.getStacks().add(stack);
 
         when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
@@ -3039,15 +3035,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getWarEnemies(france, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
         when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(france, battle.getWar(), false)).thenReturn(true);
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(invocation -> {
-            DiffEntity diff = new DiffEntity();
-            diff.setIdObject(invocation.getArgumentAt(0, Long.class));
-            diff.setType(DiffTypeEnum.REMOVE);
-            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-            diff.setVersionGame(VERSION_SINCE);
-            diff.setIdGame(GAME_ID);
-            return diff;
-        });
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
             DiffEntity diff = new DiffEntity();
             diff.setIdObject(invocation.getArgumentAt(2, Long.class));
@@ -3164,8 +3152,10 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.getGame().setIdCountry(26L);
         StackEntity stack = new StackEntity();
+        stack.setId(20L);
+        stack.setGame(game);
         stack.setProvince(battle.getProvince());
-        stack.getCounters().add(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, 20L));
+        stack.getCounters().add(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, stack));
         game.getStacks().add(stack);
 
         when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
@@ -3173,15 +3163,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         when(oeUtil.getWarEnemies(france, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
         when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(spain, battle.getWar(), true)).thenReturn(true);
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(invocation -> {
-            DiffEntity diff = new DiffEntity();
-            diff.setIdObject(invocation.getArgumentAt(0, Long.class));
-            diff.setType(DiffTypeEnum.REMOVE);
-            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-            diff.setVersionGame(VERSION_SINCE);
-            diff.setIdGame(GAME_ID);
-            return diff;
-        });
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
             DiffEntity diff = new DiffEntity();
             diff.setIdObject(invocation.getArgumentAt(2, Long.class));
@@ -3766,6 +3748,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         StackEntity stackPhasing = new StackEntity();
         stackPhasing.setId(1L);
+        stackPhasing.setGame(game);
         stackPhasing.setCountry("france");
         stackPhasing.setProvince("idf");
         stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
@@ -3773,6 +3756,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getStacks().add(stackPhasing);
         StackEntity stackNonPhasing = new StackEntity();
         stackNonPhasing.setId(2L);
+        stackNonPhasing.setGame(game);
         stackNonPhasing.setCountry("spain");
         stackNonPhasing.setProvince("idf");
         stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
@@ -3844,7 +3828,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         request.getRequest().getRetreatInFortress().add(3L);
         request.getRequest().setDisbandRemaining(true);
         when(oeUtil.canRetreat(idf, true, 2, spain, game)).thenReturn(true);
-        when(counterDomain.removeCounter(4L, game)).thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, 4L));
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.changeCounterOwner(any(), any(), any())).thenAnswer(invocation -> {
             CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
             StackEntity stack = counter.getOwner();

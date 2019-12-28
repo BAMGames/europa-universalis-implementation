@@ -119,20 +119,12 @@ public class CounterDomainImpl implements ICounterDomain {
 
     /** {@inheritDoc} */
     @Override
-    public DiffEntity removeCounter(Long idCounter, GameEntity game) {
-        CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                c -> c.getId().equals(idCounter));
-
-        if (counter == null) {
-            return null;
-        }
-
+    public DiffEntity removeCounter(CounterEntity counter) {
+        GameEntity game = counter.getOwner().getGame();
         if (counter.getType() == CounterFaceTypeEnum.TRADING_FLEET_MINUS || counter.getType() == CounterFaceTypeEnum.TRADING_FLEET_PLUS) {
-            TradeFleetEntity tradeFleet = CommonUtil.findFirst(game.getTradeFleets(),
-                    tf -> StringUtils.equals(counter.getCountry(), tf.getCountry()) && StringUtils.equals(counter.getOwner().getProvince(), tf.getProvince()));
-            if (tradeFleet != null) {
-                tradeFleet.setLevel(0);
-            }
+            game.getTradeFleets().stream()
+                    .filter(tf -> StringUtils.equals(counter.getCountry(), tf.getCountry()) && StringUtils.equals(counter.getOwner().getProvince(), tf.getProvince()))
+                    .forEach(tf -> tf.setLevel(0));
         }
 
         StackEntity stack = counter.getOwner();
@@ -145,7 +137,7 @@ public class CounterDomainImpl implements ICounterDomain {
             game.getStacks().remove(stack);
         }
 
-        return DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, idCounter,
+        return DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, counter.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, stack.getProvince()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK_DEL, stack.getId(), stack.getCounters().isEmpty()));
     }

@@ -1552,10 +1552,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.setCountry(controllerBefore);
         stack.setGame(noStackAfter ? null : game);
         game.getStacks().add(stack);
-        stack.getCounters().add(createCounter(25L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
+        CounterEntity counter = createCounter(25L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack);
+        stack.getCounters().add(counter);
 
         DiffEntity diffRemove = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER);
-        when(counterDomain.removeCounter(25L, game)).thenReturn(diffRemove);
+        when(counterDomain.removeCounter(counter)).thenReturn(diffRemove);
         when(oeUtil.getController(stack)).thenReturn(controllerAfter);
 
         simulateDiff();

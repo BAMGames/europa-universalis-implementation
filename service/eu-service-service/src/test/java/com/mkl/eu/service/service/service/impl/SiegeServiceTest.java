@@ -1537,18 +1537,19 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             StackEntity stack = new StackEntity();
             stack.setId(99L);
             stack.setProvince("pecs");
+            stack.setGame(game);
             if (fortress != null) {
                 CounterFaceTypeEnum fortressType = CounterUtil.getFortressesFromLevel(fortress, false);
-                stack.getCounters().add(createCounter(101L, Camp.ENEMY.name, fortressType));
+                stack.getCounters().add(createCounter(101L, Camp.ENEMY.name, fortressType, stack));
             }
             if (controller != null) {
-                stack.getCounters().add(createCounter(102L, controller.name, CounterFaceTypeEnum.CONTROL));
+                stack.getCounters().add(createCounter(102L, controller.name, CounterFaceTypeEnum.CONTROL, stack));
             }
             for (int i = 0; i < siegeworkMinus; i++) {
-                stack.getCounters().add(createCounter(110L + i, null, CounterFaceTypeEnum.SIEGEWORK_MINUS));
+                stack.getCounters().add(createCounter(110L + i, null, CounterFaceTypeEnum.SIEGEWORK_MINUS, stack));
             }
             for (int i = 0; i < siegeworkPlus; i++) {
-                stack.getCounters().add(createCounter(120L + i, null, CounterFaceTypeEnum.SIEGEWORK_PLUS));
+                stack.getCounters().add(createCounter(120L + i, null, CounterFaceTypeEnum.SIEGEWORK_PLUS, stack));
             }
             if (!stack.getCounters().isEmpty()) {
                 game.getStacks().add(stack);
@@ -1564,6 +1565,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             stack = new StackEntity();
             stack.setId(2l);
             stack.setProvince("pecs");
+            stack.setGame(game);
             game.getStacks().add(stack);
             CounterEntity counter = new CounterEntity();
             counter.setId(12l);
@@ -1645,8 +1647,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
                     });
 
-            when(testClass.counterDomain.removeCounter(anyLong(), any()))
-                    .thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, Long.class)));
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
             when(testClass.counterDomain.changeCounterCountry(any(), anyString(), any()))
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 102L));
             when(testClass.counterDomain.createCounter(any(), any(), any(), any(), any()))
@@ -2705,12 +2706,13 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             StackEntity stack = new StackEntity();
             stack.setId(99L);
             stack.setProvince("pecs");
+            stack.setGame(game);
             if (fortress != null) {
                 CounterFaceTypeEnum fortressType = CounterUtil.getFortressesFromLevel(fortress, false);
-                stack.getCounters().add(createCounter(101L, Camp.ENEMY.name, fortressType));
+                stack.getCounters().add(createCounter(101L, Camp.ENEMY.name, fortressType, stack));
             }
             if (controller != null) {
-                stack.getCounters().add(createCounter(102L, controller.name, CounterFaceTypeEnum.CONTROL));
+                stack.getCounters().add(createCounter(102L, controller.name, CounterFaceTypeEnum.CONTROL, stack));
             }
             if (!stack.getCounters().isEmpty()) {
                 game.getStacks().add(stack);
@@ -2729,6 +2731,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             stack = new StackEntity();
             stack.setId(2l);
             stack.setProvince("pecs");
+            stack.setGame(game);
             game.getStacks().add(stack);
             if (phasing.hasArmy) {
                 CounterEntity counter = new CounterEntity();
@@ -2787,6 +2790,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             stack = new StackEntity();
             stack.setId(2l);
             stack.setProvince("pecs");
+            stack.setGame(game);
             game.getStacks().add(stack);
             if (notPhasing.hasArmy) {
                 CounterEntity counter = new CounterEntity();
@@ -2904,8 +2908,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, invocationOnMock.getArgumentAt(2, Long.class)));
                     });
 
-            when(testClass.counterDomain.removeCounter(anyLong(), any()))
-                    .thenAnswer(invocationOnMock -> DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER, invocationOnMock.getArgumentAt(0, Long.class)));
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
             when(testClass.counterDomain.changeCounterCountry(any(), anyString(), any()))
                     .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 102L));
             when(testClass.counterDomain.createCounter(any(), any(), any(), any(), any()))
@@ -3612,6 +3615,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setId(10L);
         stack.setProvince(siege.getProvince());
+        stack.setGame(game);
         game.getStacks().add(stack);
         SiegeCounterEntity bc = new SiegeCounterEntity();
         bc.setPhasing(true);
@@ -3630,6 +3634,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         stack = new StackEntity();
         stack.setId(20L);
         stack.setProvince(siege.getProvince());
+        stack.setGame(game);
         game.getStacks().add(stack);
         bc = new SiegeCounterEntity();
         bc.setPhasing(false);
@@ -3657,15 +3662,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.isWarAlly(spain, siege.getWar(), true)).thenReturn(true);
         when(oeUtil.isWarAlly(france, siege.getWar(), false)).thenReturn(true);
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(invocation -> {
-            DiffEntity diff = new DiffEntity();
-            diff.setIdObject(invocation.getArgumentAt(0, Long.class));
-            diff.setType(DiffTypeEnum.REMOVE);
-            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-            diff.setVersionGame(VERSION_SINCE);
-            diff.setIdGame(GAME_ID);
-            return diff;
-        });
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
             DiffEntity diff = new DiffEntity();
             diff.setIdObject(invocation.getArgumentAt(2, Long.class));
@@ -3752,6 +3749,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setId(10L);
         stack.setProvince(siege.getProvince());
+        stack.setGame(game);
         game.getStacks().add(stack);
         SiegeCounterEntity bc = new SiegeCounterEntity();
         bc.setPhasing(true);
@@ -3770,6 +3768,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         stack = new StackEntity();
         stack.setId(20L);
         stack.setProvince(siege.getProvince());
+        stack.setGame(game);
         game.getStacks().add(stack);
         bc = new SiegeCounterEntity();
         bc.setPhasing(false);
@@ -3797,15 +3796,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.isWarAlly(spain, siege.getWar(), true)).thenReturn(true);
         when(oeUtil.isWarAlly(france, siege.getWar(), false)).thenReturn(true);
-        when(counterDomain.removeCounter(anyLong(), any())).thenAnswer(invocation -> {
-            DiffEntity diff = new DiffEntity();
-            diff.setIdObject(invocation.getArgumentAt(0, Long.class));
-            diff.setType(DiffTypeEnum.REMOVE);
-            diff.setTypeObject(DiffTypeObjectEnum.COUNTER);
-            diff.setVersionGame(VERSION_SINCE);
-            diff.setIdGame(GAME_ID);
-            return diff;
-        });
+        when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
             DiffEntity diff = new DiffEntity();
             diff.setIdObject(invocation.getArgumentAt(2, Long.class));

@@ -1898,7 +1898,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         if (!stacks.contains(counter.getOwner())) {
             stacks.add(counter.getOwner());
         }
-        return counterDomain.removeCounter(action.getIdObject(), game);
+        return counterDomain.removeCounter(counter);
     }
 
     /**
@@ -2109,7 +2109,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 List<CounterEntity> forts = game.getStacks().stream().filter(s -> StringUtils.equals(s.getProvince(), action.getProvince()))
                         .flatMap(s -> s.getCounters().stream()).filter(c -> c.getType() == CounterFaceTypeEnum.FORT).collect(Collectors.toList());
                 for (CounterEntity fort : forts) {
-                    diffs.add(counterDomain.removeCounter(fort.getId(), game));
+                    diffs.add(counterDomain.removeCounter(fort));
                 }
 
                 // FIXME regroup mnu counter with other economic counters ?
@@ -2284,7 +2284,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                     } else if (newLevel != 0) {
                         diffs.add(counterDomain.switchCounter(counter.getId(), newType, newLevel, game));
                     } else {
-                        diffs.add(counterDomain.removeCounter(counter.getId(), game));
+                        diffs.add(counterDomain.removeCounter(counter));
                     }
                 }
             }
@@ -2386,7 +2386,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .collect(Collectors.groupingBy(CounterEntity::getCountry,
                         Collectors.summingInt(c -> c.getEstablishment() == null ? 1 : c.getEstablishment().getLevel()))));
 
-        diffs.addAll(counterToDelete.stream().map(establishment -> counterDomain.removeCounter(establishment.getId(), game)).collect(Collectors.toList()));
+        diffs.addAll(counterToDelete.stream()
+                .map(establishment -> counterDomain.removeCounter(establishment))
+                .collect(Collectors.toList()));
 
         Map<String, Integer> lostLevelInCompetition = new HashMap<>();
 
@@ -2398,7 +2400,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             CounterEntity establishment = CommonUtil.findFirst(counterInCompetition, c -> StringUtils.equals(c.getCountry(), country));
             if (establishment != null && establishment.getEstablishment() != null && establishment.getEstablishment().getLevel() != null) {
                 if (levelLost >= establishment.getEstablishment().getLevel()) {
-                    diffs.add(counterDomain.removeCounter(establishment.getId(), game));
+                    diffs.add(counterDomain.removeCounter(establishment));
                 } else {
                     int newLevel = establishment.getEstablishment().getLevel() - levelLost;
                     if (establishment.getEstablishment().getLevel() >= 4 && newLevel < 4) {
@@ -2410,7 +2412,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
                 // TODO loss of exotic resources
             } else {
-                diffs.add(counterDomain.removeCounter(establishment.getId(), game));
+                diffs.add(counterDomain.removeCounter(establishment));
                 // TODO loss of exotic resources
             }
         }

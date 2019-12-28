@@ -306,7 +306,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
 
         List<DiffEntity> diffs = new ArrayList<>();
 
-        diffs.add(counterDomain.removeCounter(tradingPost.getId(), game));
+        diffs.add(counterDomain.removeCounter(tradingPost));
 
         return diffs;
     }
@@ -417,7 +417,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 .filter(s -> StringUtils.equals(provinceFrom.getName(), s.getProvince()))
                 .flatMap(s -> s.getCounters().stream())
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS)
-                .forEach(counter -> diffs.add(counterDomain.removeCounter(counter.getId(), game)));
+                .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
 
         return createDiffs(diffs, gameDiffs, request);
     }

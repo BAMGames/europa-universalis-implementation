@@ -41,11 +41,10 @@ public interface ICounterDomain {
     /**
      * Removes a counter from a game.
      *
-     * @param idCounter the id of the counter to remove.
-     * @param game      the game.
-     * @return the diffs related to the removal of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
+     * @param counter the counter to remove.
+     * @return the diffs related to the removal of the counter.
      */
-    DiffEntity removeCounter(Long idCounter, GameEntity game);
+    DiffEntity removeCounter(CounterEntity counter);
 
     /**
      * Switch a counter from a game to a given type.

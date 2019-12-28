@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -1226,19 +1227,23 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         battle.getNonPhasing().setLossesSelected(nonPhasingLossesAuto);
 
         // if annihilated, remove all counters
+        Function<BattleCounterEntity, CounterEntity> toCounter = source -> battle.getGame().getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> Objects.equals(counter.getId(), source.getCounter()))
+                .findAny()
+                .orElse(null);
         if (battle.getPhasing().getLosses().isGreaterThanSize(battle.getPhasing().getSize())) {
             battle.getCounters().stream()
                     .filter(BattleCounterEntity::isPhasing)
-                    .forEach(counter -> {
-                        diffs.add(counterDomain.removeCounter(counter.getCounter(), battle.getGame()));
-                    });
+                    .map(toCounter)
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
         if (battle.getNonPhasing().getLosses().isGreaterThanSize(battle.getNonPhasing().getSize())) {
             battle.getCounters().stream()
                     .filter(BattleCounterEntity::isNotPhasing)
-                    .forEach(counter -> {
-                        diffs.add(counterDomain.removeCounter(counter.getCounter(), battle.getGame()));
-                    });
+                    .map(toCounter)
+                    .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
 
         if (!phasingLossesAuto || !nonPhasingLossesAuto) {
@@ -1505,7 +1510,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                     .setParams(METHOD_CHOOSE_LOSSES, loss.getIdCounter(), lossSize, lossMax));
 
             if (lossMax - lossSize <= EPSILON) {
-                newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                newDiffs.add(counterDomain.removeCounter(counter));
                 thirdDiff -= loss.getThirdLosses();
             } else {
                 List<CounterFaceTypeEnum> faces = new ArrayList<>();
@@ -1531,13 +1536,13 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 // TODO check if round and third are 0 ?
                 faces.removeIf(o -> o == null);
                 if (faces.isEmpty()) {
-                    newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                    newDiffs.add(counterDomain.removeCounter(counter));
                 } else {
                     // FIXME veterans
                     newDiffs.addAll(faces.stream()
                             .map(face -> counterDomain.createCounter(face, counter.getCountry(), counter.getOwner().getId(), game))
                             .collect(Collectors.toList()));
-                    newDiffs.add(counterDomain.removeCounter(loss.getIdCounter(), game));
+                    newDiffs.add(counterDomain.removeCounter(counter));
                 }
             }
         }
@@ -1683,7 +1688,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                         .flatMap(stack -> stack.getCounters().stream())
                         .collect(Collectors.toList());
                 List<DiffEntity> deleteDiffs = deleteCounters.stream()
-                        .map(counter -> counterDomain.removeCounter(counter.getId(), game))
+                        .map(counterDomain::removeCounter)
                         .collect(Collectors.toList());
                 newDiffs.addAll(deleteDiffs);
             } else {

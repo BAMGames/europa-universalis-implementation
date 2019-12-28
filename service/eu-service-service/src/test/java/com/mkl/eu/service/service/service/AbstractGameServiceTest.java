@@ -398,8 +398,14 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static Answer<?> removeCounterAnswer() {
-        return invocation -> createDiff(invocation.getArgumentAt(1, GameEntity.class), DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER,
-                invocation.getArgumentAt(0, Long.class));
+        return invocation -> {
+            CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+            if (counter != null) {
+                return createDiff(counter.getOwner().getGame(), DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER,
+                        counter.getId());
+            }
+            return null;
+        };
     }
 
     public static Answer<?> switchCounterAnswer() {
