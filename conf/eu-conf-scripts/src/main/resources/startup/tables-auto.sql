@@ -6187,6 +6187,606 @@ INSERT INTO T_EXCHEQUER (RESULT, REGULAR, PRESTIGE, NATLOAN, INTERLOAN)
     VALUES ('SUCCESS', 50, 40, 20, 70);
 INSERT INTO T_EXCHEQUER (RESULT, REGULAR, PRESTIGE, NATLOAN, INTERLOAN)
     VALUES ('CRITICAL_HIT', 60, 40, 20, 100);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-1', null, 'minor-general-1', 'minor', null, null, null, null, 2, 2, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-1', null, 'minor-admiral-1', 'minor', null, null, null, null, 2, 2, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-2', null, 'minor-general-2', 'minor', null, null, null, null, 1, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-2', null, 'minor-admiral-2', 'minor', null, null, null, null, 1, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-3', null, 'minor-general-3', 'minor', null, null, null, null, 3, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-3', null, 'minor-admiral-3', 'minor', null, null, null, null, 3, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-4', null, 'minor-general-4', 'minor', null, null, null, null, 4, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-4', null, 'minor-admiral-4', 'minor', null, null, null, null, 4, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-5', null, 'minor-general-5', 'minor', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-5', null, 'minor-admiral-5', 'minor', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-6', null, 'minor-general-6', 'minor', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-6', null, 'minor-admiral-6', 'minor', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-7', null, 'minor-general-7', 'minor', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-7', null, 'minor-admiral-7', 'minor', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-8', null, 'minor-general-8', 'minor', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-8', null, 'minor-admiral-8', 'minor', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-9', null, 'minor-general-9', 'minor', null, null, null, null, 3, 3, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-9', null, 'minor-admiral-9', 'minor', null, null, null, null, 3, 3, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-general-10', null, 'minor-general-10', 'minor', null, null, null, null, 3, 4, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('minor-admiral-10', null, 'minor-admiral-10', 'minor', null, null, null, null, 3, 4, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-1', null, 'angleterre-general-1', 'angleterre', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-1', null, 'angleterre-admiral-1', 'angleterre', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-2', null, 'angleterre-general-2', 'angleterre', null, null, null, null, 2, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-2', null, 'angleterre-admiral-2', 'angleterre', null, null, null, null, 2, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-3', null, 'angleterre-general-3', 'angleterre', null, null, null, null, 3, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-3', null, 'angleterre-admiral-3', 'angleterre', null, null, null, null, 3, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-4', null, 'angleterre-general-4', 'angleterre', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-4', null, 'angleterre-admiral-4', 'angleterre', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-5', null, 'angleterre-general-5', 'angleterre', null, null, null, null, 4, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-5', null, 'angleterre-admiral-5', 'angleterre', null, null, null, null, 4, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-6', null, 'angleterre-general-6', 'angleterre', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-6', null, 'angleterre-admiral-6', 'angleterre', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-7', null, 'angleterre-general-7', 'angleterre', null, null, null, null, 1, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-7', null, 'angleterre-admiral-7', 'angleterre', null, null, null, null, 1, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-8', null, 'angleterre-general-8', 'angleterre', null, null, null, null, 1, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-8', null, 'angleterre-admiral-8', 'angleterre', null, null, null, null, 1, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-9', null, 'angleterre-general-9', 'angleterre', null, null, null, null, 2, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-9', null, 'angleterre-admiral-9', 'angleterre', null, null, null, null, 2, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-general-10', null, 'angleterre-general-10', 'angleterre', null, null, null, null, 1, 4, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('angleterre-admiral-10', null, 'angleterre-admiral-10', 'angleterre', null, null, null, null, 1, 4, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-1', null, 'espagne-general-1', 'espagne', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-1', null, 'espagne-admiral-1', 'espagne', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-2', null, 'espagne-general-2', 'espagne', null, null, null, null, 2, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-2', null, 'espagne-admiral-2', 'espagne', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-3', null, 'espagne-general-3', 'espagne', null, null, null, null, 3, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-3', null, 'espagne-admiral-3', 'espagne', null, null, null, null, 3, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-4', null, 'espagne-general-4', 'espagne', null, null, null, null, 3, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-4', null, 'espagne-admiral-4', 'espagne', null, null, null, null, 3, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-5', null, 'espagne-general-5', 'espagne', null, null, null, null, 1, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-5', null, 'espagne-admiral-5', 'espagne', null, null, null, null, 1, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-6', null, 'espagne-general-6', 'espagne', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-6', null, 'espagne-admiral-6', 'espagne', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-7', null, 'espagne-general-7', 'espagne', null, null, null, null, 1, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-7', null, 'espagne-admiral-7', 'espagne', null, null, null, null, 1, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-8', null, 'espagne-general-8', 'espagne', null, null, null, null, 2, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-8', null, 'espagne-admiral-8', 'espagne', null, null, null, null, 2, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-9', null, 'espagne-general-9', 'espagne', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-9', null, 'espagne-admiral-9', 'espagne', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-general-10', null, 'espagne-general-10', 'espagne', null, null, null, null, 3, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('espagne-admiral-10', null, 'espagne-admiral-10', 'espagne', null, null, null, null, 3, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-1', null, 'france-general-1', 'france', null, null, null, null, 3, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-1', null, 'france-admiral-1', 'france', null, null, null, null, 3, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-2', null, 'france-general-2', 'france', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-2', null, 'france-admiral-2', 'france', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-3', null, 'france-general-3', 'france', null, null, null, null, 3, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-3', null, 'france-admiral-3', 'france', null, null, null, null, 3, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-4', null, 'france-general-4', 'france', null, null, null, null, 4, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-4', null, 'france-admiral-4', 'france', null, null, null, null, 4, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-5', null, 'france-general-5', 'france', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-5', null, 'france-admiral-5', 'france', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-6', null, 'france-general-6', 'france', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-6', null, 'france-admiral-6', 'france', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-7', null, 'france-general-7', 'france', null, null, null, null, 1, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-7', null, 'france-admiral-7', 'france', null, null, null, null, 1, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-8', null, 'france-general-8', 'france', null, null, null, null, 2, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-8', null, 'france-admiral-8', 'france', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-9', null, 'france-general-9', 'france', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-9', null, 'france-admiral-9', 'france', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-general-10', null, 'france-general-10', 'france', null, null, null, null, 1, 2, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('france-admiral-10', null, 'france-admiral-10', 'france', null, null, null, null, 1, 2, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-1', null, 'habsbourg-general-1', 'habsbourg', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-1', null, 'habsbourg-admiral-1', 'habsbourg', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-2', null, 'habsbourg-general-2', 'habsbourg', null, null, null, null, 2, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-2', null, 'habsbourg-admiral-2', 'habsbourg', null, null, null, null, 2, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-3', null, 'habsbourg-general-3', 'habsbourg', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-3', null, 'habsbourg-admiral-3', 'habsbourg', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-4', null, 'habsbourg-general-4', 'habsbourg', null, null, null, null, 3, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-4', null, 'habsbourg-admiral-4', 'habsbourg', null, null, null, null, 3, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-5', null, 'habsbourg-general-5', 'habsbourg', null, null, null, null, 1, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-5', null, 'habsbourg-admiral-5', 'habsbourg', null, null, null, null, 1, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-6', null, 'habsbourg-general-6', 'habsbourg', null, null, null, null, 4, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-6', null, 'habsbourg-admiral-6', 'habsbourg', null, null, null, null, 4, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-7', null, 'habsbourg-general-7', 'habsbourg', null, null, null, null, 2, 3, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-7', null, 'habsbourg-admiral-7', 'habsbourg', null, null, null, null, 2, 3, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-8', null, 'habsbourg-general-8', 'habsbourg', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-8', null, 'habsbourg-admiral-8', 'habsbourg', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-9', null, 'habsbourg-general-9', 'habsbourg', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-9', null, 'habsbourg-admiral-9', 'habsbourg', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-general-10', null, 'habsbourg-general-10', 'habsbourg', null, null, null, null, 3, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('habsbourg-admiral-10', null, 'habsbourg-admiral-10', 'habsbourg', null, null, null, null, 3, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-1', null, 'hollande-general-1', 'hollande', null, null, null, null, 3, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-1', null, 'hollande-admiral-1', 'hollande', null, null, null, null, 3, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-2', null, 'hollande-general-2', 'hollande', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-2', null, 'hollande-admiral-2', 'hollande', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-3', null, 'hollande-general-3', 'hollande', null, null, null, null, 2, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-3', null, 'hollande-admiral-3', 'hollande', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-4', null, 'hollande-general-4', 'hollande', null, null, null, null, 3, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-4', null, 'hollande-admiral-4', 'hollande', null, null, null, null, 3, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-5', null, 'hollande-general-5', 'hollande', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-5', null, 'hollande-admiral-5', 'hollande', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-6', null, 'hollande-general-6', 'hollande', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-6', null, 'hollande-admiral-6', 'hollande', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-7', null, 'hollande-general-7', 'hollande', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-7', null, 'hollande-admiral-7', 'hollande', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-8', null, 'hollande-general-8', 'hollande', null, null, null, null, 3, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-8', null, 'hollande-admiral-8', 'hollande', null, null, null, null, 3, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-9', null, 'hollande-general-9', 'hollande', null, null, null, null, 1, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-9', null, 'hollande-admiral-9', 'hollande', null, null, null, null, 1, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-general-10', null, 'hollande-general-10', 'hollande', null, null, null, null, 3, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('hollande-admiral-10', null, 'hollande-admiral-10', 'hollande', null, null, null, null, 3, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-1', null, 'pologne-general-1', 'pologne', null, null, null, null, 4, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-1', null, 'pologne-admiral-1', 'pologne', null, null, null, null, 3, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-2', null, 'pologne-general-2', 'pologne', null, null, null, null, 5, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-2', null, 'pologne-admiral-2', 'pologne', null, null, null, null, 4, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-3', null, 'pologne-general-3', 'pologne', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-3', null, 'pologne-admiral-3', 'pologne', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-4', null, 'pologne-general-4', 'pologne', null, null, null, null, 2, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-4', null, 'pologne-admiral-4', 'pologne', null, null, null, null, 1, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-5', null, 'pologne-general-5', 'pologne', null, null, null, null, 5, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-5', null, 'pologne-admiral-5', 'pologne', null, null, null, null, 4, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-6', null, 'pologne-general-6', 'pologne', null, null, null, null, 3, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-6', null, 'pologne-admiral-6', 'pologne', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-7', null, 'pologne-general-7', 'pologne', null, null, null, null, 2, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-7', null, 'pologne-admiral-7', 'pologne', null, null, null, null, 1, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-8', null, 'pologne-general-8', 'pologne', null, null, null, null, 3, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-8', null, 'pologne-admiral-8', 'pologne', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-9', null, 'pologne-general-9', 'pologne', null, null, null, null, 3, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-9', null, 'pologne-admiral-9', 'pologne', null, null, null, null, 2, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-general-10', null, 'pologne-general-10', 'pologne', null, null, null, null, 3, 1, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('pologne-admiral-10', null, 'pologne-admiral-10', 'pologne', null, null, null, null, 2, 1, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-1', null, 'prusse-general-1', 'prusse', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-1', null, 'prusse-admiral-1', 'prusse', null, null, null, null, 1, 0, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-2', null, 'prusse-general-2', 'prusse', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-2', null, 'prusse-admiral-2', 'prusse', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-3', null, 'prusse-general-3', 'prusse', null, null, null, null, 1, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-3', null, 'prusse-admiral-3', 'prusse', null, null, null, null, 1, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-4', null, 'prusse-general-4', 'prusse', null, null, null, null, 2, 4, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-4', null, 'prusse-admiral-4', 'prusse', null, null, null, null, 2, 3, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-5', null, 'prusse-general-5', 'prusse', null, null, null, null, 2, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-5', null, 'prusse-admiral-5', 'prusse', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-6', null, 'prusse-general-6', 'prusse', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-6', null, 'prusse-admiral-6', 'prusse', null, null, null, null, 2, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-7', null, 'prusse-general-7', 'prusse', null, null, null, null, 2, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-7', null, 'prusse-admiral-7', 'prusse', null, null, null, null, 2, 0, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-8', null, 'prusse-general-8', 'prusse', null, null, null, null, 1, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-8', null, 'prusse-admiral-8', 'prusse', null, null, null, null, 1, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-9', null, 'prusse-general-9', 'prusse', null, null, null, null, 3, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-9', null, 'prusse-admiral-9', 'prusse', null, null, null, null, 3, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-general-10', null, 'prusse-general-10', 'prusse', null, null, null, null, 2, 4, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('prusse-admiral-10', null, 'prusse-admiral-10', 'prusse', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-1', null, 'portugal-general-1', 'portugal', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-1', null, 'portugal-admiral-1', 'portugal', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-2', null, 'portugal-general-2', 'portugal', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-2', null, 'portugal-admiral-2', 'portugal', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-3', null, 'portugal-general-3', 'portugal', null, null, null, null, 2, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-3', null, 'portugal-admiral-3', 'portugal', null, null, null, null, 2, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-4', null, 'portugal-general-4', 'portugal', null, null, null, null, 3, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-4', null, 'portugal-admiral-4', 'portugal', null, null, null, null, 3, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-5', null, 'portugal-general-5', 'portugal', null, null, null, null, 3, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-5', null, 'portugal-admiral-5', 'portugal', null, null, null, null, 3, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-6', null, 'portugal-general-6', 'portugal', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-6', null, 'portugal-admiral-6', 'portugal', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-7', null, 'portugal-general-7', 'portugal', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-7', null, 'portugal-admiral-7', 'portugal', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-8', null, 'portugal-general-8', 'portugal', null, null, null, null, 2, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-8', null, 'portugal-admiral-8', 'portugal', null, null, null, null, 2, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-9', null, 'portugal-general-9', 'portugal', null, null, null, null, 1, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-9', null, 'portugal-admiral-9', 'portugal', null, null, null, null, 1, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-general-10', null, 'portugal-general-10', 'portugal', null, null, null, null, 3, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('portugal-admiral-10', null, 'portugal-admiral-10', 'portugal', null, null, null, null, 3, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-1', null, 'russie-general-1', 'russie', null, null, null, null, 2, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-1', null, 'russie-admiral-1', 'russie', null, null, null, null, 2, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-2', null, 'russie-general-2', 'russie', null, null, null, null, 4, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-2', null, 'russie-admiral-2', 'russie', null, null, null, null, 4, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-3', null, 'russie-general-3', 'russie', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-3', null, 'russie-admiral-3', 'russie', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-4', null, 'russie-general-4', 'russie', null, null, null, null, 3, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-4', null, 'russie-admiral-4', 'russie', null, null, null, null, 3, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-5', null, 'russie-general-5', 'russie', null, null, null, null, 4, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-5', null, 'russie-admiral-5', 'russie', null, null, null, null, 4, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-6', null, 'russie-general-6', 'russie', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-6', null, 'russie-admiral-6', 'russie', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-7', null, 'russie-general-7', 'russie', null, null, null, null, 2, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-7', null, 'russie-admiral-7', 'russie', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-8', null, 'russie-general-8', 'russie', null, null, null, null, 3, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-8', null, 'russie-admiral-8', 'russie', null, null, null, null, 3, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-9', null, 'russie-general-9', 'russie', null, null, null, null, 2, 3, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-9', null, 'russie-admiral-9', 'russie', null, null, null, null, 2, 3, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-general-10', null, 'russie-general-10', 'russie', null, null, null, null, 3, 1, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('russie-admiral-10', null, 'russie-admiral-10', 'russie', null, null, null, null, 3, 1, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-1', null, 'suede-general-1', 'suede', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-1', null, 'suede-admiral-1', 'suede', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-2', null, 'suede-general-2', 'suede', null, null, null, null, 2, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-2', null, 'suede-admiral-2', 'suede', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-3', null, 'suede-general-3', 'suede', null, null, null, null, 2, 3, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-3', null, 'suede-admiral-3', 'suede', null, null, null, null, 2, 3, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-4', null, 'suede-general-4', 'suede', null, null, null, null, 1, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-4', null, 'suede-admiral-4', 'suede', null, null, null, null, 1, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-5', null, 'suede-general-5', 'suede', null, null, null, null, 4, 3, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-5', null, 'suede-admiral-5', 'suede', null, null, null, null, 4, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-6', null, 'suede-general-6', 'suede', null, null, null, null, 1, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-6', null, 'suede-admiral-6', 'suede', null, null, null, null, 1, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-7', null, 'suede-general-7', 'suede', null, null, null, null, 2, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-7', null, 'suede-admiral-7', 'suede', null, null, null, null, 2, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-8', null, 'suede-general-8', 'suede', null, null, null, null, 1, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-8', null, 'suede-admiral-8', 'suede', null, null, null, null, 1, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-9', null, 'suede-general-9', 'suede', null, null, null, null, 2, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-9', null, 'suede-admiral-9', 'suede', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-general-10', null, 'suede-general-10', 'suede', null, null, null, null, 3, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('suede-admiral-10', null, 'suede-admiral-10', 'suede', null, null, null, null, 3, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-1', null, 'turquie-general-1', 'turquie', null, null, null, null, 3, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-1', null, 'turquie-admiral-1', 'turquie', null, null, null, null, 3, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-2', null, 'turquie-general-2', 'turquie', null, null, null, null, 4, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-2', null, 'turquie-admiral-2', 'turquie', null, null, null, null, 4, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-3', null, 'turquie-general-3', 'turquie', null, null, null, null, 5, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-3', null, 'turquie-admiral-3', 'turquie', null, null, null, null, 5, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-4', null, 'turquie-general-4', 'turquie', null, null, null, null, 4, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-4', null, 'turquie-admiral-4', 'turquie', null, null, null, null, 4, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-5', null, 'turquie-general-5', 'turquie', null, null, null, null, 3, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-5', null, 'turquie-admiral-5', 'turquie', null, null, null, null, 3, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-6', null, 'turquie-general-6', 'turquie', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-6', null, 'turquie-admiral-6', 'turquie', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-7', null, 'turquie-general-7', 'turquie', null, null, null, null, 2, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-7', null, 'turquie-admiral-7', 'turquie', null, null, null, null, 2, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-8', null, 'turquie-general-8', 'turquie', null, null, null, null, 2, 2, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-8', null, 'turquie-admiral-8', 'turquie', null, null, null, null, 2, 2, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-9', null, 'turquie-general-9', 'turquie', null, null, null, null, 1, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-9', null, 'turquie-admiral-9', 'turquie', null, null, null, null, 1, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-general-10', null, 'turquie-general-10', 'turquie', null, null, null, null, 3, 1, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('turquie-admiral-10', null, 'turquie-admiral-10', 'turquie', null, null, null, null, 3, 1, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-1', null, 'vizier-general-1', 'vizier', null, null, null, null, 2, 1, 2, 1, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-1', null, 'vizier-admiral-1', 'vizier', null, null, null, null, 2, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-2', null, 'vizier-general-2', 'vizier', null, null, null, null, 4, 4, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-2', null, 'vizier-admiral-2', 'vizier', null, null, null, null, 4, 4, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-3', null, 'vizier-general-3', 'vizier', null, null, null, null, 2, 2, 4, 1, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-3', null, 'vizier-admiral-3', 'vizier', null, null, null, null, 2, 2, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-4', null, 'vizier-general-4', 'vizier', null, null, null, null, 2, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-4', null, 'vizier-admiral-4', 'vizier', null, null, null, null, 2, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-5', null, 'vizier-general-5', 'vizier', null, null, null, null, 3, 2, 2, 1, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-5', null, 'vizier-admiral-5', 'vizier', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-6', null, 'vizier-general-6', 'vizier', null, null, null, null, 5, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-6', null, 'vizier-admiral-6', 'vizier', null, null, null, null, 5, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-7', null, 'vizier-general-7', 'vizier', null, null, null, null, 4, 1, 5, 1, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-7', null, 'vizier-admiral-7', 'vizier', null, null, null, null, 4, 1, 5, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-8', null, 'vizier-general-8', 'vizier', null, null, null, null, 1, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-8', null, 'vizier-admiral-8', 'vizier', null, null, null, null, 1, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-9', null, 'vizier-general-9', 'vizier', null, null, null, null, 2, 3, 2, 1, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-9', null, 'vizier-admiral-9', 'vizier', null, null, null, null, 2, 3, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-general-10', null, 'vizier-general-10', 'vizier', null, null, null, null, 4, 3, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('vizier-admiral-10', null, 'vizier-admiral-10', 'vizier', null, null, null, null, 4, 3, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-1', null, 'venise-general-1', 'venise', null, null, null, null, 3, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-1', null, 'venise-admiral-1', 'venise', null, null, null, null, 3, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-2', null, 'venise-general-2', 'venise', null, null, null, null, 2, 2, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-2', null, 'venise-admiral-2', 'venise', null, null, null, null, 2, 2, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-3', null, 'venise-general-3', 'venise', null, null, null, null, 1, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-3', null, 'venise-admiral-3', 'venise', null, null, null, null, 1, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-4', null, 'venise-general-4', 'venise', null, null, null, null, 2, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-4', null, 'venise-admiral-4', 'venise', null, null, null, null, 2, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-5', null, 'venise-general-5', 'venise', null, null, null, null, 3, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-5', null, 'venise-admiral-5', 'venise', null, null, null, null, 3, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-6', null, 'venise-general-6', 'venise', null, null, null, null, 1, 1, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-6', null, 'venise-admiral-6', 'venise', null, null, null, null, 1, 1, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-7', null, 'venise-general-7', 'venise', null, null, null, null, 3, 3, 1, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-7', null, 'venise-admiral-7', 'venise', null, null, null, null, 3, 3, 1, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-8', null, 'venise-general-8', 'venise', null, null, null, null, 4, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-8', null, 'venise-admiral-8', 'venise', null, null, null, null, 4, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-9', null, 'venise-general-9', 'venise', null, null, null, null, 2, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-9', null, 'venise-admiral-9', 'venise', null, null, null, null, 2, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-general-10', null, 'venise-general-10', 'venise', null, null, null, null, 4, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('venise-admiral-10', null, 'venise-admiral-10', 'venise', null, null, null, null, 4, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-1', null, 'natives-general-1', 'natives', null, null, null, null, 1, 0, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-1', null, 'natives-admiral-1', 'natives', null, null, null, null, 1, 0, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-2', null, 'natives-general-2', 'natives', null, null, null, null, 4, 0, 5, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-2', null, 'natives-admiral-2', 'natives', null, null, null, null, 4, 0, 5, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-3', null, 'natives-general-3', 'natives', null, null, null, null, 3, 2, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-3', null, 'natives-admiral-3', 'natives', null, null, null, null, 3, 2, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-4', null, 'natives-general-4', 'natives', null, null, null, null, 4, 1, 2, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-4', null, 'natives-admiral-4', 'natives', null, null, null, null, 4, 1, 2, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-5', null, 'natives-general-5', 'natives', null, null, null, null, 1, 1, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-5', null, 'natives-admiral-5', 'natives', null, null, null, null, 1, 1, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-6', null, 'natives-general-6', 'natives', null, null, null, null, 5, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-6', null, 'natives-admiral-6', 'natives', null, null, null, null, 5, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-7', null, 'natives-general-7', 'natives', null, null, null, null, 2, 1, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-7', null, 'natives-admiral-7', 'natives', null, null, null, null, 2, 1, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-8', null, 'natives-general-8', 'natives', null, null, null, null, 3, 1, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-8', null, 'natives-admiral-8', 'natives', null, null, null, null, 3, 1, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-9', null, 'natives-general-9', 'natives', null, null, null, null, 4, 0, 4, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-9', null, 'natives-admiral-9', 'natives', null, null, null, null, 4, 0, 4, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-general-10', null, 'natives-general-10', 'natives', null, null, null, null, 4, 3, 3, 0, 'GENERAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
+INSERT INTO T_LEADER (CODE, T_LEADER, NAME, R_COUNTRY, EVENT, BEGIN, END, RANK, MANOEUVRE, FIRE, SHOCK, SIEGE, TYPE, ROTW, ASIA, AMERICA, MEDITERRANEE, PRIVATEER, MAIN, ANONYMOUS, SIZE)
+    VALUES ('natives-admiral-10', null, 'natives-admiral-10', 'natives', null, null, null, null, 4, 3, 3, 0, 'ADMIRAL', b'1', b'0', b'0', b'0', b'0', b'0', b'1', null);
 INSERT INTO T_BATTLE_TECH (TECH_FOR, `TECH_AGAINST`, LAND, COLUMN_FIRE, COLUMN_SHOCK, MORAL, MORAL_BONUS_VETERAN)
     VALUES ('GALLEY', 'GALLEY', b'0', 'E', 'A', 2, b'1');
 INSERT INTO T_BATTLE_TECH (TECH_FOR, `TECH_AGAINST`, LAND, COLUMN_FIRE, COLUMN_SHOCK, MORAL, MORAL_BONUS_VETERAN)
