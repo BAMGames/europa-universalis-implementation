@@ -4623,6 +4623,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(0).getCounters().get(0).setCountry("france");
         game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
         game.getStacks().get(0).getCounters().get(0).setOwner(game.getStacks().get(0));
+        CounterEntity counterTp1 = game.getStacks().get(0).getCounters().get(0);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(1).setId(101L);
         game.getStacks().get(1).setProvince("rAzteca~N");
@@ -4633,6 +4634,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).getCounters().get(0).setOwner(game.getStacks().get(1));
         game.getStacks().get(1).getCounters().get(0).setEstablishment(new EstablishmentEntity());
         game.getStacks().get(1).getCounters().get(0).getEstablishment().setLevel(3);
+        CounterEntity counterCol = game.getStacks().get(1).getCounters().get(0);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(2).setId(102L);
         game.getStacks().get(2).setProvince("rAzteca~E");
@@ -4645,6 +4647,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(2).getCounters().get(0).setOwner(game.getStacks().get(2));
         game.getStacks().get(2).getCounters().get(0).setEstablishment(new EstablishmentEntity());
         game.getStacks().get(2).getCounters().get(0).getEstablishment().setLevel(1);
+        CounterEntity counterTp2 = game.getStacks().get(2).getCounters().get(0);
+        CounterEntity counterFortress = game.getStacks().get(2).getCounters().get(0);
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(1).setId(103L);
         game.getStacks().get(2).getCounters().get(1).setCountry("france");
@@ -4667,6 +4671,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(3).getCounters().get(1).setOwner(game.getStacks().get(3));
         game.getStacks().get(3).getCounters().get(1).setEstablishment(new EstablishmentEntity());
         game.getStacks().get(3).getCounters().get(1).getEstablishment().setLevel(4);
+        CounterEntity counterTp3 = game.getStacks().get(3).getCounters().get(1);
         game.getStacks().get(3).getCounters().add(new CounterEntity());
         game.getStacks().get(3).getCounters().get(2).setId(199L);
         game.getStacks().get(3).getCounters().get(2).setCountry("angleterre");
@@ -4730,6 +4735,9 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(7).getCounters().get(5).setCountry("france");
         game.getStacks().get(7).getCounters().get(5).setType(CounterFaceTypeEnum.MISSION);
         game.getStacks().get(7).getCounters().get(5).setOwner(game.getStacks().get(7));
+        StackEntity stack = game.getStacks().get(7);
+        CounterEntity counterMnu = createCounter(105L, "france", CounterFaceTypeEnum.MNU_ART_MINUS, stack);
+        stack.getCounters().add(counterMnu);
 
         PlayableCountryEntity france = new PlayableCountryEntity();
         game.getCountries().add(france);
@@ -4999,7 +5007,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.changeVeteransCounter(101L, 0d, game)).thenReturn(diffVeteran);
 
         DiffEntity diffLowerFortress = new DiffEntity();
-        when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.FORTRESS_1, null, game)).thenReturn(diffLowerFortress);
+        when(counterDomain.switchCounter(counterFortress, CounterFaceTypeEnum.FORTRESS_1, null, game)).thenReturn(diffLowerFortress);
 
         DiffEntity diffRemove = new DiffEntity();
         when(counterDomain.removeCounter(counterArmy)).thenReturn(diffRemove);
@@ -5018,7 +5026,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.createCounter(CounterFaceTypeEnum.MNU_ART_MINUS, "france", "idf", null, game)).thenReturn(diffAddMnu);
 
         DiffEntity diffUpMnu = new DiffEntity();
-        when(counterDomain.switchCounter(105L, CounterFaceTypeEnum.MNU_ART_PLUS, null, game)).thenReturn(diffUpMnu);
+        when(counterDomain.switchCounter(counterMnu, CounterFaceTypeEnum.MNU_ART_PLUS, null, game)).thenReturn(diffUpMnu);
 
         when(oeUtil.getStability(game, "france")).thenReturn(2);
 
@@ -5029,13 +5037,13 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.createCounter(CounterFaceTypeEnum.COLONY_MINUS, "france", "rAzteca~W", 1, game)).thenReturn(diffAddExistingCol);
 
         DiffEntity diffUpTp1 = new DiffEntity();
-        when(counterDomain.switchCounter(100L, CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(diffUpTp1);
+        when(counterDomain.switchCounter(counterTp1, CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(diffUpTp1);
 
         DiffEntity diffUpCol = new DiffEntity();
-        when(counterDomain.switchCounter(101L, CounterFaceTypeEnum.COLONY_PLUS, 4, game)).thenReturn(diffUpCol);
+        when(counterDomain.switchCounter(counterCol, CounterFaceTypeEnum.COLONY_PLUS, 4, game)).thenReturn(diffUpCol);
 
         DiffEntity diffUpTp2 = new DiffEntity();
-        when(counterDomain.switchCounter(102L, CounterFaceTypeEnum.TRADING_POST_MINUS, 2, game)).thenReturn(diffUpTp2);
+        when(counterDomain.switchCounter(counterTp2, CounterFaceTypeEnum.TRADING_POST_MINUS, 2, game)).thenReturn(diffUpTp2);
 
         DiffEntity diffDestroyFort = new DiffEntity();
         when(counterDomain.removeCounter(counterFort)).thenReturn(diffDestroyFort);
@@ -5044,7 +5052,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.createCounter(CounterFaceTypeEnum.COLONY_MINUS, "france", "rAzteca~S", 1, game)).thenReturn(diffAddCol);
 
         DiffEntity diffUpTp3 = new DiffEntity();
-        when(counterDomain.switchCounter(201L, CounterFaceTypeEnum.TRADING_POST_PLUS, 5, game)).thenReturn(diffUpTp3);
+        when(counterDomain.switchCounter(counterTp3, CounterFaceTypeEnum.TRADING_POST_PLUS, 5, game)).thenReturn(diffUpTp3);
 
         when(oeUtil.getTechnologyAdvance(game, france.getName(), false)).thenReturn(4);
 
@@ -5674,16 +5682,16 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.createCounter(any(), any(), any(), any(), any())).thenReturn(diffOther);
 
         DiffEntity diffSwitch56 = new DiffEntity();
-        when(counterDomain.switchCounter(100L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 6, game)).thenReturn(diffSwitch56);
+        when(counterDomain.switchCounter(game.getStacks().get(0).getCounters().get(0), CounterFaceTypeEnum.TRADING_FLEET_PLUS, 6, game)).thenReturn(diffSwitch56);
 
         DiffEntity diffRemove10 = new DiffEntity();
         when(counterDomain.removeCounter(game.getStacks().get(0).getCounters().get(1))).thenReturn(diffRemove10);
 
         DiffEntity diffSwitch54 = new DiffEntity();
-        when(counterDomain.switchCounter(200L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game)).thenReturn(diffSwitch54);
+        when(counterDomain.switchCounter(game.getStacks().get(1).getCounters().get(0), CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game)).thenReturn(diffSwitch54);
 
         DiffEntity diffSwitch43 = new DiffEntity();
-        when(counterDomain.switchCounter(201L, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game)).thenReturn(diffSwitch43);
+        when(counterDomain.switchCounter(game.getStacks().get(1).getCounters().get(1), CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game)).thenReturn(diffSwitch43);
 
         DiffEntity diffRemove10Ang = new DiffEntity();
         when(counterDomain.removeCounter(game.getStacks().get(1).getCounters().get(2))).thenReturn(diffRemove10Ang);
@@ -6180,7 +6188,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.removeCounter(game.getStacks().get(2).getCounters().get(0))).thenReturn(remove300);
 
         DiffEntity switch301 = new DiffEntity();
-        when(counterDomain.switchCounter(301L, CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(switch301);
+        when(counterDomain.switchCounter(game.getStacks().get(2).getCounters().get(1), CounterFaceTypeEnum.TRADING_POST_MINUS, 1, game)).thenReturn(switch301);
 
         when(oeUtil.getFti(game, tables, "france")).thenReturn(3);
         when(oeUtil.getFti(game, tables, "espagne")).thenReturn(2);

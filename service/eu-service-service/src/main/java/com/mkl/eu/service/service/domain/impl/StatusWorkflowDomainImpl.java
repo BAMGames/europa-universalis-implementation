@@ -594,7 +594,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                         .findAny()
                         .orElse(null);
                 if (pillagePlus != null) {
-                    diffs.add(counterDomain.switchCounter(pillagePlus.getId(), CounterFaceTypeEnum.PILLAGE_MINUS, null, game));
+                    diffs.add(counterDomain.switchCounter(pillagePlus, CounterFaceTypeEnum.PILLAGE_MINUS, null, game));
                 }
             }
         }
@@ -666,7 +666,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                         .filter(siegework -> !Objects.equals(siegeworkRemain.getId(), siegework.getId()))
                         .forEach(siegework -> diffs.add(counterDomain.removeCounter(siegework)));
                 if (siegeworkRemain.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS) {
-                    diffs.add(counterDomain.switchCounter(siegeworkRemain.getId(), CounterFaceTypeEnum.SIEGEWORK_MINUS, null, game));
+                    diffs.add(counterDomain.switchCounter(siegeworkRemain, CounterFaceTypeEnum.SIEGEWORK_MINUS, null, game));
                 }
             }
         }

@@ -256,7 +256,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                     .findAny()
                     .orElse(null);
             if (pillageMinus != null) {
-                diffs.add(counterDomain.switchCounter(pillageMinus.getId(), CounterFaceTypeEnum.PILLAGE_PLUS, null, game));
+                diffs.add(counterDomain.switchCounter(pillageMinus, CounterFaceTypeEnum.PILLAGE_PLUS, null, game));
             }
         }
 

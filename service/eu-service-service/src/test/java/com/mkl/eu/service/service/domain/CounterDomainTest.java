@@ -361,12 +361,13 @@ public class CounterDomainTest {
     @Test
     public void testSwitchCounter() throws Exception {
         GameEntity game = createSwitchCounterGame();
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), 100L))
+                .findAny()
+                .orElse(null);
 
-        DiffEntity diff = counterDomain.switchCounter(99L, CounterFaceTypeEnum.ARMY_PLUS, null, game);
-
-        Assert.assertNull(diff);
-
-        diff = counterDomain.switchCounter(100L, CounterFaceTypeEnum.ARMY_PLUS, null, game);
+        DiffEntity diff = counterDomain.switchCounter(counter, CounterFaceTypeEnum.ARMY_PLUS, null, game);
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -385,8 +386,13 @@ public class CounterDomainTest {
     @Test
     public void testSwitchCounterTradeFleet1() throws Exception {
         GameEntity game = createSwitchCounterGame();
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), 300L))
+                .findAny()
+                .orElse(null);
 
-        DiffEntity diff = counterDomain.switchCounter(300L, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game);
+        DiffEntity diff = counterDomain.switchCounter(counter, CounterFaceTypeEnum.TRADING_FLEET_MINUS, 3, game);
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -408,8 +414,13 @@ public class CounterDomainTest {
     @Test
     public void testSwitchCounterTradeFleet2() throws Exception {
         GameEntity game = createSwitchCounterGame();
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), 301L))
+                .findAny()
+                .orElse(null);
 
-        DiffEntity diff = counterDomain.switchCounter(301L, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game);
+        DiffEntity diff = counterDomain.switchCounter(counter, CounterFaceTypeEnum.TRADING_FLEET_PLUS, 4, game);
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());
@@ -431,13 +442,18 @@ public class CounterDomainTest {
     @Test
     public void testSwitchCounterEstablishment1() throws Exception {
         GameEntity game = createSwitchCounterGame();
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), 400L))
+                .findAny()
+                .orElse(null);
 
         RotwProvinceEntity prov = new RotwProvinceEntity();
         prov.setRegion("regionTest");
 
         when(provinceDao.getProvinceByName("rAzteca~C")).thenReturn(prov);
 
-        DiffEntity diff = counterDomain.switchCounter(400L, CounterFaceTypeEnum.TRADING_POST_PLUS, 6, game);
+        DiffEntity diff = counterDomain.switchCounter(counter, CounterFaceTypeEnum.TRADING_POST_PLUS, 6, game);
 
         InOrder inOrder = inOrder(provinceDao);
         inOrder.verify(provinceDao).getProvinceByName("rAzteca~C");
@@ -464,8 +480,13 @@ public class CounterDomainTest {
     @Test
     public void testSwitchCounterEstablishment2() throws Exception {
         GameEntity game = createSwitchCounterGame();
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), 401L))
+                .findAny()
+                .orElse(null);
 
-        DiffEntity diff = counterDomain.switchCounter(401L, CounterFaceTypeEnum.COLONY_MINUS, 1, game);
+        DiffEntity diff = counterDomain.switchCounter(counter, CounterFaceTypeEnum.COLONY_MINUS, 1, game);
 
         Assert.assertEquals(game.getId(), diff.getIdGame());
         Assert.assertEquals(game.getVersion(), diff.getVersionGame().longValue());

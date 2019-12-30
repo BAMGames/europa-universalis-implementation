@@ -614,13 +614,12 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
 
         if (siegeworkPlus < 2 && siegeworkMinus == 1 && (siegework == CounterFaceTypeEnum.SIEGEWORK_MINUS || siegeworkPlus == 1)) {
             // Transforms a SIEGEWORK_MINUS into a SIEGEWORK_PLUS
-            Long idSiegework = stack.getCounters().stream()
+            CounterEntity counterSiegework = stack.getCounters().stream()
                     .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS)
-                    .map(CounterEntity::getId)
                     .findAny()
                     .orElse(null);
 
-            diffs.add(counterDomain.switchCounter(idSiegework, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, siege.getGame()));
+            diffs.add(counterDomain.switchCounter(counterSiegework, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, siege.getGame()));
         } else if (siegeworkPlus < 2) {
             // Other cases : add a siegework
             diffs.add(counterDomain.createCounter(siegework, null, stack.getId(), siege.getGame()));

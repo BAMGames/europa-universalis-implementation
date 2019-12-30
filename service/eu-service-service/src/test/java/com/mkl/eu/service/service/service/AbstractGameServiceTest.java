@@ -409,9 +409,15 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static Answer<?> switchCounterAnswer() {
-        return invocation -> createDiff(invocation.getArgumentAt(3, GameEntity.class), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER,
-                invocation.getArgumentAt(0, Long.class),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocation.getArgumentAt(1, CounterFaceTypeEnum.class)));
+        return invocation -> {
+            CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+            if (counter != null) {
+                return createDiff(counter.getOwner().getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER,
+                        counter.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, invocation.getArgumentAt(1, CounterFaceTypeEnum.class)));
+            }
+            return null;
+        };
     }
 
     public static Answer<?> moveSpecialCounterAnswer() {

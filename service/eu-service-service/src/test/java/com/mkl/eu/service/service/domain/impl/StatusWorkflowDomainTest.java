@@ -1144,7 +1144,7 @@ public class StatusWorkflowDomainTest {
         end.setId(1L);
         when(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game)).thenReturn(end);
         when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
-        when(counterDomain.switchCounter(anyLong(), any(), anyInt(), any())).thenAnswer(switchCounterAnswer());
+        when(counterDomain.switchCounter(any(), any(), anyInt(), any())).thenAnswer(switchCounterAnswer());
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
 
@@ -1772,7 +1772,7 @@ public class StatusWorkflowDomainTest {
         game.getStacks().add(stack);
 
         when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
-        when(counterDomain.switchCounter(anyLong(), any(), any(), any())).thenAnswer(switchCounterAnswer());
+        when(counterDomain.switchCounter(any(), any(), any(), any())).thenAnswer(switchCounterAnswer());
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
 

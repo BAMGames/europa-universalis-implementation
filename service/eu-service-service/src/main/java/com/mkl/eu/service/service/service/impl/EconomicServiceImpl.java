@@ -1879,24 +1879,30 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return a List of Diff related to the action.
      */
     private DiffEntity executeLowerFortress(AdministrativeActionEntity action, GameEntity game) {
-        return counterDomain.switchCounter(action.getIdObject(), action.getCounterFaceType(), null, game);
-    }
-
-    /**
-     * Execute a planned administrative action of type disband.
-     *
-     * @param action the planned administrative action.
-     * @param game   the game.
-     * @return a List of Diff related to the action.
-     */
-    private DiffEntity executeDisband(AdministrativeActionEntity action, GameEntity game, List<StackEntity> stacks) {
         CounterEntity counter = game.getStacks().stream()
                 .flatMap(s -> s.getCounters().stream())
                 .filter(c -> c.getId().equals(action.getIdObject()))
                 .findAny()
                 .orElse(null);
-        if (!stacks.contains(counter.getOwner())) {
-            stacks.add(counter.getOwner());
+        return counterDomain.switchCounter(counter, action.getCounterFaceType(), null, game);
+    }
+
+    /**
+     * Execute a planned administrative action of type disband.
+     *
+     * @param action        the planned administrative action.
+     * @param game          the game.
+     * @param stacksToCheck the stacks that might have changed controller at the end of administrative phase.
+     * @return a List of Diff related to the action.
+     */
+    private DiffEntity executeDisband(AdministrativeActionEntity action, GameEntity game, List<StackEntity> stacksToCheck) {
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(s -> s.getCounters().stream())
+                .filter(c -> c.getId().equals(action.getIdObject()))
+                .findAny()
+                .orElse(null);
+        if (!stacksToCheck.contains(counter.getOwner())) {
+            stacksToCheck.add(counter.getOwner());
         }
         return counterDomain.removeCounter(counter);
     }
@@ -1992,7 +1998,12 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         addInMap(costs, COST_ACTION, action.getCost());
         if (rollDie(action, game, country)) {
             if (action.getIdObject() != null) {
-                return counterDomain.switchCounter(action.getIdObject(), CounterUtil.getManufactureLevel2(action.getCounterFaceType()), null, game);
+                CounterEntity counter = game.getStacks().stream()
+                        .flatMap(s -> s.getCounters().stream())
+                        .filter(c -> c.getId().equals(action.getIdObject()))
+                        .findAny()
+                        .orElse(null);
+                return counterDomain.switchCounter(counter, CounterUtil.getManufactureLevel2(action.getCounterFaceType()), null, game);
             } else {
                 // FIXME regroup mnu counter with other economic counters ?
                 return counterDomain.createCounter(CounterUtil.getManufactureLevel1(action.getCounterFaceType()), country.getName(), action.getProvince(), null, game);
@@ -2115,11 +2126,11 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 // FIXME regroup mnu counter with other economic counters ?
                 diffs.add(counterDomain.createCounter(CounterUtil.getEstablishmentType(action.getType()), country.getName(), action.getProvince(), 1, game));
             } else if (counter.getEstablishment() == null || counter.getEstablishment().getLevel() == null) {
-                diffs.add(counterDomain.switchCounter(counter.getId(), counter.getType(), 1, game));
+                diffs.add(counterDomain.switchCounter(counter, counter.getType(), 1, game));
             } else if (counter.getEstablishment().getLevel() == 3) {
-                diffs.add(counterDomain.switchCounter(counter.getId(), CounterUtil.getFacePlus(counter.getType()), 4, game));
+                diffs.add(counterDomain.switchCounter(counter, CounterUtil.getFacePlus(counter.getType()), 4, game));
             } else {
-                diffs.add(counterDomain.switchCounter(counter.getId(), counter.getType(), counter.getEstablishment().getLevel() + 1, game));
+                diffs.add(counterDomain.switchCounter(counter, counter.getType(), counter.getEstablishment().getLevel() + 1, game));
             }
 
             // TODO exotic resources
@@ -2282,7 +2293,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                         // case newLevel is 0 ?
                         diffs.add(counterDomain.createCounter(newType, country, tz, newLevel, game));
                     } else if (newLevel != 0) {
-                        diffs.add(counterDomain.switchCounter(counter.getId(), newType, newLevel, game));
+                        diffs.add(counterDomain.switchCounter(counter, newType, newLevel, game));
                     } else {
                         diffs.add(counterDomain.removeCounter(counter));
                     }
@@ -2404,9 +2415,9 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 } else {
                     int newLevel = establishment.getEstablishment().getLevel() - levelLost;
                     if (establishment.getEstablishment().getLevel() >= 4 && newLevel < 4) {
-                        diffs.add(counterDomain.switchCounter(establishment.getId(), CounterUtil.getFaceMinus(establishment.getType()), newLevel, game));
+                        diffs.add(counterDomain.switchCounter(establishment, CounterUtil.getFaceMinus(establishment.getType()), newLevel, game));
                     } else {
-                        diffs.add(counterDomain.switchCounter(establishment.getId(), establishment.getType(), newLevel, game));
+                        diffs.add(counterDomain.switchCounter(establishment, establishment.getType(), newLevel, game));
                     }
                 }
 

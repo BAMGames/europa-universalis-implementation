@@ -48,13 +48,13 @@ public interface ICounterDomain {
     /**
      * Switch a counter from a game to a given type.
      *
-     * @param idCounter the id of the counter to switch.
-     * @param type      new type of the counter.
-     * @param level     new level of the trade fleet or establishment.
-     * @param game      the game.
+     * @param counter the counter to switch.
+     * @param type    new type of the counter.
+     * @param level   new level of the trade fleet or establishment.
+     * @param game    the game.
      * @return the diffs related to the switch of the counter. Returns <code>null</code> if the idCounter is not found in the given game.
      */
-    DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game);
+    DiffEntity switchCounter(CounterEntity counter, CounterFaceTypeEnum type, Integer level, GameEntity game);
 
     /**
      * Change the number of veterans of a counter from a game.

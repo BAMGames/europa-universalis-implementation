@@ -1634,8 +1634,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 newStack.setId(1099L);
                 return newStack;
             });
-            when(testClass.counterDomain.switchCounter(110l, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, game))
-                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 110L));
+            when(testClass.counterDomain.switchCounter(any(), any(), any(), any()))
+                    .thenAnswer(switchCounterAnswer());
             when(testClass.counterDomain.createCounter(any(), any(), any(), any()))
                     .thenAnswer(invocationOnMock -> {
                         CounterFaceTypeEnum face = invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class);
@@ -2895,8 +2895,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 newStack.setId(1099L);
                 return newStack;
             });
-            when(testClass.counterDomain.switchCounter(110l, CounterFaceTypeEnum.SIEGEWORK_PLUS, null, game))
-                    .thenReturn(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, 110L));
+            when(testClass.counterDomain.switchCounter(any(), any(), any(), any()))
+                    .thenAnswer(switchCounterAnswer());
             when(testClass.counterDomain.createCounter(any(), any(), any(), any()))
                     .thenAnswer(invocationOnMock -> {
                         CounterFaceTypeEnum face = invocationOnMock.getArgumentAt(0, CounterFaceTypeEnum.class);

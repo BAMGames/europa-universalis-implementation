@@ -140,20 +140,13 @@ public class CounterDomainImpl implements ICounterDomain {
 
     /** {@inheritDoc} */
     @Override
-    public DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game) {
-        CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
-                c -> c.getId().equals(idCounter));
-
-        if (counter == null) {
-            return null;
-        }
-
+    public DiffEntity switchCounter(CounterEntity counter, CounterFaceTypeEnum type, Integer level, GameEntity game) {
         counter.setType(type);
         String province = counter.getOwner().getProvince();
 
         level = computeLevel(counter, province, level, game);
 
-        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, idCounter,
+        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, counter.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEVEL, level, level != null));
