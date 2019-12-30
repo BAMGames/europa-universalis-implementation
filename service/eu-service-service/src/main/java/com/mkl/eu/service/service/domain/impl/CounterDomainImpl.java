@@ -22,8 +22,6 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,13 +51,13 @@ public class CounterDomainImpl implements ICounterDomain {
     /** {@inheritDoc} */
     @Override
     public DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game) {
-        return createAndGetCounter(type, country, null, province, level, game).getLeft();
+        return createAndGetCounter(type, country, null, province, level, game);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffEntity createCounter(CounterFaceTypeEnum type, String country, Long idStack, GameEntity game) {
-        return createAndGetCounter(type, country, idStack, null, null, game).getLeft();
+        return createAndGetCounter(type, country, idStack, null, null, game);
     }
 
     /**
@@ -73,7 +71,7 @@ public class CounterDomainImpl implements ICounterDomain {
      * @param game     the game.
      * @return the diffs related to the creation of the counter and the counter created.
      */
-    private Pair<DiffEntity, CounterEntity> createAndGetCounter(CounterFaceTypeEnum type, String country, Long idStack, String province, Integer level, GameEntity game) {
+    private DiffEntity createAndGetCounter(CounterFaceTypeEnum type, String country, Long idStack, String province, Integer level, GameEntity game) {
         StackEntity stack = game.getStacks().stream()
                 .filter(s -> Objects.equals(idStack, s.getId()))
                 .findAny()
@@ -107,14 +105,12 @@ public class CounterDomainImpl implements ICounterDomain {
         // We want the id to be generated immediately so that we can put it in the diff event.
         counterDao.create(counterEntity);
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, counterEntity.getId(),
+        return DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, counterEntity.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, stack.getProvince()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, country),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, stack.getId().toString()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEVEL, level, level != null));
-
-        return new ImmutablePair<>(diff, counterEntity);
     }
 
     /** {@inheritDoc} */
@@ -145,18 +141,6 @@ public class CounterDomainImpl implements ICounterDomain {
     /** {@inheritDoc} */
     @Override
     public DiffEntity switchCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game) {
-        Pair<DiffEntity, CounterEntity> pair = switchAndGetCounter(idCounter, type, level, game);
-
-        if (pair == null) {
-            return null;
-        }
-
-        return pair.getLeft();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Pair<DiffEntity, CounterEntity> switchAndGetCounter(Long idCounter, CounterFaceTypeEnum type, Integer level, GameEntity game) {
         CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
                 c -> c.getId().equals(idCounter));
 
@@ -169,12 +153,10 @@ public class CounterDomainImpl implements ICounterDomain {
 
         level = computeLevel(counter, province, level, game);
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, idCounter,
+        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.COUNTER, idCounter,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, province),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEVEL, level, level != null));
-
-        return new ImmutablePair<>(diff, counter);
     }
 
     /**
