@@ -29,6 +29,7 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
 import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
@@ -3694,6 +3697,242 @@ public class OEUtilTest {
             Assert.assertEquals("Wrong controller returned.", expected, result);
 
             return this;
+        }
+    }
+
+    @Test
+    public void testLeadingCountries() {
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders();
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Napo");
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Turennes").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Napo", "Turennes");
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .addStack().country("espagne").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("espagne").face(CounterFaceTypeEnum.LEADER).leader("Draco").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france", "espagne")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Napo", "Draco");
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent()
+                .addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("espagne").face(CounterFaceTypeEnum.LEADER).leader("Draco").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Napo");
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent()
+                .addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent().toParent()
+                .addStack().country("france").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Nabo").rank("Z").type(LeaderTypeEnum.GENERAL).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Napo");
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_1).leader("Pacha1").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .addStack().country("espagne").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("turquie").face(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION).toParent()
+                .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_3).leader("Pacha3").rank("A").type(LeaderTypeEnum.ADMIRAL).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("turquie")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Pacha1");
+
+        StacksBuilder.create()
+                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_PLUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION).toParent()
+                .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_1).leader("Pacha1").rank("A").type(LeaderTypeEnum.GENERAL).toParent()
+                .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_3).leader("Pacha3").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .addStack().country("espagne").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_PLUS).toParent()
+                .addCounter().country("turquie").face(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("turquie", "france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Pacha1", "Pacha3");
+    }
+
+    static class StacksBuilder {
+        List<StackBuilder> stacks = new ArrayList<>();
+        List<String> leadingCountries;
+        List<Leader> leaders;
+
+        static StacksBuilder create() {
+            return new StacksBuilder();
+        }
+
+        StackBuilder addStack() {
+            StackBuilder stack = new StackBuilder(this);
+            stacks.add(stack);
+            return stack;
+        }
+
+        StacksBuilder whenGetLeadingCountry(IOEUtil oeUtil) {
+            List<StackEntity> entities = stacks.stream().map(StackBuilder::toEntity).collect(Collectors.toList());
+            List<CounterEntity> counters = entities.stream().flatMap(s -> s.getCounters().stream()).collect(Collectors.toList());
+
+            leadingCountries = oeUtil.getLeadingCountry(counters);
+
+            return this;
+        }
+
+        StacksBuilder whenGetLeaders(IOEUtil oeUtil, Predicate<Leader> conditions) {
+            List<StackEntity> entities = stacks.stream().map(StackBuilder::toEntity).collect(Collectors.toList());
+            List<CounterEntity> counters = entities.stream().flatMap(s -> s.getCounters().stream()).collect(Collectors.toList());
+            Tables tables = new Tables();
+            tables.getLeaders().addAll(stacks.stream().flatMap(s -> s.counters.stream()).map(CounterBuilder::toLeader).collect(Collectors.toList()));
+
+            leaders = oeUtil.getLeader(counters, tables, conditions);
+
+            return this;
+        }
+
+        StacksBuilder thenExpectLeadingCountry(String... countries) {
+            if (countries == null) {
+                Assert.assertEquals("Number of different eligible leading countries mismatch.", 0, leadingCountries.size());
+            } else {
+                Assert.assertEquals("Number of different eligible leading countries mismatch.", countries.length, leadingCountries.size());
+                for (String country : countries) {
+                    Assert.assertTrue("Country was supposed to be an eligible leading country but was not.", leadingCountries.contains(country));
+                }
+            }
+
+            return this;
+        }
+
+        StacksBuilder thenExpectLeaders(String... leaders) {
+            if (leaders == null) {
+                Assert.assertEquals("Number of different eligible leaders mismatch.", 0, leadingCountries.size());
+            } else {
+                Assert.assertEquals("Number of different eligible leaders mismatch.", leaders.length, this.leaders.size());
+                for (String leader : leaders) {
+                    Assert.assertTrue("Leaders was supposed to be an eligible leaders but was not.", this.leaders.stream().anyMatch(l -> StringUtils.equals(l.getCode(), leader)));
+                }
+            }
+
+            return this;
+        }
+
+        class StackBuilder {
+            StacksBuilder parent;
+            String country;
+            List<CounterBuilder> counters = new ArrayList<>();
+
+            StackBuilder(StacksBuilder parent) {
+                this.parent = parent;
+            }
+
+            StackBuilder country(String country) {
+                this.country = country;
+                return this;
+            }
+
+            CounterBuilder addCounter() {
+                CounterBuilder counter = new CounterBuilder(this);
+                counters.add(counter);
+                return counter;
+            }
+
+            StacksBuilder toParent() {
+                return parent;
+            }
+
+            StackEntity toEntity() {
+                StackEntity stack = new StackEntity();
+                stack.setCountry(country);
+                stack.getCounters().addAll(counters.stream().map(CounterBuilder::toEntity).collect(Collectors.toList()));
+                stack.getCounters().forEach(counter -> counter.setOwner(stack));
+                return stack;
+            }
+        }
+
+        class CounterBuilder {
+            StackBuilder parent;
+            CounterFaceTypeEnum face;
+            String country;
+            String leader;
+            String rank;
+            LeaderTypeEnum type;
+
+            CounterBuilder(StackBuilder parent) {
+                this.parent = parent;
+            }
+
+            CounterBuilder face(CounterFaceTypeEnum face) {
+                this.face = face;
+                return this;
+            }
+
+            CounterBuilder country(String country) {
+                this.country = country;
+                return this;
+            }
+
+            CounterBuilder leader(String leader) {
+                this.leader = leader;
+                return this;
+            }
+
+            CounterBuilder rank(String rank) {
+                this.rank = rank;
+                return this;
+            }
+
+            CounterBuilder type(LeaderTypeEnum type) {
+                this.type = type;
+                return this;
+            }
+
+            StackBuilder toParent() {
+                return parent;
+            }
+
+            CounterEntity toEntity() {
+                CounterEntity counter = new CounterEntity();
+                counter.setType(face);
+                counter.setCountry(country);
+                counter.setCode(leader);
+                return counter;
+            }
+
+            Leader toLeader() {
+                Leader leader = new Leader();
+                leader.setCode(this.leader);
+                leader.setType(type);
+                leader.setRank(rank);
+                return leader;
+            }
         }
     }
 }

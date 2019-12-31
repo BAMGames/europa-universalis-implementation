@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.util;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.ref.Referential;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
@@ -14,6 +15,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -360,6 +362,7 @@ public interface IOEUtil {
     /**
      * @param inflation the actual inflation.
      * @param country   the country.
+     * @param tables    the tables.
      * @param game      the game.
      * @return the minimal inflation lost at the end of the turn.
      */
@@ -370,4 +373,18 @@ public interface IOEUtil {
      * @return the country that should control this stack given the counters. In case of tie, choose a random one.
      */
     String getController(StackEntity stack);
+
+    /**
+     * @param counters the counters.
+     * @return the country that is naturally leading this counters (if tie, all eligible countries are returned).
+     */
+    List<String> getLeadingCountry(List<CounterEntity> counters);
+
+    /**
+     * @param counters   the counters.
+     * @param tables     the tables.
+     * @param conditions the conditions on the leader (general for land, etc...).
+     * @return the leader that will naturally lead this counters (if tie, all eligible leaders are returned).
+     */
+    List<Leader> getLeader(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions);
 }

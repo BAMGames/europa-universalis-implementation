@@ -33,10 +33,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.ToDoubleFunction;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
@@ -1263,4 +1260,60 @@ public final class OEUtilImpl implements IOEUtil {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getLeadingCountry(List<CounterEntity> counters) {
+        Map<String, Double> countersByCountry = counters.stream()
+                .collect(Collectors.groupingBy(CounterEntity::getCountry,
+                        Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType()))));
+        Double max = countersByCountry.values().stream()
+                .max(Comparator.<Double>naturalOrder())
+                .orElse(0d);
+        List<String> leadingCountries = countersByCountry.entrySet().stream()
+                .filter(entry -> Math.abs(entry.getValue() - max) < EPSILON)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        if (leadingCountries.size() != 1) {
+            List<String> previousLeadingCountries = counters.stream()
+                    .map(counter -> counter.getOwner().getCountry())
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (previousLeadingCountries.size() == 1 && leadingCountries.contains(previousLeadingCountries.get(0))) {
+                return previousLeadingCountries;
+            }
+        }
+
+        return leadingCountries;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Leader> getLeader(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions) {
+        List<String> leadingCountries = getLeadingCountry(counters);
+        List<String> leaderCodes = counters.stream()
+                .filter(counter -> leadingCountries.contains(counter.getCountry()) &&
+                        CounterUtil.isLeader(counter.getType()))
+                .map(CounterEntity::getCode)
+                .collect(Collectors.toList());
+
+        List<Leader> leaders = tables.getLeaders().stream()
+                .filter(l -> leaderCodes.contains(l.getCode()))
+                .filter(conditions)
+                .collect(Collectors.toList());
+
+        String bestRank = leaders.stream()
+                .map(Leader::getRank)
+                .min(Comparator.<String>naturalOrder())
+                .orElse(null);
+
+        leaders.removeIf(leader -> !StringUtils.equals(leader.getRank(), bestRank));
+
+        // TODO TG-5 if all counters are from the same stack, take the previous leader if he is eligible.
+
+        return leaders;
+    }
 }

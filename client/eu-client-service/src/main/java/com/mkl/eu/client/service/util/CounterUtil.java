@@ -1395,4 +1395,26 @@ public final class CounterUtil {
     public static boolean isPacha(String face) {
         return face != null && face.startsWith("PACHA");
     }
+
+    /**
+     * @param face the face.
+     * @return <code>true</code> if the counter face type is a leader, <code>false</code> otherwise.
+     */
+    public static boolean isLeader(CounterFaceTypeEnum face) {
+        boolean leader = false;
+
+        if (face != null) {
+            switch (face) {
+                case LEADER:
+                case PACHA_1:
+                case PACHA_2:
+                case PACHA_3:
+                    leader = true;
+                    break;
+            }
+        }
+
+        return leader;
+
+    }
 }
