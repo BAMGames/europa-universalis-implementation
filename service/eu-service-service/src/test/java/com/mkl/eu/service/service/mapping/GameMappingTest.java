@@ -574,6 +574,8 @@ public class GameMappingTest {
         counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
         counter.getCounter().setCountry("persia");
         object.getCounters().add(counter);
+        object.getPhasing().setLeader("leader");
+        object.getPhasing().setCountry("france");
         object.getPhasing().setSize(2d);
         object.getPhasing().setTech(Tech.ARQUEBUS);
         object.getPhasing().setSizeDiff(-2);
@@ -592,6 +594,8 @@ public class GameMappingTest {
         object.getPhasing().getFirstDay().setFire(5);
         object.getPhasing().getFirstDay().setShockMod(2);
         object.getPhasing().getFirstDay().setShock(9);
+        object.getPhasing().setLeader("pacha");
+        object.getPhasing().setCountry("turquie");
         object.getNonPhasing().setSize(2d);
         object.getNonPhasing().setTech(Tech.MEDIEVAL);
         object.getNonPhasing().setSizeDiff(2);
@@ -1076,6 +1080,8 @@ public class GameMappingTest {
         counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
         counter.setCountry("persia");
         object.getCounters().add(counter);
+        object.getPhasing().setLeader("leader");
+        object.getPhasing().setCountry("france");
         object.getPhasing().setSize(2d);
         object.getPhasing().setTech(Tech.ARQUEBUS);
         object.getPhasing().setSizeDiff(-2);
@@ -1094,6 +1100,8 @@ public class GameMappingTest {
         object.getPhasing().getFirstDay().setFire(5);
         object.getPhasing().getFirstDay().setShockMod(2);
         object.getPhasing().getFirstDay().setShock(9);
+        object.getPhasing().setLeader("pacha");
+        object.getPhasing().setCountry("turquie");
         object.getNonPhasing().setSize(2d);
         object.getNonPhasing().setTech(Tech.MEDIEVAL);
         object.getNonPhasing().setSizeDiff(2);

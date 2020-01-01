@@ -150,6 +150,8 @@ public class BattleMapping extends AbstractMapping {
         target.setShockColumn(source.getShockColumn());
         target.setTech(source.getTech());
         target.setMoral(source.getMoral());
+        target.setLeader(source.getLeader());
+        target.setCountry(source.getCountry());
         target.setSize(source.getSize());
         target.setSizeDiff(source.getSizeDiff());
         target.setPursuitMod(source.getPursuitMod());

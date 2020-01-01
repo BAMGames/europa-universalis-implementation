@@ -11,10 +11,7 @@ import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.tables.BattleTech;
-import com.mkl.eu.client.service.vo.tables.CombatResult;
-import com.mkl.eu.client.service.vo.tables.Tables;
-import com.mkl.eu.client.service.vo.tables.Tech;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
@@ -139,16 +136,31 @@ public class BattleServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testChooseBattleToSelectForces() throws FunctionalException {
-        testChooseBattle(false);
+    public void testChooseBattleTooMuchForces() throws FunctionalException {
+        testChooseBattle(true, false, false, false);
+    }
+
+    @Test
+    public void testChooseBattleTooMuchLeadingCountries() throws FunctionalException {
+        testChooseBattle(false, true, false, false);
+    }
+
+    @Test
+    public void testChooseBattleTooMuchLeaders() throws FunctionalException {
+        testChooseBattle(false, false, true, false);
+    }
+
+    @Test
+    public void testChooseBattleTooMuchEverything() throws FunctionalException {
+        testChooseBattle(true, true, true, false);
     }
 
     @Test
     public void testChooseBattleToWithdrawBeforeBattle() throws FunctionalException {
-        testChooseBattle(true);
+        testChooseBattle(false, false, false, true);
     }
 
-    private void testChooseBattle(boolean gotoWithdraw) throws FunctionalException {
+    private void testChooseBattle(boolean tooMuchforces, boolean tooMuchLeadingCountries, boolean tooMuchLeaders, boolean forcesSelected) throws FunctionalException {
         Pair<Request<ChooseProvinceRequest>, GameEntity> pair = testCheckGame(battleService::chooseBattle, "chooseBattle");
         Request<ChooseProvinceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
@@ -203,12 +215,26 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         allies.add("france");
         List<String> enemies = new ArrayList<>();
         enemies.add("espagne");
-        if (!gotoWithdraw) {
+        if (tooMuchforces) {
             allies.add("turquie");
             enemies.add("angleterre");
         }
+        List<String> leadingCountries = new ArrayList<>();
+        leadingCountries.add("france");
+        if (tooMuchLeadingCountries) {
+            leadingCountries.add("turquie");
+        }
+        List<Leader> leaders = new ArrayList<>();
+        Leader leader = new Leader();
+        leader.setCode("Napo");
+        leaders.add(leader);
+        if (tooMuchLeaders) {
+            leaders.add(null);
+        }
         when(oeUtil.getWarAllies(game.getCountries().get(0), battle.getWar())).thenReturn(allies);
         when(oeUtil.getWarEnemies(game.getCountries().get(0), battle.getWar())).thenReturn(enemies);
+        when(oeUtil.getLeadingCountry(any())).thenReturn(leadingCountries);
+        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
 
         simulateDiff();
 
@@ -221,18 +247,17 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getBattles().get(0).getId(), diffEntity.getIdObject());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
-        if (gotoWithdraw) {
-            Assert.assertEquals(5, diffEntity.getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntity.getAttributes().get(0).getType());
-            Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), diffEntity.getAttributes().get(0).getValue());
-            Assert.assertEquals(DiffAttributeTypeEnum.PHASING_READY, diffEntity.getAttributes().get(1).getType());
-            Assert.assertEquals("true", diffEntity.getAttributes().get(1).getValue());
-            Assert.assertEquals(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, diffEntity.getAttributes().get(2).getType());
-            Assert.assertEquals("1", diffEntity.getAttributes().get(2).getValue());
-            Assert.assertEquals(DiffAttributeTypeEnum.NON_PHASING_READY, diffEntity.getAttributes().get(3).getType());
-            Assert.assertEquals("true", diffEntity.getAttributes().get(3).getValue());
-            Assert.assertEquals(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, diffEntity.getAttributes().get(4).getType());
-            Assert.assertEquals("5", diffEntity.getAttributes().get(4).getValue());
+        if (forcesSelected) {
+            Assert.assertEquals(9, diffEntity.getAttributes().size());
+            Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
+            Assert.assertEquals("true", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_READY));
+            Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTRY));
+            Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_LEADER));
+            Assert.assertEquals("1", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTER_ADD));
+            Assert.assertEquals("true", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_READY));
+            Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
+            Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_LEADER));
+            Assert.assertEquals("5", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD));
         } else {
             Assert.assertEquals(1, diffEntity.getAttributes().size());
             Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffEntity.getAttributes().get(0).getType());
@@ -242,7 +267,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
 
-        if (gotoWithdraw) {
+        if (forcesSelected) {
             Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE, game.getBattles().get(0).getStatus());
             Assert.assertEquals(2, game.getBattles().get(0).getCounters().size());
             BattleCounterEntity counterFra = game.getBattles().get(0).getCounters().stream()

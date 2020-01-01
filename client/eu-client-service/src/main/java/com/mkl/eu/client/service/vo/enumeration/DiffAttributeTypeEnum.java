@@ -73,6 +73,14 @@ public enum DiffAttributeTypeEnum {
     PHASING_READY,
     /** To say if the defender is ready. */
     NON_PHASING_READY,
+    /** Leader of the phasing side. */
+    PHASING_LEADER,
+    /** Leader of the non phasing side. */
+    NON_PHASING_LEADER,
+    /** Country leading the phasing side. */
+    PHASING_COUNTRY,
+    /** Country leading the non phasing side. */
+    NON_PHASING_COUNTRY,
     /** Counter to add as attacker. */
     PHASING_COUNTER_ADD,
     /** Counter to add as defender. */

@@ -376,7 +376,7 @@ public class TableDaoImplTest {
         Tables tables = tablesService.getTables();
         List<Leader> leaders = tables.getLeaders();
 
-        Assert.assertEquals(620, leaders.size());
+        Assert.assertEquals(920, leaders.size());
 
         Leader leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "Bonaparte"))
@@ -403,6 +403,13 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
         Assert.assertNull(leader.getOtherSide());
+        Assert.assertTrue(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
 
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "Albuquerque"))
@@ -429,6 +436,13 @@ public class TableDaoImplTest {
         Assert.assertEquals(true, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
         Assert.assertEquals("Albuquerque-2", leader.getOtherSide());
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertTrue(Leader.landRotw.test(leader));
+        Assert.assertTrue(Leader.landRotwAmerica.test(leader));
+        Assert.assertTrue(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "Albuquerque-2"))
                 .findAny()
@@ -453,6 +467,13 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
         Assert.assertEquals("Albuquerque", leader.getOtherSide());
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertTrue(Leader.navalRotw.test(leader));
 
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "Barbaros2"))
@@ -479,6 +500,13 @@ public class TableDaoImplTest {
         Assert.assertEquals(true, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
         Assert.assertEquals("Barbaros2-2", leader.getOtherSide());
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertTrue(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "Barbaros2-2"))
                 .findAny()
@@ -503,6 +531,13 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
         Assert.assertEquals("Barbaros2", leader.getOtherSide());
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertTrue(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
 
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "timar_Israf"))
@@ -529,6 +564,13 @@ public class TableDaoImplTest {
         Assert.assertEquals(true, leader.isMain());
         Assert.assertEquals(2, leader.getSize().intValue());
         Assert.assertEquals("timar_Israf-2", leader.getOtherSide());
+        Assert.assertTrue(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
         leader = leaders.stream()
                 .filter(l -> StringUtils.equals(l.getCode(), "timar_Israf-2"))
                 .findAny()
@@ -553,5 +595,72 @@ public class TableDaoImplTest {
         Assert.assertEquals(false, leader.isMain());
         Assert.assertEquals(null, leader.getSize());
         Assert.assertEquals("timar_Israf", leader.getOtherSide());
+        Assert.assertTrue(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Rochambeau"))
+                .findAny()
+                .orElse(null);
+        Assert.assertTrue(Leader.landEurope.test(leader));
+        Assert.assertTrue(Leader.landRotw.test(leader));
+        Assert.assertTrue(Leader.landRotwAmerica.test(leader));
+        Assert.assertTrue(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Santa Cruz"))
+                .findAny()
+                .orElse(null);
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertTrue(Leader.navalEurope.test(leader));
+        Assert.assertTrue(Leader.navalEuropeMed.test(leader));
+        Assert.assertTrue(Leader.navalRotw.test(leader));
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Colonna"))
+                .findAny()
+                .orElse(null);
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertTrue(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Maetsuycker"))
+                .findAny()
+                .orElse(null);
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertFalse(Leader.landRotwAmerica.test(leader));
+        Assert.assertTrue(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
+
+        leader = leaders.stream()
+                .filter(l -> StringUtils.equals(l.getCode(), "Antonelli"))
+                .findAny()
+                .orElse(null);
+        Assert.assertFalse(Leader.landEurope.test(leader));
+        Assert.assertFalse(Leader.landRotw.test(leader));
+        Assert.assertTrue(Leader.landRotwAmerica.test(leader));
+        Assert.assertFalse(Leader.landRotwAsia.test(leader));
+        Assert.assertFalse(Leader.navalEurope.test(leader));
+        Assert.assertFalse(Leader.navalEuropeMed.test(leader));
+        Assert.assertFalse(Leader.navalRotw.test(leader));
     }
 }

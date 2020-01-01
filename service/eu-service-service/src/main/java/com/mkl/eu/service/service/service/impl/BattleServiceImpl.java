@@ -15,6 +15,7 @@ import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
@@ -162,11 +163,31 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
-        if (attackerCounters.size() <= 3 && attackerSize <= 8) {
+        boolean sizeOk = attackerCounters.size() <= 3 && attackerSize <= 8;
+        List<String> leadingCountries = oeUtil.getLeadingCountry(attackerCounters);
+        String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
+        List<Leader> leaders = oeUtil.getLeader(attackerCounters, getTables(), Leader.landEurope);
+        boolean leaderOk = leaders.size() <= 1;
+
+        if (sizeOk && StringUtils.isNotEmpty(leadingCountry) && leaderOk) {
             DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true);
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
             battle.getPhasing().setForces(true);
+
+            diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTRY, leadingCountry);
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+            battle.getPhasing().setCountry(leadingCountry);
+
+            if (leaders.size() == 1) {
+                String leader = leaders.get(0).getCode();
+                diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, leader);
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                battle.getPhasing().setLeader(leader);
+            }
+
             attackerCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setPhasing(true);
@@ -186,11 +207,31 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
-        if (defenderCounters.size() <= 3 && defenderSize <= 8) {
+        sizeOk = defenderCounters.size() <= 3 && defenderSize <= 8;
+        leadingCountries = oeUtil.getLeadingCountry(defenderCounters);
+        leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
+        leaders = oeUtil.getLeader(defenderCounters, getTables(), Leader.landEurope);
+        leaderOk = leaders.size() <= 1;
+
+        if (sizeOk && StringUtils.isNotEmpty(leadingCountry) && leaderOk) {
             DiffAttributesEntity diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true);
             diffAttributes.setDiff(diff);
             diff.getAttributes().add(diffAttributes);
             battle.getNonPhasing().setForces(true);
+
+            diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTRY, leadingCountry);
+            diffAttributes.setDiff(diff);
+            diff.getAttributes().add(diffAttributes);
+            battle.getNonPhasing().setCountry(leadingCountry);
+
+            if (leaders.size() == 1) {
+                String leader = leaders.get(0).getCode();
+                diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, leader);
+                diffAttributes.setDiff(diff);
+                diff.getAttributes().add(diffAttributes);
+                battle.getPhasing().setLeader(leader);
+            }
+
             defenderCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
                 comp.setBattle(battle);

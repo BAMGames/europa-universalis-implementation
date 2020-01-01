@@ -3,12 +3,33 @@ package com.mkl.eu.client.service.vo.tables;
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.LeaderTypeEnum;
 
+import java.util.function.Predicate;
+
 /**
  * VO for the leader table.
  *
  * @author MKL.
  */
 public class Leader extends EuObject {
+    /** Conditions for a leader to be eligible to lead in a european land. */
+    public static final Predicate<Leader> landEurope = leader -> leader.getType() == LeaderTypeEnum.GENERAL || leader.getType() == LeaderTypeEnum.PACHA || leader.getType() == LeaderTypeEnum.KING;
+    /** Conditions for a leader to be eligible to lead in a rotw land that is neither america nor asia. */
+    public static final Predicate<Leader> landRotw = leader -> ((leader.getType() == LeaderTypeEnum.CONQUISTADOR || leader.getType() == LeaderTypeEnum.GOVERNOR) ||
+            (leader.getType() == LeaderTypeEnum.GENERAL && leader.isRotw())) && !leader.isAmerica() && !leader.isAsia();
+    /** Conditions for a leader to be eligible to lead in a rotw american land. */
+    public static final Predicate<Leader> landRotwAmerica = leader -> (((leader.getType() == LeaderTypeEnum.CONQUISTADOR || leader.getType() == LeaderTypeEnum.GOVERNOR) ||
+            (leader.getType() == LeaderTypeEnum.GENERAL && leader.isRotw())) && !leader.isAsia()) || leader.isAmerica();
+    /** Conditions for a leader to be eligible to lead in a rotw asian land. */
+    public static final Predicate<Leader> landRotwAsia = leader -> (((leader.getType() == LeaderTypeEnum.CONQUISTADOR || leader.getType() == LeaderTypeEnum.GOVERNOR) ||
+            (leader.getType() == LeaderTypeEnum.GENERAL && leader.isRotw())) && !leader.isAmerica()) || leader.isAsia();
+    /** Conditions for a leader to be eligible to lead in a european sea except mediterranean sea. */
+    public static final Predicate<Leader> navalEurope = leader -> leader.getType() == LeaderTypeEnum.ADMIRAL && !leader.isMediterranee();
+    /** Conditions for a leader to be eligible to lead in the mediterranean sea. */
+    public static final Predicate<Leader> navalEuropeMed = leader -> leader.getType() == LeaderTypeEnum.ADMIRAL;
+    /** Conditions for a leader to be eligible to lead in a rotw sea. */
+    public static final Predicate<Leader> navalRotw = leader -> leader.getType() == LeaderTypeEnum.EXPLORER ||
+            (leader.getType() == LeaderTypeEnum.ADMIRAL && leader.isRotw());
+
     /** Code of the leader. */
     private String code;
     /** Name of the leader. */

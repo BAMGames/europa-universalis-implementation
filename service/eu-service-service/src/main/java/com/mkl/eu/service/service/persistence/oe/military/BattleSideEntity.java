@@ -15,6 +15,10 @@ public class BattleSideEntity {
     private Boolean lossesSelected;
     /** Flag saying that the side has selected its retreat. */
     private Boolean retreatSelected;
+    /** Code of the leader commanding the side. */
+    private String leader;
+    /** Country commanding the side. */
+    private String country;
     /** Size of the side. */
     private Double size;
     /** Technology of the side. */
@@ -48,6 +52,26 @@ public class BattleSideEntity {
     /** @param forces the forces to set. */
     public void setForces(Boolean forces) {
         this.forces = forces;
+    }
+
+    /** @return the leader. */
+    public String getLeader() {
+        return leader;
+    }
+
+    /** @param leader the leader to set. */
+    public void setLeader(String leader) {
+        this.leader = leader;
+    }
+
+    /** @return the country. */
+    public String getCountry() {
+        return country;
+    }
+
+    /** @param country the country to set. */
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     /** @return the size. */

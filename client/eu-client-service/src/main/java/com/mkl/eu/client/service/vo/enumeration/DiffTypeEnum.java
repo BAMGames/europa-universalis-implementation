@@ -256,6 +256,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#NON_PHASING_COUNTER_ADD the defending counter added to this battle.</li>
      * <li>DiffAttributeTypeEnum#END the cause of ending of this battle.</li>
      * <li>DiffAttributeTypeEnum#WINNER the winner of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER the leader of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_COUNTRY the country of the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_FIRE_COL the fire column of the phasing forces of this battle.</li>
@@ -276,6 +278,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_FIRE the fire unmodified die roll of the phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK_MOD the shock modifier of the phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK the shock unmodified die roll of the phasing forces in the second day of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER the leader of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_COUNTRY the country of the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_FIRE_COL the fire column of the non phasing forces of this battle.</li>
