@@ -406,6 +406,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
 
         request.getRequest().getForces().clear();
+        battle.getCounters().clear();
         request.getRequest().getForces().add(6L);
         request.getRequest().getForces().add(7L);
         request.getRequest().getForces().add(8L);
@@ -416,6 +417,64 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_TOO_BIG, e.getCode());
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        request.getRequest().getForces().clear();
+        battle.getCounters().clear();
+        request.getRequest().getForces().add(6L);
+        request.getRequest().getForces().add(7L);
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because leading country is ambiguous");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS, e.getCode());
+            Assert.assertEquals("selectForces.request.country", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().setCountry("espagne");
+        when(oeUtil.getLeadingCountry(any())).thenReturn(Arrays.asList("france", "pologne"));
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because selected country cannot lead the battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS, e.getCode());
+            Assert.assertEquals("selectForces.request.country", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().setCountry("france");
+        List<Leader> leaders = new ArrayList<>();
+        Leader leader = new Leader();
+        leader.setCode("Napo");
+        leader.setCountry("france");
+        leaders.add(leader);
+        leader = new Leader();
+        leader.setCode("Nabo");
+        leader.setCountry("france");
+        leaders.add(leader);
+        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because leader is ambiguous");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADER_AMBIGUOUS, e.getCode());
+            Assert.assertEquals("selectForces.request.leader", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().setCountry("pologne");
+        request.getRequest().setLeader("Napo");
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because leader is not of the leading country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADER_AMBIGUOUS, e.getCode());
+            Assert.assertEquals("selectForces.request.leader", e.getParams()[0]);
         }
     }
 
@@ -472,12 +531,20 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.getWarAllies(country, battle.getWar())).thenReturn(Collections.singletonList(country.getName()));
 
+        List<Leader> leaders = new ArrayList<>();
         if (phasing) {
             CountryOrderEntity order = new CountryOrderEntity();
             order.setActive(true);
             order.setCountry(country);
             game.getOrders().add(order);
+
+            Leader leader = new Leader();
+            leader.setCode("Napo");
+            leader.setCountry("france");
+            leaders.add(leader);
         }
+        when(oeUtil.getLeadingCountry(any())).thenReturn(Collections.singletonList("france"));
+        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
 
         simulateDiff();
 
@@ -496,14 +563,20 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             diffStatus = DiffAttributeTypeEnum.PHASING_READY;
 
             Assert.assertEquals(true, battle.getPhasing().isForces());
+            Assert.assertEquals("france", battle.getPhasing().getCountry());
+            Assert.assertEquals("Napo", battle.getPhasing().getLeader());
+            Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_LEADER));
         } else {
             diffStatus = DiffAttributeTypeEnum.NON_PHASING_READY;
 
             Assert.assertEquals(true, battle.getNonPhasing().isForces());
+            Assert.assertEquals("france", battle.getNonPhasing().getCountry());
+            Assert.assertEquals(null, battle.getNonPhasing().getLeader());
         }
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(6, diffEntity.getAttributes().size());
         Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         Assert.assertEquals("true", getAttribute(diffEntity, diffStatus));
+        Assert.assertEquals("france", getAttribute(diffEntity, phasing ? DiffAttributeTypeEnum.PHASING_COUNTRY : DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
         Assert.assertEquals(2l, diffEntity.getAttributes().stream()
                 .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD && phasing || attr.getType() == DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD)
                 .count());

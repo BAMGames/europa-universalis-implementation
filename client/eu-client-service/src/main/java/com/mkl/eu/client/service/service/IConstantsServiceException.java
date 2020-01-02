@@ -738,6 +738,36 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when validating forces in a battle that would lead to an ambiguity about which country is leading it.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: Country selected</li>
+     * <li>2: List of countries eligible</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS = "exception.eu.military.battle_leading_country_ambiguous";
+
+    /**
+     * <p>
+     * Exception thrown when validating forces in a battle that would lead to an ambiguity about which leader is leading it.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: Leader selected</li>
+     * <li>2: List of leaders eligible</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_FORCES_LEADER_AMBIGUOUS = "exception.eu.military.battle_leader_ambiguous";
+
+    /**
+     * <p>
      * Exception thrown when validating forces in a battle that could have other forces to select.
      * </p>
      * <p>

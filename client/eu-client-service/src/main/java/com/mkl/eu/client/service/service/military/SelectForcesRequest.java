@@ -11,6 +11,10 @@ import java.util.List;
 public class SelectForcesRequest {
     /** List of Ids of the counters to select for the battle. */
     private List<Long> forces = new ArrayList<>();
+    /** If there is an ambiguity on the leading country, select it here. */
+    private String country;
+    /** If there is an ambiguity on the leader, select it here. */
+    private String leader;
 
     /**
      * Constructor for jaxb.
@@ -35,5 +39,25 @@ public class SelectForcesRequest {
     /** @param forces the forces to set. */
     public void setForces(List<Long> forces) {
         this.forces = forces;
+    }
+
+    /** @return the country. */
+    public String getCountry() {
+        return country;
+    }
+
+    /** @param country the country to set. */
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    /** @return the leader. */
+    public String getLeader() {
+        return leader;
+    }
+
+    /** @param leader the leader to set. */
+    public void setLeader(String leader) {
+        this.leader = leader;
     }
 }

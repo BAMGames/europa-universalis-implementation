@@ -316,6 +316,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setParams(METHOD_SELECT_FORCES, phasing));
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
+        List<CounterEntity> counters = new ArrayList<>();
         for (Long idCounter : request.getRequest().getForces()) {
             List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
 
@@ -342,6 +343,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             comp.setCountry(counter.getCountry());
             comp.setType(counter.getType());
             battle.getCounters().add(comp);
+            counters.add(counter);
 
             attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_COUNTER_ADD : DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD,
                     counter.getId()));
@@ -383,11 +385,45 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
                 .setParams(METHOD_SELECT_FORCES, alliedCounters.size(), armySize));
 
+        List<String> countries = oeUtil.getLeadingCountry(counters);
+        String selectedCountry = StringUtils.isEmpty(request.getRequest().getCountry()) && countries.size() == 1
+                ? countries.get(0) : request.getRequest().getCountry();
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(!countries.contains(selectedCountry))
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected country cannot lead this battle or you must select a country (selected country: {2}, eligible countries: {3}).")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
+                .setParams(METHOD_SELECT_FORCES, selectedCountry, countries));
+
+        List<Leader> leaders = oeUtil.getLeader(counters, getTables(), Leader.landEurope);
+        leaders.removeIf(leader -> !StringUtils.equals(leader.getCountry(), selectedCountry));
+        String selectedLeader = request.getRequest().getLeader() == null && leaders.size() == 1 ? leaders.get(0).getCode()
+                : request.getRequest().getLeader();
+        boolean leaderOk = leaders.stream().anyMatch(leader -> StringUtils.equals(leader.getCode(), selectedLeader)) ||
+                (leaders.size() == 0 && selectedLeader == null);
+
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(leaderOk)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_LEADER_AMBIGUOUS)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected leader cannot lead this battle or you must select a leader (selected leader: {2}, eligible leaders: {3}).")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_LEADER)
+                .setParams(METHOD_SELECT_FORCES, selectedLeader,
+                        leaders.stream().map(Leader::getCode).collect(Collectors.joining(","))));
+
         if (phasing) {
+            battle.getPhasing().setCountry(selectedCountry);
+            battle.getPhasing().setLeader(selectedLeader);
             battle.getPhasing().setForces(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTRY, battle.getPhasing().getCountry()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, battle.getPhasing().getLeader()));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_READY, true));
         } else {
+            battle.getNonPhasing().setCountry(selectedCountry);
+            battle.getNonPhasing().setLeader(selectedLeader);
             battle.getNonPhasing().setForces(true);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTRY, battle.getNonPhasing().getCountry()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, battle.getNonPhasing().getLeader()));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_READY, true));
         }
 
