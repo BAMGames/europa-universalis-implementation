@@ -1476,7 +1476,10 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
     private void computeRetreat(BattleSideEntity side, boolean winner, Supplier<Integer> dieSupplier) {
         if (!winner) {
             int retreat = dieSupplier.get();
-            // TODO TG-5 subtract leader manoeuvre if not routed
+            if (CommonUtil.subtract(side.getMoral(), side.getLosses().getMoraleLoss()) > 0) {
+                Leader leader = getTables().getLeader(side.getLeader());
+                retreat -= leader.getManoeuvre();
+            }
             side.setRetreat(retreat);
             side.getLosses().add(oeUtil.retreat(retreat));
         }
