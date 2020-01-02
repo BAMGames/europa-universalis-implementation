@@ -2352,7 +2352,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 dice = dice.thenReturn(phasing.retreat);
             }
             if (nonPhasing.retreat != null) {
-                dice = dice.thenReturn(nonPhasing.retreat);
+                dice.thenReturn(nonPhasing.retreat);
             }
 
             if (Objects.equals(phasing.retreat, nonPhasing.retreat)) {
@@ -2371,11 +2371,14 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             when(testClass.statusWorkflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(endDiff));
 
             Tables tables = new Tables();
-            battle.getPhasing().setLeader("Nabo");
-            battle.getNonPhasing().setLeader("Nabo");
-            Leader nabo = new Leader();
-            nabo.setCode("Nabo");
-            tables.getLeaders().add(nabo);
+            battle.getPhasing().setLeader("phasing");
+            battle.getNonPhasing().setLeader("notPhasing");
+            Leader leader = new Leader();
+            leader.setCode("phasing");
+            tables.getLeaders().add(leader);
+            leader = new Leader();
+            leader.setCode("notPhasing");
+            tables.getLeaders().add(leader);
             testClass.fillBatleTechTables(tables);
 
             CombatResult result = new CombatResult();
@@ -2695,7 +2698,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
 
         private String toString(boolean i) {
-            return i ? Boolean.toString(i) : null;
+            return i ? Boolean.toString(true) : null;
         }
 
         private <T extends Enum<T>> String toString(Enum<T> e) {

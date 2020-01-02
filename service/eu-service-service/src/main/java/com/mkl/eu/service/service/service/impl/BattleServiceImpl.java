@@ -918,21 +918,21 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                             bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCountry()));
         }
 
-        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(ok)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT)
                 .setName(PARAMETER_RETREAT_FIRST_DAY, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
-                .setParams(METHOD_RETREAT_FIRST_DAY, country.getName(), "complex"));
+                .setParams(METHOD_RETREAT_FIRST_DAY, country.getName(),
+                        phasing ? battle.getPhasing().getCountry() : battle.getNonPhasing().getCountry()));
 
         List<DiffEntity> newDiffs = new ArrayList<>();
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         if (request.getRequest().isValidate()) {
             int die = oeUtil.rollDie(game);
 
-            // TODO TG-5 leader manoeuvre
-            boolean success = die <= remainingMoral;
+            Leader leader = getTables().getLeader(phasing ? battle.getPhasing().getLeader() : battle.getNonPhasing().getLeader());
+            boolean success = die <= leader.getManoeuvre() + remainingMoral;
 
             if (success) {
                 battle.setEnd(BattleEndEnum.RETREAT_AT_FIRST_DAY);
@@ -1547,13 +1547,13 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         boolean accessRight = oeUtil.isWarAlly(country, battle.getWar(),
                 playerPhasing && battle.isPhasingOffensive() || !playerPhasing && !battle.isPhasingOffensive());
 
-        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(accessRight)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT)
                 .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
-                .setParams(METHOD_CHOOSE_LOSSES, country.getName(), "complex"));
+                .setParams(METHOD_CHOOSE_LOSSES, country.getName(),
+                        playerPhasing ? battle.getPhasing().getCountry() : battle.getNonPhasing().getCountry()));
 
         boolean lossesAlreadyChosen = playerPhasing && BooleanUtils.isTrue(battle.getPhasing().isLossesSelected()) ||
                 !playerPhasing && BooleanUtils.isTrue(battle.getNonPhasing().isLossesSelected());
@@ -1746,13 +1746,13 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         boolean accessRight = oeUtil.isWarAlly(country, battle.getWar(),
                 playerPhasing && battle.isPhasingOffensive() || !playerPhasing && !battle.isPhasingOffensive());
 
-        // TODO TG-5 check that the player doing the request is leader of the stack and replace complex by this leader
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(accessRight)
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT)
                 .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
-                .setParams(METHOD_RETREAT_AFTER_BATTLE, country.getName(), "complex"));
+                .setParams(METHOD_RETREAT_AFTER_BATTLE, country.getName(),
+                        playerPhasing ? battle.getPhasing().getCountry() : battle.getNonPhasing().getCountry()));
 
         boolean retreatAlreadyChosen = playerPhasing && BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) ||
                 !playerPhasing && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected());
