@@ -29,6 +29,10 @@ public class Leader extends EuObject {
     /** Conditions for a leader to be eligible to lead in a rotw sea. */
     public static final Predicate<Leader> navalRotw = leader -> leader.getType() == LeaderTypeEnum.EXPLORER ||
             (leader.getType() == LeaderTypeEnum.ADMIRAL && leader.isRotw());
+    /** Country of the replacement leader for natives. */
+    public static final String REPLACEMENT_NATIVES = "natives";
+    /** Country of the replacement leader for minor countries. */
+    public static final String REPLACEMENT_MINOR = "minor";
 
     /** Code of the leader. */
     private String code;

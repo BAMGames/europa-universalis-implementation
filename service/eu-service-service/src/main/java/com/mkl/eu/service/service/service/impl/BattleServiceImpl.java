@@ -13,6 +13,7 @@ import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Leader;
@@ -166,6 +167,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         boolean sizeOk = attackerCounters.size() <= 3 && attackerSize <= 8;
         List<String> leadingCountries = oeUtil.getLeadingCountry(attackerCounters);
         String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
+        // TODO TG-10 TG-14 choose right conditions
         List<Leader> leaders = oeUtil.getLeader(attackerCounters, getTables(), Leader.landEurope);
         boolean leaderOk = leaders.size() <= 1;
 
@@ -210,6 +212,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         sizeOk = defenderCounters.size() <= 3 && defenderSize <= 8;
         leadingCountries = oeUtil.getLeadingCountry(defenderCounters);
         leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
+        // TODO TG-10 TG-14 choose right conditions
         leaders = oeUtil.getLeader(defenderCounters, getTables(), Leader.landEurope);
         leaderOk = leaders.size() <= 1;
 
@@ -396,6 +399,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
                 .setParams(METHOD_SELECT_FORCES, selectedCountry, countries));
 
+        // TODO TG-10 TG-14 choose right conditions
         List<Leader> leaders = oeUtil.getLeader(counters, getTables(), Leader.landEurope);
         leaders.removeIf(leader -> !StringUtils.equals(leader.getCountry(), selectedCountry));
         String selectedLeader = request.getRequest().getLeader() == null && leaders.size() == 1 ? leaders.get(0).getCode()
@@ -574,8 +578,15 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         }
 
         List<DiffEntity> newDiffs = new ArrayList<>();
-        // TODO TG-5 replacement leader if needed
         List<DiffAttributesEntity> attributes = new ArrayList<>();
+        if (StringUtils.isEmpty(battle.getPhasing().getLeader())) {
+            fillLeader(battle.getPhasing(), game);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, battle.getPhasing().getLeader()));
+        }
+        if (StringUtils.isEmpty(battle.getNonPhasing().getLeader())) {
+            fillLeader(battle.getNonPhasing(), game);
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, battle.getNonPhasing().getLeader()));
+        }
         attributes.addAll(fillBattleModifiers(battle));
         attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.FIRST_FIRE));
         newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_FIRST_FIRE, 3, attributes));
@@ -599,6 +610,32 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         newDiffs.add(diff);
 
         return createDiffs(newDiffs, gameDiffs, request);
+    }
+
+    /**
+     * Roll for a replacement leader.
+     *
+     * @param side of the battle.
+     * @param game the game.
+     */
+    protected void fillLeader(BattleSideEntity side, GameEntity game) {
+        int die = oeUtil.rollDie(game);
+        CountryReferential country = getReferential().getCountry(side.getCountry());
+        String leaderCountry;
+        if (country != null) {
+            if (country.getType() == CountryTypeEnum.MAJOR || country.getType() == CountryTypeEnum.MINORMAJOR) {
+                leaderCountry = country.getName();
+            } else {
+                leaderCountry = Leader.REPLACEMENT_MINOR;
+            }
+        } else {
+            leaderCountry = Leader.REPLACEMENT_NATIVES;
+        }
+
+        // TODO TG-10 admiral for naval battle
+        String code = leaderCountry + "-general-" + die;
+        Leader leader = getTables().getLeader(code);
+        side.setLeader(leader.getCode());
     }
 
     /**

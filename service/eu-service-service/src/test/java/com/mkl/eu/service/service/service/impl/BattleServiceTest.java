@@ -11,6 +11,8 @@ import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.Referential;
+import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
@@ -1059,6 +1061,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         simulateDiff();
 
         when(oeUtil.rollDie(game, country)).thenReturn(5);
+        when(oeUtil.rollDie(game)).thenReturn(3);
         Leader napo = new Leader();
         napo.setCode("Napo");
         napo.setManoeuvre(3);
@@ -1070,10 +1073,52 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         when(oeUtil.isMobile(stack1)).thenReturn(true);
         when(oeUtil.isMobile(stack2)).thenReturn(true);
         when(oeUtil.isMobile(stack3)).thenReturn(true);
+        Referential ref = new Referential();
+        CountryReferential france = new CountryReferential();
+        france.setType(CountryTypeEnum.MAJOR);
+        france.setName("france");
+        ref.getCountries().add(france);
+        CountryReferential hollande = new CountryReferential();
+        hollande.setType(CountryTypeEnum.MINORMAJOR);
+        hollande.setName("hollande");
+        ref.getCountries().add(hollande);
+        CountryReferential savoie = new CountryReferential();
+        savoie.setType(CountryTypeEnum.MINOR);
+        savoie.setName("savoie");
+        ref.getCountries().add(savoie);
+        AbstractBack.REFERENTIAL = ref;
+        Leader leader = new Leader();
+        leader.setCode("france-general-3");
+        AbstractBack.TABLES.getLeaders().add(leader);
+        leader = new Leader();
+        leader.setCode("hollande-general-3");
+        AbstractBack.TABLES.getLeaders().add(leader);
+        leader = new Leader();
+        leader.setCode("minor-general-3");
+        AbstractBack.TABLES.getLeaders().add(leader);
+        leader = new Leader();
+        leader.setCode("natives-general-3");
+        AbstractBack.TABLES.getLeaders().add(leader);
+        battle.getPhasing().setCountry("france");
+        battle.getNonPhasing().setCountry("hollande");
 
         battleService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() != BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+        Assert.assertEquals("france-general-3", battle.getPhasing().getLeader());
+        Assert.assertEquals("hollande-general-3", battle.getNonPhasing().getLeader());
+
+        battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        battle.getNonPhasing().setLeader(null);
+        battle.getPhasing().setLeader(null);
+        battle.getPhasing().setCountry("savoie");
+        battle.getNonPhasing().setCountry(null);
+
+        battleService.withdrawBeforeBattle(request);
+
+        Assert.assertTrue(battle.getEnd() != BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+        Assert.assertEquals("minor-general-3", battle.getPhasing().getLeader());
+        Assert.assertEquals("natives-general-3", battle.getNonPhasing().getLeader());
 
         battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         battle.getNonPhasing().setLeader("Napo");
@@ -1082,6 +1127,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         battleService.withdrawBeforeBattle(request);
 
         Assert.assertTrue(battle.getEnd() != BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+        Assert.assertEquals("Nabo", battle.getPhasing().getLeader());
+        Assert.assertEquals("Napo", battle.getNonPhasing().getLeader());
 
         battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         request.getRequest().setProvinceTo("idf");
@@ -2302,6 +2349,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             when(testClass.statusWorkflowDomain.endMilitaryPhase(game)).thenReturn(Collections.singletonList(endDiff));
 
             Tables tables = new Tables();
+            battle.getPhasing().setLeader("Nabo");
+            battle.getNonPhasing().setLeader("Nabo");
+            Leader nabo = new Leader();
+            nabo.setCode("Nabo");
+            tables.getLeaders().add(nabo);
             testClass.fillBatleTechTables(tables);
 
             CombatResult result = new CombatResult();
