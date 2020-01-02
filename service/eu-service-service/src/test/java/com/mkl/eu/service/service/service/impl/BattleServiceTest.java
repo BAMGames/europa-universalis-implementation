@@ -656,6 +656,14 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         armyNonPhasing.get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
         armyNonPhasing.get(0).setCountry(PlayableCountry.SPAIN);
         armyNonPhasing.get(0).setArmyClass(ArmyClassEnum.IV);
+        battle.getPhasing().setLeader("phasing");
+        battle.getNonPhasing().setLeader("notPhasing");
+        Leader phasingLeader = new Leader();
+        phasingLeader.setCode("phasing");
+        BattleServiceImpl.TABLES.getLeaders().add(phasingLeader);
+        Leader notPhasingLeader = new Leader();
+        notPhasingLeader.setCode("notPhasing");
+        BattleServiceImpl.TABLES.getLeaders().add(notPhasingLeader);
         when(oeUtil.getArmyInfo(Collections.singletonList(phasingCounter), battleService.getReferential())).thenReturn(armyPhasing);
         when(oeUtil.getArmyInfo(Collections.singletonList(nonPhasingCounter), battleService.getReferential())).thenReturn(armyNonPhasing);
 
@@ -754,6 +762,20 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 .addShockPhasingSecondDay(1)
                 .addShockNonPhasingFirstDay(1)
                 .addShockNonPhasingSecondDay(1));
+
+        phasingLeader.setFire(5);
+        phasingLeader.setShock(3);
+        notPhasingLeader.setFire(2);
+        notPhasingLeader.setShock(4);
+        checkModifiers(battle, Modifiers.init(-1)
+                .addFirePhasingFirstDay(3)
+                .addFirePhasingSecondDay(3)
+                .addFireNonPhasingFirstDay(-3)
+                .addFireNonPhasingSecondDay(-3)
+                .addShockPhasingFirstDay(0)
+                .addShockPhasingSecondDay(0)
+                .addShockNonPhasingFirstDay(2)
+                .addShockNonPhasingSecondDay(2));
     }
 
     private void checkModifiers(BattleEntity battle, Modifiers modifiers) {

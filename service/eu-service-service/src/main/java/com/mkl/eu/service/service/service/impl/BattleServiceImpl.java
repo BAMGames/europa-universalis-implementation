@@ -721,7 +721,18 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         battle.getPhasing().getSecondDay().addFireAndShock(-1);
         battle.getNonPhasing().getSecondDay().addFireAndShock(-1);
 
-        // TODO TG-5 leaders
+        Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader());
+        Leader notPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader());
+        int fireMod = phasingLeader.getFire() - notPhasingLeader.getFire();
+        int shockMod = phasingLeader.getShock() - notPhasingLeader.getShock();
+        battle.getPhasing().getFirstDay().addFire(fireMod);
+        battle.getPhasing().getFirstDay().addShock(shockMod);
+        battle.getNonPhasing().getFirstDay().addFire(-fireMod);
+        battle.getNonPhasing().getFirstDay().addShock(-shockMod);
+        battle.getPhasing().getSecondDay().addFire(fireMod);
+        battle.getPhasing().getSecondDay().addShock(shockMod);
+        battle.getNonPhasing().getSecondDay().addFire(-fireMod);
+        battle.getNonPhasing().getSecondDay().addShock(-shockMod);
 
         // TODO TG-131 tercios
 
