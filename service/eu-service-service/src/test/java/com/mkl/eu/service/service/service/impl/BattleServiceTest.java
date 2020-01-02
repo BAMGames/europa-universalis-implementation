@@ -1059,9 +1059,25 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         simulateDiff();
 
         when(oeUtil.rollDie(game, country)).thenReturn(5);
+        Leader napo = new Leader();
+        napo.setCode("Napo");
+        napo.setManoeuvre(3);
+        Leader nabo = new Leader();
+        nabo.setCode("Nabo");
+        nabo.setManoeuvre(3);
+        AbstractBack.TABLES.getLeaders().add(napo);
+        AbstractBack.TABLES.getLeaders().add(nabo);
         when(oeUtil.isMobile(stack1)).thenReturn(true);
         when(oeUtil.isMobile(stack2)).thenReturn(true);
         when(oeUtil.isMobile(stack3)).thenReturn(true);
+
+        battleService.withdrawBeforeBattle(request);
+
+        Assert.assertTrue(battle.getEnd() != BattleEndEnum.WITHDRAW_BEFORE_BATTLE);
+
+        battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
+        battle.getNonPhasing().setLeader("Napo");
+        battle.getPhasing().setLeader("Nabo");
 
         battleService.withdrawBeforeBattle(request);
 
@@ -1109,7 +1125,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         request.getRequest().setProvinceTo("orleans");
-        when(oeUtil.rollDie(game, country)).thenReturn(8);
+        napo.setManoeuvre(6);
 
         battleService.withdrawBeforeBattle(request);
 

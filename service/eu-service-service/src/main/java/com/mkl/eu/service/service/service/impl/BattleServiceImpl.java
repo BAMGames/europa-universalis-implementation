@@ -458,7 +458,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .findFirst()
                 .orElse(null);
 
-        // TODO TG-5 check that the player doing the request is leader of the stack
         failIfTrue(new CheckForThrow<Boolean>()
                 .setTest(isPhasingPlayer(game, request.getGame().getIdCountry()))
                 .setCodeError(IConstantsServiceException.BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW)
@@ -533,8 +532,11 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
             if (!success) {
                 int die = oeUtil.rollDie(game, country);
 
-                // TODO TG-5 leader diff manoeuvre if positive
-                if (die >= 8) {
+                Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader());
+                Leader nonPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader());
+                int mod = Math.max(0, Optional.ofNullable(nonPhasingLeader).map(Leader::getManoeuvre).orElse(0)
+                        - Optional.ofNullable(phasingLeader).map(Leader::getManoeuvre).orElse(0));
+                if (die + mod >= 8) {
                     success = true;
                 }
             }

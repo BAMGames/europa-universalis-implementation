@@ -1,5 +1,7 @@
 package com.mkl.eu.client.service.vo.tables;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -207,6 +209,17 @@ public class Tables {
     /** @return the leaders. */
     public List<Leader> getLeaders() {
         return leaders;
+    }
+
+    /**
+     * @param leaderCode code of the leader.
+     * @return the leader whose code is leaderCode.
+     */
+    public Leader getLeader(String leaderCode) {
+        return getLeaders().stream()
+                .filter(leader -> StringUtils.equals(leader.getCode(), leaderCode))
+                .findAny()
+                .orElse(null);
     }
 
     /** @param leaders the leaders to set. */
