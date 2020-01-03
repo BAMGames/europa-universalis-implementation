@@ -9,6 +9,7 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
@@ -22,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.util.DiffUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -31,6 +33,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
@@ -387,6 +391,28 @@ public abstract class AbstractGameServiceTest {
 
     public static CounterEntity createCounter(Long id, String country, CounterFaceTypeEnum type) {
         return createCounter(id, country, type, (Long) null);
+    }
+
+    public static CounterEntity createLeader(Long id, String country, CounterFaceTypeEnum type, String code, LeaderTypeEnum leaderType, String stats, Tables tables, StackEntity stack) {
+        CounterEntity counter = createCounter(id, country, type, stack);
+        counter.setCode(code);
+        Matcher m = Pattern.compile("([A-Z]) ?(\\d)(\\d)(\\d) ?\\-?(\\d)?").matcher(stats);
+        Leader leader = new Leader();
+        leader.setCode(code);
+        leader.setCountry(country);
+        leader.setType(leaderType);
+        if (m.matches()) {
+            leader.setRank(m.group(1));
+            leader.setManoeuvre(Integer.parseInt(m.group(2)));
+            leader.setFire(Integer.parseInt(m.group(3)));
+            leader.setShock(Integer.parseInt(m.group(4)));
+            String siege = m.group(5);
+            if (StringUtils.isNotEmpty(siege)) {
+                leader.setSiege(Integer.parseInt(siege));
+            }
+        }
+        tables.getLeaders().add(leader);
+        return counter;
     }
 
     public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {

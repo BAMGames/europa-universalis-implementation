@@ -738,6 +738,49 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when validating forces in a battle that has too many leaders.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: List of leaders selected</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_FORCES_TOO_MANY_LEADERS = "exception.eu.military.battle_too_many_leaders";
+
+    /**
+     * <p>
+     * Exception thrown when validating forces in a battle with the non optimal leader.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: leader selected</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_FORCES_INVALID_LEADER = "exception.eu.military.battle_invalid_leader";
+
+    /**
+     * <p>
+     * Exception thrown when validating forces in a battle with a leader that is not eligible.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: leader selected</li>
+     * <li>1: List of leaders that are 'better'</li>
+     * </ul>
+     * </p>
+     */
+    String BATTLE_FORCES_NOT_SUITABLE_LEADER = "exception.eu.military.battle_not_suitable_leader";
+
+    /**
+     * <p>
      * Exception thrown when validating forces in a battle that would lead to an ambiguity about which country is leading it.
      * </p>
      * <p>
@@ -750,21 +793,6 @@ public interface IConstantsServiceException {
      * </p>
      */
     String BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS = "exception.eu.military.battle_leading_country_ambiguous";
-
-    /**
-     * <p>
-     * Exception thrown when validating forces in a battle that would lead to an ambiguity about which leader is leading it.
-     * </p>
-     * <p>
-     * Parameters:
-     * <ul>
-     * <li>0: Action being performed (or object being updated).</li>
-     * <li>1: Leader selected</li>
-     * <li>2: List of leaders eligible</li>
-     * </ul>
-     * </p>
-     */
-    String BATTLE_FORCES_LEADER_AMBIGUOUS = "exception.eu.military.battle_leader_ambiguous";
 
     /**
      * <p>

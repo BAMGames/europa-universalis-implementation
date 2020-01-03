@@ -342,12 +342,13 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
 
         when(oeUtil.getWarAllies(null, battle.getWar())).thenReturn(Collections.singletonList("france"));
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(0).setProvince("pecs");
-        game.getStacks().get(0).setCountry("france");
-        game.getStacks().get(0).getCounters().add(new CounterEntity());
-        game.getStacks().get(0).getCounters().get(0).setId(6L);
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
+        StackEntity stack = new StackEntity();
+        game.getStacks().add(stack);
+        stack.setProvince("pecs");
+        stack.setCountry("france");
+        stack.getCounters().add(new CounterEntity());
+        stack.getCounters().get(0).setId(6L);
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
 
         try {
             battleService.selectForces(request);
@@ -357,8 +358,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
-        game.getStacks().get(0).setCountry("pologne");
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        stack.setCountry("pologne");
 
         try {
             battleService.selectForces(request);
@@ -368,8 +369,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        game.getStacks().get(0).setCountry("france");
-        game.getStacks().get(0).setProvince("idf");
+        stack.setCountry("france");
+        stack.setProvince("idf");
 
         try {
             battleService.selectForces(request);
@@ -379,7 +380,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        game.getStacks().get(0).setProvince("pecs");
+        stack.setProvince("pecs");
         battle.getNonPhasing().setForces(true);
 
         try {
@@ -391,10 +392,10 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
 
         battle.getNonPhasing().setForces(false);
-        game.getStacks().get(0).getCounters().add(createCounter(7L, "pologne", CounterFaceTypeEnum.ARMY_PLUS));
-        game.getStacks().get(0).getCounters().add(createCounter(8L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
-        game.getStacks().get(0).getCounters().add(createCounter(9L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
-        game.getStacks().get(0).getCounters().add(createCounter(10L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack.getCounters().add(createCounter(7L, "pologne", CounterFaceTypeEnum.ARMY_PLUS));
+        stack.getCounters().add(createCounter(8L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack.getCounters().add(createCounter(9L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack.getCounters().add(createCounter(10L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
         request.getRequest().getForces().add(8L);
         request.getRequest().getForces().add(9L);
         request.getRequest().getForces().add(10L);
@@ -448,35 +449,66 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         battle.getCounters().clear();
         request.getRequest().setCountry("france");
-        List<Leader> leaders = new ArrayList<>();
-        Leader leader = new Leader();
-        leader.setCode("Napo");
-        leader.setCountry("france");
-        leaders.add(leader);
-        leader = new Leader();
-        leader.setCode("Nabo");
-        leader.setCountry("france");
-        leaders.add(leader);
-        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
+        Tables tables = new Tables();
+        AbstractBack.TABLES = tables;
+        stack.getCounters().add(createLeader(21L, "france", CounterFaceTypeEnum.LEADER, "Napo", LeaderTypeEnum.GENERAL, "A 666 -1", tables, stack));
+        stack.getCounters().add(createLeader(22L, "france", CounterFaceTypeEnum.LEADER, "Nabo", LeaderTypeEnum.GENERAL, "Z 111", tables, stack));
+        stack.getCounters().add(createLeader(23L, "espagne", CounterFaceTypeEnum.LEADER, "Infante", LeaderTypeEnum.GENERAL, "B 333", tables, stack));
+        stack.getCounters().add(createLeader(24L, "pologne", CounterFaceTypeEnum.LEADER, "Sibierski", LeaderTypeEnum.GENERAL, "D 434", tables, stack));
+        stack.getCounters().add(createLeader(25L, "pologne", CounterFaceTypeEnum.LEADER, "Sibierluge", LeaderTypeEnum.ADMIRAL, "C 122", tables, stack));
 
         try {
             battleService.selectForces(request);
-            Assert.fail("Should break because leader is ambiguous");
+            Assert.fail("Should break because no leader selected while some are eligible");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADER_AMBIGUOUS, e.getCode());
-            Assert.assertEquals("selectForces.request.leader", e.getParams()[0]);
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().getForces().add(24L);
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because the leader can not lead this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_NOT_SUITABLE_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().getForces().remove(24L);
+        request.getRequest().getForces().add(22L);
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because there is a higher rank eligible leader than the one selected");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
         battle.getCounters().clear();
         request.getRequest().setCountry("pologne");
-        request.getRequest().setLeader("Napo");
+        request.getRequest().getForces().remove(22L);
 
         try {
             battleService.selectForces(request);
-            Assert.fail("Should break because leader is not of the leading country");
+            Assert.fail("Should break because no leader selected while some are eligible");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADER_AMBIGUOUS, e.getCode());
-            Assert.assertEquals("selectForces.request.leader", e.getParams()[0]);
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().getForces().add(25L);
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because the leader can not lead this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_NOT_SUITABLE_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
     }
 
@@ -533,20 +565,31 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         when(oeUtil.getWarAllies(country, battle.getWar())).thenReturn(Collections.singletonList(country.getName()));
 
-        List<Leader> leaders = new ArrayList<>();
+        Tables tables = new Tables();
         if (phasing) {
             CountryOrderEntity order = new CountryOrderEntity();
             order.setActive(true);
             order.setCountry(country);
             game.getOrders().add(order);
 
+            CounterEntity counterLeader = new CounterEntity();
+            counterLeader.setId(9L);
+            counterLeader.setCountry(country.getName());
+            counterLeader.setType(CounterFaceTypeEnum.LEADER);
+            counterLeader.setCode("Napo");
+            game.getStacks().get(0).getCounters().add(counterLeader);
+
+            request.getRequest().getForces().add(9L);
+
             Leader leader = new Leader();
             leader.setCode("Napo");
             leader.setCountry("france");
-            leaders.add(leader);
+            leader.setType(LeaderTypeEnum.GENERAL);
+            leader.setRank("A");
+            tables.getLeaders().add(leader);
         }
         when(oeUtil.getLeadingCountry(any())).thenReturn(Collections.singletonList("france"));
-        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
+        AbstractBack.TABLES = tables;
 
         simulateDiff();
 
@@ -575,11 +618,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("france", battle.getNonPhasing().getCountry());
             Assert.assertEquals(null, battle.getNonPhasing().getLeader());
         }
-        Assert.assertEquals(6, diffEntity.getAttributes().size());
+        Assert.assertEquals(phasing ? 7 : 6, diffEntity.getAttributes().size());
         Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         Assert.assertEquals("true", getAttribute(diffEntity, diffStatus));
         Assert.assertEquals("france", getAttribute(diffEntity, phasing ? DiffAttributeTypeEnum.PHASING_COUNTRY : DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
-        Assert.assertEquals(2l, diffEntity.getAttributes().stream()
+        Assert.assertEquals(phasing ? 3l : 2l, diffEntity.getAttributes().stream()
                 .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD && phasing || attr.getType() == DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD)
                 .count());
 

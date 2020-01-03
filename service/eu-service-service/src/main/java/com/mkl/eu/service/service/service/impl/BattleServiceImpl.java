@@ -47,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -320,14 +321,14 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         List<CounterEntity> counters = new ArrayList<>();
+        List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
         for (Long idCounter : request.getRequest().getForces()) {
-            List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
 
             CounterEntity counter = game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
                             allies.contains(stack.getCountry()))
                     .flatMap(stack -> stack.getCounters().stream())
-                    .filter(c -> CounterUtil.isArmy(c.getType()) &&
+                    .filter(c -> (CounterUtil.isArmy(c.getType()) || CounterUtil.isLeader(c.getType())) &&
                             c.getId().equals(idCounter))
                     .findAny()
                     .orElse(null);
@@ -362,7 +363,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .orElse(0d);
 
         if (alliedCounters.size() < 3 && armySize < 8) {
-            List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
             Double remainingMinSize = game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
                             allies.contains(stack.getCountry()))
@@ -388,6 +388,18 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
                 .setParams(METHOD_SELECT_FORCES, alliedCounters.size(), armySize));
 
+        List<String> leaders = counters.stream()
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER)
+                .map(CounterEntity::getCode)
+                .collect(Collectors.toList());
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(leaders.size() > 1)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_MANY_LEADERS)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected country cannot lead this battle or you must select a country (selected country: {2}, eligible countries: {3}).")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
+                .setParams(METHOD_SELECT_FORCES, leaders));
+
         List<String> countries = oeUtil.getLeadingCountry(counters);
         String selectedCountry = StringUtils.isEmpty(request.getRequest().getCountry()) && countries.size() == 1
                 ? countries.get(0) : request.getRequest().getCountry();
@@ -400,20 +412,36 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .setParams(METHOD_SELECT_FORCES, selectedCountry, countries));
 
         // TODO TG-10 TG-14 choose right conditions
-        List<Leader> leaders = oeUtil.getLeader(counters, getTables(), Leader.landEurope);
-        leaders.removeIf(leader -> !StringUtils.equals(leader.getCountry(), selectedCountry));
-        String selectedLeader = request.getRequest().getLeader() == null && leaders.size() == 1 ? leaders.get(0).getCode()
-                : request.getRequest().getLeader();
-        boolean leaderOk = leaders.stream().anyMatch(leader -> StringUtils.equals(leader.getCode(), selectedLeader)) ||
-                (leaders.size() == 0 && selectedLeader == null);
+        Predicate<Leader> conditions = Leader.landEurope;
+        List<Leader> availableLeaders = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
+                        allies.contains(stack.getCountry()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER &&
+                        StringUtils.equals(counter.getCountry(), selectedCountry))
+                .map(counter -> getTables().getLeader(counter.getCode()))
+                .filter(conditions)
+                .collect(Collectors.toList());
+        String selectedLeader = null;
+        if (leaders.size() == 1) {
+            Leader leader = getTables().getLeader(leaders.get(0));
+            selectedLeader = leader.getCode();
+            availableLeaders.removeIf(lead -> leader.getRank().compareTo(lead.getRank()) <= 0);
 
-        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                .setTest(leaderOk)
-                .setCodeError(IConstantsServiceException.BATTLE_FORCES_LEADER_AMBIGUOUS)
-                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected leader cannot lead this battle or you must select a leader (selected leader: {2}, eligible leaders: {3}).")
-                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_LEADER)
-                .setParams(METHOD_SELECT_FORCES, selectedLeader,
-                        leaders.stream().map(Leader::getCode).collect(Collectors.joining(","))));
+            failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                    .setTest(conditions.test(leader) && StringUtils.equals(leader.getCountry(), selectedCountry))
+                    .setCodeError(IConstantsServiceException.BATTLE_FORCES_NOT_SUITABLE_LEADER)
+                    .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected leader {2} cannot lead this battle.")
+                    .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                    .setParams(METHOD_SELECT_FORCES, selectedLeader));
+        }
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(availableLeaders.size() > 0)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected leader {2} is not optimal (better leaders : {3}).")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES, selectedLeader, availableLeaders.stream().map(Leader::getCode).collect(Collectors.joining(","))));
 
         if (phasing) {
             battle.getPhasing().setCountry(selectedCountry);
