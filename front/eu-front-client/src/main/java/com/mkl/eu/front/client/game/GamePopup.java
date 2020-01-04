@@ -1841,6 +1841,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeBoolean(diff, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS, siege::setFortressFalls);
         doIfAttributeBoolean(diff, DiffAttributeTypeEnum.SIEGE_BREACH, siege::setBreach);
 
+        doIfAttribute(diff, DiffAttributeTypeEnum.PHASING_LEADER, value -> siege.getPhasing().setLeader(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.PHASING_COUNTRY, value -> siege.getPhasing().setCountry(value));
         doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, value -> siege.getPhasing().setSize(value));
         doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_TECH, value -> siege.getPhasing().setTech(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_MORAL, value -> siege.getPhasing().setMoral(value));
@@ -1852,6 +1854,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK_MOD, value -> siege.getPhasing().getModifiers().setShockMod(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK, value -> siege.getPhasing().getModifiers().setShock(value));
 
+        doIfAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_LEADER, value -> siege.getNonPhasing().setLeader(value));
+        doIfAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_COUNTRY, value -> siege.getNonPhasing().setCountry(value));
         doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE, value -> siege.getNonPhasing().setSize(value));
         doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_TECH, value -> siege.getNonPhasing().setTech(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORAL, value -> siege.getNonPhasing().setMoral(value));

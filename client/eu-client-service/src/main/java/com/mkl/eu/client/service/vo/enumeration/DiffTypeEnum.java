@@ -315,6 +315,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#SIEGE_UNDERMINE_RESULT the result of the undermining to this siege.</li>
      * <li>DiffAttributeTypeEnum#SIEGE_FORTRESS_FALLS if the fortress fell due to this siege.</li>
      * <li>DiffAttributeTypeEnum#SIEGE_BREACH if a breach was just done.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER the leader of the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_COUNTRY the country of the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORAL the moral of the besieger forces of this siege.</li>
@@ -325,6 +327,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_ROUND_LOSS the round losses taken by the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_THIRD_LOSS the third losses taken by the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORALE_LOSS the morale losses taken by the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER the leader of the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_COUNTRY the country of the besieged forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the besieged forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the besieged forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_MORAL the moral of the besieged forces of this siege.</li>

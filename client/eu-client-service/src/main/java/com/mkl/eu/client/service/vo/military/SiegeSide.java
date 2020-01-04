@@ -10,6 +10,10 @@ import com.mkl.eu.client.service.vo.AbstractWithLoss;
 public class SiegeSide {
     /** Flag saying that the side has selected its losses. */
     private Boolean lossesSelected;
+    /** Code of the leader commanding the side. */
+    private String leader;
+    /** Country commanding the side. */
+    private String country;
     /** Size of the side. */
     private double size;
     /** Technology of the side. */
@@ -79,5 +83,25 @@ public class SiegeSide {
     /** @param lossesSelected the lossesSelected to set. */
     public void setLossesSelected(Boolean lossesSelected) {
         this.lossesSelected = lossesSelected;
+    }
+
+    /** @return the leader. */
+    public String getLeader() {
+        return leader;
+    }
+
+    /** @param leader the leader to set. */
+    public void setLeader(String leader) {
+        this.leader = leader;
+    }
+
+    /** @return the country. */
+    public String getCountry() {
+        return country;
+    }
+
+    /** @param country the country to set. */
+    public void setCountry(String country) {
+        this.country = country;
     }
 }

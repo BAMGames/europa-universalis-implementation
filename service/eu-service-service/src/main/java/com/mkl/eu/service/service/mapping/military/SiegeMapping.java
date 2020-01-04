@@ -157,6 +157,8 @@ public class SiegeMapping extends AbstractMapping {
         target.setLosses(oeToVo(source.getLosses()));
         target.setModifiers(oeToVo(source.getModifiers()));
         target.setLossesSelected(source.isLossesSelected());
+        target.setLeader(source.getLeader());
+        target.setCountry(source.getCountry());
 
         return target;
     }
