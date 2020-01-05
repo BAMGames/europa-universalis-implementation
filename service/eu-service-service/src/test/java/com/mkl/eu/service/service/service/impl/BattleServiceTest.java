@@ -254,11 +254,15 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
             Assert.assertEquals("true", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_READY));
             Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTRY));
+            Assert.assertEquals("france", battle.getPhasing().getCountry());
             Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_LEADER));
+            Assert.assertEquals("Napo", battle.getPhasing().getLeader());
             Assert.assertEquals("1", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTER_ADD));
             Assert.assertEquals("true", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_READY));
             Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
+            Assert.assertEquals("france", battle.getNonPhasing().getCountry());
             Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_LEADER));
+            Assert.assertEquals("Napo", battle.getNonPhasing().getLeader());
             Assert.assertEquals("5", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD));
         } else {
             Assert.assertEquals(1, diffEntity.getAttributes().size());

@@ -233,7 +233,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 diffAttributes = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, leader);
                 diffAttributes.setDiff(diff);
                 diff.getAttributes().add(diffAttributes);
-                battle.getPhasing().setLeader(leader);
+                battle.getNonPhasing().setLeader(leader);
             }
 
             defenderCounters.forEach(counter -> {
