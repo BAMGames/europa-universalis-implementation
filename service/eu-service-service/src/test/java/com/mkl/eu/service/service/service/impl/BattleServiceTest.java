@@ -470,7 +470,19 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
 
         battle.getCounters().clear();
+        request.getRequest().getForces().add(22L);
         request.getRequest().getForces().add(24L);
+
+        try {
+            battleService.selectForces(request);
+            Assert.fail("Should break because only one leader can lead this battle");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_TOO_MANY_LEADERS, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        battle.getCounters().clear();
+        request.getRequest().getForces().remove(22L);
 
         try {
             battleService.selectForces(request);

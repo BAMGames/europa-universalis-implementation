@@ -151,21 +151,23 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
                         allies.contains(stack.getCountry()))
                 .flatMap(stack -> stack.getCounters().stream())
-                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .filter(counter -> CounterUtil.isArmy(counter.getType()) || CounterUtil.isLeader(counter.getType()))
                 .collect(Collectors.toList());
 
         List<CounterEntity> defenderCounters = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
                         enemies.contains(stack.getCountry()))
                 .flatMap(stack -> stack.getCounters().stream())
-                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .filter(counter -> CounterUtil.isArmy(counter.getType()) || CounterUtil.isLeader(counter.getType()))
                 .collect(Collectors.toList());
 
         Double attackerSize = attackerCounters.stream()
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
-        boolean sizeOk = attackerCounters.size() <= 3 && attackerSize <= 8;
+        boolean sizeOk = attackerCounters.stream()
+                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .count() <= 3 && attackerSize <= 8;
         List<String> leadingCountries = oeUtil.getLeadingCountry(attackerCounters);
         String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
         // TODO TG-10 TG-14 choose right conditions
@@ -210,7 +212,9 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
-        sizeOk = defenderCounters.size() <= 3 && defenderSize <= 8;
+        sizeOk = defenderCounters.stream()
+                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .count() <= 3 && defenderSize <= 8;
         leadingCountries = oeUtil.getLeadingCountry(defenderCounters);
         leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
         // TODO TG-10 TG-14 choose right conditions
@@ -354,7 +358,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         }
 
         List<Long> alliedCounters = battle.getCounters().stream()
-                .filter(bc -> bc.isPhasing() == phasing)
+                .filter(bc -> bc.isPhasing() == phasing && CounterUtil.isArmy(bc.getType()))
                 .map(BattleCounterEntity::getCounter)
                 .collect(Collectors.toList());
         Double armySize = battle.getCounters().stream()
@@ -396,8 +400,8 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
                 .setTest(leaders.size() > 1)
                 .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_MANY_LEADERS)
-                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because the selected country cannot lead this battle or you must select a country (selected country: {2}, eligible countries: {3}).")
-                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this battle because there are too many leaders selected : {2}.")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
                 .setParams(METHOD_SELECT_FORCES, leaders));
 
         List<String> countries = oeUtil.getLeadingCountry(counters);
