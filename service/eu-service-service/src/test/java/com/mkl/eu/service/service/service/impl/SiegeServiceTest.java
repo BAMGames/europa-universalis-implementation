@@ -150,26 +150,56 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testChooseSiegeToSelectForcesWithoutBesieged() throws FunctionalException {
-        testChooseSiege(false, false);
+    public void testChooseSiegeTooMuchForcesWithoutBesieged() throws FunctionalException {
+        testChooseSiege(true, false, false, false, false);
     }
 
     @Test
-    public void testChooseSiegeToSelectForcesWithBesieged() throws FunctionalException {
-        testChooseSiege(false, true);
+    public void testChooseSiegeTooMuchForcesWithBesieged() throws FunctionalException {
+        testChooseSiege(true, false, false, false, true);
+    }
+
+    @Test
+    public void testChooseSiegeTooMuchLeadingCountriesWithoutBesieged() throws FunctionalException {
+        testChooseSiege(false, true, false, false, false);
+    }
+
+    @Test
+    public void testChooseSiegeTooMuchLeadingCountriesWithBesieged() throws FunctionalException {
+        testChooseSiege(false, true, false, false, true);
+    }
+
+    @Test
+    public void testChooseSiegeTooMuchLeaderdersWithoutBesieged() throws FunctionalException {
+        testChooseSiege(false, false, true, false, false);
+    }
+
+    @Test
+    public void testChooseSiegeTooMuchLeaderdersWithBesieged() throws FunctionalException {
+        testChooseSiege(false, false, true, false, true);
+    }
+
+    @Test
+    public void testChooseSiegeTooMuchEverythingWithoutBesieged() throws FunctionalException {
+        testChooseSiege(true, true, true, false, false);
+    }
+
+    @Test
+    public void testChooseSiegeTooMuchEverythingWithBesieged() throws FunctionalException {
+        testChooseSiege(true, true, true, false, true);
     }
 
     @Test
     public void testChooseSiegeToChooseModeWithoutBesieged() throws FunctionalException {
-        testChooseSiege(true, false);
+        testChooseSiege(false, false, false, true, false);
     }
 
     @Test
     public void testChooseSiegeToChooseModeWithBesieged() throws FunctionalException {
-        testChooseSiege(true, true);
+        testChooseSiege(false, false, false, true, true);
     }
 
-    private void testChooseSiege(boolean gotoChooseMode, boolean withBesieged) throws FunctionalException {
+    private void testChooseSiege(boolean tooMuchforces, boolean tooMuchLeadingCountries, boolean tooMuchLeaders, boolean forcesSelected, boolean withBesieged) throws FunctionalException {
         Pair<Request<ChooseProvinceRequest>, GameEntity> pair = testCheckGame(siegeService::chooseSiege, "chooseSiege");
         Request<ChooseProvinceRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
@@ -227,11 +257,25 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         List<String> allies = new ArrayList<>();
         allies.add("france");
-        if (!gotoChooseMode) {
+        if (tooMuchforces) {
             allies.add("turquie");
+        }
+        List<String> leadingCountries = new ArrayList<>();
+        leadingCountries.add("france");
+        if (tooMuchLeadingCountries) {
+            leadingCountries.add("turquie");
+        }
+        List<Leader> leaders = new ArrayList<>();
+        Leader leader = new Leader();
+        leader.setCode("Napo");
+        leaders.add(leader);
+        if (tooMuchLeaders) {
+            leaders.add(null);
         }
         when(oeUtil.getWarAllies(game.getCountries().get(0), siege.getWar())).thenReturn(allies);
         when(oeUtil.isWarAlly(game.getCountries().get(0), siege.getWar(), siege.isBesiegingOffensive())).thenReturn(true);
+        when(oeUtil.getLeadingCountry(any())).thenReturn(leadingCountries);
+        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
 
         simulateDiff();
 
@@ -244,13 +288,17 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getSieges().get(0).getId(), diffEntity.getIdObject());
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
-        if (gotoChooseMode) {
-            Assert.assertEquals(3 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
+        if (forcesSelected) {
+            Assert.assertEquals(5 + (withBesieged ? 3 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
             Assert.assertEquals("1", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTER_ADD));
             Assert.assertEquals("0", getAttribute(diffEntity, DiffAttributeTypeEnum.LEVEL));
+            Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTRY));
+            Assert.assertEquals("france", siege.getPhasing().getCountry());
+            Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_LEADER));
+            Assert.assertEquals("Napo", siege.getPhasing().getLeader());
         } else {
-            Assert.assertEquals(1 + (withBesieged ? 1 : 0), diffEntity.getAttributes().size());
+            Assert.assertEquals(1 + (withBesieged ? 3 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(SiegeStatusEnum.SELECT_FORCES.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         }
         if (withBesieged) {
@@ -260,12 +308,20 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                     .findAny()
                     .orElse(null);
             Assert.assertNotNull(counterSpa);
+            if (!tooMuchLeadingCountries) {
+                Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
+                Assert.assertEquals("france", siege.getNonPhasing().getCountry());
+            }
+            if (!tooMuchLeaders) {
+                Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_LEADER));
+                Assert.assertEquals("Napo", siege.getNonPhasing().getLeader());
+            }
         }
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
 
-        if (gotoChooseMode) {
+        if (forcesSelected) {
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE, siege.getStatus());
             Assert.assertEquals(1 + (withBesieged ? 1 : 0), siege.getCounters().size());
             SiegeCounterEntity counterFra = siege.getCounters().stream()

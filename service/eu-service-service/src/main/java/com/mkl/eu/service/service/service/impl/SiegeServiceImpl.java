@@ -163,7 +163,22 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
-        if (attackerCounters.size() <= 3 && attackerSize <= 8) {
+        boolean sizeOk = attackerCounters.size() <= 3 && attackerSize <= 8;
+        List<String> leadingCountries = oeUtil.getLeadingCountry(attackerCounters);
+        String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
+        List<Leader> leaders = oeUtil.getLeader(attackerCounters, getTables(), Leader.landEurope);
+        boolean leaderOk = leaders.size() <= 1;
+
+        if (sizeOk && StringUtils.isNotEmpty(leadingCountry) && leaderOk) {
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTRY, leadingCountry));
+            siege.getPhasing().setCountry(leadingCountry);
+
+            if (leaders.size() == 1) {
+                String leader = leaders.get(0).getCode();
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, leader));
+                siege.getPhasing().setLeader(leader);
+            }
+
             attackerCounters.forEach(counter -> {
                 SiegeCounterEntity comp = new SiegeCounterEntity();
                 comp.setSiege(siege);
@@ -187,17 +202,30 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> CounterUtil.isArmy(counter.getType()))
                 .collect(Collectors.toList());
-        defenderCounters.forEach(counter -> {
-            SiegeCounterEntity comp = new SiegeCounterEntity();
-            comp.setSiege(siege);
-            comp.setCounter(counter.getId());
-            comp.setCountry(counter.getCountry());
-            comp.setType(counter.getType());
-            comp.setPhasing(false);
-            siege.getCounters().add(comp);
+        if (CollectionUtils.isNotEmpty(defenderCounters)) {
+            leadingCountries = oeUtil.getLeadingCountry(defenderCounters);
+            leadingCountry = leadingCountries.size() >= 1 ? leadingCountries.get(0) : null;
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTRY, leadingCountry));
+            siege.getNonPhasing().setCountry(leadingCountry);
+            leaders = oeUtil.getLeader(defenderCounters, getTables(), Leader.landEurope);
+            if (leaders.size() >= 1) {
+                String leader = leaders.get(0).getCode();
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, leader));
+                siege.getNonPhasing().setLeader(leader);
+            }
 
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId()));
-        });
+            defenderCounters.forEach(counter -> {
+                SiegeCounterEntity comp = new SiegeCounterEntity();
+                comp.setSiege(siege);
+                comp.setCounter(counter.getId());
+                comp.setCountry(counter.getCountry());
+                comp.setType(counter.getType());
+                comp.setPhasing(false);
+                siege.getCounters().add(comp);
+
+                attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId()));
+            });
+        }
 
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, siege.getStatus()));
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
