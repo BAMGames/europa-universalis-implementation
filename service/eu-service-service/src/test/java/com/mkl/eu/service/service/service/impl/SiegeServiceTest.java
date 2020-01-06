@@ -1755,6 +1755,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
             siege.setProvince("pecs");
             siege.setBonus(bonus);
+            siege.getPhasing().setCountry(Camp.SELF.name);
 
             stack = new StackEntity();
             stack.setId(2l);
@@ -1822,6 +1823,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             when(testClass.oeUtil.rollDie(game, self)).thenReturn(die);
             when(testClass.oeUtil.getWarAllies(self, siege.getWar())).thenReturn(Arrays.asList(Camp.SELF.name, Camp.ALLY.name));
             when(testClass.oeUtil.getWarEnemies(self, siege.getWar())).thenReturn(Collections.singletonList(Camp.ENEMY.name));
+            when(testClass.oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive())).thenReturn(Arrays.asList(Camp.SELF.name, Camp.ALLY.name));
+            when(testClass.oeUtil.getWarFaction(siege.getWar(), !siege.isBesiegingOffensive())).thenReturn(Collections.singletonList(Camp.ENEMY.name));
 
             when(testClass.counterDomain.createStack("pecs", null, game)).thenAnswer(invocationOnMock -> {
                 StackEntity newStack = new StackEntity();
@@ -2914,6 +2917,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
             siege = new SiegeEntity();
             siege.setGame(game);
+            siege.getPhasing().setCountry(Camp.SELF.name);
             siege.setFortressLevel(fortress != null ? fortress : naturalFortress);
             if (breach) {
                 siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);
@@ -3083,6 +3087,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             when(testClass.oeUtil.getController(province, game)).thenReturn(controller.name);
             when(testClass.oeUtil.getWarAllies(self, siege.getWar())).thenReturn(Arrays.asList(Camp.SELF.name, Camp.ALLY.name));
             when(testClass.oeUtil.getWarEnemies(self, siege.getWar())).thenReturn(Collections.singletonList(Camp.ENEMY.name));
+            when(testClass.oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive())).thenReturn(Arrays.asList(Camp.SELF.name, Camp.ALLY.name));
+            when(testClass.oeUtil.getWarFaction(siege.getWar(), !siege.isBesiegingOffensive())).thenReturn(Collections.singletonList(Camp.ENEMY.name));
 
             when(testClass.counterDomain.createStack("pecs", null, game)).thenAnswer(invocationOnMock -> {
                 StackEntity newStack = new StackEntity();
