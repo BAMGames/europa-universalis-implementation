@@ -688,6 +688,18 @@ public final class OEUtilImpl implements IOEUtil {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getWarFaction(WarEntity war, boolean offensive) {
+        return war.getCountries().stream()
+                .filter(country -> country.isOffensive() == offensive && country.getImplication() == WarImplicationEnum.FULL)
+                .map(country -> country.getCountry().getName())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Retrieve all the countries with or against a specific country in a specific war and apply a specific consumer.
      *
      * @param name                     the specific country name.

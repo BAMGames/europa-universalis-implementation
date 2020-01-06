@@ -221,6 +221,13 @@ public interface IOEUtil {
     List<String> getWarEnemies(PlayableCountryEntity country, WarEntity war);
 
     /**
+     * @param war       the war.
+     * @param offensive to know if we want the offensive countries or the defensive ones.
+     * @return the list of countries that are offensive or defensive.
+     */
+    List<String> getWarFaction(WarEntity war, boolean offensive);
+
+    /**
      * @param province the province.
      * @param game     the game.
      * @return the natural level of the fortress of the province.
