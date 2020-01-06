@@ -156,14 +156,16 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
                         allies.contains(stack.getCountry()))
                 .flatMap(stack -> stack.getCounters().stream())
-                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .filter(counter -> CounterUtil.isArmy(counter.getType()) || CounterUtil.isLeader(counter.getType()))
                 .collect(Collectors.toList());
 
         Double attackerSize = attackerCounters.stream()
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()))
                 .reduce(Double::sum)
                 .orElse(0d);
-        boolean sizeOk = attackerCounters.size() <= 3 && attackerSize <= 8;
+        boolean sizeOk = attackerCounters.stream()
+                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .count() <= 3 && attackerSize <= 8;
         List<String> leadingCountries = oeUtil.getLeadingCountry(attackerCounters);
         String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
         List<Leader> leaders = oeUtil.getLeader(attackerCounters, getTables(), Leader.landEurope);
@@ -200,7 +202,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
                         stack.isBesieged())
                 .flatMap(stack -> stack.getCounters().stream())
-                .filter(counter -> CounterUtil.isArmy(counter.getType()))
+                .filter(counter -> CounterUtil.isArmy(counter.getType()) || CounterUtil.isLeader(counter.getType()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(defenderCounters)) {
             leadingCountries = oeUtil.getLeadingCountry(defenderCounters);
@@ -291,6 +293,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .setParams(METHOD_SELECT_FORCES));
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
+        List<CounterEntity> counters = new ArrayList<>();
         List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
         for (Long idCounter : request.getRequest().getForces()) {
 
@@ -298,7 +301,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
                             allies.contains(stack.getCountry()))
                     .flatMap(stack -> stack.getCounters().stream())
-                    .filter(c -> CounterUtil.isArmy(c.getType()) &&
+                    .filter(c -> (CounterUtil.isArmy(c.getType()) || CounterUtil.isLeader(c.getType())) &&
                             c.getId().equals(idCounter))
                     .findAny()
                     .orElse(null);
@@ -317,12 +320,13 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
             comp.setCountry(counter.getCountry());
             comp.setType(counter.getType());
             siege.getCounters().add(comp);
+            counters.add(counter);
 
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId()));
         }
 
         List<Long> alliedCounters = siege.getCounters().stream()
-                .filter(bc -> bc.isPhasing() == phasing)
+                .filter(bc -> bc.isPhasing() == phasing && CounterUtil.isArmy(bc.getType()))
                 .map(SiegeCounterEntity::getCounter)
                 .collect(Collectors.toList());
         Double armySize = siege.getCounters().stream()
@@ -349,9 +353,75 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                     .setParams(METHOD_SELECT_FORCES));
         }
 
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(alliedCounters.size() > 3 || armySize > 8)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_BIG)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES, alliedCounters.size(), armySize));
+
+        List<String> leaders = counters.stream()
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER)
+                .map(CounterEntity::getCode)
+                .collect(Collectors.toList());
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(leaders.size() > 1)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_MANY_LEADERS)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this siege because there are too many leaders selected : {2}.")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES, leaders));
+
+        List<String> countries = oeUtil.getLeadingCountry(counters);
+        String selectedCountry = StringUtils.isEmpty(request.getRequest().getCountry()) && countries.size() == 1
+                ? countries.get(0) : request.getRequest().getCountry();
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(!countries.contains(selectedCountry))
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this siege because the selected country cannot lead this battle or you must select a country (selected country: {2}, eligible countries: {3}).")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
+                .setParams(METHOD_SELECT_FORCES, selectedCountry, countries));
+
+        // TODO TG-10 TG-14 choose right conditions
+        Predicate<Leader> conditions = Leader.landEurope;
+        List<Leader> availableLeaders = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
+                        allies.contains(stack.getCountry()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER &&
+                        StringUtils.equals(counter.getCountry(), selectedCountry))
+                .map(counter -> getTables().getLeader(counter.getCode()))
+                .filter(conditions)
+                .collect(Collectors.toList());
+        String selectedLeader = null;
+        if (leaders.size() == 1) {
+            Leader leader = getTables().getLeader(leaders.get(0));
+            selectedLeader = leader.getCode();
+            availableLeaders.removeIf(lead -> leader.getRank().compareTo(lead.getRank()) <= 0);
+
+            failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                    .setTest(conditions.test(leader) && StringUtils.equals(leader.getCountry(), selectedCountry))
+                    .setCodeError(IConstantsServiceException.BATTLE_FORCES_NOT_SUITABLE_LEADER)
+                    .setMsgFormat("{1}: {0} Impossible to select forces in this siege because the selected leader {2} cannot lead this battle.")
+                    .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                    .setParams(METHOD_SELECT_FORCES, selectedLeader));
+        }
+
+        failIfTrue(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(availableLeaders.size() > 0)
+                .setCodeError(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER)
+                .setMsgFormat("{1}: {0} Impossible to select forces in this siege because the selected leader {2} is not optimal (better leaders : {3}).")
+                .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
+                .setParams(METHOD_SELECT_FORCES, selectedLeader, availableLeaders.stream().map(Leader::getCode).collect(Collectors.joining(","))));
+
         siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
-        computeSiegeBonus(siege, attributes);
+        siege.getPhasing().setCountry(selectedCountry);
+        siege.getPhasing().setLeader(selectedLeader);
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, SiegeStatusEnum.CHOOSE_MODE));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTRY, siege.getPhasing().getCountry()));
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, siege.getPhasing().getLeader()));
+        computeSiegeBonus(siege, attributes);
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.SIEGE, siege.getId(),
                 attributes.toArray(new DiffAttributesEntity[attributes.size()]));

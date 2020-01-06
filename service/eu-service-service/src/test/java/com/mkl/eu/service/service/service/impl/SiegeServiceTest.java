@@ -404,13 +404,14 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(null, siege.getWar())).thenReturn(Collections.singletonList("france"));
-        game.getStacks().add(new StackEntity());
-        game.getStacks().get(0).setProvince("pecs");
-        game.getStacks().get(0).setCountry("france");
-        game.getStacks().get(0).getCounters().add(new CounterEntity());
-        game.getStacks().get(0).getCounters().get(0).setId(6L);
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
+        when(oeUtil.getWarAllies(country, siege.getWar())).thenReturn(Collections.singletonList("france"));
+        StackEntity stack = new StackEntity();
+        game.getStacks().add(stack);
+        stack.setProvince("pecs");
+        stack.setCountry("france");
+        stack.getCounters().add(new CounterEntity());
+        stack.getCounters().get(0).setId(6L);
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.TECH_MANOEUVRE);
 
         try {
             siegeService.selectForces(request);
@@ -420,8 +421,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        game.getStacks().get(0).getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
-        game.getStacks().get(0).setCountry("pologne");
+        stack.getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_PLUS);
+        stack.setCountry("pologne");
 
         try {
             siegeService.selectForces(request);
@@ -431,14 +432,134 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        game.getStacks().get(0).setCountry("france");
-        game.getStacks().get(0).setProvince("idf");
+        stack.setCountry("france");
+        stack.setProvince("idf");
 
         try {
             siegeService.selectForces(request);
             Assert.fail("Should break because counter is not in the right province");
         } catch (FunctionalException e) {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        stack.setProvince("pecs");
+        stack.getCounters().add(createCounter(7L, "pologne", CounterFaceTypeEnum.ARMY_PLUS));
+        stack.getCounters().add(createCounter(8L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack.getCounters().add(createCounter(9L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
+        stack.getCounters().add(createCounter(10L, "pologne", CounterFaceTypeEnum.LAND_DETACHMENT));
+        request.getRequest().getForces().add(8L);
+        request.getRequest().getForces().add(9L);
+        request.getRequest().getForces().add(10L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because you cannot select 4 counters in the siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_TOO_BIG, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        request.getRequest().getForces().clear();
+        siege.getCounters().clear();
+        request.getRequest().getForces().add(6L);
+        request.getRequest().getForces().add(7L);
+        request.getRequest().getForces().add(8L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because you cannot counters of size 9 in the siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_TOO_BIG, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        request.getRequest().getForces().clear();
+        siege.getCounters().clear();
+        request.getRequest().getForces().add(6L);
+        request.getRequest().getForces().add(7L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because leading country is ambiguous");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS, e.getCode());
+            Assert.assertEquals("selectForces.request.country", e.getParams()[0]);
+        }
+
+        siege.getCounters().clear();
+        request.getRequest().setCountry("espagne");
+        when(oeUtil.getLeadingCountry(any())).thenReturn(Arrays.asList("france", "pologne"));
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because selected country cannot lead the siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_LEADING_COUNTRY_AMBIGUOUS, e.getCode());
+            Assert.assertEquals("selectForces.request.country", e.getParams()[0]);
+        }
+
+        siege.getCounters().clear();
+        request.getRequest().setCountry("france");
+        Tables tables = new Tables();
+        AbstractBack.TABLES = tables;
+        stack.getCounters().add(createLeader(21L, "france", CounterFaceTypeEnum.LEADER, "Napo", LeaderTypeEnum.GENERAL, "A 666 -1", tables, stack));
+        stack.getCounters().add(createLeader(22L, "france", CounterFaceTypeEnum.LEADER, "Nabo", LeaderTypeEnum.GENERAL, "Z 111", tables, stack));
+        stack.getCounters().add(createLeader(23L, "espagne", CounterFaceTypeEnum.LEADER, "Infante", LeaderTypeEnum.GENERAL, "B 333", tables, stack));
+        stack.getCounters().add(createLeader(24L, "pologne", CounterFaceTypeEnum.LEADER, "Sibierski", LeaderTypeEnum.GENERAL, "D 434", tables, stack));
+        stack.getCounters().add(createLeader(25L, "pologne", CounterFaceTypeEnum.LEADER, "Sibierluge", LeaderTypeEnum.ADMIRAL, "C 122", tables, stack));
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because no leader selected while some are eligible");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        siege.getCounters().clear();
+        request.getRequest().getForces().add(24L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because the leader can not lead this siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_NOT_SUITABLE_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        siege.getCounters().clear();
+        request.getRequest().getForces().remove(24L);
+        request.getRequest().getForces().add(22L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because there is a higher rank eligible leader than the one selected");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        siege.getCounters().clear();
+        request.getRequest().setCountry("pologne");
+        request.getRequest().getForces().remove(22L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because no leader selected while some are eligible");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_INVALID_LEADER, e.getCode());
+            Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
+        }
+
+        siege.getCounters().clear();
+        request.getRequest().getForces().add(25L);
+
+        try {
+            siegeService.selectForces(request);
+            Assert.fail("Should break because the leader can not lead this siege");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_FORCES_NOT_SUITABLE_LEADER, e.getCode());
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
     }
@@ -463,6 +584,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         testCheckStatus(pair.getRight(), request, siegeService::selectForces, "selectForces", GameStatusEnum.MILITARY_SIEGES);
         request.getGame().setIdCountry(12L);
         request.setRequest(new SelectForcesRequest());
+        request.getRequest().getForces().add(5L);
         request.getRequest().getForces().add(6L);
         request.getRequest().getForces().add(7L);
         game.getStacks().add(new StackEntity());
@@ -476,6 +598,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         counter = new CounterEntity();
         counter.setId(7L);
         counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setCountry("france");
+        game.getStacks().get(0).getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setId(5L);
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         counter.setCountry("france");
         game.getStacks().get(0).getCounters().add(counter);
         counter = new CounterEntity();
@@ -494,6 +621,13 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         order.setCountry(country);
         game.getOrders().add(order);
 
+        Tables tables = new Tables();
+        StackEntity stack = game.getStacks().get(0);
+        stack.getCounters().add(createLeader(9L, country.getName(), CounterFaceTypeEnum.LEADER, "Napo", LeaderTypeEnum.GENERAL, "A 666 -1", tables, stack));
+        request.getRequest().getForces().add(9L);
+        when(oeUtil.getLeadingCountry(any())).thenReturn(Collections.singletonList("france"));
+        AbstractBack.TABLES = tables;
+
         simulateDiff();
 
         DiffResponse response = siegeService.selectForces(request);
@@ -506,9 +640,13 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
         Assert.assertTrue(diffEntity.getAttributes().size() >= 1);
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
+        Assert.assertEquals(8, diffEntity.getAttributes().size());
         Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
-        Assert.assertEquals(2l, diffEntity.getAttributes().stream()
+        Assert.assertEquals("france", siege.getPhasing().getCountry());
+        Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTRY));
+        Assert.assertEquals("Napo", siege.getPhasing().getLeader());
+        Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_LEADER));
+        Assert.assertEquals(4l, diffEntity.getAttributes().stream()
                 .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD)
                 .count());
         Assert.assertEquals("0", getAttribute(diffEntity, DiffAttributeTypeEnum.LEVEL));

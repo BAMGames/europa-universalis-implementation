@@ -558,6 +558,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         testCheckStatus(pair.getRight(), request, battleService::selectForces, "selectForces", GameStatusEnum.MILITARY_BATTLES);
         request.getGame().setIdCountry(12L);
         request.setRequest(new SelectForcesRequest());
+        request.getRequest().getForces().add(5L);
         request.getRequest().getForces().add(6L);
         request.getRequest().getForces().add(7L);
         game.getStacks().add(new StackEntity());
@@ -571,6 +572,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         counter = new CounterEntity();
         counter.setId(7L);
         counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setCountry("france");
+        game.getStacks().get(0).getCounters().add(counter);
+        counter = new CounterEntity();
+        counter.setId(5L);
+        counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         counter.setCountry("france");
         game.getStacks().get(0).getCounters().add(counter);
         counter = new CounterEntity();
@@ -634,11 +640,11 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("france", battle.getNonPhasing().getCountry());
             Assert.assertEquals(null, battle.getNonPhasing().getLeader());
         }
-        Assert.assertEquals(phasing ? 7 : 6, diffEntity.getAttributes().size());
+        Assert.assertEquals(phasing ? 8 : 7, diffEntity.getAttributes().size());
         Assert.assertEquals(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         Assert.assertEquals("true", getAttribute(diffEntity, diffStatus));
         Assert.assertEquals("france", getAttribute(diffEntity, phasing ? DiffAttributeTypeEnum.PHASING_COUNTRY : DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
-        Assert.assertEquals(phasing ? 3l : 2l, diffEntity.getAttributes().stream()
+        Assert.assertEquals(phasing ? 4l : 3l, diffEntity.getAttributes().stream()
                 .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PHASING_COUNTER_ADD && phasing || attr.getType() == DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD)
                 .count());
 
