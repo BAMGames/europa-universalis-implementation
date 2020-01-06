@@ -13,7 +13,6 @@ import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Leader;
@@ -36,7 +35,6 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
-import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +59,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
  */
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
-public class BattleServiceImpl extends AbstractService implements IBattleService {
+public class BattleServiceImpl extends AbstractMilitaryService implements IBattleService {
     /** Counter Domain. */
     @Autowired
     private ICounterDomain counterDomain;
@@ -71,8 +69,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
-    @Autowired
-    private IOEUtil oeUtil;
 
     /** {@inheritDoc} */
     @Override
@@ -611,14 +607,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
 
         List<DiffEntity> newDiffs = new ArrayList<>();
         List<DiffAttributesEntity> attributes = new ArrayList<>();
-        if (StringUtils.isEmpty(battle.getPhasing().getLeader())) {
-            fillLeader(battle.getPhasing(), game);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, battle.getPhasing().getLeader()));
-        }
-        if (StringUtils.isEmpty(battle.getNonPhasing().getLeader())) {
-            fillLeader(battle.getNonPhasing(), game);
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, battle.getNonPhasing().getLeader()));
-        }
         attributes.addAll(fillBattleModifiers(battle));
         attributes.addAll(computeBothSequence(battle, BattleSequenceEnum.FIRST_FIRE));
         newDiffs.addAll(checkRouted(battle, BattleEndEnum.ROUTED_AT_FIRST_FIRE, 3, attributes));
@@ -645,32 +633,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
     }
 
     /**
-     * Roll for a replacement leader.
-     *
-     * @param side of the battle.
-     * @param game the game.
-     */
-    protected void fillLeader(BattleSideEntity side, GameEntity game) {
-        int die = oeUtil.rollDie(game);
-        CountryReferential country = getReferential().getCountry(side.getCountry());
-        String leaderCountry;
-        if (country != null) {
-            if (country.getType() == CountryTypeEnum.MAJOR || country.getType() == CountryTypeEnum.MINORMAJOR) {
-                leaderCountry = country.getName();
-            } else {
-                leaderCountry = Leader.REPLACEMENT_MINOR;
-            }
-        } else {
-            leaderCountry = Leader.REPLACEMENT_NATIVES;
-        }
-
-        // TODO TG-10 admiral for naval battle
-        String code = leaderCountry + "-general-" + die;
-        Leader leader = getTables().getLeader(code);
-        side.setLeader(leader.getCode());
-    }
-
-    /**
      * Fill the battle modifiers of a battle:
      * - fire column and bonus
      * - shock column and bonus
@@ -684,6 +646,7 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
      * @return the eventual attributes, if any.
      */
     protected List<DiffAttributesEntity> fillBattleModifiers(BattleEntity battle) {
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
         battle.getPhasing().getFirstDay().clear();
         battle.getPhasing().getSecondDay().clear();
         battle.getNonPhasing().getFirstDay().clear();
@@ -753,6 +716,14 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         battle.getPhasing().getSecondDay().addFireAndShock(-1);
         battle.getNonPhasing().getSecondDay().addFireAndShock(-1);
 
+        if (StringUtils.isEmpty(battle.getPhasing().getLeader())) {
+            battle.getPhasing().setLeader(getReplacementLeader(battle.getPhasing().getCountry(), battle.getGame()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, battle.getPhasing().getLeader()));
+        }
+        if (StringUtils.isEmpty(battle.getNonPhasing().getLeader())) {
+            battle.getNonPhasing().setLeader(getReplacementLeader(battle.getNonPhasing().getCountry(), battle.getGame()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, battle.getNonPhasing().getLeader()));
+        }
         Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader());
         Leader notPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader());
         int fireMod = phasingLeader.getFire() - notPhasingLeader.getFire();
@@ -861,8 +832,6 @@ public class BattleServiceImpl extends AbstractService implements IBattleService
         double nonPhasingSize = oeUtil.getArmySize(armyNotPhasing, getTables(), battle.getGame());
         battle.getPhasing().setSizeDiff(oeUtil.getSizeDiff(phasingSize, nonPhasingSize));
         battle.getNonPhasing().setSizeDiff(oeUtil.getSizeDiff(nonPhasingSize, phasingSize));
-
-        List<DiffAttributesEntity> attributes = new ArrayList<>();
 
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, battle.getPhasing().getSize()));
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_TECH, battle.getPhasing().getTech()));

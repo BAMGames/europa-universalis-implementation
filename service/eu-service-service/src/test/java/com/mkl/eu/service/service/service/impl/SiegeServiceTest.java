@@ -2898,6 +2898,12 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             game.getCountries().add(enemy);
 
             Tables tables = new Tables();
+            Leader leader = new Leader();
+            leader.setCode("phasing");
+            tables.getLeaders().add(leader);
+            leader = new Leader();
+            leader.setCode("notPhasing");
+            tables.getLeaders().add(leader);
             testClass.fillBatleTechTables(tables);
             SiegeServiceImpl.TABLES = tables;
             StackEntity stack = new StackEntity();
@@ -2918,6 +2924,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             siege = new SiegeEntity();
             siege.setGame(game);
             siege.getPhasing().setCountry(Camp.SELF.name);
+            siege.getPhasing().setLeader("phasing");
+            siege.getNonPhasing().setLeader("notPhasing");
             siege.setFortressLevel(fortress != null ? fortress : naturalFortress);
             if (breach) {
                 siege.setStatus(SiegeStatusEnum.CHOOSE_BREACH);

@@ -33,7 +33,6 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
-import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +57,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
  */
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
-public class SiegeServiceImpl extends AbstractService implements ISiegeService {
+public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeService {
     private final static Predicate<CounterEntity> HAS_SIEGEWORK = counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS;
     /** Counter domain. */
     @Autowired
@@ -69,8 +68,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
     /** Province DAO. */
     @Autowired
     private IProvinceDao provinceDao;
-    @Autowired
-    private IOEUtil oeUtil;
 
     /** {@inheritDoc} */
     @Override
@@ -1210,6 +1207,7 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
      * @return the eventual attributes, if any.
      */
     protected List<DiffAttributesEntity> fillSiegeModifiers(SiegeEntity siege, boolean breach) {
+        List<DiffAttributesEntity> attributes = new ArrayList<>();
         siege.getPhasing().getModifiers().clear();
         siege.getNonPhasing().getModifiers().clear();
 
@@ -1268,6 +1266,22 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
         }
 
         // TODO TG-5 leaders
+        if (StringUtils.isEmpty(siege.getPhasing().getLeader())) {
+            siege.getPhasing().setLeader(getReplacementLeader(siege.getPhasing().getCountry(), siege.getGame()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, siege.getPhasing().getLeader()));
+        }
+        if (StringUtils.isEmpty(siege.getNonPhasing().getLeader())) {
+            siege.getNonPhasing().setLeader(getReplacementLeader(siege.getNonPhasing().getCountry(), siege.getGame()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, siege.getNonPhasing().getLeader()));
+        }
+        Leader phasingLeader = getTables().getLeader(siege.getPhasing().getLeader());
+        Leader notPhasingLeader = getTables().getLeader(siege.getNonPhasing().getLeader());
+        int fireMod = phasingLeader.getFire() - notPhasingLeader.getFire();
+        int shockMod = phasingLeader.getShock() - notPhasingLeader.getShock();
+        siege.getPhasing().getModifiers().addFire(fireMod);
+        siege.getPhasing().getModifiers().addShock(shockMod);
+        siege.getNonPhasing().getModifiers().addFire(-fireMod);
+        siege.getNonPhasing().getModifiers().addShock(-shockMod);
 
 
         if (StringUtils.equals(techNotPhasing, Tech.MEDIEVAL)) {
@@ -1287,8 +1301,6 @@ public class SiegeServiceImpl extends AbstractService implements ISiegeService {
                 .max(Comparator.<Integer>naturalOrder())
                 .orElse(0);
         siege.getPhasing().getModifiers().addFireAndShock(artilleryBonus);
-
-        List<DiffAttributesEntity> attributes = new ArrayList<>();
 
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, siege.getPhasing().getSize()));
         attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BATTLE_PHASING_TECH, siege.getPhasing().getTech()));
