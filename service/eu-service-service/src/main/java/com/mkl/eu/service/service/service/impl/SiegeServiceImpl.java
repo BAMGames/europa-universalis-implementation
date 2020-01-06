@@ -484,14 +484,22 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
                 .flatMap(stack -> stack.getCounters().stream())
                 .collect(Collectors.summingInt(siegeworkValue));
-        // TODO TG-5 siege bonus of leaders
+        List<String> allies = oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive());
+        int leaderSiege = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> CounterUtil.isLeader(counter.getType()) && allies.contains(counter.getCountry()))
+                .map(counter -> getTables().getLeader(counter.getCode()))
+                .map(Leader::getSiege)
+                .max(Comparator.<Integer>naturalOrder())
+                .orElse(0);
         int besiegingBonus = siege.getCounters().stream()
                 .filter(SiegeCounterEntity::isNotPhasing)
                 .map(counter -> CounterUtil.getSizeFromType(counter.getType()) >= 2 ? 3 : 1)
                 .max(Comparator.<Integer>naturalOrder())
                 .orElse(0);
 
-        int bonus = -fortress + artilleryBonus - terrainMalus + breachBonus + siegeworkBonus + besiegingBonus;
+        int bonus = -fortress + artilleryBonus - terrainMalus + breachBonus + siegeworkBonus + leaderSiege + besiegingBonus;
         if (bonus != siege.getBonus()) {
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BONUS, bonus));
         }
@@ -1265,7 +1273,6 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             siege.getNonPhasing().setMoral(battleTechNonPhasing.getMoral());
         }
 
-        // TODO TG-5 leaders
         if (StringUtils.isEmpty(siege.getPhasing().getLeader())) {
             siege.getPhasing().setLeader(getReplacementLeader(siege.getPhasing().getCountry(), siege.getGame()));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, siege.getPhasing().getLeader()));
