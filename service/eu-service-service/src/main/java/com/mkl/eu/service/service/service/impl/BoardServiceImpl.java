@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
@@ -29,12 +30,16 @@ import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -305,7 +310,21 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_TAKE_STACK_CONTROL, idStack));
 
-        String newController = request.getRequest().getCountry();
+        Long idLeader = request.getRequest().getIdLeader();
+        Leader leader = stack.getCounters().stream()
+                .filter(counter -> Objects.equals(counter.getId(), idLeader))
+                .map(counter -> getTables().getLeader(counter.getCode()))
+                .filter(l -> l != null)
+                .findAny()
+                .orElse(null);
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(idLeader != null && leader == null)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_ID_LEADER)
+                .setParams(METHOD_TAKE_STACK_CONTROL, idLeader));
+
+        String newController = leader != null ? leader.getCountry() : request.getRequest().getCountry();
 
         failIfNull(new CheckForThrow<>()
                 .setTest(newController)
@@ -329,20 +348,25 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_TAKE_STACK_CONTROL, country.getName(), patrons));
 
-        Map<String, Double> countersByCountry = stack.getCounters().stream()
-                .collect(Collectors.groupingBy(CounterEntity::getCountry, Collectors.summingDouble(value -> CounterUtil.getSizeFromType(value.getType()))));
-        double maxInStack = countersByCountry.values().stream()
-                .max(Comparator.<Double>naturalOrder())
-                .orElse(1d);
-
-        double newControllerPresence = countersByCountry.get(newController) == null ? 0 : countersByCountry.get(newController);
+        List<String> countries = oeUtil.getLeadingCountries(stack.getCounters());
 
         failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(newControllerPresence >= maxInStack)
-                .setCodeError(IConstantsServiceException.STACK_CANT_CONTROL)
-                .setMsgFormat("{1}: {0} {3} has not enough presence to control the stack {2} ({4}/{5}).")
+                .setTest(countries.contains(newController))
+                .setCodeError(IConstantsServiceException.STACK_CONTROL_INVALID_COUNTRY)
+                .setMsgFormat("{1}: {0} {3} has not enough presence to control the stack {2}. List of countries who can : {4}.")
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_COUNTRY)
-                .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController, newControllerPresence, maxInStack));
+                .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController, countries));
+
+        // TODO TG-10 TG-14 choose right conditions
+        List<Leader> leaders = oeUtil.getLeaders(stack.getCounters(), getTables(), Leader.landEurope);
+        leaders.removeIf(l -> !StringUtils.equals(l.getCountry(), newController) || (leader != null && leader.getRank().compareTo(l.getRank()) <= 0));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(CollectionUtils.isEmpty(leaders))
+                .setCodeError(IConstantsServiceException.STACK_CONTROL_LEADER_ISSUE)
+                .setMsgFormat("{1}: {0} {3} cannot take control of the stack {2} with this leader. List of leaders : {4}.")
+                .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_ID_LEADER)
+                .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController, leaders.stream().map(Leader::getCode).collect(Collectors.toList())));
 
         stack.setCountry(newController);
 

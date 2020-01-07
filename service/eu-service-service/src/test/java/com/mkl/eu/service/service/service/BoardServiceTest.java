@@ -10,6 +10,8 @@ import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Leader;
+import com.mkl.eu.client.service.vo.tables.Tables;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.mapping.GameMapping;
@@ -28,6 +30,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.impl.AbstractBack;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
@@ -41,10 +44,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -630,6 +630,8 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         counter.setType(CounterFaceTypeEnum.LAND_DETACHMENT);
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
+        Tables tables = new Tables();
+        AbstractBack.TABLES = tables;
 
         try {
             boardService.takeStackControl(request);
@@ -696,7 +698,67 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             boardService.takeStackControl(request);
             Assert.fail("Should break because stack cant be controlled by requested country");
         } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsServiceException.STACK_CANT_CONTROL, e.getCode());
+            Assert.assertEquals(IConstantsServiceException.STACK_CONTROL_INVALID_COUNTRY, e.getCode());
+            Assert.assertEquals("takeStackControl.request.country", e.getParams()[0]);
+        }
+
+        when(oeUtil.getLeadingCountries(any())).thenReturn(Collections.singletonList("genes"));
+        Leader leader = new Leader();
+        leader.setCode("Napo");
+        leader.setCountry("genes");
+        List<Leader> leaders = new ArrayList<>();
+        leaders.add(leader);
+        when(oeUtil.getLeaders(any(), any(), any())).thenReturn(leaders);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because stack cant be controlled by requested country without selecting the leader");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_CONTROL_LEADER_ISSUE, e.getCode());
+            Assert.assertEquals("takeStackControl.request.idLeader", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdLeader(21L);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because idLeader is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request.idLeader", e.getParams()[0]);
+        }
+
+        counter = createCounter(21L, "genes", CounterFaceTypeEnum.LEADER, stack);
+        stack.getCounters().add(counter);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because idLeader is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request.idLeader", e.getParams()[0]);
+        }
+
+        counter.setCode("Nabo");
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because idLeader is invalid");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("takeStackControl.request.idLeader", e.getParams()[0]);
+        }
+
+        leader = new Leader();
+        leader.setCode("Nabo");
+        leader.setCountry("france");
+        tables.getLeaders().add(leader);
+
+        try {
+            boardService.takeStackControl(request);
+            Assert.fail("Should break because leader country take priority over request country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_ALREADY_CONTROLLED, e.getCode());
             Assert.assertEquals("takeStackControl.request.country", e.getParams()[0]);
         }
     }
@@ -712,6 +774,8 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(7L);
         request.getRequest().setCountry("espagne");
+        Tables tables = new Tables();
+        AbstractBack.TABLES = tables;
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 27L);
         game.getCountries().add(new PlayableCountryEntity());
@@ -741,6 +805,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.getCounters().add(counter);
         game.getStacks().add(stack);
         when(counterDao.getPatrons("espagne", game.getId())).thenReturn(Collections.singletonList("espagne"));
+        when(oeUtil.getLeadingCountries(any())).thenReturn(Arrays.asList("france", "espagne"));
 
         simulateDiff();
 

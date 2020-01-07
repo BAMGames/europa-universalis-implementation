@@ -668,12 +668,27 @@ public interface IConstantsServiceException {
      * <li>0: Action being performed (or object being updated).</li>
      * <li>1: id of the stack.</li>
      * <li>2: country who wants to control the stack.</li>
-     * <li>3: presence of the country.</li>
-     * <li>4: presence needed to control the stack.</li>
+     * <li>3: list of countries that can lead the stack.</li>
      * </ul>
      * </p>
      */
-    String STACK_CANT_CONTROL = "exception.eu.board.stack_already_controlled";
+    String STACK_CONTROL_INVALID_COUNTRY = "exception.eu.board.stack_control_invalid_country";
+
+    /**
+     * <p>
+     * Exception thrown when trying to control a stack that will lead to a leader issue.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * <li>2: country who wants to control the stack.</li>
+     * <li>3: list of leaders that should led the stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_CONTROL_LEADER_ISSUE = "exception.eu.board.stack_control_leader_issue";
 
     /**********************************************************************/
     /**                BATTLE SERVICE EXCEPTION                           */

@@ -76,6 +76,8 @@ public interface INameConstants {
     String PARAMETER_ID_COUNTER = "idCounter";
     /** Name of the parameter idCountry. */
     String PARAMETER_ID_COUNTRY = "idCountry";
+    /** Name of the parameter idLeader. */
+    String PARAMETER_ID_LEADER = "idLeader";
     /** Name of the parameter idRoom. */
     String PARAMETER_ID_ROOM = "idRoom";
     /** Name of the parameter provinceTo. */
