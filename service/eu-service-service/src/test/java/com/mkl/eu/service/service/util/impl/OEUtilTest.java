@@ -3674,7 +3674,7 @@ public class OEUtilTest {
                 .thenExpectLeaders();
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Napo").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
                 .whenGetLeadingCountry(oeUtil)
                 .thenExpectLeadingCountry("france")
@@ -3682,9 +3682,9 @@ public class OEUtilTest {
                 .thenExpectLeaders("Napo");
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Napo").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Turennes").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Turennes").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
                 .whenGetLeadingCountry(oeUtil)
                 .thenExpectLeadingCountry("france")
@@ -3692,9 +3692,9 @@ public class OEUtilTest {
                 .thenExpectLeaders("Napo", "Turennes");
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Napo").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
-                .addStack().country("espagne").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("espagne").leader("Draco").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("espagne").face(CounterFaceTypeEnum.LEADER).leader("Draco").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
                 .whenGetLeadingCountry(oeUtil)
                 .thenExpectLeadingCountry("france", "espagne")
@@ -3702,7 +3702,18 @@ public class OEUtilTest {
                 .thenExpectLeaders("Napo", "Draco");
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Napo").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LAND_DETACHMENT).toParent()
+                .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .addStack().country("espagne").leader("Draco").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addCounter().country("espagne").face(CounterFaceTypeEnum.LEADER).leader("Draco").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
+                .whenGetLeadingCountry(oeUtil)
+                .thenExpectLeadingCountry("france")
+                .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
+                .thenExpectLeaders("Napo");
+
+        StacksBuilder.create()
+                .addStack().country("france").leader("Napo").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent()
                 .addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("espagne").face(CounterFaceTypeEnum.LEADER).leader("Draco").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
@@ -3712,10 +3723,10 @@ public class OEUtilTest {
                 .thenExpectLeaders("Napo");
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Napo").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Napo").rank("A").type(LeaderTypeEnum.GENERAL).toParent()
                 .addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent().toParent()
-                .addStack().country("france").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Nabo").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LEADER).leader("Nabo").rank("Z").type(LeaderTypeEnum.GENERAL).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent().toParent()
                 .whenGetLeadingCountry(oeUtil)
@@ -3724,7 +3735,7 @@ public class OEUtilTest {
                 .thenExpectLeaders("Napo");
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
+                .addStack().country("france").leader("Pacha1").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_1).leader("Pacha1").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
                 .addStack().country("espagne").addCounter().country("espagne").face(CounterFaceTypeEnum.ARMY_MINUS).toParent()
                 .addCounter().country("turquie").face(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION).toParent()
@@ -3735,7 +3746,7 @@ public class OEUtilTest {
                 .thenExpectLeaders("Pacha1");
 
         StacksBuilder.create()
-                .addStack().country("france").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_PLUS).toParent()
+                .addStack().country("france").leader("Pacha1").addCounter().country("france").face(CounterFaceTypeEnum.ARMY_PLUS).toParent()
                 .addCounter().country("france").face(CounterFaceTypeEnum.LAND_DETACHMENT_EXPLORATION).toParent()
                 .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_1).leader("Pacha1").rank("A").type(LeaderTypeEnum.GENERAL).toParent()
                 .addCounter().country("turquie").face(CounterFaceTypeEnum.PACHA_3).leader("Pacha3").rank("A").type(LeaderTypeEnum.GENERAL).toParent().toParent()
@@ -3744,7 +3755,7 @@ public class OEUtilTest {
                 .whenGetLeadingCountry(oeUtil)
                 .thenExpectLeadingCountry("turquie", "france")
                 .whenGetLeaders(oeUtil, leader -> leader.getType() == LeaderTypeEnum.GENERAL)
-                .thenExpectLeaders("Pacha1", "Pacha3");
+                .thenExpectLeaders("Pacha1");
     }
 
     static class StacksBuilder {
@@ -3775,7 +3786,7 @@ public class OEUtilTest {
             List<StackEntity> entities = stacks.stream().map(StackBuilder::toEntity).collect(Collectors.toList());
             List<CounterEntity> counters = entities.stream().flatMap(s -> s.getCounters().stream()).collect(Collectors.toList());
             Tables tables = new Tables();
-            tables.getLeaders().addAll(stacks.stream().flatMap(s -> s.counters.stream()).map(CounterBuilder::toLeader).collect(Collectors.toList()));
+            tables.getLeaders().addAll(stacks.stream().flatMap(s -> s.counters.stream()).map(CounterBuilder::toLeader).filter(leader -> leader != null).collect(Collectors.toList()));
 
             leaders = oeUtil.getLeaders(counters, tables, conditions);
 
@@ -3811,6 +3822,7 @@ public class OEUtilTest {
         class StackBuilder {
             StacksBuilder parent;
             String country;
+            String leader;
             List<CounterBuilder> counters = new ArrayList<>();
 
             StackBuilder(StacksBuilder parent) {
@@ -3819,6 +3831,11 @@ public class OEUtilTest {
 
             StackBuilder country(String country) {
                 this.country = country;
+                return this;
+            }
+
+            StackBuilder leader(String leader) {
+                this.leader = leader;
                 return this;
             }
 
@@ -3835,6 +3852,7 @@ public class OEUtilTest {
             StackEntity toEntity() {
                 StackEntity stack = new StackEntity();
                 stack.setCountry(country);
+                stack.setLeader(leader);
                 stack.getCounters().addAll(counters.stream().map(CounterBuilder::toEntity).collect(Collectors.toList()));
                 stack.getCounters().forEach(counter -> counter.setOwner(stack));
                 return stack;
@@ -3891,6 +3909,9 @@ public class OEUtilTest {
             }
 
             Leader toLeader() {
+                if (StringUtils.isEmpty(this.leader)) {
+                    return null;
+                }
                 Leader leader = new Leader();
                 leader.setCode(this.leader);
                 leader.setType(type);

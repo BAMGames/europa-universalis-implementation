@@ -1292,7 +1292,16 @@ public final class OEUtilImpl implements IOEUtil {
 
         leaders.removeIf(leader -> !StringUtils.equals(leader.getRank(), bestRank));
 
-        // TODO TG-5 if all counters are from the same stack, take the previous leader if he is eligible.
+        if (leaders.size() != 1) {
+            List<Leader> previousLeaders = counters.stream()
+                    .map(counter -> tables.getLeader(counter.getOwner().getLeader()))
+                    .filter(leader -> leader != null)
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (previousLeaders.size() == 1 && leaders.contains(previousLeaders.get(0))) {
+                return previousLeaders;
+            }
+        }
 
         return leaders;
     }
