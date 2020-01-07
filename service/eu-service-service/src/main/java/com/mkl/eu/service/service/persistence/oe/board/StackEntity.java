@@ -27,6 +27,8 @@ public class StackEntity implements IEntity, Serializable {
     private MovePhaseEnum movePhase;
     /** Flag saying that the stack is being besieged. */
     private boolean besieged;
+    /** Code of the leader controlling the stack. */
+    private String leader;
     /** Country controlling the stack. */
     private String country;
     /** Number of movement points already done by this stack. */
@@ -113,6 +115,16 @@ public class StackEntity implements IEntity, Serializable {
     /** @param discoveries the discoveries to set. */
     public void setDiscoveries(List<DiscoveryEntity> discoveries) {
         this.discoveries = discoveries;
+    }
+
+    /** @return the leader. */
+    public String getLeader() {
+        return leader;
+    }
+
+    /** @param leader the leader to set. */
+    public void setLeader(String leader) {
+        this.leader = leader;
     }
 
     /** @return the country. */

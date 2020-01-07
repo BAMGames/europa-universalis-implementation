@@ -19,6 +19,8 @@ public class Stack extends EuObject {
     private MovePhaseEnum movePhase;
     /** Flag saying that the stack is being besieged. */
     private boolean besieged;
+    /** Code of the leader controlling the stack. */
+    private String leader;
     /** Country controlling the stack. */
     private String country;
     /** Number of movement points already done by this stack. */
@@ -54,6 +56,16 @@ public class Stack extends EuObject {
     /** @param besieged the besieged to set. */
     public void setBesieged(boolean besieged) {
         this.besieged = besieged;
+    }
+
+    /** @return the leader. */
+    public String getLeader() {
+        return leader;
+    }
+
+    /** @param leader the leader to set. */
+    public void setLeader(String leader) {
+        this.leader = leader;
     }
 
     /** @return the country. */

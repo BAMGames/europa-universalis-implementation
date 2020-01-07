@@ -391,6 +391,7 @@ public class GameMappingTest {
         object.setId(1L);
         object.setProvince(PECS);
         object.setMovePhase(MovePhaseEnum.IS_MOVING);
+        object.setLeader("Napo");
         object.setCountry("FRA");
         object.setMove(6);
         List<Counter> subObjects = new ArrayList<>();
@@ -913,6 +914,7 @@ public class GameMappingTest {
         object.setId(1L);
         object.setProvince(PECS);
         object.setMovePhase(MovePhaseEnum.IS_MOVING);
+        object.setLeader("Napo");
         object.setCountry("FRA");
         object.setMove(6);
         List<CounterEntity> subObjects = new ArrayList<>();
