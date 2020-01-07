@@ -233,8 +233,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         if (tooMuchLeaders) {
             leaders.add(null);
         }
-        when(oeUtil.getWarAllies(game.getCountries().get(0), battle.getWar())).thenReturn(allies);
-        when(oeUtil.getWarEnemies(game.getCountries().get(0), battle.getWar())).thenReturn(enemies);
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(allies);
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(enemies);
         when(oeUtil.getLeadingCountry(any())).thenReturn(leadingCountries);
         when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
 
@@ -345,7 +345,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("selectForces.request.forces", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(null, battle.getWar())).thenReturn(Collections.singletonList("france"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Collections.singletonList("france"));
         StackEntity stack = new StackEntity();
         game.getStacks().add(stack);
         stack.setProvince("pecs");
@@ -585,7 +585,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         counter.setCountry("spain");
         game.getStacks().get(0).getCounters().add(counter);
 
-        when(oeUtil.getWarAllies(country, battle.getWar())).thenReturn(Collections.singletonList(country.getName()));
+        when(oeUtil.getWarFaction(battle.getWar(), phasing ? battle.isPhasingOffensive() : !battle.isPhasingOffensive()))
+                .thenReturn(Collections.singletonList(country.getName()));
 
         Tables tables = new Tables();
         if (phasing) {
@@ -1112,7 +1113,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         country.setId(27L);
         country.setName("france");
         game.getCountries().add(country);
-        when(oeUtil.getWarAllies(country, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         CountryOrderEntity order = new CountryOrderEntity();
         order.setActive(true);
         order.setCountry(new PlayableCountryEntity());
@@ -1399,7 +1400,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
 
         try {
             battleService.retreatFirstDay(request);
@@ -1420,7 +1421,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("retreatFirstDay.request.idCountry", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
 
         try {
             battleService.retreatFirstDay(request);
@@ -2555,10 +2556,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 retreatRequest.setRequest(new ValidateRequest());
                 retreatRequest.getRequest().setValidate(nonPhasing.retreatFirstDayAttempt);
 
-                when(testClass.oeUtil.getWarAllies(phasingCountry, battle.getWar())).thenReturn(Collections.singletonList(phasingCountry.getName()));
-                when(testClass.oeUtil.getWarAllies(nonPhasingCountry, battle.getWar())).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
-                when(testClass.oeUtil.getWarEnemies(phasingCountry, battle.getWar())).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
-                when(testClass.oeUtil.getWarEnemies(nonPhasingCountry, battle.getWar())).thenReturn(Collections.singletonList(phasingCountry.getName()));
+                when(testClass.oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Collections.singletonList(phasingCountry.getName()));
+                when(testClass.oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
 
                 militaryService.retreatFirstDay(retreatRequest);
 
@@ -3023,7 +3022,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses.request.idCountry", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
 
         try {
             battleService.chooseLossesFromBattle(request);
@@ -3043,7 +3042,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("chooseLosses.request.idCountry", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
 
         try {
             battleService.chooseLossesFromBattle(request);
@@ -3206,10 +3205,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         testCheckStatus(pair.getRight(), request, battleService::chooseLossesFromBattle, "chooseLosses", GameStatusEnum.MILITARY_BATTLES);
         request.getGame().setIdCountry(27L);
 
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
-        when(oeUtil.getWarEnemies(france, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(france, battle.getWar(), false)).thenReturn(true);
 
         battle.getPhasing().getLosses().setThirdLoss(1);
@@ -3286,10 +3283,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         stack.getCounters().add(createCounter(2l, "savoie", CounterFaceTypeEnum.ARMY_MINUS, stack));
         game.getStacks().add(stack);
 
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
-        when(oeUtil.getWarEnemies(france, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(france, battle.getWar(), false)).thenReturn(true);
         when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
@@ -3414,10 +3409,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         stack.getCounters().add(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, stack));
         game.getStacks().add(stack);
 
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
-        when(oeUtil.getWarEnemies(france, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(spain, battle.getWar(), true)).thenReturn(true);
         when(counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
         when(counterDomain.createCounter(any(), any(), anyLong(), any())).thenAnswer(invocation -> {
@@ -3581,7 +3574,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
 
         try {
             battleService.retreatAfterBattle(request);
@@ -3601,7 +3594,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("retreatAfterBattle.request.idCountry", e.getParams()[0]);
         }
 
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
 
         try {
             battleService.retreatAfterBattle(request);
@@ -3777,8 +3770,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         request.getGame().setIdCountry(27L);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
         when(oeUtil.isMobile(stackPhasing)).thenReturn(true);
-        when(oeUtil.getWarAllies(france, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
-        when(oeUtil.getWarEnemies(france, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(france, battle.getWar(), false)).thenReturn(true);
 
         request.setRequest(new RetreatAfterBattleRequest());
@@ -3922,8 +3915,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         request.getGame().setIdCountry(26L);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
         when(oeUtil.isMobile(stackNonPhasing)).thenReturn(true);
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(spain, battle.getWar(), true)).thenReturn(true);
         when(oeUtil.getController(stackNonPhasing)).thenReturn("savoie");
 
@@ -4076,8 +4069,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         request.getGame().setIdCountry(26L);
         when(counterDomain.createStack(any(), any(), any())).thenReturn(new StackEntity());
         when(oeUtil.isMobile(stackNonPhasing)).thenReturn(true);
-        when(oeUtil.getWarAllies(spain, battle.getWar())).thenReturn(Arrays.asList("spain", "austria"));
-        when(oeUtil.getWarEnemies(spain, battle.getWar())).thenReturn(Arrays.asList("france", "savoie"));
+        when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
+        when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("france", "savoie"));
         when(oeUtil.isWarAlly(spain, battle.getWar(), true)).thenReturn(true);
 
         request.setRequest(new RetreatAfterBattleRequest());

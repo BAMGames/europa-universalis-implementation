@@ -207,20 +207,6 @@ public interface IOEUtil {
     boolean isWarAlly(PlayableCountryEntity country, WarEntity war, boolean offensive);
 
     /**
-     * @param country the country.
-     * @param war     the war.
-     * @return the allies of the country in a war (a country is considered allied to itself if in the war).
-     */
-    List<String> getWarAllies(PlayableCountryEntity country, WarEntity war);
-
-    /**
-     * @param country the country.
-     * @param war     the war.
-     * @return the enemies of the country in a war.
-     */
-    List<String> getWarEnemies(PlayableCountryEntity country, WarEntity war);
-
-    /**
      * @param war       the war.
      * @param offensive to know if we want the offensive countries or the defensive ones.
      * @return the list of countries that are offensive or defensive.

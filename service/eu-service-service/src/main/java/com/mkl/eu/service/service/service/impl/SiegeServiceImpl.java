@@ -147,7 +147,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
 
-        List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
+        List<String> allies = oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive());
 
         List<CounterEntity> attackerCounters = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
@@ -291,7 +291,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         List<CounterEntity> counters = new ArrayList<>();
-        List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
+        List<String> allies = oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive());
         for (Long idCounter : request.getRequest().getForces()) {
 
             CounterEntity counter = game.getStacks().stream()
@@ -615,7 +615,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                     stack.setMovePhase(MovePhaseEnum.MOVED);
                     stack.setProvince(provinceTo);
                 };
-                List<String> allies = oeUtil.getWarAllies(country, siege.getWar());
+                List<String> allies = oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive());
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(siege.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);

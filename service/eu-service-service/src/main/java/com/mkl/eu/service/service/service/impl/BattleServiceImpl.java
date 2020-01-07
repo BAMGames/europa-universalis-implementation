@@ -140,8 +140,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, (String) null));
 
-        List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
-        List<String> enemies = oeUtil.getWarEnemies(country, battle.getWar());
+        List<String> allies = oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive());
+        List<String> enemies = oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive());
 
         List<CounterEntity> attackerCounters = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
@@ -321,7 +321,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
 
         List<DiffAttributesEntity> attributes = new ArrayList<>();
         List<CounterEntity> counters = new ArrayList<>();
-        List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
+        List<String> allies = oeUtil.getWarFaction(battle.getWar(),
+                phasing ? battle.isPhasingOffensive() : !battle.isPhasingOffensive());
         for (Long idCounter : request.getRequest().getForces()) {
 
             CounterEntity counter = game.getStacks().stream()
@@ -595,7 +596,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     stack.setProvince(provinceTo);
                     stack.setBesieged(besieged);
                 };
-                List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
+                List<String> allies = oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive());
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
@@ -912,8 +913,10 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         boolean playerPhasing = isPhasingPlayer(game, request.getGame().getIdCountry());
         boolean ok = phasing == playerPhasing;
         if (ok) {
-            List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
-            List<String> enemies = oeUtil.getWarEnemies(country, battle.getWar());
+            List<String> allies = oeUtil.getWarFaction(battle.getWar(),
+                    playerPhasing ? battle.isPhasingOffensive() : !battle.isPhasingOffensive());
+            List<String> enemies = oeUtil.getWarFaction(battle.getWar(),
+                    playerPhasing ? !battle.isPhasingOffensive() : battle.isPhasingOffensive());
             ok = !battle.getCounters().stream()
                     .anyMatch(bc -> bc.isPhasing() == playerPhasing && !allies.contains(bc.getCountry()) ||
                             bc.isPhasing() != playerPhasing && !enemies.contains(bc.getCountry()));
@@ -1768,7 +1771,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .setName(PARAMETER_RETREAT_AFTER_BATTLE, PARAMETER_REQUEST, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_RETREAT_AFTER_BATTLE, METHOD_RETREAT_AFTER_BATTLE, playerPhasing ? "phasing" : "non phasing"));
 
-        List<String> allies = oeUtil.getWarAllies(country, battle.getWar());
+        List<String> allies = oeUtil.getWarFaction(battle.getWar(),
+                playerPhasing ? battle.isPhasingOffensive() : !battle.isPhasingOffensive());
         List<DiffEntity> newDiffs = new ArrayList<>();
         List<DiffAttributesEntity> attributes = new ArrayList<>();
 

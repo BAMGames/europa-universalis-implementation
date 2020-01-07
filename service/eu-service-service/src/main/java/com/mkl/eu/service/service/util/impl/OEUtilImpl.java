@@ -659,38 +659,6 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public List<String> getWarAllies(PlayableCountryEntity country, WarEntity war) {
-        List<String> countries = new ArrayList<>();
-
-        getCountriesInWar(country.getName(), war, true, otherCountry -> {
-            if (!countries.contains(otherCountry.getCountry().getName())) {
-                countries.add(otherCountry.getCountry().getName());
-            }
-        });
-
-        return countries;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<String> getWarEnemies(PlayableCountryEntity country, WarEntity war) {
-        List<String> countries = new ArrayList<>();
-
-        getCountriesInWar(country.getName(), war, false, otherCountry -> {
-            if (!countries.contains(otherCountry.getCountry().getName())) {
-                countries.add(otherCountry.getCountry().getName());
-            }
-        });
-
-        return countries;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public List<String> getWarFaction(WarEntity war, boolean offensive) {
         return war.getCountries().stream()
                 .filter(country -> country.isOffensive() == offensive && country.getImplication() == WarImplicationEnum.FULL)
