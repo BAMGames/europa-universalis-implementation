@@ -1244,7 +1244,7 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public List<String> getLeadingCountry(List<CounterEntity> counters) {
+    public List<String> getLeadingCountries(List<CounterEntity> counters) {
         Map<String, Double> countersByCountry = counters.stream()
                 .collect(Collectors.groupingBy(CounterEntity::getCountry,
                         Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType()))));
@@ -1272,8 +1272,8 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public List<Leader> getLeader(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions) {
-        List<String> leadingCountries = getLeadingCountry(counters);
+    public List<Leader> getLeaders(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions) {
+        List<String> leadingCountries = getLeadingCountries(counters);
         List<String> leaderCodes = counters.stream()
                 .filter(counter -> leadingCountries.contains(counter.getCountry()) &&
                         CounterUtil.isLeader(counter.getType()))

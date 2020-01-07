@@ -235,8 +235,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
         when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(allies);
         when(oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(enemies);
-        when(oeUtil.getLeadingCountry(any())).thenReturn(leadingCountries);
-        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
+        when(oeUtil.getLeadingCountries(any())).thenReturn(leadingCountries);
+        when(oeUtil.getLeaders(any(), any(), any())).thenReturn(leaders);
 
         simulateDiff();
 
@@ -441,7 +441,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         battle.getCounters().clear();
         request.getRequest().setCountry("espagne");
-        when(oeUtil.getLeadingCountry(any())).thenReturn(Arrays.asList("france", "pologne"));
+        when(oeUtil.getLeadingCountries(any())).thenReturn(Arrays.asList("france", "pologne"));
 
         try {
             battleService.selectForces(request);
@@ -611,7 +611,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             leader.setRank("A");
             tables.getLeaders().add(leader);
         }
-        when(oeUtil.getLeadingCountry(any())).thenReturn(Collections.singletonList("france"));
+        when(oeUtil.getLeadingCountries(any())).thenReturn(Collections.singletonList("france"));
         AbstractBack.TABLES = tables;
 
         simulateDiff();

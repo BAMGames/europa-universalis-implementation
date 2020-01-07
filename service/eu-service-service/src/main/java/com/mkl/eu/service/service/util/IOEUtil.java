@@ -371,7 +371,7 @@ public interface IOEUtil {
      * @param counters the counters.
      * @return the country that is naturally leading this counters (if tie, all eligible countries are returned).
      */
-    List<String> getLeadingCountry(List<CounterEntity> counters);
+    List<String> getLeadingCountries(List<CounterEntity> counters);
 
     /**
      * @param counters   the counters.
@@ -379,5 +379,5 @@ public interface IOEUtil {
      * @param conditions the conditions on the leader (general for land, etc...).
      * @return the leader that will naturally lead this counters (if tie, all eligible leaders are returned).
      */
-    List<Leader> getLeader(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions);
+    List<Leader> getLeaders(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions);
 }

@@ -163,9 +163,9 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
         boolean sizeOk = attackerCounters.stream()
                 .filter(counter -> CounterUtil.isArmy(counter.getType()))
                 .count() <= 3 && attackerSize <= 8;
-        List<String> leadingCountries = oeUtil.getLeadingCountry(attackerCounters);
+        List<String> leadingCountries = oeUtil.getLeadingCountries(attackerCounters);
         String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
-        List<Leader> leaders = oeUtil.getLeader(attackerCounters, getTables(), Leader.landEurope);
+        List<Leader> leaders = oeUtil.getLeaders(attackerCounters, getTables(), Leader.landEurope);
         boolean leaderOk = leaders.size() <= 1;
 
         if (sizeOk && StringUtils.isNotEmpty(leadingCountry) && leaderOk) {
@@ -202,11 +202,11 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .filter(counter -> CounterUtil.isArmy(counter.getType()) || CounterUtil.isLeader(counter.getType()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(defenderCounters)) {
-            leadingCountries = oeUtil.getLeadingCountry(defenderCounters);
+            leadingCountries = oeUtil.getLeadingCountries(defenderCounters);
             leadingCountry = leadingCountries.size() >= 1 ? leadingCountries.get(0) : null;
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTRY, leadingCountry));
             siege.getNonPhasing().setCountry(leadingCountry);
-            leaders = oeUtil.getLeader(defenderCounters, getTables(), Leader.landEurope);
+            leaders = oeUtil.getLeaders(defenderCounters, getTables(), Leader.landEurope);
             if (leaders.size() >= 1) {
                 String leader = leaders.get(0).getCode();
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, leader));
@@ -369,7 +369,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
                 .setParams(METHOD_SELECT_FORCES, leaders));
 
-        List<String> countries = oeUtil.getLeadingCountry(counters);
+        List<String> countries = oeUtil.getLeadingCountries(counters);
         String selectedCountry = StringUtils.isEmpty(request.getRequest().getCountry()) && countries.size() == 1
                 ? countries.get(0) : request.getRequest().getCountry();
 

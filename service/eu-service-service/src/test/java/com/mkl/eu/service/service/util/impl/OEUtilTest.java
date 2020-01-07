@@ -3766,7 +3766,7 @@ public class OEUtilTest {
             List<StackEntity> entities = stacks.stream().map(StackBuilder::toEntity).collect(Collectors.toList());
             List<CounterEntity> counters = entities.stream().flatMap(s -> s.getCounters().stream()).collect(Collectors.toList());
 
-            leadingCountries = oeUtil.getLeadingCountry(counters);
+            leadingCountries = oeUtil.getLeadingCountries(counters);
 
             return this;
         }
@@ -3777,7 +3777,7 @@ public class OEUtilTest {
             Tables tables = new Tables();
             tables.getLeaders().addAll(stacks.stream().flatMap(s -> s.counters.stream()).map(CounterBuilder::toLeader).collect(Collectors.toList()));
 
-            leaders = oeUtil.getLeader(counters, tables, conditions);
+            leaders = oeUtil.getLeaders(counters, tables, conditions);
 
             return this;
         }

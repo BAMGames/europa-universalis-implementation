@@ -274,8 +274,8 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         }
         when(oeUtil.getWarFaction(siege.getWar(), siege.isBesiegingOffensive())).thenReturn(allies);
         when(oeUtil.isWarAlly(game.getCountries().get(0), siege.getWar(), siege.isBesiegingOffensive())).thenReturn(true);
-        when(oeUtil.getLeadingCountry(any())).thenReturn(leadingCountries);
-        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaders);
+        when(oeUtil.getLeadingCountries(any())).thenReturn(leadingCountries);
+        when(oeUtil.getLeaders(any(), any(), any())).thenReturn(leaders);
 
         simulateDiff();
 
@@ -489,7 +489,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         siege.getCounters().clear();
         request.getRequest().setCountry("espagne");
-        when(oeUtil.getLeadingCountry(any())).thenReturn(Arrays.asList("france", "pologne"));
+        when(oeUtil.getLeadingCountries(any())).thenReturn(Arrays.asList("france", "pologne"));
 
         try {
             siegeService.selectForces(request);
@@ -625,7 +625,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         StackEntity stack = game.getStacks().get(0);
         stack.getCounters().add(createLeader(9L, country.getName(), CounterFaceTypeEnum.LEADER, "Napo", LeaderTypeEnum.GENERAL, "A 666 -1", tables, stack));
         request.getRequest().getForces().add(9L);
-        when(oeUtil.getLeadingCountry(any())).thenReturn(Collections.singletonList("france"));
+        when(oeUtil.getLeadingCountries(any())).thenReturn(Collections.singletonList("france"));
         AbstractBack.TABLES = tables;
 
         simulateDiff();
