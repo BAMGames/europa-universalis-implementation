@@ -955,6 +955,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             if (stack != null) {
                 doIfAttributeEnum(diff, DiffAttributeTypeEnum.MOVE_PHASE, stack::setMovePhase, MovePhaseEnum.class);
                 doIfAttribute(diff, DiffAttributeTypeEnum.COUNTRY, stack::setCountry);
+                doIfAttribute(diff, DiffAttributeTypeEnum.LEADER, stack::setLeader);
             }
         } else if (attribute != null && StringUtils.equals(attribute.getValue(), MovePhaseEnum.NOT_MOVED.name())) {
             // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.

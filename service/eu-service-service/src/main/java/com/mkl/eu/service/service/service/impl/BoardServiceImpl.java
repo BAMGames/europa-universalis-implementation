@@ -325,6 +325,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_TAKE_STACK_CONTROL, idLeader));
 
         String newController = leader != null ? leader.getCountry() : request.getRequest().getCountry();
+        String newLeader = leader != null ? leader.getCode() : null;
+        boolean controllerChanged = !StringUtils.equals(newController, stack.getCountry());
+        boolean leaderChanged = !StringUtils.equals(newLeader, stack.getLeader());
 
         failIfNull(new CheckForThrow<>()
                 .setTest(newController)
@@ -334,11 +337,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_TAKE_STACK_CONTROL));
 
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(StringUtils.equals(newController, stack.getCountry()))
+                .setTest(!controllerChanged && !leaderChanged)
                 .setCodeError(IConstantsServiceException.STACK_ALREADY_CONTROLLED)
-                .setMsgFormat("{1}: {0} Stack {2} is already controlled by {3}.")
+                .setMsgFormat("{1}: {0} Stack {2} is already controlled by {3} and led by {4}.")
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_COUNTRY)
-                .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController));
+                .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController, newLeader));
 
         List<String> patrons = counterDao.getPatrons(newController, game.getId());
         failIfFalse(new CheckForThrow<Boolean>()
@@ -369,9 +372,11 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController, leaders.stream().map(Leader::getCode).collect(Collectors.toList())));
 
         stack.setCountry(newController);
+        stack.setLeader(newLeader);
 
         DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newController));
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newController, controllerChanged),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, leaderChanged));
 
         gameDao.update(game, false);
 

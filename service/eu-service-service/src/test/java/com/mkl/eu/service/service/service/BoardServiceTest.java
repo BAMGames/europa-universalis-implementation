@@ -749,6 +749,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("takeStackControl.request.idLeader", e.getParams()[0]);
         }
 
+        stack.setLeader("Nabo");
         leader = new Leader();
         leader.setCode("Nabo");
         leader.setCountry("france");

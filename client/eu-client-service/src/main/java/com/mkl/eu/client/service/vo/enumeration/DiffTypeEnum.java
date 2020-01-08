@@ -222,6 +222,7 @@ public enum DiffTypeEnum {
      * <ul>
      * <li>DiffAttributeTypeEnum#MOVE_PHASE to know the new move phase of the stack.</li>
      * <li>DiffAttributeTypeEnum#COUNTRY to know the new controller of the stack.</li>
+     * <li>DiffAttributeTypeEnum#LEADER to know the new leader of the stack.</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
