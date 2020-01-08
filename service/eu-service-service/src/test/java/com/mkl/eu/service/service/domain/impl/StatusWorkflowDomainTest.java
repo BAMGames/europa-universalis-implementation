@@ -1900,7 +1900,7 @@ public class StatusWorkflowDomainTest {
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);
-        Assert.assertEquals(null, getAttribute(diff, DiffAttributeTypeEnum.EXC_TAXES));
+        Assert.assertEquals(null, getAttributeFull(diff, DiffAttributeTypeEnum.EXC_TAXES));
         Assert.assertEquals("1", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
         diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ECO_SHEET

@@ -1906,7 +1906,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertNotNull(diffSiege);
 
             if (man == null) {
-                Assert.assertEquals(result.result != null ? result.result.name() : null, getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+                if (result.result == null) {
+                    Assert.assertNull(getAttributeFull(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+                } else {
+                    Assert.assertEquals(result.result.name(), getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_RESULT));
+                }
                 Assert.assertEquals(die + "", getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_UNDERMINE_DIE));
             }
             Assert.assertEquals(result.result, siege.getUndermineResult());
@@ -1985,7 +1989,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             if (result.newFortressType != null) {
                 Assert.assertNotNull("A fortress counter should have been added but was not.", addFortress);
                 Assert.assertEquals("The new fortress has not the rigth face type.", result.newFortressType.name(), getAttribute(addFortress, DiffAttributeTypeEnum.TYPE));
-                Assert.assertEquals("The new fortress belongs to the wrong country.", result.newFortressCountry != null ? result.newFortressCountry.name : null, getAttribute(addFortress, DiffAttributeTypeEnum.COUNTRY));
+                if (result.newFortressCountry == null) {
+                    Assert.assertNull("The new fortress should not be created.", getAttributeFull(addFortress, DiffAttributeTypeEnum.COUNTRY));
+                } else {
+                    Assert.assertEquals("The new fortress belongs to the wrong country.", result.newFortressCountry.name, getAttribute(addFortress, DiffAttributeTypeEnum.COUNTRY));
+                }
             } else {
                 Assert.assertNull("A fortress counter should not have been added but was.", addFortress);
             }
@@ -3180,18 +3188,18 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 Assert.assertEquals(SiegeUndermineResultEnum.BREACH_TAKEN, siege.getUndermineResult());
             }
             if (StringUtils.equals(phasing.tech, Tech.MEDIEVAL)) {
-                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
+                Assert.assertNull(getAttributeFull(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
             } else {
                 Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
             }
             Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
             if (result.phasingRoutedAtFire) {
-                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
+                Assert.assertNull(getAttributeFull(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
             } else {
                 Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
             }
             if (result.nonPhasingRoutedAtFire) {
-                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+                Assert.assertNull(getAttributeFull(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
             } else {
                 Assert.assertNotNull(getAttribute(diffSiege, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
             }
@@ -3210,7 +3218,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             } else {
                 Assert.assertNull("The fortress should not have been removed but was.", removeFortress);
                 Assert.assertFalse(siege.isFortressFalls());
-                Assert.assertNull(getAttribute(diffSiege, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS));
+                Assert.assertNull(getAttributeFull(diffSiege, DiffAttributeTypeEnum.SIEGE_FORTRESS_FALLS));
             }
             DiffEntity removeControl = diffs.stream()
                     .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && d.getIdObject() == 102L)

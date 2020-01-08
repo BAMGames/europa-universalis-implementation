@@ -415,6 +415,13 @@ public abstract class AbstractGameServiceTest {
         return counter;
     }
 
+    public static DiffAttributesEntity getAttributeFull(DiffEntity diff, DiffAttributeTypeEnum type) {
+        return diff.getAttributes().stream()
+                .filter(attribute -> attribute.getType() == type)
+                .findAny()
+                .orElse(null);
+    }
+
     public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {
         DiffAttributesEntity attr = diff.getAttributes().stream()
                 .filter(attribute -> attribute.getType() == type)

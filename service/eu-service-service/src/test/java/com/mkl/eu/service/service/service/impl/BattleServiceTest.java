@@ -1287,7 +1287,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("idf", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_FROM));
         Assert.assertEquals("orleans", getAttribute(diffStack1, DiffAttributeTypeEnum.PROVINCE_TO));
         Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack1, DiffAttributeTypeEnum.MOVE_PHASE));
-        Assert.assertNull(getAttribute(diffStack1, DiffAttributeTypeEnum.BESIEGED));
+        Assert.assertNull(getAttributeFull(diffStack1, DiffAttributeTypeEnum.BESIEGED));
         diffStack3 = diffs.stream()
                 .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK
                         && Objects.equals(diff.getIdObject(), stack3.getId()))
@@ -1297,7 +1297,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals("idf", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_FROM));
         Assert.assertEquals("orleans", getAttribute(diffStack3, DiffAttributeTypeEnum.PROVINCE_TO));
         Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(diffStack3, DiffAttributeTypeEnum.MOVE_PHASE));
-        Assert.assertNull(getAttribute(diffStack3, DiffAttributeTypeEnum.BESIEGED));
+        Assert.assertNull(getAttributeFull(diffStack3, DiffAttributeTypeEnum.BESIEGED));
     }
 
     @Test
@@ -2611,8 +2611,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 diffsLastDay = diffsFirstDay;
             } else {
                 Assert.assertEquals(1, diffsFirstDay.size());
-                Assert.assertNull(getAttribute(diffFirstDay, DiffAttributeTypeEnum.END));
-                Assert.assertNull(getAttribute(diffFirstDay, DiffAttributeTypeEnum.WINNER));
+                Assert.assertNull(getAttributeFull(diffFirstDay, DiffAttributeTypeEnum.END));
+                Assert.assertNull(getAttributeFull(diffFirstDay, DiffAttributeTypeEnum.WINNER));
                 Assert.assertEquals(BattleStatusEnum.RETREAT_AFTER_FIRST_DAY_DEF.name(), getAttribute(diffFirstDay, DiffAttributeTypeEnum.STATUS));
                 if (nonPhasing.retreatFirstDayResult) {
                     diffLastDay = diffsFirstRetreat.stream().filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE && Objects.equals(d.getIdObject(), battle.getId()))
@@ -2630,8 +2630,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                         Assert.assertEquals(toString(battle.getNonPhasing().getSecondDay().getFireMod()), getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD));
                         Assert.assertEquals(toString(battle.getNonPhasing().getSecondDay().getShockMod()), getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD));
                     } else {
-                        Assert.assertNull(getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD));
-                        Assert.assertNull(getAttribute(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD));
+                        Assert.assertNull(getAttributeFull(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE_MOD));
+                        Assert.assertNull(getAttributeFull(diffRetreat, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK_MOD));
                     }
 
                     diffLastDay = diffsSecondDay.stream().filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.BATTLE && Objects.equals(d.getIdObject(), battle.getId()))
@@ -2644,8 +2644,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                     Assert.assertEquals(toString(battle.getPhasing().getSecondDay().getFireMod()), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD));
                     Assert.assertEquals(toString(battle.getPhasing().getSecondDay().getShockMod()), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD));
                 } else {
-                    Assert.assertNull(getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD));
-                    Assert.assertNull(getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD));
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE_MOD));
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK_MOD));
                 }
             }
 
@@ -2658,21 +2658,69 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(battle.getNonPhasing().getLosses().getThirdLoss() + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_THIRD_LOSS));
             Assert.assertEquals(result.nonPhasingMoralLosses == 0 ? "" : result.nonPhasingMoralLosses + "", getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_MORALE_LOSS));
 
-            Assert.assertEquals(toString(phasing.firstFire), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
-            Assert.assertEquals(toString(phasing.firstShock), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
-            Assert.assertEquals(toString(nonPhasing.firstFire), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
-            Assert.assertEquals(toString(nonPhasing.firstShock), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+            if (phasing.firstFire == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
+            } else {
+                Assert.assertEquals(toString(phasing.firstFire), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_FIRE));
+            }
+            if (phasing.firstShock == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
+            } else {
+                Assert.assertEquals(toString(phasing.firstShock), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_PHASING_FIRST_DAY_SHOCK));
+            }
+            if (nonPhasing.firstFire == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
+            } else {
+                Assert.assertEquals(toString(nonPhasing.firstFire), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE));
+            }
+            if (nonPhasing.firstShock == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+            } else {
+                Assert.assertEquals(toString(nonPhasing.firstShock), getAttribute(diffFirstDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK));
+            }
 
             if (!onlyOneDayBattle) {
-                Assert.assertEquals(toString(phasing.secondFire), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE));
-                Assert.assertEquals(toString(phasing.secondShock), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK));
-                Assert.assertEquals(toString(nonPhasing.secondFire), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE));
-                Assert.assertEquals(toString(nonPhasing.secondShock), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK));
+                if (phasing.secondFire == null) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE));
+                } else {
+                    Assert.assertEquals(toString(phasing.secondFire), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_FIRE));
+                }
+                if (phasing.secondShock == null) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK));
+                } else {
+                    Assert.assertEquals(toString(phasing.secondShock), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK));
+                }
+                if (nonPhasing.secondFire == null) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE));
+                } else {
+                    Assert.assertEquals(toString(nonPhasing.secondFire), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_FIRE));
+                }
+                if (nonPhasing.secondShock == null) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK));
+                } else {
+                    Assert.assertEquals(toString(nonPhasing.secondShock), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SECOND_DAY_SHOCK));
+                }
             }
-            Assert.assertEquals(toString(phasing.pursuit), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT));
-            Assert.assertEquals(toString(phasing.retreat), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_RETREAT));
-            Assert.assertEquals(toString(nonPhasing.pursuit), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT));
-            Assert.assertEquals(toString(nonPhasing.retreat), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_RETREAT));
+            if (phasing.pursuit == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT));
+            } else {
+                Assert.assertEquals(toString(phasing.pursuit), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_PURSUIT));
+            }
+            if (phasing.retreat == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_RETREAT));
+            } else {
+                Assert.assertEquals(toString(phasing.retreat), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_PHASING_RETREAT));
+            }
+            if (nonPhasing.pursuit == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT));
+            } else {
+                Assert.assertEquals(toString(nonPhasing.pursuit), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_PURSUIT));
+            }
+            if (nonPhasing.retreat == null) {
+                Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_RETREAT));
+            } else {
+                Assert.assertEquals(toString(nonPhasing.retreat), getAttribute(diffLastDay, DiffAttributeTypeEnum.BATTLE_NON_PHASING_RETREAT));
+            }
 
             if (result.phasingAnnihilated) {
                 for (CounterEntity counter : phasing.counters) {
@@ -2705,18 +2753,34 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 Assert.assertEquals(BattleStatusEnum.CHOOSE_LOSS, battle.getStatus());
                 Assert.assertEquals(BattleStatusEnum.CHOOSE_LOSS.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
                 Assert.assertEquals(phasingLossesAuto, battle.getPhasing().isLossesSelected());
-                Assert.assertEquals(toString(phasingLossesAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                if (!phasingLossesAuto) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                } else {
+                    Assert.assertEquals("true", getAttribute(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                }
                 Assert.assertEquals(nonPhasingLossesAuto, battle.getNonPhasing().isLossesSelected());
-                Assert.assertEquals(toString(nonPhasingLossesAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+                if (!nonPhasingLossesAuto) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+                } else {
+                    Assert.assertEquals("true", getAttribute(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+                }
             } else if (!phasingRetreatAuto || !nonPhasingRetreatAuto) {
                 Assert.assertEquals(BattleStatusEnum.RETREAT, battle.getStatus());
                 Assert.assertTrue(battle.getPhasing().isLossesSelected());
                 Assert.assertTrue(battle.getNonPhasing().isLossesSelected());
                 Assert.assertEquals(BattleStatusEnum.RETREAT.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
                 Assert.assertEquals(phasingRetreatAuto, battle.getPhasing().isRetreatSelected());
-                Assert.assertEquals(toString(phasingRetreatAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                if (!phasingRetreatAuto) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                } else {
+                    Assert.assertEquals("true", getAttribute(diffLastDay, DiffAttributeTypeEnum.PHASING_READY));
+                }
                 Assert.assertEquals(nonPhasingRetreatAuto, battle.getNonPhasing().isRetreatSelected());
-                Assert.assertEquals(toString(nonPhasingRetreatAuto), getAttribute(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+                if (!nonPhasingRetreatAuto) {
+                    Assert.assertNull(getAttributeFull(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+                } else {
+                    Assert.assertEquals("true", getAttribute(diffLastDay, DiffAttributeTypeEnum.NON_PHASING_READY));
+                }
             } else {
                 Assert.assertEquals(BattleStatusEnum.DONE, battle.getStatus());
                 Assert.assertEquals(BattleStatusEnum.DONE.name(), getAttribute(diffLastDay, DiffAttributeTypeEnum.STATUS));
@@ -2759,10 +2823,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
 
         private String toString(Integer i) {
             return i == null ? null : i.toString();
-        }
-
-        private String toString(boolean i) {
-            return i ? Boolean.toString(true) : null;
         }
 
         private <T extends Enum<T>> String toString(Enum<T> e) {
