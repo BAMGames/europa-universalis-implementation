@@ -4639,6 +4639,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(2).setId(102L);
         game.getStacks().get(2).setProvince("rAzteca~E");
         game.getStacks().get(2).setCountry("france");
+        game.getStacks().get(2).setLeader("Nabo");
         game.getStacks().get(2).setGame(game);
         game.getStacks().get(2).getCounters().add(new CounterEntity());
         game.getStacks().get(2).getCounters().get(0).setId(102L);
@@ -5342,6 +5343,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(21).getType());
         Assert.assertEquals(DiffTypeObjectEnum.STACK, diffs.get(21).getTypeObject());
         Assert.assertEquals("espagne", getAttribute(diffs.get(21), DiffAttributeTypeEnum.COUNTRY));
+        Assert.assertEquals(null, getAttribute(diffs.get(21), DiffAttributeTypeEnum.LEADER));
 
         Assert.assertEquals(1, newTfis.size());
         Assert.assertEquals(1, newTfis.get("ZPfrance").size());

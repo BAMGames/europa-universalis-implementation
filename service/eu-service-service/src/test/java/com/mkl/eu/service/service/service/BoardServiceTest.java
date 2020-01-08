@@ -23,6 +23,7 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
@@ -1128,6 +1129,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
         when(oeUtil.getController(stack)).thenReturn("france");
         when(oeUtil.getController(stackTo)).thenReturn("genes");
+        when(oeUtil.getLeader(any(), any(), any())).thenReturn("leader");
 
         simulateDiff();
 
@@ -1164,6 +1166,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
                 .orElse(null);
         Assert.assertNotNull(diffEntity);
         Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+        Assert.assertEquals("leader", getAttribute(diffEntity, DiffAttributeTypeEnum.LEADER));
 
         diffEntity = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
@@ -1172,9 +1175,12 @@ public class BoardServiceTest extends AbstractGameServiceTest {
                 .orElse(null);
         Assert.assertNotNull(diffEntity);
         Assert.assertEquals("genes", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+        Assert.assertEquals("leader", getAttribute(diffEntity, DiffAttributeTypeEnum.LEADER));
 
         Assert.assertEquals("france", stack.getCountry());
+        Assert.assertEquals("leader", stack.getLeader());
         Assert.assertEquals("genes", stackTo.getCountry());
+        Assert.assertEquals("leader", stackTo.getLeader());
     }
 
     @Test
@@ -1588,26 +1594,46 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testRemoveCounterNoControllerChange() throws Exception {
-        testRemoveCounterSuccess("france", "france", false);
+    public void testRemoveCounterNoChange() throws Exception {
+        testRemoveCounterSuccess("france", "france", "Napo", "Napo", false);
     }
 
     @Test
-    public void testRemoveCounterNoControllerChangeStackDestroyed() throws Exception {
-        testRemoveCounterSuccess("france", "france", true);
+    public void testRemoveCounterNoChangeStackDestroyed() throws Exception {
+        testRemoveCounterSuccess("france", "france", "Napo", "Napo", true);
     }
 
     @Test
     public void testRemoveCounterControllerChange() throws Exception {
-        testRemoveCounterSuccess("france", "espagne", false);
+        testRemoveCounterSuccess("france", "espagne", null, null, false);
     }
 
     @Test
     public void testRemoveCounterControllerChangeStackDestroyed() throws Exception {
-        testRemoveCounterSuccess("france", "espagne", true);
+        testRemoveCounterSuccess("france", "espagne", null, null, true);
     }
 
-    private void testRemoveCounterSuccess(String controllerBefore, String controllerAfter, boolean noStackAfter) throws Exception {
+    @Test
+    public void testRemoveCounterLeaderChange() throws Exception {
+        testRemoveCounterSuccess("france", "france", "Napo", "Nabo", false);
+    }
+
+    @Test
+    public void testRemoveCounterLeaderChangeStackDestroyed() throws Exception {
+        testRemoveCounterSuccess("france", "france", "Napo", "Nabo", true);
+    }
+
+    @Test
+    public void testRemoveCounterControllerAndLeaderChange() throws Exception {
+        testRemoveCounterSuccess("france", "espagne", "Napo", "Draco", false);
+    }
+
+    @Test
+    public void testRemoveCounterControllerAndLeaderChangeStackDestroyed() throws Exception {
+        testRemoveCounterSuccess("france", "espagne", "Napo", "Draco", true);
+    }
+
+    private void testRemoveCounterSuccess(String controllerBefore, String controllerAfter, String leaderBefore, String leaderAfter, boolean noStackAfter) throws Exception {
         Pair<Request<RemoveCounterRequest>, GameEntity> pair = testCheckGame(boardService::removeCounter, "removeCounter");
         Request<RemoveCounterRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
@@ -1616,6 +1642,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setId(24L);
         stack.setCountry(controllerBefore);
+        stack.setLeader(leaderBefore);
         stack.setGame(noStackAfter ? null : game);
         game.getStacks().add(stack);
         CounterEntity counter = createCounter(25L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack);
@@ -1624,6 +1651,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         DiffEntity diffRemove = DiffUtil.createDiff(game, DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER);
         when(counterDomain.removeCounter(counter)).thenReturn(diffRemove);
         when(oeUtil.getController(stack)).thenReturn(controllerAfter);
+        when(oeUtil.getLeader(any(), any(), any())).thenReturn(leaderAfter);
 
         simulateDiff();
 
@@ -1632,6 +1660,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         List<DiffEntity> diffs = retrieveDiffsCreated();
 
         boolean stackChangeController = !StringUtils.equals(controllerBefore, controllerAfter) && !noStackAfter;
+        boolean leaderChange = !StringUtils.equals(leaderBefore, leaderAfter) && !noStackAfter;
         Assert.assertEquals(stackChangeController ? 2 : 1, diffs.size());
 
         DiffEntity diff = diffs.stream()
@@ -1649,6 +1678,16 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         if (stackChangeController) {
             Assert.assertNotNull(diff);
             Assert.assertEquals(controllerAfter, getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
+            DiffAttributesEntity attribute = diff.getAttributes().stream()
+                    .filter(attr -> attr.getType() == DiffAttributeTypeEnum.LEADER)
+                    .findAny()
+                    .orElse(null);
+            if (leaderChange) {
+                Assert.assertNotNull(attribute);
+                Assert.assertEquals(leaderAfter, attribute.getValue());
+            } else {
+                Assert.assertNull(attribute);
+            }
         } else {
             Assert.assertNull(diff);
         }

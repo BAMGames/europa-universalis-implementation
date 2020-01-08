@@ -928,10 +928,14 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .forEach(stack -> {
                     String newStackController = oeUtil.getController(stack);
                     if (!StringUtils.equals(newStackController, stack.getCountry())) {
+                        // TODO TG-10 TG-14 choose right conditions
+                        String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
                         diffs.add(DiffUtil.createDiff(siege.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
-                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController)));
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
+                        stack.setCountry(newStackController);
+                        stack.setLeader(newLeader);
                     }
-                    stack.setCountry(newStackController);
                 });
 
         diffs.addAll(statusWorkflowDomain.endMilitaryPhase(siege.getGame()));

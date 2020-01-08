@@ -1448,6 +1448,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .forEach(stack -> {
                     String newStackController = oeUtil.getController(stack);
                     boolean changeController = !StringUtils.equals(newStackController, stack.getCountry());
+                    // TODO TG-10 TG-14 choose right conditions
+                    String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
                     MovePhaseEnum movePhase = stack.getMovePhase();
                     if (stack.getMovePhase() == MovePhaseEnum.FIGHTING) {
                         List<String> enemies = oeUtil.getEnemies(stack.getCountry(), battle.getGame());
@@ -1461,10 +1463,12 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     if (changeController || changeMovePhase) {
                         diffs.add(DiffUtil.createDiff(battle.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase, changeMovePhase),
-                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, changeController)));
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, changeController),
+                                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
                     }
                     stack.setMovePhase(movePhase);
                     stack.setCountry(newStackController);
+                    stack.setLeader(newLeader);
                 });
         diffs.addAll(statusWorkflowDomain.endMilitaryPhase(battle.getGame()));
         return diffs;
@@ -1858,14 +1862,18 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
 
             Consumer<StackEntity> retreatStack = stack -> {
                 String newStackController = oeUtil.getController(stack);
+                // TODO TG-10 TG-14 choose right conditions
+                String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
                 newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, battle.getProvince()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, !StringUtils.equals(newStackController, stack.getCountry()))));
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, !StringUtils.equals(newStackController, stack.getCountry())),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
                 stack.setMovePhase(MovePhaseEnum.MOVED);
                 stack.setProvince(provinceTo);
                 stack.setCountry(newStackController);
+                stack.setLeader(newLeader);
             };
             game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))

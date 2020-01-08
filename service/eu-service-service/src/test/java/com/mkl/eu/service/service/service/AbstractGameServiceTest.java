@@ -416,11 +416,11 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {
-        return diff.getAttributes().stream()
+        DiffAttributesEntity attr = diff.getAttributes().stream()
                 .filter(attribute -> attribute.getType() == type)
-                .map(DiffAttributesEntity::getValue)
                 .findAny()
                 .orElse(null);
+        return attr.getValue();
     }
 
     public static Answer<?> removeCounterAnswer() {
