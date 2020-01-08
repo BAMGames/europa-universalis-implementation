@@ -25,6 +25,7 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.IOEUtil;
 import com.mkl.eu.service.service.util.SavableRandom;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -1222,21 +1223,24 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public String getController(StackEntity stack) {
-        Map<String, Double> countersByCountry = stack.getCounters().stream()
-                .collect(Collectors.groupingBy(CounterEntity::getCountry, Collectors.summingDouble(value -> CounterUtil.getSizeFromType(value.getType()))));
-        Double max = countersByCountry.values().stream().max(Comparator.<Double>naturalOrder()).orElse(null);
-        if (max == null || max == 0) {
+        List<String> countries = getLeadingCountries(stack.getCounters());
+        if (CollectionUtils.isEmpty(countries)) {
             return null;
-        }
-        List<String> controllers = countersByCountry.entrySet().stream()
-                .filter(key -> Math.abs(key.getValue() - max) < EPSILON)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-        if (controllers.contains(stack.getCountry())) {
-            return stack.getCountry();
         } else {
-            return controllers.get(0);
+            return countries.get(0);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getLeader(StackEntity stack, Tables tables, Predicate<Leader> conditions) {
+        List<Leader> leaders = getLeaders(stack.getCounters(), tables, conditions);
+        if (CollectionUtils.isEmpty(leaders)) {
+            return null;
+        } else {
+            return leaders.get(0).getCode();
         }
     }
 

@@ -368,6 +368,14 @@ public interface IOEUtil {
     String getController(StackEntity stack);
 
     /**
+     * @param stack      the stack.
+     * @param tables     the tables.
+     * @param conditions the conditions on the leader (general for land, etc...).
+     * @return the leader that should lead this stack given the counters. In case of tie, choose a random one.
+     */
+    String getLeader(StackEntity stack, Tables tables, Predicate<Leader> conditions);
+
+    /**
      * @param counters the counters.
      * @return the country that is naturally leading this counters (if tie, all eligible countries are returned).
      */
