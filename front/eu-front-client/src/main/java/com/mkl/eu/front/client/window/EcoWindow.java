@@ -10,7 +10,6 @@ import com.mkl.eu.client.service.vo.eco.EconomicalSheet;
 import com.mkl.eu.client.service.vo.eco.TradeFleet;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
-import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -43,6 +42,16 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 @Component
 @Scope(value = "prototype")
 public class EcoWindow extends AbstractDiffResponseListenerContainer implements IDiffListener {
+    // TODO find a way to have the geogroups in xml file like the provinces
+    /** List of the names of the trade zones in mediterranean trace center. */
+    public static final String[] TRADE_ZONES_MEDITERRANEAN = {"ZMCaspienne", "ZMIonienne", "ZMLion", "ZMNoire W",
+            "ZPturquie", "ZPvenise"};
+    /** List of the names of the trade zones in the atlantic trade center. */
+    public static final String[] TRADE_ZONES_ATLANTIC = {"ZMAmerique", "ZMCanarias", "ZMCaraibes", "ZMGuinee",
+            "ZMNord", "ZMPatagonie", "ZMPerou", "ZMRecife",
+            "ZPangleterre", "ZPBaltique", "ZPespagne", "ZPfrance", "ZPhollande", "ZPrussie"};
+    /** List of the names of the trade zones in the indian trade center. */
+    public static final String[] TRADE_ZONES_INDIEN = {"ZMArabie", "ZMChine", "ZMIndien", "ZMTempetes"};
     /** Table configA for sheet A. */
     private static final List<TableConfig<EconomicalSheet>> configA;
     /** Table configB for sheet B. */
@@ -445,15 +454,15 @@ public class EcoWindow extends AbstractDiffResponseListenerContainer implements 
             sheets.add(sheet);
         }
         tableTFMed.setItems(FXCollections.observableList(sheets.stream()
-                .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_MEDITERRANEAN, tf.getTradeZone()) >= 0)
+                .filter(tf -> Arrays.binarySearch(TRADE_ZONES_MEDITERRANEAN, tf.getTradeZone()) >= 0)
                 .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
                 .collect(Collectors.toList())));
         tableTFAtl.setItems(FXCollections.observableList(sheets.stream()
-                .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_ATLANTIC, tf.getTradeZone()) >= 0)
+                .filter(tf -> Arrays.binarySearch(TRADE_ZONES_ATLANTIC, tf.getTradeZone()) >= 0)
                 .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
                 .collect(Collectors.toList())));
         tableTFInd.setItems(FXCollections.observableList(sheets.stream()
-                .filter(tf -> Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_INDIEN, tf.getTradeZone()) >= 0)
+                .filter(tf -> Arrays.binarySearch(TRADE_ZONES_INDIEN, tf.getTradeZone()) >= 0)
                 .sorted(Comparator.comparing(TradeFleetSheet::getTradeZone))
                 .collect(Collectors.toList())));
     }

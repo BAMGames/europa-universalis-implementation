@@ -6,25 +6,18 @@ package com.mkl.eu.client.service.vo.ref;
  * @author MKL.
  */
 public interface IReferentielConstants {
-    // TODO replace these by GeoGroup geature
-    /** Name of the caspian trading zone. */
-    String TRADE_ZONE_CASPIAN = "ZMCaspienne";
-    /** List of the names of the trade zones in Europe. */
-    String[] TRADE_ZONES_EUROPE = {"ZMCaspienne", "ZMIonienne", "ZMLion", "ZMNoire W", "ZMNord",
-            "ZPBaltique", "ZPangleterre", "ZPespagne", "ZPfrance", "ZPhollande", "ZPrussie",
-            "ZPturquie", "ZPvenise"};
-    /** List of the names of the trade zones in mediterranean trace center. */
-    String[] TRADE_ZONES_MEDITERRANEAN = {"ZMCaspienne", "ZMIonienne", "ZMLion", "ZMNoire W",
-            "ZPturquie", "ZPvenise"};
-    /** List of the names of the trade zones in the atlantic trade center. */
-    String[] TRADE_ZONES_ATLANTIC = {"ZMAmerique", "ZMCanarias", "ZMCaraibes", "ZMGuinee",
-            "ZMNord", "ZMPatagonie", "ZMPerou", "ZMRecife",
-            "ZPangleterre", "ZPBaltique", "ZPespagne", "ZPfrance", "ZPhollande", "ZPrussie"};
-    /** List of the names of the trade zones in the indian trade center. */
-    String[] TRADE_ZONES_INDIEN = {"ZMArabie", "ZMChine", "ZMIndien", "ZMTempetes"};
-    /** List of the names of the trade zones that accept trade. */
-    String[] TRADE_ZONES_TRADE = {"ZMArabie", "ZMCanarias", "ZMChine", "ZMGuinee", "ZMIndien"};
-
+    /** Geo group for the caspian trading zone. */
+    String TRADE_ZONE_CASPIAN = "TRADE ZONE CASPIAN";
+    /** Geo group for the european trading zones. */
+    String TRADE_ZONE_EUROPE = "TRADE ZONE EUROPE";
+    /** Geo group for the trade zones in mediterranean trace center. */
+    String TRADE_ZONE_MEDITERRANEAN = "TRADE ZONE MEDITERRANEAN";
+    /** Geo group for the trade zones in the atlantic trade center. */
+    String TRADE_ZONE_ATLANTIC = "TRADE ZONE ATLANTIC";
+    /** Geo group for the trade zones in the indian trade center. */
+    String TRADE_ZONE_INDIAN = "TRADE ZONE INDIAN";
+    /** Geo group for the trade zones that accept trade. */
+    String TRADE_ZONE_TRADE = "TRADE ZONE TRADE";
 
     /** Geo group of America. */
     String AMERICA = "AMERICA";

@@ -13,6 +13,7 @@ import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.eco.Competition;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.ref.country.LimitReferential;
@@ -1559,7 +1560,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).setProvince("idf");
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(0).setCountry("france");
-        game.getTradeFleets().get(0).setProvince("zp_france");
+        game.getTradeFleets().get(0).setProvince("ZPfrance");
         game.getTradeFleets().get(0).setLevel(6);
 
         List<AdministrativeActionEntity> actionsFor11 = new ArrayList<>();
@@ -1601,7 +1602,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         zpFr.setSeaZone("ZPfrance");
         zpFr.setType(TradeZoneTypeEnum.ZP);
         zpFr.setCountryName("france");
-        when(provinceDao.getProvinceByName("zp_france")).thenReturn(zpFr);
+        when(provinceDao.getProvinceByName("ZPfrance")).thenReturn(zpFr);
 
         SeaProvinceEntity canarias = new SeaProvinceEntity();
         when(provinceDao.getProvinceByName("eCanarias")).thenReturn(canarias);
@@ -1707,6 +1708,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         }
 
         request.getRequest().setProvince("ZMCanarias");
+        when(provinceDao.getGeoGroups("ZMCanarias")).thenReturn(Collections.singletonList(IReferentielConstants.TRADE_ZONE_TRADE));
 
         try {
             economicService.addAdminAction(request);
@@ -1757,6 +1759,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         }
 
         request.getRequest().setProvince("ZMCaspienne");
+        when(provinceDao.getGeoGroups("ZMCaspienne")).thenReturn(Arrays.asList(IReferentielConstants.TRADE_ZONE_EUROPE, IReferentielConstants.TRADE_ZONE_CASPIAN));
 
         try {
             economicService.addAdminAction(request);
@@ -1795,7 +1798,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             Assert.fail(e.getMessage());
         }
 
-        request.getRequest().setProvince("zp_france");
+        request.getRequest().setProvince("ZPfrance");
+        when(provinceDao.getGeoGroups("ZPfrance")).thenReturn(Collections.singletonList(IReferentielConstants.TRADE_ZONE_EUROPE));
 
         try {
             economicService.addAdminAction(request);
@@ -1928,18 +1932,21 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         zpFr.setType(TradeZoneTypeEnum.ZP);
         zpFr.setCountryName("france");
         when(provinceDao.getProvinceByName("ZPfrance")).thenReturn(zpFr);
+        when(provinceDao.getGeoGroups("ZPfrance")).thenReturn(Collections.singletonList(IReferentielConstants.TRADE_ZONE_EUROPE));
 
         TradeZoneProvinceEntity zpEn = new TradeZoneProvinceEntity();
         zpEn.setName("ZPangleterre");
         zpEn.setType(TradeZoneTypeEnum.ZP);
         zpEn.setCountryName("angleterre");
         when(provinceDao.getProvinceByName("ZPangleterre")).thenReturn(zpEn);
+        when(provinceDao.getGeoGroups("ZPangleterre")).thenReturn(Collections.singletonList(IReferentielConstants.TRADE_ZONE_EUROPE));
 
         TradeZoneProvinceEntity zmBal = new TradeZoneProvinceEntity();
         zmBal.setName("ZPBaltique");
         zmBal.setType(TradeZoneTypeEnum.ZP);
         zmBal.setSeaZone("s_baltique");
         when(provinceDao.getProvinceByName("ZPBaltique")).thenReturn(zmBal);
+        when(provinceDao.getGeoGroups("ZPBaltique")).thenReturn(Collections.singletonList(IReferentielConstants.TRADE_ZONE_EUROPE));
 
         Tables tables = new Tables();
         List<Limit> limits = new ArrayList<>();
@@ -2058,7 +2065,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getStacks().get(1).setProvince("idf");
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(0).setCountry("france");
-        game.getTradeFleets().get(0).setProvince("zp_france");
+        game.getTradeFleets().get(0).setProvince("ZPfrance");
         game.getTradeFleets().get(0).setLevel(6);
 
         Map<String, Integer> ownedProvinces = new HashMap<>();
@@ -2542,7 +2549,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         }
         game.getTradeFleets().add(new TradeFleetEntity());
         game.getTradeFleets().get(0).setCountry("france");
-        game.getTradeFleets().get(0).setProvince("zp_france");
+        game.getTradeFleets().get(0).setProvince("ZPfrance");
         game.getTradeFleets().get(0).setLevel(6);
 
         when(adminActionDao.findPlannedAdminActions(idCountry, turn, null, AdminActionTypeEnum.MNU, AdminActionTypeEnum.FTI,

@@ -596,12 +596,13 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
 
         //noinspection ConstantConditions
         TradeZoneProvinceEntity tradeZone = (TradeZoneProvinceEntity) prov;
-        if (Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_EUROPE, prov.getName()) < 0) {
+        List<String> geoGroups = provinceDao.getGeoGroups(tradeZone.getName());
+        if (!geoGroups.contains(IReferentielConstants.TRADE_ZONE_EUROPE)) {
             List<String> countries = adminActionDao.getCountriesTradeFleetAccessRotw(tradeZone.getSeaZone(), game.getId());
             // TODO trade rights taken
             if (!countries.contains(country.getName())) {
                 boolean right = false;
-                if (Arrays.binarySearch(IReferentielConstants.TRADE_ZONES_TRADE, prov.getName()) > +0) {
+                if (geoGroups.contains(IReferentielConstants.TRADE_ZONE_TRADE)) {
                     SeaProvinceEntity sea = (SeaProvinceEntity) provinceDao.getProvinceByName(tradeZone.getSeaZone());
                     List<String> discovers = country.getDiscoveries().stream().filter(d -> d.getStack() == null && d.getTurn() != null)
                             .map(DiscoveryEntity::getProvince).collect(Collectors.toList());
@@ -615,7 +616,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 failIfFalse(new CheckForThrow<Boolean>().setTest(right).setCodeError(IConstantsServiceException.TRADE_FLEET_ACCESS_ROTW)
                         .setMsgFormat("{1}: {0} The country {3} can''t implant a trade fleet located in {2} because of rotw access limitation.").setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_ADD_ADM_ACT, province, country.getName()));
             }
-        } else if (StringUtils.equals(IReferentielConstants.TRADE_ZONE_CASPIAN, prov.getName())) {
+        } else if (geoGroups.contains(IReferentielConstants.TRADE_ZONE_CASPIAN)) {
             List<String> owners = counterDao.getNeighboringOwners(tradeZone.getSeaZone(), game.getId());
             owners.add(game.getMedCommCenterOwner());
             owners.add(game.getOrientCommCenterOwner());
