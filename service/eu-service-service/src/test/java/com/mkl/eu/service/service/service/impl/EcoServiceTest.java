@@ -5014,6 +5014,10 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         when(counterDomain.removeCounter(counterArmy)).thenReturn(diffRemove);
         when(oeUtil.getController(game.getStacks().get(2))).thenReturn("espagne");
 
+        RotwProvinceEntity azteca = new RotwProvinceEntity();
+        azteca.setName("rAzteca~E");
+        when(provinceDao.getProvinceByName("rAzteca~E")).thenReturn(azteca);
+
         DiffEntity diffAddLand = new DiffEntity();
         when(counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "france", "idf", null, game)).thenReturn(diffAddLand);
 

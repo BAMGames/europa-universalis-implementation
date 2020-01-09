@@ -30,7 +30,6 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
-import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import org.apache.commons.collections.CollectionUtils;
@@ -65,9 +64,6 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
     /** Status workflow domain. */
     @Autowired
     private IStatusWorkflowDomain statusWorkflowDomain;
-    /** Province DAO. */
-    @Autowired
-    private IProvinceDao provinceDao;
 
     /** {@inheritDoc} */
     @Override
@@ -380,8 +376,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
                 .setParams(METHOD_SELECT_FORCES, selectedCountry, countries));
 
-        // TODO TG-10 TG-14 choose right conditions
-        Predicate<Leader> conditions = Leader.landEurope;
+        Predicate<Leader> conditions = getLeaderConditions(siege.getProvince());
         List<Leader> availableLeaders = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()) &&
                         allies.contains(stack.getCountry()))
@@ -928,8 +923,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .forEach(stack -> {
                     String newStackController = oeUtil.getController(stack);
                     if (!StringUtils.equals(newStackController, stack.getCountry())) {
-                        // TODO TG-10 TG-14 choose right conditions
-                        String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
+                        String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
                         diffs.add(DiffUtil.createDiff(siege.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));

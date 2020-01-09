@@ -43,7 +43,6 @@ import com.mkl.eu.service.service.persistence.oe.eco.*;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
-import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
@@ -95,9 +94,6 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
     /** Counter DAO. */
     @Autowired
     private ICounterDao counterDao;
-    /** Province DAO. */
-    @Autowired
-    private IProvinceDao provinceDao;
     /** Country DAO. */
     @Autowired
     private ICountryDao countryDao;
@@ -1761,8 +1757,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
             if (stack.getGame() != null) {
                 String newStackController = oeUtil.getController(stack);
                 if (!StringUtils.equals(newStackController, stack.getCountry())) {
-                    // TODO TG-10 TG-14 choose right conditions
-                    String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
+                    String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
                     diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));

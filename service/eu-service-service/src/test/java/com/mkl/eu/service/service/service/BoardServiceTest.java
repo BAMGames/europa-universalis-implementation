@@ -613,6 +613,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(1).setName("france");
         StackEntity stack = new StackEntity();
         stack.setId(7L);
+        stack.setProvince("pecs");
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         stack.setCountry("france");
         CounterEntity counter = new CounterEntity();
         counter.setCountry("france");
@@ -788,6 +792,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         game.getCountries().get(1).setName("france");
         StackEntity stack = new StackEntity();
         stack.setId(7L);
+        stack.setProvince("pecs");
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         stack.setCountry("france");
         CounterEntity counter = new CounterEntity();
         counter.setCountry("france");
@@ -1113,6 +1121,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         country.setUsername("toto");
         country.setId(666L);
         game.getCountries().add(country);
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("IdF");
+        when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
 
         List<String> patrons = new ArrayList<>();
         patrons.add("france");
@@ -1641,6 +1653,10 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.getRequest().setIdCounter(25L);
         StackEntity stack = new StackEntity();
         stack.setId(24L);
+        stack.setProvince("pecs");
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         stack.setCountry(controllerBefore);
         stack.setLeader(leaderBefore);
         stack.setGame(noStackAfter ? null : game);

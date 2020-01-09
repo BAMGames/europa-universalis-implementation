@@ -6,6 +6,7 @@ package com.mkl.eu.client.service.vo.ref;
  * @author MKL.
  */
 public interface IReferentielConstants {
+    // TODO replace these by GeoGroup geature
     /** Name of the caspian trading zone. */
     String TRADE_ZONE_CASPIAN = "ZMCaspienne";
     /** List of the names of the trade zones in Europe. */
@@ -23,4 +24,14 @@ public interface IReferentielConstants {
     String[] TRADE_ZONES_INDIEN = {"ZMArabie", "ZMChine", "ZMIndien", "ZMTempetes"};
     /** List of the names of the trade zones that accept trade. */
     String[] TRADE_ZONES_TRADE = {"ZMArabie", "ZMCanarias", "ZMChine", "ZMGuinee", "ZMIndien"};
+
+
+    /** Geo group of America. */
+    String AMERICA = "AMERICA";
+    /** Geo group of Asia. */
+    String ASIA = "ASIA";
+    /** Geo group of Mediterranean sea. */
+    String MEDITERRANEAN_SEA = "MEDITERRANEAN SEA";
+    /** Geo group of Europe (used only by seas for the moment). */
+    String EUROPE = "EUROPE";
 }

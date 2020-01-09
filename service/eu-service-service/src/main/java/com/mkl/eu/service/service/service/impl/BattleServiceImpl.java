@@ -31,7 +31,6 @@ import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleSideEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
-import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.ArmyInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
@@ -66,9 +65,6 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
     /** Status Workflow Domain. */
     @Autowired
     private IStatusWorkflowDomain statusWorkflowDomain;
-    /** Province DAO. */
-    @Autowired
-    private IProvinceDao provinceDao;
 
     /** {@inheritDoc} */
     @Override
@@ -166,8 +162,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .count() <= 3 && attackerSize <= 8;
         List<String> leadingCountries = oeUtil.getLeadingCountries(attackerCounters);
         String leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
-        // TODO TG-10 TG-14 choose right conditions
-        List<Leader> leaders = oeUtil.getLeaders(attackerCounters, getTables(), Leader.landEurope);
+        List<Leader> leaders = oeUtil.getLeaders(attackerCounters, getTables(), getLeaderConditions(province));
         boolean leaderOk = leaders.size() <= 1;
 
         if (sizeOk && StringUtils.isNotEmpty(leadingCountry) && leaderOk) {
@@ -213,8 +208,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .count() <= 3 && defenderSize <= 8;
         leadingCountries = oeUtil.getLeadingCountries(defenderCounters);
         leadingCountry = leadingCountries.size() == 1 ? leadingCountries.get(0) : null;
-        // TODO TG-10 TG-14 choose right conditions
-        leaders = oeUtil.getLeaders(defenderCounters, getTables(), Leader.landEurope);
+        leaders = oeUtil.getLeaders(defenderCounters, getTables(), getLeaderConditions(province));
         leaderOk = leaders.size() <= 1;
 
         if (sizeOk && StringUtils.isNotEmpty(leadingCountry) && leaderOk) {
@@ -412,8 +406,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_COUNTRY)
                 .setParams(METHOD_SELECT_FORCES, selectedCountry, countries));
 
-        // TODO TG-10 TG-14 choose right conditions
-        Predicate<Leader> conditions = Leader.landEurope;
+        Predicate<Leader> conditions = getLeaderConditions(battle.getProvince());
         List<Leader> availableLeaders = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
                         allies.contains(stack.getCountry()))
@@ -1448,8 +1441,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .forEach(stack -> {
                     String newStackController = oeUtil.getController(stack);
                     boolean changeController = !StringUtils.equals(newStackController, stack.getCountry());
-                    // TODO TG-10 TG-14 choose right conditions
-                    String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
+                    String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(province));
                     MovePhaseEnum movePhase = stack.getMovePhase();
                     if (stack.getMovePhase() == MovePhaseEnum.FIGHTING) {
                         List<String> enemies = oeUtil.getEnemies(stack.getCountry(), battle.getGame());
@@ -1862,8 +1854,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
 
             Consumer<StackEntity> retreatStack = stack -> {
                 String newStackController = oeUtil.getController(stack);
-                // TODO TG-10 TG-14 choose right conditions
-                String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
+                String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(province));
                 newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, battle.getProvince()),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),

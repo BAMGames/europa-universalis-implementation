@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.client.service.vo.ref.Referential;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
 import com.mkl.eu.client.service.vo.tables.*;
@@ -26,10 +27,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.BattleEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.*;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.util.ArmyInfo;
@@ -172,6 +170,9 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         battle.setId(33L);
         battle.setStatus(BattleStatusEnum.NEW);
         battle.setProvince("idf");
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("idf");
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
         game.getBattles().add(battle);
         game.getStacks().add(new StackEntity());
         game.getStacks().get(0).setProvince("idf");
@@ -299,6 +300,9 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         BattleEntity battle = new BattleEntity();
         battle.setStatus(BattleStatusEnum.WITHDRAW_BEFORE_BATTLE);
         battle.setProvince("pecs");
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         game.getBattles().add(battle);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -551,6 +555,9 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         battle.getNonPhasing().setForces(phasing);
         battle.getPhasing().setForces(!phasing);
         battle.setProvince("pecs");
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         game.getBattles().add(battle);
         game.getBattles().add(new BattleEntity());
         game.getBattles().get(1).setStatus(BattleStatusEnum.NEW);
@@ -4182,5 +4189,55 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);
+    }
+
+    @Test
+    public void testGetLeaderConditions() {
+        SeaProvinceEntity north = new SeaProvinceEntity();
+        north.setName("north");
+        when(provinceDao.getProvinceByName("north")).thenReturn(north);
+        when(provinceDao.getGeoGroups("north")).thenReturn(Collections.singletonList(IReferentielConstants.EUROPE));
+        SeaProvinceEntity lion = new SeaProvinceEntity();
+        lion.setName("lion");
+        when(provinceDao.getProvinceByName("lion")).thenReturn(lion);
+        when(provinceDao.getGeoGroups("lion")).thenReturn(Arrays.asList(IReferentielConstants.EUROPE, IReferentielConstants.MEDITERRANEAN_SEA));
+        SeaProvinceEntity tempetes = new SeaProvinceEntity();
+        tempetes.setName("tempetes");
+        when(provinceDao.getProvinceByName("tempetes")).thenReturn(tempetes);
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setName("idf");
+        when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        RotwProvinceEntity aral = new RotwProvinceEntity();
+        aral.setName("aral");
+        when(provinceDao.getProvinceByName("aral")).thenReturn(aral);
+        when(provinceDao.getGeoGroups("aral")).thenReturn(Collections.singletonList(IReferentielConstants.ASIA));
+        RotwProvinceEntity siberie = new RotwProvinceEntity();
+        siberie.setName("siberie");
+        when(provinceDao.getProvinceByName("siberie")).thenReturn(siberie);
+        RotwProvinceEntity oregon = new RotwProvinceEntity();
+        oregon.setName("oregon");
+        when(provinceDao.getProvinceByName("oregon")).thenReturn(oregon);
+        when(provinceDao.getGeoGroups("oregon")).thenReturn(Collections.singletonList(IReferentielConstants.AMERICA));
+
+        Assert.assertEquals(Leader.navalEurope, battleService.getLeaderConditions("north"));
+        Assert.assertEquals(Leader.navalEurope, battleService.getLeaderConditions(north));
+
+        Assert.assertEquals(Leader.navalEuropeMed, battleService.getLeaderConditions("lion"));
+        Assert.assertEquals(Leader.navalEuropeMed, battleService.getLeaderConditions(lion));
+
+        Assert.assertEquals(Leader.navalRotw, battleService.getLeaderConditions("tempetes"));
+        Assert.assertEquals(Leader.navalRotw, battleService.getLeaderConditions(tempetes));
+
+        Assert.assertEquals(Leader.landEurope, battleService.getLeaderConditions("idf"));
+        Assert.assertEquals(Leader.landEurope, battleService.getLeaderConditions(idf));
+
+        Assert.assertEquals(Leader.landRotwAsia, battleService.getLeaderConditions("aral"));
+        Assert.assertEquals(Leader.landRotwAsia, battleService.getLeaderConditions(aral));
+
+        Assert.assertEquals(Leader.landRotw, battleService.getLeaderConditions("siberie"));
+        Assert.assertEquals(Leader.landRotw, battleService.getLeaderConditions(siberie));
+
+        Assert.assertEquals(Leader.landRotwAmerica, battleService.getLeaderConditions("oregon"));
+        Assert.assertEquals(Leader.landRotwAmerica, battleService.getLeaderConditions(oregon));
     }
 }

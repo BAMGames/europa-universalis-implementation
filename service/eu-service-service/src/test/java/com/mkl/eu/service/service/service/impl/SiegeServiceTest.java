@@ -346,6 +346,9 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         SiegeEntity siege = new SiegeEntity();
         siege.setStatus(SiegeStatusEnum.CHOOSE_MODE);
         siege.setProvince("pecs");
+        EuropeanProvinceEntity pecs = new EuropeanProvinceEntity();
+        pecs.setName("pecs");
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         game.getSieges().add(siege);
         game.getSieges().add(new SiegeEntity());
         game.getSieges().get(1).setStatus(SiegeStatusEnum.NEW);

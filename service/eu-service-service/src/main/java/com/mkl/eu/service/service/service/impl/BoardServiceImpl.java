@@ -360,8 +360,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_TAKE_STACK_CONTROL, PARAMETER_REQUEST, PARAMETER_COUNTRY)
                 .setParams(METHOD_TAKE_STACK_CONTROL, idStack, newController, countries));
 
-        // TODO TG-10 TG-14 choose right conditions
-        List<Leader> leaders = oeUtil.getLeaders(stack.getCounters(), getTables(), Leader.landEurope);
+        List<Leader> leaders = oeUtil.getLeaders(stack.getCounters(), getTables(), getLeaderConditions(stack.getProvince()));
         leaders.removeIf(l -> !StringUtils.equals(l.getCountry(), newController) || (leader != null && leader.getRank().compareTo(l.getRank()) <= 0));
 
         failIfFalse(new CheckForThrow<Boolean>()
@@ -578,8 +577,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         String oldStackController = oeUtil.getController(oldStack);
         if (!StringUtils.equals(oldStackController, oldStack.getCountry())) {
-            // TODO TG-10 TG-14 choose right conditions
-            String newLeader = oeUtil.getLeader(oldStack, getTables(), Leader.landEurope);
+            String newLeader = oeUtil.getLeader(oldStack, getTables(), getLeaderConditions(oldStack.getProvince()));
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, oldStack.getId(),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, oldStackController),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, oldStack.getLeader()))));
@@ -588,8 +586,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         }
         String newStackController = oeUtil.getController(stack);
         if (!StringUtils.equals(newStackController, stack.getCountry())) {
-            // TODO TG-10 TG-14 choose right conditions
-            String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
+            String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
@@ -765,8 +762,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         if (stack.getGame() != null) {
             String newStackController = oeUtil.getController(stack);
             if (!StringUtils.equals(newStackController, stack.getCountry())) {
-                // TODO TG-10 TG-14 choose right conditions
-                String newLeader = oeUtil.getLeader(stack, getTables(), Leader.landEurope);
+                String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
                 diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
