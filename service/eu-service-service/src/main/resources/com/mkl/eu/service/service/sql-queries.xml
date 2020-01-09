@@ -426,4 +426,13 @@
 			;
 		]]>
 	</entry>
+	<entry key="province.geo_group">
+		<![CDATA[
+			SELECT distinct geoGroup.NAME
+			FROM R_PROVINCE province
+				LEFT OUTER JOIN R_PROVINCE_ROTW provinceRotw ON provinceRotw.ID = province.ID
+				LEFT OUTER JOIN R_GEO_GROUP geoGroup ON geoGroup.R_REGION = provinceRotw.REGION OR geoGroup.R_PROVINCE = province.NAME
+			WHERE province.NAME = ':province' AND geoGroup.NAME IS NOT NULL;
+		]]>
+	</entry>
 </properties>

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <R_GEO_GROUP ID="1" NAME="AMERICA" R_REGION="Azteca"/>
+    <R_GEO_GROUP ID="2" NAME="SOUTH AMERICA" R_REGION="Azteca"/>
+    <R_GEO_GROUP ID="3" NAME="GOLD" R_PROVINCE="rAzteca~C"/>
+    <R_GEO_GROUP ID="4" NAME="HRE" R_PROVINCE="eSchwaben"/>
+    <R_GEO_GROUP ID="5" NAME="ITALY" R_PROVINCE="eCampania"/>
+    <R_GEO_GROUP ID="6" NAME="ASIA" R_REGION="Aral"/>
+</dataset>

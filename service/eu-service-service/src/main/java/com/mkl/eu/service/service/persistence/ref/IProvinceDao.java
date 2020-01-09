@@ -5,6 +5,8 @@ import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEn
 import com.mkl.eu.service.service.persistence.oe.ref.province.GoldEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RegionEntity;
 
+import java.util.List;
+
 /**
  * Interface of the Province DAO.
  *
@@ -34,4 +36,10 @@ public interface IProvinceDao extends IGenericDao<AbstractProvinceEntity, Long> 
      * @return the gold.
      */
     GoldEntity getGoldInProvince(String name);
+
+    /**
+     * @param province name of the province.
+     * @return the list of geographical groups that this province belongs to.
+     */
+    List<String> getGeoGroups(String province);
 }
