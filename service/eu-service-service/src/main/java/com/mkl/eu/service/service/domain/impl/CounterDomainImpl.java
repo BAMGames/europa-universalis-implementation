@@ -7,6 +7,7 @@ import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffAttributeTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.DiffTypeObjectEnum;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -18,15 +19,18 @@ import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
-import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
+import com.mkl.eu.service.service.service.impl.AbstractBack;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Cross service class for counter manipulation.
@@ -34,7 +38,7 @@ import java.util.Optional;
  * @author MKL.
  */
 @Component
-public class CounterDomainImpl implements ICounterDomain {
+public class CounterDomainImpl extends AbstractBack implements ICounterDomain {
     /** OEUtil. */
     @Autowired
     private IOEUtil oeUtil;
@@ -44,9 +48,6 @@ public class CounterDomainImpl implements ICounterDomain {
     /** Stack DAO. */
     @Autowired
     private IStackDao stackDao;
-    /** Province DAO. */
-    @Autowired
-    private IProvinceDao provinceDao;
 
     /** {@inheritDoc} */
     @Override
@@ -248,6 +249,37 @@ public class CounterDomainImpl implements ICounterDomain {
         }
 
         return diff;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DiffEntity> moveLeader(CounterEntity leader, StackEntity stackTo, String province, GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        StackEntity stackFrom = leader.getOwner();
+
+        if (stackTo == null) {
+            stackTo = createStack(province, leader.getCountry(), game);
+        }
+        diffs.add(changeCounterOwner(leader, stackTo, game));
+
+        Predicate<Leader> conditions = getLeaderConditions(stackTo.getProvince());
+        List<Leader> leaders = oeUtil.getLeaders(stackTo.getCounters(), getTables(), conditions);
+        if (leaders.stream().anyMatch(lead -> StringUtils.equals(lead.getCode(), leader.getCode()))) {
+            stackTo.setLeader(leader.getCode());
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stackTo.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, leader.getCode())));
+        }
+
+        if (StringUtils.equals(stackFrom.getLeader(), leader.getCode())) {
+            conditions = getLeaderConditions(stackFrom.getProvince());
+            String newLeader = oeUtil.getLeader(stackFrom, getTables(), conditions);
+            stackFrom.setLeader(newLeader);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stackFrom.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader)));
+        }
+
+        return diffs;
     }
 
     /** {@inheritDoc} */

@@ -1,6 +1,7 @@
 package com.mkl.eu.service.service.domain;
 
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
@@ -10,10 +11,12 @@ import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.TradeFleetEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.RotwProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.AbstractGameServiceTest;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +25,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -36,7 +42,7 @@ import static org.mockito.Mockito.when;
  * @author MKL.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CounterDomainTest {
+public class CounterDomainTest extends AbstractGameServiceTest {
     @InjectMocks
     private CounterDomainImpl counterDomain;
 
@@ -837,5 +843,167 @@ public class CounterDomainTest {
 
         Assert.assertFalse(diffOpt.isPresent());
         Assert.assertEquals("B_PB_0G", counter.getOwner().getProvince());
+    }
+
+    @Test
+    public void testMoveLeader() {
+        MoveLeaderBuilder.create()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .inStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .leadingOldStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .canLeadNewStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .inStack().leadingOldStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .inStack().canLeadNewStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .leadingOldStack().canLeadNewStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+        MoveLeaderBuilder.create()
+                .inStack().leadingOldStack().canLeadNewStack()
+                .whenMoveLeader(this)
+                .thenExpect();
+    }
+
+    static class MoveLeaderBuilder {
+        boolean inStack;
+        boolean leadingOldStack;
+        boolean canLeadNewStack;
+        GameEntity game;
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        static MoveLeaderBuilder create() {
+            return new MoveLeaderBuilder();
+        }
+
+        MoveLeaderBuilder inStack() {
+            this.inStack = true;
+            return this;
+        }
+
+        MoveLeaderBuilder leadingOldStack() {
+            this.leadingOldStack = true;
+            return this;
+        }
+
+        MoveLeaderBuilder canLeadNewStack() {
+            this.canLeadNewStack = true;
+            return this;
+        }
+
+        MoveLeaderBuilder whenMoveLeader(CounterDomainTest testClass) {
+            game = new GameEntity();
+            StackEntity oldStack = new StackEntity();
+            oldStack.setId(1L);
+            oldStack.setProvince("oldProvince");
+            CounterEntity leader = new CounterEntity();
+            leader.setId(7L);
+            leader.setCode("leader");
+            leader.setOwner(oldStack);
+            oldStack.getCounters().add(leader);
+            if (leadingOldStack) {
+                oldStack.setLeader(leader.getCode());
+            } else {
+                oldStack.setLeader("not" + leader.getCode());
+            }
+            StackEntity stack = null;
+
+            if (inStack) {
+                stack = new StackEntity();
+                stack.setId(2L);
+                stack.setProvince("newProvince");
+                game.getStacks().add(stack);
+            }
+
+            List<Leader> leaders = new ArrayList<>();
+            if (canLeadNewStack) {
+                Leader lead = new Leader();
+                lead.setCode(leader.getCode());
+                leaders.add(lead);
+            }
+            when(testClass.oeUtil.getLeader(any(), any(), any())).thenReturn("newLeader");
+            when(testClass.oeUtil.getLeaders(any(), any(), any())).thenReturn(leaders);
+            when(testClass.provinceDao.getProvinceByName("newProvince")).thenReturn(new EuropeanProvinceEntity());
+            when(testClass.provinceDao.getProvinceByName(oldStack.getProvince())).thenReturn(new EuropeanProvinceEntity());
+            when(testClass.stackDao.create(any())).then(invocationOnMock -> {
+                StackEntity stackCreated = invocationOnMock.getArgumentAt(0, StackEntity.class);
+                if (stackCreated != null) {
+                    stackCreated.setId(3L);
+                }
+                return stackCreated;
+            });
+
+            diffs = testClass.counterDomain.moveLeader(leader, stack, stack == null ? "newProvince" : null, game);
+
+            return this;
+        }
+
+        MoveLeaderBuilder thenExpect() {
+            int nbDiff = 1;
+            DiffEntity moveCounter = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(diff.getIdObject(), 7L))
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull("No move counter diff was sent.", moveCounter);
+            Assert.assertEquals("The move counter diff has wrong province to attribute.", "newProvince", getAttribute(moveCounter, DiffAttributeTypeEnum.PROVINCE_TO));
+            long nbLeaderCounter = game.getStacks().stream()
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> StringUtils.equals("leader", counter.getCode()))
+                    .count();
+            Assert.assertEquals("The leader counter was either duplicated or removed instead of moved.", 1, nbLeaderCounter);
+            CounterEntity leader = game.getStacks().stream()
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> StringUtils.equals("leader", counter.getCode()))
+                    .findAny()
+                    .orElse(null);
+            Assert.assertEquals("The leader counter was moved to the wrong stack or province.", "newProvince", leader.getOwner().getProvince());
+
+            DiffEntity modifyOldStack = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK &&
+                            Objects.equals(diff.getIdObject(), 1L))
+                    .findAny()
+                    .orElse(null);
+            if (leadingOldStack) {
+                Assert.assertNotNull("The old stack should have been modified.", modifyOldStack);
+                Assert.assertEquals("The old stack new leader is wrong.", "newLeader", getAttribute(modifyOldStack, DiffAttributeTypeEnum.LEADER));
+                nbDiff++;
+            } else {
+                Assert.assertNull("The old should should not have been modified.", modifyOldStack);
+            }
+
+            Long idStack = inStack ? 2L : 3L;
+            DiffEntity modifyNewStack = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK &&
+                            Objects.equals(diff.getIdObject(), idStack))
+                    .findAny()
+                    .orElse(null);
+            if (canLeadNewStack) {
+                Assert.assertNotNull("The new stack should have been modified.", modifyNewStack);
+                Assert.assertEquals("The new stack new leader is wrong.", leader.getCode(), getAttribute(modifyNewStack, DiffAttributeTypeEnum.LEADER));
+                nbDiff++;
+            } else {
+                Assert.assertNull("The new should should not have been modified.", modifyNewStack);
+            }
+
+            Assert.assertEquals("Number of diffs received is wrong.", nbDiff, diffs.size());
+
+            return this;
+        }
     }
 }

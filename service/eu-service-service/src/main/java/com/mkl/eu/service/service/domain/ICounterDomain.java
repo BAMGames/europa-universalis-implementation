@@ -6,6 +6,7 @@ import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -81,6 +82,18 @@ public interface ICounterDomain {
      * @return the diffs related to the move of the special counter.
      */
     DiffEntity moveSpecialCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
+
+    /**
+     * Moves a leader to a specific stack, or a province if no stack specified (and then creates a new stack).
+     * The leader will lead the stack it is moved to if he is eligible.
+     *
+     * @param leader   the counter leader.
+     * @param stackTo  the stack where the leader will be.
+     * @param province the province where the leader will be if stackTo is <code>null</code>.
+     * @param game     the game.
+     * @return the diffs related to the move of the leader.
+     */
+    List<DiffEntity> moveLeader(CounterEntity leader, StackEntity stackTo, String province, GameEntity game);
 
     /**
      * Creates a stack.

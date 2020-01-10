@@ -3,15 +3,24 @@ package com.mkl.eu.service.service.service.impl;
 import com.mkl.eu.client.common.exception.FunctionalException;
 import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.service.service.INameConstants;
+import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
 import com.mkl.eu.client.service.vo.ref.Referential;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
+import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -51,6 +60,9 @@ public abstract class AbstractBack implements INameConstants {
     public static final String MSG_MISSING_TABLE = "Entry {1} for table {0} does not exist.";
     /** Error message when an entity is missing. */
     public static final String MSG_MISSING_ENTITY = "Entity of type {1} with identifier {0} does not exist.";
+    /** Province DAO. */
+    @Autowired
+    protected IProvinceDao provinceDao;
 
     /**
      * @return the Tables.
@@ -64,6 +76,41 @@ public abstract class AbstractBack implements INameConstants {
      */
     protected Referential getReferential() {
         return REFERENTIAL;
+    }
+
+    /**
+     * @param province the province.
+     * @return the conditions for a leader to lead in the province.
+     */
+    protected Predicate<Leader> getLeaderConditions(String province) {
+        return getLeaderConditions(provinceDao.getProvinceByName(province));
+    }
+
+    /**
+     * @param province the province.
+     * @return the conditions for a leader to lead in the province.
+     */
+    protected Predicate<Leader> getLeaderConditions(AbstractProvinceEntity province) {
+        List<String> geoGroups = provinceDao.getGeoGroups(province.getName());
+        if (province instanceof SeaProvinceEntity) {
+            if (geoGroups.contains(IReferentielConstants.MEDITERRANEAN_SEA)) {
+                return Leader.navalEuropeMed;
+            } else if (geoGroups.contains(IReferentielConstants.EUROPE)) {
+                return Leader.navalEurope;
+            } else {
+                return Leader.navalRotw;
+            }
+        } else {
+            if (geoGroups.contains(IReferentielConstants.AMERICA)) {
+                return Leader.landRotwAmerica;
+            } else if (geoGroups.contains(IReferentielConstants.ASIA)) {
+                return Leader.landRotwAsia;
+            } else if (province instanceof EuropeanProvinceEntity) {
+                return Leader.landEurope;
+            } else {
+                return Leader.landRotw;
+            }
+        }
     }
 
     /**

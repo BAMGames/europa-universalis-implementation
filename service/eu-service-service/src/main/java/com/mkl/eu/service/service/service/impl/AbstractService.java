@@ -10,8 +10,6 @@ import com.mkl.eu.client.service.vo.chat.MessageDiff;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
-import com.mkl.eu.client.service.vo.ref.IReferentielConstants;
-import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
 import com.mkl.eu.service.service.mapping.diff.DiffMapping;
 import com.mkl.eu.service.service.persistence.IGameDao;
@@ -22,10 +20,6 @@ import com.mkl.eu.service.service.persistence.oe.chat.ChatEntity;
 import com.mkl.eu.service.service.persistence.oe.chat.MessageGlobalEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
-import com.mkl.eu.service.service.persistence.oe.ref.province.SeaProvinceEntity;
-import com.mkl.eu.service.service.persistence.ref.IProvinceDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.socket.AfterCommitTransaction;
 import com.mkl.eu.service.service.socket.WebSocketServer;
@@ -34,7 +28,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -58,9 +51,6 @@ public abstract class AbstractService extends AbstractBack {
     /** Chat mapping. */
     @Autowired
     protected ChatMapping chatMapping;
-    /** Province DAO. */
-    @Autowired
-    protected IProvinceDao provinceDao;
 
     /**
      * Check that game info are properly assigned, retrieve the game and its diffs and return it.
@@ -216,41 +206,6 @@ public abstract class AbstractService extends AbstractBack {
                 .setMsgFormat(MSG_INVALID_STATUS)
                 .setName(param, PARAMETER_REQUEST)
                 .setParams(method, game.getStatus(), status));
-    }
-
-    /**
-     * @param province the province.
-     * @return the conditions for a leader to lead in the province.
-     */
-    protected Predicate<Leader> getLeaderConditions(String province) {
-        return getLeaderConditions(provinceDao.getProvinceByName(province));
-    }
-
-    /**
-     * @param province the province.
-     * @return the conditions for a leader to lead in the province.
-     */
-    protected Predicate<Leader> getLeaderConditions(AbstractProvinceEntity province) {
-        List<String> geoGroups = provinceDao.getGeoGroups(province.getName());
-        if (province instanceof SeaProvinceEntity) {
-            if (geoGroups.contains(IReferentielConstants.MEDITERRANEAN_SEA)) {
-                return Leader.navalEuropeMed;
-            } else if (geoGroups.contains(IReferentielConstants.EUROPE)) {
-                return Leader.navalEurope;
-            } else {
-                return Leader.navalRotw;
-            }
-        } else {
-            if (geoGroups.contains(IReferentielConstants.AMERICA)) {
-                return Leader.landRotwAmerica;
-            } else if (geoGroups.contains(IReferentielConstants.ASIA)) {
-                return Leader.landRotwAsia;
-            } else if (province instanceof EuropeanProvinceEntity) {
-                return Leader.landEurope;
-            } else {
-                return Leader.landRotw;
-            }
-        }
     }
 
     /**
