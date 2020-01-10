@@ -1193,6 +1193,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
      * @return the bonus given by a leader for an external operation.
      */
     private int getBonusFromLeader(String countryName, RotwProvinceEntity rotwProv, GameEntity game) {
+        List<String> geoGroups = provinceDao.getGeoGroups(rotwProv.getName());
         List<String> leaderCodes = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), rotwProv.getName()))
                 .flatMap(stack -> stack.getCounters().stream())
@@ -1204,6 +1205,8 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
                 .filter(l -> leaderCodes.contains(l.getCode()))
                 .collect(Collectors.toList());
         int bonusLeader = leaders.stream()
+                .filter(leader -> (!leader.isAmerica() || geoGroups.contains(IReferentielConstants.AMERICA))
+                        && (!leader.isAsia() || geoGroups.contains(IReferentielConstants.ASIA)))
                 .map(this::getBonusLeader)
                 .max(Comparator.<Integer>naturalOrder())
                 .orElse(0);

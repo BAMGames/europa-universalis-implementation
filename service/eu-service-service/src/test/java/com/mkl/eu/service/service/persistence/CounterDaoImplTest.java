@@ -167,10 +167,23 @@ public class CounterDaoImplTest {
 
     @Test
     public void testGovernorInRegion() {
+        // region and leader do not exist
         Assert.assertFalse(counterDao.isGovernorInSameRegion("toto", "tata", 1L));
+        // governor america in american region
         Assert.assertTrue(counterDao.isGovernorInSameRegion("Azteca", "espagne", 1L));
+        // governor asia in american region
         Assert.assertFalse(counterDao.isGovernorInSameRegion("Azteca", "france", 1L));
+        // governor in american region
+        Assert.assertTrue(counterDao.isGovernorInSameRegion("Azteca", "angleterre", 1L));
+        // governor in another american region
         Assert.assertFalse(counterDao.isGovernorInSameRegion("Inca", "espagne", 1L));
+        // governor in region without geo group
+        Assert.assertTrue(counterDao.isGovernorInSameRegion("Siberie", "russie", 2L));
+        // governor in region without geo group but not in this game
+        Assert.assertFalse(counterDao.isGovernorInSameRegion("Siberie", "russie", 1L));
+        // no governor in region without geo group
+        Assert.assertFalse(counterDao.isGovernorInSameRegion("Siberie", "france", 1L));
+        // governor is in this region but not in this game
         Assert.assertFalse(counterDao.isGovernorInSameRegion("Azteca", "espagne", 2L));
     }
 }

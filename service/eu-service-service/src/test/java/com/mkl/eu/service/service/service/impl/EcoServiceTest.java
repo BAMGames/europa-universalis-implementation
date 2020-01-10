@@ -3481,7 +3481,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Tables tables = new Tables();
         CounterEntity counter = new CounterEntity();
         counter.setType(CounterFaceTypeEnum.LEADER);
-        counter.setCountry("espagne");
+        counter.setCountry("france");
         String code = "Leader-" + index;
         counter.setCode(code);
         counter.setOwner(game.getStacks().get(1));
@@ -3490,7 +3490,8 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         Leader lead = new Leader();
         lead.setCode(code);
         lead.setType(LeaderTypeEnum.CONQUISTADOR);
-        lead.setManoeuvre(5);
+        lead.setManoeuvre(6);
+        lead.setAsia(true);
         tables.getLeaders().add(lead);
         index++;
         for (Pair<LeaderTypeEnum, Integer> leader : leaders) {
@@ -3506,6 +3507,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             lead.setCode(code);
             lead.setType(leader.getLeft());
             lead.setManoeuvre(leader.getRight());
+            lead.setAmerica(bonusFromLeader % 2 == 0);
             tables.getLeaders().add(lead);
 
             index++;
@@ -3515,6 +3517,7 @@ public class EcoServiceTest extends AbstractGameServiceTest {
         game.getOtherForces().get(0).setType(OtherForcesTypeEnum.NATIVES);
 
         when(counterDao.isGovernorInSameRegion("Canada", "france", game.getId())).thenReturn(governorInProvince);
+        when(provinceDao.getGeoGroups("quebec")).thenReturn(Collections.singletonList(IReferentielConstants.AMERICA));
 
         List<Limit> limits = new ArrayList<>();
         Limit limit = new Limit();
