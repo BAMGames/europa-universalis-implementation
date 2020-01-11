@@ -696,6 +696,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             Integer level = Integer.parseInt(attribute.getValue());
             updateCounterLevel(counter, level, game);
         }
+
+        doIfAttribute(diff, DiffAttributeTypeEnum.CODE, counter::setCode);
     }
 
     /**

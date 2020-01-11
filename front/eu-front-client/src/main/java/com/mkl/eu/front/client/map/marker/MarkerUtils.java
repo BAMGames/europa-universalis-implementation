@@ -97,7 +97,7 @@ public final class MarkerUtils {
                     StackMarker stackMarker = new StackMarker(stack, mapMarker);
                     for (Counter counter : stack.getCounters()) {
                         // Images will be loaded later
-                        stackMarker.addCounter(new CounterMarker(counter.getId(), counter.getCountry(), counter.getType(), counter.getCode(), null));
+                        stackMarker.addCounter(new CounterMarker(counter.getId(), counter.getCountry(), counter.getType(), counter.getCode()));
                     }
                     mapMarker.addStack(stackMarker);
                 });
@@ -190,8 +190,12 @@ public final class MarkerUtils {
      */
     public static String getImagePath(String country, String type, String code) {
         StringBuilder path = new StringBuilder(GlobalConfiguration.getDataFolder() + "/counters/v2/counter_8/");
+        boolean isPacha = CounterUtil.isPacha(type);
+        if (isPacha) {
+            type = "Pacha";
+        }
         if (StringUtils.equals(CounterFaceTypeEnum.LEADER.name(), type) ||
-                CounterUtil.isPacha(type)) {
+                isPacha) {
             path.append(country).append("/")
                     .append(WordUtils.capitalize(type.toLowerCase()))
                     .append("_").append(country).append("_")

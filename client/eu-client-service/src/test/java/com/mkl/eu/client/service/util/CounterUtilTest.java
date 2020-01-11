@@ -3,6 +3,7 @@ package com.mkl.eu.client.service.util;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import org.junit.Assert;
 import org.junit.Test;
@@ -924,5 +925,21 @@ public class CounterUtilTest {
         Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_2.name()));
         Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_3));
         Assert.assertTrue(CounterUtil.isPacha(CounterFaceTypeEnum.PACHA_3.name()));
+    }
+
+    @Test
+    public void testGetLeaderType() {
+        Assert.assertEquals(CounterFaceTypeEnum.LEADER, CounterUtil.getLeaderType(null));
+        Leader leader = new Leader();
+        Assert.assertEquals(CounterFaceTypeEnum.LEADER, CounterUtil.getLeaderType(leader));
+        leader.setType(LeaderTypeEnum.GENERAL);
+        Assert.assertEquals(CounterFaceTypeEnum.LEADER, CounterUtil.getLeaderType(leader));
+        leader.setType(LeaderTypeEnum.PACHA);
+        leader.setSize(1);
+        Assert.assertEquals(CounterFaceTypeEnum.PACHA_1, CounterUtil.getLeaderType(leader));
+        leader.setSize(2);
+        Assert.assertEquals(CounterFaceTypeEnum.PACHA_2, CounterUtil.getLeaderType(leader));
+        leader.setSize(3);
+        Assert.assertEquals(CounterFaceTypeEnum.PACHA_3, CounterUtil.getLeaderType(leader));
     }
 }

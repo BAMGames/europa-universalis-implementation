@@ -98,6 +98,8 @@ public final class MenuHelper {
             countryMenu.addMenuItem(warMenu);
             ContextualMenu diplomaticMenu = ContextualMenuItem.createMenuSubMenu(GlobalConfiguration.getMessage("Diplomacy"));
             countryMenu.addMenuItem(diplomaticMenu);
+            ContextualMenu leaderMenu = ContextualMenuItem.createMenuSubMenu(GlobalConfiguration.getMessage("Leader"));
+            countryMenu.addMenuItem(leaderMenu);
             ContextualMenu trashMenu = ContextualMenuItem.createMenuSubMenu(GlobalConfiguration.getMessage("Others"));
             countryMenu.addMenuItem(trashMenu);
 
@@ -114,12 +116,21 @@ public final class MenuHelper {
                     menu = warMenu;
                 } else if (counter == CounterFaceTypeEnum.DIPLOMACY || counter == CounterFaceTypeEnum.DIPLOMACY_WAR) {
                     menu = diplomaticMenu;
+                } else if (CounterUtil.isLeader(counter)) {
+                    continue;
                 } else {
                     menu = trashMenu;
                 }
 
-                menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage(counter), container.callServiceAsEvent(container.getBoardService()::createCounter, () -> new CreateCounterRequest(province.getId(), counter, country.getName()), "Error when creating counter.")));
+                menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage(counter), container.callServiceAsEvent(container.getBoardService()::createCounter, () -> new CreateCounterRequest(province.getId(), counter, country.getName(), null), "Error when creating counter.")));
             }
+
+            GlobalConfiguration.getTables().getLeaders().stream()
+                    .filter(leader -> StringUtils.equals(leader.getCountry(), country.getName()))
+                    .forEach(leader -> leaderMenu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage(leader.getCode()),
+                            container.callServiceAsEvent(container.getBoardService()::createCounter,
+                                    () -> new CreateCounterRequest(province.getId(), CounterUtil.getLeaderType(leader), country.getName(), leader.getCode()),
+                                    "Error when creating counter."))));
         }
 
         menus.add(admin);

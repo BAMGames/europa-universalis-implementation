@@ -819,8 +819,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST)
                 .setParams(METHOD_CREATE_COUNTER));
 
-        failIfEmpty(new CheckForThrow<String>().setTest(request.getRequest().getProvince()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
-                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER));
         failIfNull(new CheckForThrow<>().setTest(request.getRequest().getType()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_TYPE).setParams(METHOD_CREATE_COUNTER));
         failIfEmpty(new CheckForThrow<String>().setTest(request.getRequest().getCountry()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
@@ -832,12 +830,44 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_COUNTRY)
                 .setParams(METHOD_CREATE_COUNTER, request.getRequest().getCountry()));
 
+        failIfEmpty(new CheckForThrow<String>().setTest(request.getRequest().getProvince()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER));
+
         AbstractProvinceEntity prov = provinceDao.getProvinceByName(request.getRequest().getProvince());
 
         failIfNull(new CheckForThrow<>().setTest(prov).setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND).setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_PROVINCE).setParams(METHOD_CREATE_COUNTER, request.getRequest().getProvince()));
 
-        DiffEntity diff = counterDomain.createCounter(request.getRequest().getType(), request.getRequest().getCountry(), request.getRequest().getProvince(), null, game);
+
+        DiffEntity diff;
+        if (CounterUtil.isLeader(request.getRequest().getType())) {
+            failIfEmpty(new CheckForThrow<String>()
+                    .setTest(request.getRequest().getCode())
+                    .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                    .setMsgFormat(MSG_MISSING_PARAMETER)
+                    .setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_CODE)
+                    .setParams(METHOD_CREATE_COUNTER));
+
+            Leader leader = getTables().getLeader(request.getRequest().getCode());
+
+            failIfNull(new CheckForThrow<>()
+                    .setTest(leader)
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_CODE)
+                    .setParams(METHOD_CREATE_COUNTER, request.getRequest().getCode()));
+
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(StringUtils.equals(leader.getCountry(), request.getRequest().getCountry()))
+                    .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                    .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                    .setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_COUNTRY)
+                    .setParams(METHOD_CREATE_COUNTER, request.getRequest().getCountry()));
+
+            diff = counterDomain.createLeader(request.getRequest().getType(), request.getRequest().getCode(), request.getRequest().getCountry(), null, request.getRequest().getProvince(), game);
+        } else {
+            diff = counterDomain.createCounter(request.getRequest().getType(), request.getRequest().getCountry(), request.getRequest().getProvince(), null, game);
+        }
         gameDao.update(game, true);
 
         return createDiff(diff, gameDiffs, request);

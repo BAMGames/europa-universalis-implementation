@@ -39,6 +39,19 @@ public interface ICounterDomain {
     DiffEntity createCounter(CounterFaceTypeEnum type, String country, Long idStack, GameEntity game);
 
     /**
+     * Creates a counter.
+     *
+     * @param type     of the counter to create.
+     * @param code     of the leader.
+     * @param country  owner of the counter to create.
+     * @param idStack  id of the stack the counter will be attached to.
+     * @param province where the counter will be if idStack is <code>null</code>.
+     * @param game     the game.
+     * @return the diffs related to the creation of the counter.
+     */
+    DiffEntity createLeader(CounterFaceTypeEnum type, String code, String country, Long idStack, String province, GameEntity game);
+
+    /**
      * Removes a counter from a game.
      *
      * @param counter the counter to remove.

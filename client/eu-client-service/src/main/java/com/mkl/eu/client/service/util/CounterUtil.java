@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.util;
 
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.Leader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1415,6 +1416,29 @@ public final class CounterUtil {
         }
 
         return leader;
+    }
 
+    /**
+     * @param leader the leader.
+     * @return the type of the counter corresponding to this leader.
+     */
+    public static CounterFaceTypeEnum getLeaderType(Leader leader) {
+        CounterFaceTypeEnum type = CounterFaceTypeEnum.LEADER;
+
+        if (leader != null && leader.getType() == LeaderTypeEnum.PACHA) {
+            switch (leader.getSize()) {
+                case 1:
+                    type = CounterFaceTypeEnum.PACHA_1;
+                    break;
+                case 2:
+                    type = CounterFaceTypeEnum.PACHA_2;
+                    break;
+                case 3:
+                    type = CounterFaceTypeEnum.PACHA_3;
+                    break;
+            }
+        }
+
+        return type;
     }
 }

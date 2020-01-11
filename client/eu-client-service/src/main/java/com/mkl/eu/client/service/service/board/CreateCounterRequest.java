@@ -14,6 +14,8 @@ public class CreateCounterRequest {
     private String country;
     /** Province of the counter to create. */
     private String province;
+    /** Code of the counter to create. */
+    private String code;
 
     /**
      * Constructor for jaxb.
@@ -27,11 +29,13 @@ public class CreateCounterRequest {
      * @param province the province to set.
      * @param type     the type to set.
      * @param country  the country to set.
+     * @param code     the code to set.
      */
-    public CreateCounterRequest(String province, CounterFaceTypeEnum type, String country) {
+    public CreateCounterRequest(String province, CounterFaceTypeEnum type, String country, String code) {
         this.province = province;
         this.type = type;
         this.country = country;
+        this.code = code;
     }
 
     /** @return the type. */
@@ -62,5 +66,15 @@ public class CreateCounterRequest {
     /** @param province the province to set. */
     public void setProvince(String province) {
         this.province = province;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
+    }
+
+    /** @param code the code to set. */
+    public void setCode(String code) {
+        this.code = code;
     }
 }

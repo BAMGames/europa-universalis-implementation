@@ -16,9 +16,11 @@ public enum DiffTypeEnum {
      * <li>DiffTypeObjectEnum#COUNTER in which case it will use:
      * <ul>
      * <li>DiffAttributeTypeEnum#PROVINCE</li>
+     * <li>DiffAttributeTypeEnum#CODE of the leader counter</li>
      * <li>DiffAttributeTypeEnum#TYPE for the type of the counter</li>
-     * <li>DiffAttributeTypeEnum#COUNTRY for the name of the country of the counter</li>
-     * <li>DiffAttributeTypeEnum#STACK for the id of the stack (can be a new one)</li>
+     * <li>DiffAttributeTypeEnum#COUNTRY the country owning the counter</li>
+     * <li>DiffAttributeTypeEnum#STACK the id of the stack owning the counter(can be a new one)</li>
+     * <li>DiffAttributeTypeEnum#LEVEL the level of the economical counter</li>
      * </ul>
      * </li>
      * <li>DiffTypeObjectEnum#ROOM in which case it will use:

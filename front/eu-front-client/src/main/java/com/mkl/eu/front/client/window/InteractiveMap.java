@@ -411,6 +411,12 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
             LOGGER.error("Missing stack id in counter add event.");
             return;
         }
+
+        String code = diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.CODE)
+                .map(DiffAttributes::getValue)
+                .findAny()
+                .orElse(null);
         // FIXME stack may already exist
 
         Stack stackVO = CommonUtil.findFirst(game.getStacks().stream(), stack -> stack.getId().equals(Long.parseLong(attributeIdStack.getValue())));
@@ -427,7 +433,9 @@ public class InteractiveMap extends PApplet implements MapEventListener, Applica
                     return newStack;
                 });
 
-        stackMarker.addCounter(new CounterMarker(diff.getIdObject(), nameCountry, type, null, MarkerUtils.getImageFromCounter(nameCountry, type.name(), null, this)));
+        CounterMarker counterMarker = new CounterMarker(diff.getIdObject(), nameCountry, type, code);
+        counterMarker.setImage(MarkerUtils.getImageFromCounter(counterMarker, this));
+        stackMarker.addCounter(counterMarker);
     }
 
     /**

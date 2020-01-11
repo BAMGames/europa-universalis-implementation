@@ -90,6 +90,8 @@ public interface INameConstants {
     String PARAMETER_COUNTRY = "country";
     /** Name of the parameter leader. */
     String PARAMETER_LEADER = "leader";
+    /** Name of the parameter code. */
+    String PARAMETER_CODE = "code";
     /** Name of the parameter counter. */
     String PARAMETER_COUNTER = "counter";
     /** Name of the parameter message. */

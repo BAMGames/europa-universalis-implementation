@@ -52,19 +52,26 @@ public class CounterDomainImpl extends AbstractBack implements ICounterDomain {
     /** {@inheritDoc} */
     @Override
     public DiffEntity createCounter(CounterFaceTypeEnum type, String country, String province, Integer level, GameEntity game) {
-        return createAndGetCounter(type, country, null, province, level, game);
+        return createAndGetCounter(type, null, country, null, province, level, game);
     }
 
     /** {@inheritDoc} */
     @Override
     public DiffEntity createCounter(CounterFaceTypeEnum type, String country, Long idStack, GameEntity game) {
-        return createAndGetCounter(type, country, idStack, null, null, game);
+        return createAndGetCounter(type, null, country, idStack, null, null, game);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffEntity createLeader(CounterFaceTypeEnum type, String code, String country, Long idStack, String province, GameEntity game) {
+        return createAndGetCounter(type, code, country, idStack, province, null, game);
     }
 
     /**
      * Creates a counter.
      *
      * @param type     of the counter to create.
+     * @param code     of the counter leader to create.
      * @param country  owner of the counter to create.
      * @param idStack  id of an eventual existing stack.
      * @param province where the counter will be.
@@ -72,7 +79,7 @@ public class CounterDomainImpl extends AbstractBack implements ICounterDomain {
      * @param game     the game.
      * @return the diffs related to the creation of the counter and the counter created.
      */
-    private DiffEntity createAndGetCounter(CounterFaceTypeEnum type, String country, Long idStack, String province, Integer level, GameEntity game) {
+    private DiffEntity createAndGetCounter(CounterFaceTypeEnum type, String code, String country, Long idStack, String province, Integer level, GameEntity game) {
         StackEntity stack = game.getStacks().stream()
                 .filter(s -> Objects.equals(idStack, s.getId()))
                 .findAny()
@@ -93,6 +100,7 @@ public class CounterDomainImpl extends AbstractBack implements ICounterDomain {
         }
 
         CounterEntity counterEntity = new CounterEntity();
+        counterEntity.setCode(code);
         counterEntity.setCountry(country);
         counterEntity.setType(type);
         counterEntity.setOwner(stack);
@@ -108,6 +116,7 @@ public class CounterDomainImpl extends AbstractBack implements ICounterDomain {
 
         return DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER, counterEntity.getId(),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, stack.getProvince()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.CODE, counterEntity.getCode(), StringUtils.isNotEmpty(counterEntity.getCode())),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, type),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, country),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STACK, stack.getId().toString()),

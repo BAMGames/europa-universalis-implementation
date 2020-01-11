@@ -25,15 +25,16 @@ public class CounterMarker {
     /**
      * Constructor.
      *
-     * @param id    the id.
-     * @param image the image.
+     * @param id      the id.
+     * @param country the country.
+     * @param type    the type.
+     * @param code    the code.
      */
-    public CounterMarker(Long id, String country, CounterFaceTypeEnum type, String code, PImage image) {
+    public CounterMarker(Long id, String country, CounterFaceTypeEnum type, String code) {
         this.id = id;
         this.country = country;
         this.type = type;
         this.code = code;
-        this.image = image;
     }
 
     /** @return the id. */

@@ -1686,6 +1686,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     public void testCreateCounterFailSimple() {
         Pair<Request<CreateCounterRequest>, GameEntity> pair = testCheckGame(boardService::createCounter, "createCounter");
         Request<CreateCounterRequest> request = pair.getLeft();
+        AbstractBack.TABLES = new Tables();
 
         try {
             boardService.createCounter(request);
@@ -1696,16 +1697,6 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         request.setRequest(new CreateCounterRequest());
-
-        try {
-            boardService.createCounter(request);
-            Assert.fail("Should break because createCounter.request.province is null");
-        } catch (FunctionalException e) {
-            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
-            Assert.assertEquals("createCounter.request.province", e.getParams()[0]);
-        }
-
-        request.getRequest().setProvince("toto");
 
         try {
             boardService.createCounter(request);
@@ -1734,6 +1725,59 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
             Assert.assertEquals("createCounter.request.country", e.getParams()[0]);
         }
+
+        when(countryDao.getCountryByName("FRA")).thenReturn(new CountryEntity());
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request.province is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.province", e.getParams()[0]);
+        }
+
+        request.getRequest().setProvince("toto");
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because createCounter.request.province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.province", e.getParams()[0]);
+        }
+
+        when(provinceDao.getProvinceByName("toto")).thenReturn(new EuropeanProvinceEntity());
+        request.getRequest().setType(CounterFaceTypeEnum.LEADER);
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because a leader must have a code");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.code", e.getParams()[0]);
+        }
+
+        request.getRequest().setCode("Napo");
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because leader does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.code", e.getParams()[0]);
+        }
+
+        Leader leader = new Leader();
+        leader.setCode("Napo");
+        AbstractBack.TABLES.getLeaders().add(leader);
+
+        try {
+            boardService.createCounter(request);
+            Assert.fail("Should break because leader country and request country mismatch");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("createCounter.request.country", e.getParams()[0]);
+        }
     }
 
     @Test
@@ -1755,6 +1799,42 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         DiffEntity diffCreate = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER);
         when(counterDomain.createCounter(CounterFaceTypeEnum.ARMY_MINUS, "FRA", "IdF", null, game)).thenReturn(diffCreate);
+
+        simulateDiff();
+
+        boardService.createCounter(request);
+
+        DiffEntity diff = retrieveDiffCreated();
+
+        Assert.assertEquals(diff, diffCreate);
+    }
+
+    @Test
+    public void testCreateCounterLeaderSuccess() throws Exception {
+        Pair<Request<CreateCounterRequest>, GameEntity> pair = testCheckGame(boardService::createCounter, "createCounter");
+        Request<CreateCounterRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        request.setRequest(new CreateCounterRequest());
+        request.getRequest().setProvince("IdF");
+        request.getRequest().setType(CounterFaceTypeEnum.LEADER);
+        request.getRequest().setCountry("FRA");
+        request.getRequest().setCode("Napo");
+
+        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
+        idf.setId(257L);
+        idf.setName("IdF");
+
+        AbstractBack.TABLES = new Tables();
+        Leader leader = new Leader();
+        leader.setCode("Napo");
+        leader.setCountry("FRA");
+        AbstractBack.TABLES.getLeaders().add(leader);
+
+        when(countryDao.getCountryByName("FRA")).thenReturn(new CountryEntity());
+        when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
+
+        DiffEntity diffCreate = DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER);
+        when(counterDomain.createLeader(CounterFaceTypeEnum.LEADER, "Napo", "FRA", null, "IdF", game)).thenReturn(diffCreate);
 
         simulateDiff();
 
