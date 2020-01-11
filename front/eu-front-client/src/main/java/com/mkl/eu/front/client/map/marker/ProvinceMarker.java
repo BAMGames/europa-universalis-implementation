@@ -1,5 +1,7 @@
 package com.mkl.eu.front.client.map.marker;
 
+import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
@@ -144,6 +146,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
      * @param stacksToIgnore stacks not to draw.
      */
     protected void drawStacks(List<StackMarker> stacks, float[] xy, float relativeSize, PGraphics pg, List<StackMarker> stacksSelected, List<StackMarker> stacksToIgnore) {
+        stacks.forEach(stack -> stack.getCounters().sort((o1, o2) -> getWeight(o1, stack) - getWeight(o2, stack)));
         for (int i = 0; i < stacks.size(); i++) {
             // The stack being dragged or hovered is drawn by the MarkerManager.
             if (stacksToIgnore.contains(stacks.get(i))) {
@@ -193,6 +196,33 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 pg.popStyle();
             }
         }
+    }
+
+    /**
+     * @param counter the counter to display.
+     * @param stack   the stack where the counter is.
+     * @return the priority to display this counter above the other counters.
+     */
+    private int getWeight(CounterMarker counter, StackMarker stack) {
+        int weight = 0;
+
+        double size = CounterUtil.getSizeFromType(counter.getType());
+
+        if (StringUtils.equals(stack.getStack().getLeader(), counter.getCode())) {
+            weight = 100;
+        } else if (CounterUtil.isLeader(counter.getType()) && size > 0) {
+            weight = 50;
+        } else if (size == 4) {
+            weight = 10;
+        } else if (size == 2) {
+            weight = 20;
+        } else if (size == 1) {
+            weight = 30;
+        } else if (size == CommonUtil.THIRD) {
+            weight = 40;
+        }
+
+        return weight;
     }
 
     /**
