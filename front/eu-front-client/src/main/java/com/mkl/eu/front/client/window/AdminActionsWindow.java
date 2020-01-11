@@ -1,7 +1,9 @@
 package com.mkl.eu.front.client.window;
 
 import com.mkl.eu.client.common.util.CommonUtil;
+import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IEconomicService;
+import com.mkl.eu.client.service.service.board.MoveLeaderRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.eco.AddAdminActionRequest;
 import com.mkl.eu.client.service.service.eco.RemoveAdminActionRequest;
@@ -10,6 +12,7 @@ import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.util.MaintenanceUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
@@ -22,10 +25,7 @@ import com.mkl.eu.client.service.vo.tables.BasicForce;
 import com.mkl.eu.client.service.vo.tables.Limit;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.client.service.vo.tables.Unit;
-import com.mkl.eu.front.client.common.CounterFaceCellFactory;
-import com.mkl.eu.front.client.common.CounterInProvinceCellFactory;
-import com.mkl.eu.front.client.common.CounterInProvinceConverter;
-import com.mkl.eu.front.client.common.EnumConverter;
+import com.mkl.eu.front.client.common.*;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -70,6 +70,9 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
     /** Economic service. */
     @Autowired
     private IEconomicService economicService;
+    /** Board service. */
+    @Autowired
+    private IBoardService boardService;
     /** Game. */
     private Game game;
     /** Markers of the loaded game. */
@@ -94,6 +97,16 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
     private TitledPane purchasePane;
     /** The TableView containing the already planned actions. */
     private TableView<AdministrativeAction> purchaseTable;
+
+    /********************************************/
+    /**          Nodes about leader             */
+    /********************************************/
+    /** The TableView containing the already planned actions. */
+    private TableView<AdministrativeAction> leaderTable;
+    /** The ChoiceBox containing the leader counters. */
+    private ComboBox<Counter> leaderCountersChoice;
+    /** The choiceBox for stacks that contains at least an army counter of the country. */
+    private ComboBox<Stack> leaderStackChoice;
 
     /********************************************/
     /**        Nodes about TFI                  */
@@ -190,8 +203,8 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         tab.setClosable(false);
 
         Node unitMaintenancePane = createMaintenanceNode(country);
-
         Node unitPurchasePane = createPurchaseNode(country);
+        Node leaderNode = createLeaderNode(country);
         Node tfiPane = createTfiNode(country);
         Node domesticPane = createDomesticOperationNode(country);
         Node establishmentPane = createEstablishmentNode(country);
@@ -199,7 +212,7 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         Node actions = createActionsNode();
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, tfiPane, domesticPane, establishmentPane, technologyPane, actions);
+        vBox.getChildren().addAll(unitMaintenancePane, unitPurchasePane, leaderNode, tfiPane, domesticPane, establishmentPane, technologyPane, actions);
 
         ScrollPane scroll = new ScrollPane();
         scroll.fitToWidthProperty().set(true);
@@ -652,6 +665,117 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
         }
 
         return faces;
+    }
+
+    /**
+     * Create the node for the leader management.
+     *
+     * @param country of the current player.
+     * @return the node for the leader management.
+     */
+    private Node createLeaderNode(PlayableCountry country) {
+        TitledPane leaderPane = new TitledPane();
+        leaderPane.setText(GlobalConfiguration.getMessage("admin_action.form.leader"));
+        leaderPane.setExpanded(false);
+
+        leaderTable = new TableView<>();
+        configureAdminActionTable(leaderTable, this::removeAdminAction);
+
+        HBox hBox = new HBox();
+
+        leaderCountersChoice = new ComboBox<>();
+        leaderCountersChoice.setCellFactory(new CounterInProvinceCellFactory());
+        leaderCountersChoice.converterProperty().set(new CounterInProvinceConverter());
+
+        leaderStackChoice = new ComboBox<>();
+        leaderStackChoice.setCellFactory(new StackInProvinceCellFactory());
+        leaderStackChoice.converterProperty().set(new StackInProvinceConverter());
+
+        ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
+        provincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(IMapMarker object) {
+                return object == null ? "" : GlobalConfiguration.getMessage(object.getId());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public IMapMarker fromString(String string) {
+                return null;
+            }
+        });
+        provincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+                .filter(marker -> StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
+        provincesChoice.getItems().add(0, null);
+
+        Button btn = new Button(GlobalConfiguration.getMessage("move"));
+        btn.setDisable(true);
+
+        leaderStackChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+            provincesChoice.setDisable(newValue != null);
+            btn.setDisable(newValue == null && provincesChoice.getSelectionModel().getSelectedItem() == null);
+        });
+        provincesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+            btn.setDisable(newValue == null && provincesChoice.getSelectionModel().getSelectedItem() == null);
+        });
+
+        btn.setOnAction(event -> {
+            Counter counter = leaderCountersChoice.getSelectionModel().getSelectedItem();
+            Stack stack = leaderStackChoice.getSelectionModel().getSelectedItem();
+            IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
+
+            MoveLeaderRequest request;
+            if (stack != null) {
+                request = new MoveLeaderRequest(counter.getId(), stack.getId());
+            } else {
+                request = new MoveLeaderRequest(counter.getId(), province.getId());
+            }
+            callService(boardService::moveLeader, () -> request, "Error when moving leader.");
+        });
+
+        hBox.getChildren().addAll(leaderCountersChoice, leaderStackChoice, provincesChoice, btn);
+
+        VBox vBox = new VBox();
+
+        vBox.getChildren().addAll(leaderTable, hBox);
+
+        leaderPane.setContent(vBox);
+
+        updateLeaderNode(country);
+
+        return leaderPane;
+    }
+
+    /**
+     * Update the leader node with the current game.
+     *
+     * @param country of the current player.
+     */
+    private void updateLeaderNode(PlayableCountry country) {
+        List<AdministrativeAction> actions = country.getAdministrativeActions().stream()
+                .filter(admAct -> admAct.getStatus() == AdminActionStatusEnum.PLANNED &&
+                        admAct.getType() == null)
+                .collect(Collectors.toList());
+        leaderTable.setItems(FXCollections.observableArrayList(actions));
+
+        List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                        CounterUtil.isLeader(counter.getType())))
+                .sorted((c1, c2) -> c1.getCode().compareTo(c2.getCode()))
+                .collect(Collectors.toList());
+
+        ObservableList<Counter> counterList = FXCollections.observableArrayList(counters);
+        leaderCountersChoice.setItems(counterList);
+        leaderCountersChoice.getItems().add(0, null);
+
+        leaderStackChoice.setItems(FXCollections.observableList(game.getStacks().stream()
+                .filter(stack -> stack.getCounters().stream().anyMatch(
+                        counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                                CounterUtil.isArmy(counter.getType())))
+                .sorted((o1, o2) -> o1.getProvince().compareTo(o2.getProvince()))
+                .collect(Collectors.toList())));
+        leaderStackChoice.getItems().add(0, null);
     }
 
     /**
@@ -1414,18 +1538,23 @@ public class AdminActionsWindow extends AbstractDiffResponseListenerContainer im
     /** {@inheritDoc} */
     @Override
     public void update(Diff diff) {
+        PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
         switch (diff.getTypeObject()) {
             case ADM_ACT:
                 updateAdmAct(diff);
                 break;
             case COUNTRY:
                 if (gameConfig.getIdCountry().equals(diff.getIdObject())) {
-                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> playableCountry.getId().equals(gameConfig.getIdCountry()));
                     if (country != null) {
                         updateMaintenanceNode(country);
                     }
                 }
                 break;
+            case COUNTER:
+            case STACK:
+                if (country != null) {
+                    updateLeaderNode(country);
+                }
             default:
                 break;
         }

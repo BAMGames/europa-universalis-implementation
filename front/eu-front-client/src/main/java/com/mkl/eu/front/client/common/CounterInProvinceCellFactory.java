@@ -8,6 +8,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Cell factory for counter in combo box with province display.
@@ -28,7 +29,14 @@ public class CounterInProvinceCellFactory implements Callback<ListView<Counter>,
                 } else {
                     HBox hBox = new HBox();
                     setGraphic(hBox);
-                    hBox.getChildren().addAll(UIUtil.getImage(item), new Label(" - " + GlobalConfiguration.getMessage(item.getOwner().getProvince())));
+                    StringBuilder label = new StringBuilder(" - ")
+                            .append(GlobalConfiguration.getMessage(item.getOwner().getProvince()));
+                    if (StringUtils.isNotEmpty(item.getCode())) {
+                        label.append(" (")
+                                .append(GlobalConfiguration.getMessage(item.getCode()))
+                                .append(")");
+                    }
+                    hBox.getChildren().addAll(UIUtil.getImage(item), new Label(label.toString()));
                 }
             }
         };
