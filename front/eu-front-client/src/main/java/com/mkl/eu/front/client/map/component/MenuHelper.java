@@ -207,6 +207,9 @@ public final class MenuHelper {
         menu.addMenuItem(ContextualMenuItem.createMenuLabel(GlobalConfiguration.getMessage("map.menu.counter")));
         menu.addMenuItem(ContextualMenuItem.createMenuSeparator());
         menu.addAllMenuItems(createGlobalMenu());
+        if (CounterUtil.isLeader(counter.getType())) {
+            menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.counter.leader_lead"), container.callServiceAsEvent(container.getBoardService()::takeStackControl, () -> new TakeStackControlRequest(counter.getOwner().getId(), counter.getId()), "Error when setting leader to stack.")));
+        }
         menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.counter.disband"),
                 container.callServiceAsEvent(container.getBoardService()::removeCounter, () -> new RemoveCounterRequest(counter.getId()), "Error when deleting counter.")));
 
