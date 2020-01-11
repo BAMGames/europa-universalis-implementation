@@ -51,6 +51,12 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
 
     /** {@inheritDoc} */
     @Override
+    public DiffResponse moveLeader(Request<MoveLeaderRequest> request) throws FunctionalException, TechnicalException {
+        return boardService.moveLeader(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public DiffResponse validateMilitaryRound(Request<ValidateRequest> request) throws FunctionalException, TechnicalException {
         return boardService.validateMilitaryRound(request);
     }

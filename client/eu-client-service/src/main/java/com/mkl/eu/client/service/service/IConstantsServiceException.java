@@ -55,6 +55,21 @@ public interface IConstantsServiceException {
      */
     String INVALID_STATUS = "exception.eu.service.invalid_status";
 
+
+    /**
+     * <p>
+     * Exception thrown when an action is impossible because it involved a besieged stack.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the besieged stack.</li>
+     * </ul>
+     * </p>
+     */
+    String STACK_BESIEGED = "exception.eu.service.stack_besieged";
+
     /**********************************************************************/
     /**           ECONOMIC SERVICE EXCEPTION                              */
     /**********************************************************************/

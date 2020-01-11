@@ -52,7 +52,7 @@ public interface IBoardService extends INameConstants {
     DiffResponse endMoveStack(@WebParam(name = PARAMETER_END_MOVE_STACK) Request<EndMoveStackRequest> request) throws FunctionalException, TechnicalException;
 
     /**
-     * Move a counter from a stack to another..
+     * Move a counter from a stack to another.
      *
      * @param request info of the counter to move.
      * @return the diffs involved by this service.
@@ -61,6 +61,18 @@ public interface IBoardService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse moveCounter(@WebParam(name = PARAMETER_MOVE_COUNTER) Request<MoveCounterRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Move a leader counter from a stack to another or to a province.
+     *
+     * @param request info of the counter leader to move.
+     * @return the diffs involved by this service.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    @WebResult(name = RESPONSE)
+    DiffResponse moveLeader(@WebParam(name = PARAMETER_MOVE_LEADER) Request<MoveLeaderRequest> request) throws FunctionalException, TechnicalException;
+
 
     /**
      * Validate/Invalidate the military round for a country.

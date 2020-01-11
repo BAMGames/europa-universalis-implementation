@@ -314,7 +314,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         Leader leader = stack.getCounters().stream()
                 .filter(counter -> Objects.equals(counter.getId(), idLeader))
                 .map(counter -> getTables().getLeader(counter.getCode()))
-                .filter(l -> l != null)
+                .filter(Objects::nonNull)
                 .findAny()
                 .orElse(null);
         failIfTrue(new CheckForThrow<Boolean>()
@@ -520,7 +520,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
                 .setMsgFormat(MSG_OBJECT_NOT_FOUND)
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
-                .setParams(METHOD_MOVE_COUNTER, game.getId()));
+                .setParams(METHOD_MOVE_COUNTER, idCounter));
 
         StackEntity oldStack = counter.getOwner();
         List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
@@ -594,6 +594,125 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             stack.setLeader(newLeader);
         }
 
+        return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse moveLeader(Request<MoveLeaderRequest> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request).setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_MOVE_LEADER)
+                .setParams(METHOD_MOVE_LEADER));
+
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER);
+        GameEntity game = gameDiffs.getGame();
+        checkGameStatus(game, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, null, METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER);
+
+        // TODO TG-2 Authorization
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request.getRequest())
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST)
+                .setParams(METHOD_MOVE_LEADER));
+
+        Long idCounter = request.getRequest().getIdCounter();
+        Long idStack = request.getRequest().getIdStack();
+        String province = request.getRequest().getProvince();
+        PlayableCountryEntity country = game.getCountries().stream()
+                .filter(x -> x.getId().equals(request.getGame().getIdCountry()))
+                .findFirst()
+                .orElse(null);
+        // No check on null of country because it will be done in Authorization before
+
+        failIfNull(new CheckForThrow<>()
+                .setTest(idCounter)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER));
+
+        CounterEntity counter = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(c -> Objects.equals(c.getId(), idCounter))
+                .findAny()
+                .orElse(null);
+
+        failIfNull(new CheckForThrow<>()
+                .setTest(counter)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER, idCounter));
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(CounterUtil.isLeader(counter.getType()))
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER, idCounter));
+
+        StackEntity oldStack = counter.getOwner();
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(oldStack.isBesieged())
+                .setCodeError(IConstantsServiceException.STACK_BESIEGED)
+                .setMsgFormat("{1}: {0} Action is impossible because stack {2} is besieged.")
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER, oldStack.getId()));
+
+        List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(patrons.contains(country.getName()))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER, country.getName(), patrons));
+
+        StackEntity newStack = game.getStacks().stream()
+                .filter(stack -> Objects.equals(stack.getId(), idStack))
+                .findAny()
+                .orElse(null);
+        List<String> allies = oeUtil.getAllies(country, game);
+        if (newStack != null) {
+            failIfFalse(new CheckForThrow<Boolean>()
+                    .setTest(allies.contains(newStack.getCountry()))
+                    .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                    .setMsgFormat(MSG_ACCESS_RIGHT)
+                    .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
+                    .setParams(METHOD_MOVE_LEADER, country.getName(), newStack.getCountry()));
+
+            province = newStack.getProvince();
+        }
+
+        failIfEmpty(new CheckForThrow<String>()
+                .setTest(province)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setParams(METHOD_MOVE_LEADER));
+
+        AbstractProvinceEntity realProvince = provinceDao.getProvinceByName(province);
+
+        failIfNull(new CheckForThrow<>()
+                .setTest(realProvince)
+                .setCodeError(IConstantsCommonException.INVALID_PARAMETER)
+                .setMsgFormat(MSG_OBJECT_NOT_FOUND)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setParams(METHOD_MOVE_LEADER, province));
+
+        String controller = oeUtil.getController(realProvince, game);
+
+        failIfFalse(new CheckForThrow<Boolean>()
+                .setTest(allies.contains(controller))
+                .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
+                .setMsgFormat(MSG_ACCESS_RIGHT)
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_PROVINCE)
+                .setParams(METHOD_MOVE_LEADER, country.getName(), controller));
+
+        List<DiffEntity> diffs = counterDomain.moveLeader(counter, newStack, province, game);
         return createDiffs(diffs, gameDiffs, request);
     }
 

@@ -27,6 +27,7 @@ import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
+import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.EuropeanProvinceEntity;
 import com.mkl.eu.service.service.persistence.ref.ICountryDao;
@@ -1265,6 +1266,199 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
         Assert.assertEquals(getDiffAfter(), response.getDiffs());
+    }
+
+    @Test
+    public void testMoveLeaderFail() {
+        Pair<Request<MoveLeaderRequest>, GameEntity> pair = testCheckGame(boardService::moveLeader, "moveLeader");
+        Request<MoveLeaderRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+        request.getGame().setIdCountry(26L);
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(26L);
+        country.setName("france");
+        game.getCountries().add(country);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because moveLeader.request is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request", e.getParams()[0]);
+        }
+
+        request.setRequest(new MoveLeaderRequest());
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because idCounter is null");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        request.getRequest().setIdCounter(13L);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because idCounter is not a counter");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        StackEntity stack = new StackEntity();
+        stack.setId(1L);
+        stack.setBesieged(true);
+        game.getStacks().add(stack);
+        CounterEntity counter = createCounter(13L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack);
+        stack.getCounters().add(counter);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because idCounter is not a leader");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        counter.setType(CounterFaceTypeEnum.LEADER);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because leader is besieged");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.STACK_BESIEGED, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        stack.setBesieged(false);
+        List<String> patrons = new ArrayList<>();
+        patrons.add("genes");
+        when(counterDao.getPatrons(counter.getCountry(), game.getId())).thenReturn(patrons);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because idCounter cannot be moved by country");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        patrons.add(country.getName());
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because province must be specified");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request.province", e.getParams()[0]);
+        }
+
+        StackEntity newStack = new StackEntity();
+        newStack.setId(25L);
+        newStack.setCountry("genes");
+        game.getStacks().add(newStack);
+        request.getRequest().setIdStack(25L);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because idCounter cannot be moved in this stack");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("moveLeader.request.idStack", e.getParams()[0]);
+        }
+
+        when(oeUtil.getAllies(country, game)).thenReturn(patrons);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because province must be specified");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.NULL_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request.province", e.getParams()[0]);
+        }
+
+        newStack.setProvince("pecs");
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because province does not exist");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.INVALID_PARAMETER, e.getCode());
+            Assert.assertEquals("moveLeader.request.province", e.getParams()[0]);
+        }
+
+        AbstractProvinceEntity pecs = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because province is not controlled by an ally");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
+            Assert.assertEquals("moveLeader.request.province", e.getParams()[0]);
+        }
+    }
+
+    @Test
+    public void testMoveLeaderInStack() throws FunctionalException {
+        testMoveLeader(true);
+    }
+
+    @Test
+    public void testMoveLeaderInProvince() throws FunctionalException {
+        testMoveLeader(false);
+    }
+
+    private void testMoveLeader(boolean inStack) throws FunctionalException {
+        Pair<Request<MoveLeaderRequest>, GameEntity> pair = testCheckGame(boardService::moveLeader, "moveLeader");
+        Request<MoveLeaderRequest> request = pair.getLeft();
+        GameEntity game = pair.getRight();
+        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+        request.getGame().setIdCountry(26L);
+        request.setRequest(new MoveLeaderRequest());
+        request.getRequest().setIdCounter(13L);
+        if (inStack) {
+            request.getRequest().setIdStack(25L);
+        } else {
+            request.getRequest().setProvince("pecs");
+        }
+        PlayableCountryEntity country = new PlayableCountryEntity();
+        country.setId(26L);
+        country.setName("france");
+        game.getCountries().add(country);
+        StackEntity stack = new StackEntity();
+        stack.setId(1L);
+        game.getStacks().add(stack);
+        CounterEntity counter = createCounter(13L, "france", CounterFaceTypeEnum.LEADER, stack);
+        stack.getCounters().add(counter);
+        StackEntity newStack = new StackEntity();
+        newStack.setId(25L);
+        newStack.setProvince("pecs");
+        newStack.setCountry("genes");
+        game.getStacks().add(newStack);
+
+        when(counterDao.getPatrons(counter.getCountry(), game.getId())).thenReturn(Arrays.asList("genes", country.getName()));
+        when(oeUtil.getAllies(country, game)).thenReturn(Arrays.asList("genes", country.getName()));
+        AbstractProvinceEntity pecs = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        when(oeUtil.getController(pecs, game)).thenReturn("genes");
+        List<DiffEntity> diffsMoveLeader = new ArrayList<>();
+        diffsMoveLeader.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, "pecs")));
+        diffsMoveLeader.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, "Nabo")));
+        when(counterDomain.moveLeader(counter, inStack ? newStack : null, "pecs", game)).thenReturn(diffsMoveLeader);
+
+        simulateDiff();
+
+        boardService.moveLeader(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(diffsMoveLeader, diffs);
     }
 
     @Test

@@ -34,6 +34,8 @@ public interface INameConstants {
     String PARAMETER_END_MOVE_STACK = "endMoveStack";
     /** Name of the parameter moveCounter. */
     String PARAMETER_MOVE_COUNTER = "moveCounter";
+    /** Name of the parameter moveLeader. */
+    String PARAMETER_MOVE_LEADER = "moveLeader";
     /** Name of the parameter validateMilitaryRound. */
     String PARAMETER_VALIDATE_MIL_ROUND = "validateMilitaryRound";
     /** Name of the parameter createCounter. */
@@ -175,6 +177,8 @@ public interface INameConstants {
     String METHOD_REMOVE_COUNTER = "removeCounter";
     /** Name of the method moveCounter. */
     String METHOD_MOVE_COUNTER = "moveCounter";
+    /** Name of the method moveLeader. */
+    String METHOD_MOVE_LEADER = "moveLeader";
     /** Name of the method createCounter. */
     String METHOD_CREATE_COUNTER = "createCounter";
     /** Name of the method validateMilitaryRound. */
