@@ -19,6 +19,7 @@ import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.military.*;
 import com.mkl.eu.client.service.vo.tables.AssaultResult;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
+import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.front.client.common.CounterCellFactory;
 import com.mkl.eu.front.client.common.CounterConverter;
@@ -394,9 +395,29 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      * @param side of the battle.
      * @return the node displaying the modifiers of a battle side.
      */
-    private Label createBattleModifiers(BattleSide side) {
-        return new Label(side.getFirstDay().getFireMod() + " / " + side.getFirstDay().getShockMod() + "   "
+    private Node createBattleModifiers(BattleSide side) {
+        HBox hBox = new HBox();
+        Label modifiers = new Label(side.getFirstDay().getFireMod() + " / " + side.getFirstDay().getShockMod() + "   "
                 + side.getSecondDay().getFireMod() + " / " + side.getSecondDay().getShockMod());
+        hBox.getChildren().add(modifiers);
+        if (StringUtils.isNotEmpty(side.getLeader())) {
+            Label leaderLabel = new Label(GlobalConfiguration.getMessage(side.getLeader()));
+            hBox.getChildren().add(leaderLabel);
+            Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader());
+            if (leader != null) {
+                try {
+                    ImageView leaderTooltip = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
+                    Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.leader",
+                            leader.getManoeuvre(), leader.getFire(), leader.getShock(), leader.getSiege()));
+                    Tooltip.install(leaderTooltip, tooltip);
+                    UIUtil.patchTooltipUntilMigrationJava9(tooltip);
+                    hBox.getChildren().add(leaderTooltip);
+                } catch (FileNotFoundException e) {
+                    LOGGER.error("Cannot find help icon.");
+                }
+            }
+        }
+        return hBox;
     }
 
     /**
@@ -878,8 +899,26 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
      */
     private Node createSiegeModifiers(SiegeSide side) {
         HBox hBox = new HBox();
-        hBox.getChildren().addAll(new Label(side.getModifiers().getFireMod() + " / " + side.getModifiers().getShockMod()),
-                createSiegeTooltip(side));
+        Label modifiers = new Label(side.getModifiers().getFireMod() + " / " + side.getModifiers().getShockMod());
+        Node help = createSiegeTooltip(side);
+        hBox.getChildren().addAll(modifiers, help);
+        if (StringUtils.isNotEmpty(side.getLeader())) {
+            Label leaderLabel = new Label(GlobalConfiguration.getMessage(side.getLeader()));
+            hBox.getChildren().add(leaderLabel);
+            Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader());
+            if (leader != null) {
+                try {
+                    ImageView leaderTooltip = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
+                    Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.leader",
+                            leader.getManoeuvre(), leader.getFire(), leader.getShock(), leader.getSiege()));
+                    Tooltip.install(leaderTooltip, tooltip);
+                    UIUtil.patchTooltipUntilMigrationJava9(tooltip);
+                    hBox.getChildren().add(leaderTooltip);
+                } catch (FileNotFoundException e) {
+                    LOGGER.error("Cannot find help icon.");
+                }
+            }
+        }
         return hBox;
     }
 
