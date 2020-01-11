@@ -84,11 +84,10 @@ public class AdministrativeActionMapping extends AbstractMapping {
      * @return object mapped.
      */
     public List<AdministrativeActionCountry> oesToVosCountry(List<AdministrativeActionEntity> sources) {
-        if (sources == null) {
-            return null;
-        }
-
         List<AdministrativeActionCountry> targets = new ArrayList<>();
+        if (sources == null) {
+            return targets;
+        }
 
         Map<Class<?>, Map<Long, Object>> objectsCreated = new HashMap<>();
 
