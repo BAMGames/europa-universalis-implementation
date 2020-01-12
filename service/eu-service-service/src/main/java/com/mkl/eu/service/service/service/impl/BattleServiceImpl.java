@@ -193,6 +193,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 comp.setCounter(counter.getId());
                 comp.setCountry(counter.getCountry());
                 comp.setType(counter.getType());
+                comp.setCode(counter.getCode());
                 battle.getCounters().add(comp);
 
                 DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_COUNTER_ADD, counter.getId());
@@ -240,6 +241,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 comp.setCounter(counter.getId());
                 comp.setCountry(counter.getCountry());
                 comp.setType(counter.getType());
+                comp.setCode(counter.getCode());
                 battle.getCounters().add(comp);
 
                 DiffAttributesEntity attribute = DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD, counter.getId());
@@ -345,6 +347,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
             comp.setCounter(counter.getId());
             comp.setCountry(counter.getCountry());
             comp.setType(counter.getType());
+            comp.setCode(counter.getCode());
             battle.getCounters().add(comp);
             counters.add(counter);
 
@@ -1791,7 +1794,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 CounterEntity counter = game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
                         .flatMap(stack -> stack.getCounters().stream())
-                        .filter(unit -> Objects.equals(unit.getId(), idCounter) && allies.contains(unit.getCountry()))
+                        .filter(unit -> Objects.equals(unit.getId(), idCounter) && allies.contains(unit.getCountry()) &&
+                                CounterUtil.isMobile(unit.getType()))
                         .findAny()
                         .orElse(null);
 

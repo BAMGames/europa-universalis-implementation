@@ -173,6 +173,8 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PHASING_LEADER, leader));
                 siege.getPhasing().setLeader(leader);
             }
+            attackerCounters.removeIf(counter -> CounterUtil.isLeader(counter.getType()) &&
+                    !StringUtils.equals(counter.getCode(), siege.getPhasing().getLeader()));
 
             attackerCounters.forEach(counter -> {
                 SiegeCounterEntity comp = new SiegeCounterEntity();
@@ -180,6 +182,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 comp.setCounter(counter.getId());
                 comp.setCountry(counter.getCountry());
                 comp.setType(counter.getType());
+                comp.setCode(counter.getCode());
                 comp.setPhasing(true);
                 siege.getCounters().add(comp);
 
@@ -208,6 +211,8 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, leader));
                 siege.getNonPhasing().setLeader(leader);
             }
+            defenderCounters.removeIf(counter -> CounterUtil.isLeader(counter.getType()) &&
+                    !StringUtils.equals(counter.getCode(), siege.getNonPhasing().getLeader()));
 
             defenderCounters.forEach(counter -> {
                 SiegeCounterEntity comp = new SiegeCounterEntity();
@@ -215,6 +220,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 comp.setCounter(counter.getId());
                 comp.setCountry(counter.getCountry());
                 comp.setType(counter.getType());
+                comp.setCode(counter.getCode());
                 comp.setPhasing(false);
                 siege.getCounters().add(comp);
 
@@ -312,6 +318,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             comp.setCounter(counter.getId());
             comp.setCountry(counter.getCountry());
             comp.setType(counter.getType());
+            comp.setCode(counter.getCode());
             siege.getCounters().add(comp);
             counters.add(counter);
 
@@ -1611,15 +1618,10 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                             .setParams(METHOD_REDEPLOY, unit.getCountry()));
                     diffs.add(counterDomain.createCounter(CounterFaceTypeEnum.LAND_DETACHMENT, unit.getCountry(), province.getName(), null, game));
                 } else {
-                    Long counterId = siege.getCounters().stream()
-                            .filter(bc -> bc.isNotPhasing() && Objects.equals(unit.getIdCounter(), bc.getCounter()))
-                            .map(SiegeCounterEntity::getCounter)
-                            .findAny()
-                            .orElse(null);
                     CounterEntity counter = game.getStacks().stream()
-                            .filter(stac -> StringUtils.equals(stac.getProvince(), siege.getProvince()))
+                            .filter(stac -> stac.isBesieged() && StringUtils.equals(stac.getProvince(), siege.getProvince()))
                             .flatMap(stac -> stac.getCounters().stream())
-                            .filter(count -> Objects.equals(counterId, count.getId()))
+                            .filter(count -> Objects.equals(unit.getIdCounter(), count.getId()) && CounterUtil.isMobile(count.getType()))
                             .findAny()
                             .orElse(null);
 

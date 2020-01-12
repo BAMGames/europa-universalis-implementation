@@ -2363,6 +2363,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         game.getSieges().get(1).setProvince("lyonnais");
         StackEntity stack = new StackEntity();
         stack.setProvince(siege.getProvince());
+        stack.setBesieged(true);
         game.getStacks().add(stack);
         testCheckStatus(pair.getRight(), request, siegeService::redeploy, "redeploy", GameStatusEnum.MILITARY_SIEGES);
 

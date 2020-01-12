@@ -3554,14 +3554,19 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         StackEntity stackPhasing = new StackEntity();
         stackPhasing.setCountry("france");
         stackPhasing.setProvince("idf");
-        stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing.getId()));
+        stackPhasing.getCounters().add(createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stackPhasing));
         game.getStacks().add(stackPhasing);
         StackEntity stackNonPhasing = new StackEntity();
         stackNonPhasing.setCountry("spain");
         stackNonPhasing.setProvince("idf");
-        stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing.getId()));
-        stackNonPhasing.getCounters().add(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing.getId()));
+        stackNonPhasing.getCounters().add(createCounter(3L, "spain", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
+        stackNonPhasing.getCounters().add(createCounter(4l, "austria", CounterFaceTypeEnum.ARMY_MINUS, stackNonPhasing));
         game.getStacks().add(stackNonPhasing);
+        StackEntity stackNotMobile = new StackEntity();
+        stackNotMobile.setProvince("idf");
+        stackNotMobile.setCountry("france");
+        stackNotMobile.getCounters().add(createCounter(5L, "france", CounterFaceTypeEnum.MNU_ART_MINUS, stackNotMobile));
+        game.getStacks().add(stackNotMobile);
         game.getBattles().add(new BattleEntity());
         BattleEntity battle = game.getBattles().get(0);
         battle.setStatus(BattleStatusEnum.SELECT_FORCES);
@@ -3721,6 +3726,17 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         }
 
         counter.setCountry("savoie");
+        request.getRequest().getRetreatInFortress().add(5L);
+
+        try {
+            battleService.retreatAfterBattle(request);
+            Assert.fail("Should break because retreat involves a non mobile counter");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.BATTLE_RETREAT_INVALID_COUNTER, e.getCode());
+            Assert.assertEquals("retreatAfterBattle.request.retreatInFortress", e.getParams()[0]);
+        }
+
+        request.getRequest().getRetreatInFortress().remove(5L);
         when(oeUtil.canRetreat(idf, true, THIRD, france, game)).thenReturn(false);
 
         try {
