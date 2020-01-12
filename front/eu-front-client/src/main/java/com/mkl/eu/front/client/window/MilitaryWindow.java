@@ -401,13 +401,13 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 + side.getSecondDay().getFireMod() + " / " + side.getSecondDay().getShockMod());
         hBox.getChildren().add(modifiers);
         if (StringUtils.isNotEmpty(side.getLeader())) {
-            Label leaderLabel = new Label(GlobalConfiguration.getMessage(side.getLeader()));
+            Label leaderLabel = new Label("   " + GlobalConfiguration.getMessage("military.battle.leader", GlobalConfiguration.getMessage(side.getLeader())));
             hBox.getChildren().add(leaderLabel);
             Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader());
             if (leader != null) {
                 try {
                     ImageView leaderTooltip = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
-                    Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.leader",
+                    Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.leader_help",
                             leader.getManoeuvre(), leader.getFire(), leader.getShock(), leader.getSiege()));
                     Tooltip.install(leaderTooltip, tooltip);
                     UIUtil.patchTooltipUntilMigrationJava9(tooltip);
@@ -575,7 +575,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         List<Counter> counterList = game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(stack.getProvince(), province))
                 .flatMap(stack -> stack.getCounters().stream())
-                .filter(counter -> allies.contains(counter.getCountry()))
+                .filter(counter -> allies.contains(counter.getCountry()) && CounterUtil.isMobile(counter.getType()))
                 .collect(Collectors.toList());
 
         MenuButton counters = new MenuButton(GlobalConfiguration.getMessage(key));
@@ -903,13 +903,13 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         Node help = createSiegeTooltip(side);
         hBox.getChildren().addAll(modifiers, help);
         if (StringUtils.isNotEmpty(side.getLeader())) {
-            Label leaderLabel = new Label(GlobalConfiguration.getMessage(side.getLeader()));
+            Label leaderLabel = new Label("   " + GlobalConfiguration.getMessage("military.battle.leader", GlobalConfiguration.getMessage(side.getLeader())));
             hBox.getChildren().add(leaderLabel);
             Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader());
             if (leader != null) {
                 try {
                     ImageView leaderTooltip = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
-                    Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.leader",
+                    Tooltip tooltip = new Tooltip(GlobalConfiguration.getMessage("military.battle.leader_help",
                             leader.getManoeuvre(), leader.getFire(), leader.getShock(), leader.getSiege()));
                     Tooltip.install(leaderTooltip, tooltip);
                     UIUtil.patchTooltipUntilMigrationJava9(tooltip);
