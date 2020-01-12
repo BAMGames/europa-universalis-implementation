@@ -254,6 +254,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
         idf.setTerrain(TerrainEnum.PLAIN);
         when(provinceDao.getProvinceByName("idf")).thenReturn(idf);
+        when(oeUtil.getController(idf, game)).thenReturn("savoie");
 
         List<String> allies = new ArrayList<>();
         allies.add("france");
@@ -289,7 +290,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
         Assert.assertEquals(game.getId(), diffEntity.getIdGame());
         if (forcesSelected) {
-            Assert.assertEquals(5 + (withBesieged ? 3 : 0), diffEntity.getAttributes().size());
+            Assert.assertEquals(6 + (withBesieged ? 2 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(SiegeStatusEnum.CHOOSE_MODE.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
             Assert.assertEquals("1", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_COUNTER_ADD));
             Assert.assertEquals("0", getAttribute(diffEntity, DiffAttributeTypeEnum.LEVEL));
@@ -298,9 +299,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.PHASING_LEADER));
             Assert.assertEquals("Napo", siege.getPhasing().getLeader());
         } else {
-            Assert.assertEquals(1 + (withBesieged ? 3 : 0), diffEntity.getAttributes().size());
+            Assert.assertEquals(2 + (withBesieged ? 2 : 0), diffEntity.getAttributes().size());
             Assert.assertEquals(SiegeStatusEnum.SELECT_FORCES.name(), getAttribute(diffEntity, DiffAttributeTypeEnum.STATUS));
         }
+        Assert.assertEquals("savoie", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
+        Assert.assertEquals("savoie", siege.getNonPhasing().getCountry());
         if (withBesieged) {
             Assert.assertEquals("5", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTER_ADD));
             SiegeCounterEntity counterSpa = siege.getCounters().stream()
@@ -308,10 +311,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                     .findAny()
                     .orElse(null);
             Assert.assertNotNull(counterSpa);
-            if (!tooMuchLeadingCountries) {
-                Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_COUNTRY));
-                Assert.assertEquals("france", siege.getNonPhasing().getCountry());
-            }
             if (!tooMuchLeaders) {
                 Assert.assertEquals("Napo", getAttribute(diffEntity, DiffAttributeTypeEnum.NON_PHASING_LEADER));
                 Assert.assertEquals("Napo", siege.getNonPhasing().getLeader());

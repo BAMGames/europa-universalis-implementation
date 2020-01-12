@@ -795,13 +795,10 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
 
             HBox phasingCounters = new HBox();
             HBox nonPhasingCounters = new HBox();
-            String controller = markers.stream()
-                    .filter(marker -> StringUtils.equals(marker.getId(), siege.getProvince()))
-                    .map(IMapMarker::getController)
-                    .findAny()
-                    .orElse(null);
-            ImageView image = UIUtil.getImage(controller, CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false), null);
-            nonPhasingCounters.getChildren().add(image);
+            if (!StringUtils.isEmpty(siege.getNonPhasing().getCountry()) || siege.getFortressLevel() != 0) {
+                ImageView image = UIUtil.getImage(siege.getNonPhasing().getCountry(), CounterUtil.getFortressesFromLevel(siege.getFortressLevel(), false), null);
+                nonPhasingCounters.getChildren().add(image);
+            }
             siege.getCounters().stream()
                     .forEach(counter -> {
                         ImageView imageCounter = UIUtil.getImage(counter.getCounter());

@@ -57,7 +57,7 @@ import static com.mkl.eu.client.common.util.CommonUtil.THIRD;
 @Service
 @Transactional(rollbackFor = {TechnicalException.class, FunctionalException.class})
 public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeService {
-    private final static Predicate<CounterEntity> HAS_SIEGEWORK = counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS;
+    public final static Predicate<CounterEntity> HAS_SIEGEWORK = counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS;
     /** Counter domain. */
     @Autowired
     private ICounterDomain counterDomain;
@@ -200,11 +200,11 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> CounterUtil.isArmy(counter.getType()) || CounterUtil.isLeader(counter.getType()))
                 .collect(Collectors.toList());
+        AbstractProvinceEntity fullProvince = provinceDao.getProvinceByName(province);
+        leadingCountry = oeUtil.getController(fullProvince, game);
+        attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTRY, leadingCountry));
+        siege.getNonPhasing().setCountry(leadingCountry);
         if (CollectionUtils.isNotEmpty(defenderCounters)) {
-            leadingCountries = oeUtil.getLeadingCountries(defenderCounters);
-            leadingCountry = leadingCountries.size() >= 1 ? leadingCountries.get(0) : null;
-            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_COUNTRY, leadingCountry));
-            siege.getNonPhasing().setCountry(leadingCountry);
             leaders = oeUtil.getLeaders(defenderCounters, getTables(), Leader.landEurope);
             if (leaders.size() >= 1) {
                 String leader = leaders.get(0).getCode();
