@@ -572,7 +572,8 @@ public class GameMappingTest {
         counter.setPhasing(false);
         counter.setCounter(new Counter());
         counter.getCounter().setId(102L);
-        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.getCounter().setType(CounterFaceTypeEnum.LEADER);
+        counter.getCounter().setCode("leader");
         counter.getCounter().setCountry("persia");
         object.getCounters().add(counter);
         object.getPhasing().setLeader("leader");
@@ -640,7 +641,8 @@ public class GameMappingTest {
         counter.setPhasing(false);
         counter.setCounter(new Counter());
         counter.getCounter().setId(102L);
-        counter.getCounter().setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.getCounter().setType(CounterFaceTypeEnum.LEADER);
+        counter.getCounter().setCode("leader");
         counter.getCounter().setCountry("persia");
         object.getCounters().add(counter);
         object.setPhasing(new SiegeSide());
@@ -1083,7 +1085,8 @@ public class GameMappingTest {
         counter = new BattleCounterEntity();
         counter.setPhasing(false);
         counter.setCounter(102L);
-        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.setType(CounterFaceTypeEnum.LEADER);
+        counter.setCode("leader");
         counter.setCountry("persia");
         object.getCounters().add(counter);
         object.getPhasing().setLeader("leader");
@@ -1149,7 +1152,8 @@ public class GameMappingTest {
         counter = new SiegeCounterEntity();
         counter.setPhasing(false);
         counter.setCounter(102L);
-        counter.setType(CounterFaceTypeEnum.ARMY_PLUS);
+        counter.setType(CounterFaceTypeEnum.LEADER);
+        counter.setCode("leader");
         counter.setCountry("persia");
         object.getCounters().add(counter);
         object.setPhasing(new SiegeSideEntity());

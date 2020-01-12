@@ -128,6 +128,7 @@ public class BattleMapping extends AbstractMapping {
         counter.setId(source.getCounter());
         counter.setCountry(source.getCountry());
         counter.setType(source.getType());
+        counter.setCode(source.getCode());
         target.setCounter(counter);
 
         return target;

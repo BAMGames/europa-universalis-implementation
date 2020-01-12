@@ -22,6 +22,8 @@ public class BattleCounterEntity {
     private String country;
     /** The type of the counter. */
     private CounterFaceTypeEnum type;
+    /** The code of the counter. */
+    private String code;
     /** Flag <code>true</code> when the counter is in the phasing side. */
     private boolean phasing;
 
@@ -98,5 +100,15 @@ public class BattleCounterEntity {
     /** @param type the type to set. */
     public void setType(CounterFaceTypeEnum type) {
         this.type = type;
+    }
+
+    /** @return the code. */
+    public String getCode() {
+        return code;
+    }
+
+    /** @param code the code to set. */
+    public void setCode(String code) {
+        this.code = code;
     }
 }
