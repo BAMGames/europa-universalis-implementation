@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -219,14 +221,27 @@ public final class MenuHelper {
     private static List<ContextualMenuItem> createGlobalMenu() {
         List<ContextualMenuItem> menus = new ArrayList<>();
         ContextualMenu menu = ContextualMenuItem.createMenuSubMenu(GlobalConfiguration.getMessage("map.menu.map"));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.map.color"),
-                event -> MapConfiguration.switchColor()));
-        menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.map.moving_stack"),
-                event -> MapConfiguration.switchStacksMovePhase()));
+        menu.addMenuItem(toogleMapConfiguration(MapConfiguration::isWithColor, MapConfiguration::switchColor, "map.menu.map.color"));
+        menu.addMenuItem(toogleMapConfiguration(MapConfiguration::isStacksMovePhase, MapConfiguration::switchStacksMovePhase, "map.menu.map.moving_stack"));
+        menu.addMenuItem(toogleMapConfiguration(MapConfiguration::isHideArmies, MapConfiguration::switchHideArmies, "map.menu.map.hide_army"));
+        menu.addMenuItem(toogleMapConfiguration(MapConfiguration::isHideInfrastructures, MapConfiguration::switchHideInfrastructures, "map.menu.map.hide_infra"));
+        menu.addMenuItem(toogleMapConfiguration(MapConfiguration::isHideAll, MapConfiguration::switchHideAll, "map.menu.map.hide_all"));
 
         menus.add(menu);
         menus.add(ContextualMenuItem.createMenuSeparator());
         return menus;
+    }
+
+    private static ContextualMenuItem toogleMapConfiguration(Supplier<Boolean> toggled, Runnable toggle, String label) {
+        Consumer<ContextualMenuItem> setMenuLabel = menuITem -> menuITem.setText((toggled.get() ? GlobalConfiguration.getMessage("map.menu.map.checked") : "") + GlobalConfiguration.getMessage(label));
+        ContextualMenuItem item = ContextualMenuItem.createMenuItem(null,
+                event -> {
+                    toggle.run();
+                    setMenuLabel.accept((ContextualMenuItem) event.getSource());
+                });
+        setMenuLabel.accept(item);
+
+        return item;
     }
 
     /**

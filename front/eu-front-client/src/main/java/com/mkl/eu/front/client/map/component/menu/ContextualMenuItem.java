@@ -77,6 +77,11 @@ public class ContextualMenuItem {
         return text;
     }
 
+    /** @param text the text to set. */
+    public void setText(String text) {
+        this.text = text;
+    }
+
     /** @return the type. */
     public ContextualMenuItemTypeEnum getType() {
         return type;

@@ -20,6 +20,7 @@ import processing.core.PVector;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** @author MKL. */
 public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
@@ -152,8 +153,13 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
             if (stacksToIgnore.contains(stacks.get(i))) {
                 continue;
             }
-            for (int j = 0; j < stacks.get(i).getCounters().size(); j++) {
-                CounterMarker counter = stacks.get(i).getCounters().get(j);
+            List<CounterMarker> counters = stacks.get(i).getCounters().stream()
+                    .filter(counter -> !MapConfiguration.isHideAll() &&
+                            (!MapConfiguration.isHideArmies() || !CounterUtil.isMobile(counter.getType())) &&
+                            (!MapConfiguration.isHideInfrastructures() || (!CounterUtil.isManufacture(counter.getType()) && !CounterUtil.isEstablishment(counter.getType()))))
+                    .collect(Collectors.toList());
+            for (int j = 0; j < counters.size(); j++) {
+                CounterMarker counter = counters.get(j);
                 float x0 = xy[0] - relativeSize * (stacks.size()) / 2;
 
                 float factor = 10;
@@ -184,7 +190,7 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 }
 
                 if (borderColored) {
-                    if (j == stacks.get(i).getCounters().size() - 1) {
+                    if (j == counters.size() - 1) {
                         drawRectBorder(pg, x0 + relativeSize * j / factor + relativeSize * i
                                 , xy[1] + relativeSize * (j / factor - 0.5f), relativeSize, relativeSize, 2.5f);
                     } else {

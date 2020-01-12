@@ -186,7 +186,7 @@ public class ContextualMenu extends ContextualMenuItem {
     public boolean hit(int x, int y) {
         ContextualMenuItem item = getItemAtLocation(x, y);
         if (item != null && item.getType() == ContextualMenuItemTypeEnum.ITEM) {
-            item.getHandler().handle(new ActionEvent());
+            item.getHandler().handle(new ActionEvent(item, null));
         }
         return item != null;
     }

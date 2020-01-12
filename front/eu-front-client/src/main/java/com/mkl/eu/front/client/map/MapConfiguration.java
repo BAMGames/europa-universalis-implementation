@@ -7,9 +7,15 @@ package com.mkl.eu.front.client.map;
  */
 public final class MapConfiguration {
     /** Color mode. */
-    private static boolean withColor = false;
+    private static boolean withColor;
     /** See move phase of stacks. */
     private static boolean stacksMovePhase;
+    /** Hide mobile counters. */
+    private static boolean hideArmies;
+    /** Hide economical counters. */
+    private static boolean hideInfrastructures;
+    /** Hide all counters. */
+    private static boolean hideAll;
 
     /**
      * No instantiation of an utility class.
@@ -36,5 +42,35 @@ public final class MapConfiguration {
     /** @return the stacksMovePhase. */
     public static boolean isStacksMovePhase() {
         return stacksMovePhase;
+    }
+
+    /** Switch the hideArmies mode. */
+    public static void switchHideArmies() {
+        hideArmies = !hideArmies;
+    }
+
+    /** @return the hideArmies. */
+    public static boolean isHideArmies() {
+        return hideArmies;
+    }
+
+    /** Switch the hideInfrastructures mode. */
+    public static void switchHideInfrastructures() {
+        hideInfrastructures = !hideInfrastructures;
+    }
+
+    /** @return the hideInfrastructures. */
+    public static boolean isHideInfrastructures() {
+        return hideInfrastructures;
+    }
+
+    /** Switch the hideAll mode. */
+    public static void switchHideAll() {
+        hideAll = !hideAll;
+    }
+
+    /** @return the hideAll. */
+    public static boolean isHideAll() {
+        return hideAll;
     }
 }
