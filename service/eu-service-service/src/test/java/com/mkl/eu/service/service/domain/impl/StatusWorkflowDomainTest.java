@@ -1075,36 +1075,39 @@ public class StatusWorkflowDomainTest {
 
             Assert.assertEquals(4, diffs.size());
 
-            Assert.assertEquals(roundMove, diffs.get(0));
+            DiffEntity diff = diffs.stream()
+                    .filter(d -> d == roundMove)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diff);
 
-            Assert.assertEquals(game.getId(), diffs.get(1).getIdGame());
-            Assert.assertEquals(game.getVersion(), diffs.get(1).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(1).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.STACK, diffs.get(1).getTypeObject());
-            Assert.assertEquals(null, diffs.get(1).getIdObject());
-            Assert.assertEquals(1, diffs.get(1).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffs.get(1).getAttributes().get(0).getType());
-            Assert.assertEquals(MovePhaseEnum.NOT_MOVED.name(), diffs.get(1).getAttributes().get(0).getValue());
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diff);
+            Assert.assertEquals(null, diff.getIdObject());
+            Assert.assertEquals(1, diff.getAttributes().size());
+            Assert.assertEquals(MovePhaseEnum.NOT_MOVED.name(), getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
 
-            Assert.assertEquals(game.getId(), diffs.get(2).getIdGame());
-            Assert.assertEquals(game.getVersion(), diffs.get(2).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(2).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.GAME, diffs.get(2).getTypeObject());
-            Assert.assertEquals(null, diffs.get(2).getIdObject());
-            Assert.assertEquals(1, diffs.get(2).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(2).getAttributes().get(0).getType());
-            Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(2).getAttributes().get(0).getValue());
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diff);
+            Assert.assertEquals(null, diff.getIdObject());
+            Assert.assertEquals(1, diff.getAttributes().size());
+            Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
 
-            Assert.assertEquals(game.getId(), diffs.get(3).getIdGame());
-            Assert.assertEquals(game.getVersion(), diffs.get(3).getVersionGame().longValue());
-            Assert.assertEquals(DiffTypeEnum.MODIFY, diffs.get(3).getType());
-            Assert.assertEquals(DiffTypeObjectEnum.TURN_ORDER, diffs.get(3).getTypeObject());
-            Assert.assertEquals(null, diffs.get(3).getIdObject());
-            Assert.assertEquals(2, diffs.get(3).getAttributes().size());
-            Assert.assertEquals(DiffAttributeTypeEnum.ACTIVE, diffs.get(3).getAttributes().get(0).getType());
-            Assert.assertEquals("0", diffs.get(3).getAttributes().get(0).getValue());
-            Assert.assertEquals(DiffAttributeTypeEnum.STATUS, diffs.get(3).getAttributes().get(1).getType());
-            Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), diffs.get(3).getAttributes().get(1).getValue());
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diff);
+            Assert.assertEquals(null, diff.getIdObject());
+            Assert.assertEquals(2, diff.getAttributes().size());
+            Assert.assertEquals("0", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+            Assert.assertEquals(GameStatusEnum.MILITARY_MOVE.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
         }
     }
 
@@ -1148,7 +1151,7 @@ public class StatusWorkflowDomainTest {
 
         List<DiffEntity> diffs = statusWorkflowDomain.endRound(game);
 
-        Assert.assertEquals(7, diffs.size());
+        Assert.assertEquals(8, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d == end)
                 .findAny()
@@ -1181,6 +1184,11 @@ public class StatusWorkflowDomainTest {
         Assert.assertNotNull(diff);
         diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER && Objects.equals(5L, d.getIdObject()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK && Objects.equals(null, d.getIdObject()))
                 .findAny()
                 .orElse(null);
         Assert.assertNotNull(diff);
@@ -1683,12 +1691,17 @@ public class StatusWorkflowDomainTest {
         List<DiffEntity> diffs = statusWorkflowDomain.endRedeploymentPhase(game);
 
         Assert.assertEquals(GameStatusEnum.REDEPLOYMENT, game.getStatus());
-        Assert.assertEquals(1, diffs.size());
+        Assert.assertEquals(2, diffs.size());
         DiffEntity diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
                 .findAny()
                 .orElse(null);
         Assert.assertEquals("1", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
     }
 
     @Test

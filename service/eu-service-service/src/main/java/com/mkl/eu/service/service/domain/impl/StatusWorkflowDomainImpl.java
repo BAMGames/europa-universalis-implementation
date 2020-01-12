@@ -208,7 +208,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                     .orElse(null);
 
             if (activeSiege != currentPosition) {
-                diffs.add(changeActivePlayers(activeSiege, game));
+                diffs.addAll(changeActivePlayers(activeSiege, game));
             }
             return diffs;
         }
@@ -277,7 +277,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                         .min(Comparator.<Integer>naturalOrder())
                         .orElse(null);
                 if (activeSiege != null) {
-                    diffs.add(changeActivePlayers(activeSiege, game));
+                    diffs.addAll(changeActivePlayers(activeSiege, game));
                 } else {
                     diffs.addAll(nextRound(game));
                 }
@@ -288,7 +288,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
                 }
-                diffs.add(changeActivePlayers(next, game));
+                diffs.addAll(changeActivePlayers(next, game));
             }
             return diffs;
         } else {
@@ -347,7 +347,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                     diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                             DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_SIEGES)));
 
-                    diffs.add(changeActivePlayers(activeSiege, game));
+                    diffs.addAll(changeActivePlayers(activeSiege, game));
 
                     return diffs;
                 }
@@ -367,7 +367,8 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
      * @param game     the game.
      * @return the diff created.
      */
-    private DiffEntity changeActivePlayers(int position, GameEntity game) {
+    private List<DiffEntity> changeActivePlayers(int position, GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
         game.getOrders().stream()
                 .forEach(o -> {
                     o.setActive(false);
@@ -376,10 +377,26 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         game.getOrders().stream()
                 .filter(o -> o.getPosition() == position)
                 .forEach(o -> o.setActive(true));
-
-        return DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.TURN_ORDER,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, position),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE.name()));
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE.name())));
+
+        // Stacks move phase reset
+        game.getStacks().stream()
+                .filter(stack -> stack.getMovePhase() != null)
+                .forEach(stack -> {
+                    stack.setMove(0);
+                    if (stack.getMovePhase().isBesieging()) {
+                        stack.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
+                    } else {
+                        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
+                    }
+                });
+
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
+
+        return diffs;
     }
 
     /**
@@ -521,21 +538,6 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         List<DiffEntity> diffs = new ArrayList<>();
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
 
-        // Stacks move phase reset
-        game.getStacks().stream()
-                .filter(stack -> stack.getMovePhase() != null)
-                .forEach(stack -> {
-                    stack.setMove(0);
-                    if (stack.getMovePhase().isBesieging()) {
-                        stack.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
-                    } else {
-                        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
-                    }
-                });
-
-        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));
-
         // TODO TG-58 when hierarchy implemented, it will be MILITARY_HIERARCHY phase
         game.setStatus(GameStatusEnum.MILITARY_MOVE);
 
@@ -544,7 +546,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
 
         // set the order of position 0 active
-        diffs.add(changeActivePlayers(0, game));
+        diffs.addAll(changeActivePlayers(0, game));
         return diffs;
     }
 
@@ -562,7 +564,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.REDEPLOYMENT)));
         // set the order of position 0 active
-        diffs.add(changeActivePlayers(0, game));
+        diffs.addAll(changeActivePlayers(0, game));
         diffs.addAll(adjustPillages(game));
 
         return diffs;
@@ -620,7 +622,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                 .orElse(null);
 
         if (next != null) {
-            diffs.add(changeActivePlayers(next, game));
+            diffs.addAll(changeActivePlayers(next, game));
         } else {
             diffs.addAll(adjustSiegeworks(game));
             diffs.addAll(updateEcoSheet(game));
