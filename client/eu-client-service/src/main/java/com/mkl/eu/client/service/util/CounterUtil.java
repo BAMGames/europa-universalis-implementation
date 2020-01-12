@@ -1334,7 +1334,7 @@ public final class CounterUtil {
      * @return <code>true</code> if the counter face type is mobile (can be moved), <code>false</code> otherwise.
      */
     public static boolean isMobile(CounterFaceTypeEnum face) {
-        return isArmy(face);
+        return isArmy(face) || isLeader(face);
     }
 
     /**

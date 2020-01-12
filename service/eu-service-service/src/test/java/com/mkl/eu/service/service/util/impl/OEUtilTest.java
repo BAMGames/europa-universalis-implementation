@@ -517,6 +517,7 @@ public class OEUtilTest {
         Assert.assertEquals(false, oeUtil.isMobile(stack));
 
         stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.LEADER));
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
@@ -536,6 +537,8 @@ public class OEUtilTest {
         Assert.assertEquals(false, oeUtil.isMobile(stack));
 
         stack.getCounters().clear();
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.LEADER));
+        stack.getCounters().add(createCounter(CounterFaceTypeEnum.PACHA_2));
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_PLUS));
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.ARMY_MINUS));
         stack.getCounters().add(createCounter(CounterFaceTypeEnum.FLEET_TRANSPORT_MINUS));
