@@ -1124,12 +1124,13 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                 .orElse(null);
         boolean offensive = siege.isBesiegingOffensive();
         List<String> allies = war.getCountries().stream()
-                .filter(c -> c.isOffensive() == offensive)
+                .filter(c -> c.isOffensive() != offensive)
                 .map(c -> c.getCountry().getName())
                 .collect(Collectors.toList());
         List<String> provinces = markers.stream()
                 .filter(province -> allies.contains(province.getController()))
                 .map(IMapMarker::getId)
+                .sorted(Comparator.<String>naturalOrder())
                 .collect(Collectors.toList());
         String controller = markers.stream()
                 .filter(province -> StringUtils.equals(province.getId(), siege.getProvince()))
