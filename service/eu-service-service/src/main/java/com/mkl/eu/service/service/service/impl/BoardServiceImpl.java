@@ -558,7 +558,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_COUNTER, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_COUNTER));
 
-        int futureNbCounters = stack.getCounters().size() + 1;
+        long futureNbCounters = stack.getCounters().stream()
+                .filter(c -> CounterUtil.isArmy(c.getType()))
+                .count() + (CounterUtil.isArmy(counter.getType()) ? 1 : 0);
         double futureSize = stack.getCounters().stream()
                 .map(c -> CounterUtil.getSizeFromType(c.getType()))
                 .collect(Collectors.summingDouble(value -> value));
@@ -575,22 +577,26 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         diffs.add(counterDomain.changeCounterOwner(counter, stack, game));
 
-        String oldStackController = oeUtil.getController(oldStack);
-        if (!StringUtils.equals(oldStackController, oldStack.getCountry())) {
-            String newLeader = oeUtil.getLeader(oldStack, getTables(), getLeaderConditions(oldStack.getProvince()));
+        String newController = oeUtil.getController(oldStack);
+        boolean changeController = !StringUtils.equals(newController, oldStack.getCountry());
+        String newLeader = oeUtil.getLeader(oldStack, getTables(), getLeaderConditions(oldStack.getProvince()));
+        boolean changeLeader = !StringUtils.equals(newLeader, oldStack.getLeader());
+        if (changeController || changeLeader) {
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, oldStack.getId(),
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, oldStackController),
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, oldStack.getLeader()))));
-            oldStack.setCountry(oldStackController);
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newController, changeController),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, changeLeader)));
+            oldStack.setCountry(newController);
             oldStack.setLeader(newLeader);
         }
-        String newStackController = oeUtil.getController(stack);
-        if (!StringUtils.equals(newStackController, stack.getCountry())) {
-            String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
+        newController = oeUtil.getController(stack);
+        changeController = !StringUtils.equals(newController, stack.getCountry());
+        newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
+        changeLeader = !StringUtils.equals(newLeader, stack.getLeader());
+        if (changeController || changeLeader) {
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
-            stack.setCountry(newStackController);
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newController, changeController),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, changeLeader)));
+            stack.setCountry(newController);
             stack.setLeader(newLeader);
         }
 

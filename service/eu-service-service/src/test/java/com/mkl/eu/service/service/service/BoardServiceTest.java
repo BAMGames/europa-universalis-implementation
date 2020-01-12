@@ -781,8 +781,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         request.getGame().setVersionGame(1L);
         request.getRequest().setIdStack(7L);
         request.getRequest().setCountry("espagne");
-        Tables tables = new Tables();
-        AbstractBack.TABLES = tables;
+        AbstractBack.TABLES = new Tables();
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 27L);
         game.getCountries().add(new PlayableCountryEntity());
@@ -1058,6 +1057,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
         when(oeUtil.getController(stack)).thenReturn("genes");
         when(oeUtil.getController(stackTo)).thenReturn("france");
+        when(provinceDao.getProvinceByName(any())).thenReturn(new EuropeanProvinceEntity());
 
         simulateDiff();
 
@@ -1231,6 +1231,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(counterDomain.createStack(any(), any(), any())).thenReturn(newStack);
         when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
         when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
+        when(provinceDao.getProvinceByName(any())).thenReturn(new EuropeanProvinceEntity());
 
         simulateDiff();
 
