@@ -1432,14 +1432,15 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
      */
     private List<DiffEntity> cleanUpBattle(BattleEntity battle) {
         List<DiffEntity> diffs = new ArrayList<>();
+        GameEntity game = battle.getGame();
         AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
-        String controller = oeUtil.getController(province, battle.getGame());
+        String controller = oeUtil.getController(province, game);
 
         List<Long> countersId = battle.getCounters().stream()
                 .map(BattleCounterEntity::getCounter)
                 .collect(Collectors.toList());
 
-        battle.getGame().getStacks().stream()
+        game.getStacks().stream()
                 .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()))
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> countersId.contains(counter.getId()))
@@ -1451,7 +1452,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(province));
                     MovePhaseEnum movePhase = stack.getMovePhase();
                     if (stack.getMovePhase() == MovePhaseEnum.FIGHTING) {
-                        List<String> enemies = oeUtil.getEnemies(stack.getCountry(), battle.getGame());
+                        List<String> enemies = oeUtil.getEnemies(stack.getCountry(), game);
                         if (enemies.contains(controller)) {
                             movePhase = MovePhaseEnum.BESIEGING;
                         } else {
@@ -1460,7 +1461,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     }
                     boolean changeMovePhase = movePhase != stack.getMovePhase();
                     if (changeController || changeMovePhase) {
-                        diffs.add(DiffUtil.createDiff(battle.getGame(), DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
+                        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase, changeMovePhase),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, changeController),
                                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
@@ -1469,7 +1470,21 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     stack.setCountry(newStackController);
                     stack.setLeader(newLeader);
                 });
-        diffs.addAll(statusWorkflowDomain.endMilitaryPhase(battle.getGame()));
+
+        if (!game.getStacks().stream()
+                .anyMatch(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
+                        (stack.getMovePhase() == MovePhaseEnum.BESIEGING || stack.getMovePhase() == MovePhaseEnum.STILL_BESIEGING))) {
+            List<CounterEntity> siegeworks = game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(SiegeServiceImpl.HAS_SIEGEWORK)
+                    .collect(Collectors.toList());
+            diffs.addAll(siegeworks.stream()
+                    .map(counterDomain::removeCounter)
+                    .collect(Collectors.toList()));
+        }
+
+        diffs.addAll(statusWorkflowDomain.endMilitaryPhase(game));
         return diffs;
     }
 
