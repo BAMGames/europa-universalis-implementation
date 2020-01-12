@@ -183,6 +183,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 diff.getAttributes().add(diffAttributes);
                 battle.getPhasing().setLeader(leader);
             }
+            attackerCounters.removeIf(counter -> CounterUtil.isLeader(counter.getType()) &&
+                    !StringUtils.equals(counter.getCode(), battle.getPhasing().getLeader()));
 
             attackerCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
@@ -229,6 +231,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 diff.getAttributes().add(diffAttributes);
                 battle.getNonPhasing().setLeader(leader);
             }
+            defenderCounters.removeIf(counter -> CounterUtil.isLeader(counter.getType()) &&
+                    !StringUtils.equals(counter.getCode(), battle.getNonPhasing().getLeader()));
 
             defenderCounters.forEach(counter -> {
                 BattleCounterEntity comp = new BattleCounterEntity();
@@ -1587,7 +1591,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         failIfTrue(new CheckForThrow<Boolean>()
                 .setTest(!CommonUtil.equals(roundLosses, side.getLosses().getRoundLoss()) || !CommonUtil.equals(thirdLosses, side.getLosses().getThirdLoss()))
                 .setCodeError(IConstantsServiceException.BATTLE_LOSSES_MISMATCH)
-                .setMsgFormat("{1}: {0} The losses taken {1} does not match the losses that should be taken {2}.")
+                .setMsgFormat("{1}: {0} The losses taken {2} does not match the losses that should be taken {3}.")
                 .setName(PARAMETER_CHOOSE_LOSSES, PARAMETER_REQUEST, PARAMETER_LOSSES)
                 .setParams(METHOD_CHOOSE_LOSSES, AbstractWithLossEntity.create(3 * roundLosses + thirdLosses).toString(), side.getLosses().toString()));
 
