@@ -19,6 +19,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.FileInputStream;
@@ -33,6 +35,8 @@ import java.lang.reflect.Field;
  * @author MKL.
  */
 public final class UIUtil {
+    /** Logger. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(UIUtil.class);
     /**
      * Private constructor for Utility class.
      */
@@ -175,6 +179,7 @@ public final class UIUtil {
             return new ImageView(new Image(fis, 40, 40, true, false));
         } catch (FileNotFoundException e) {
             // TODO TG-15 what to display if no image ?
+            LOGGER.error("No image found for path " + path);
             return null;
         }
 
