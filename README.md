@@ -9,9 +9,9 @@ External links:
  - [Backlog](https://tree.taiga.io/project/fogiafr-eu/epics)
 
 Download (latest stable version):
- - [Client](https://dl.bintray.com/mkl/eu/com/mkl/eu/front/eu-front-client/1.0.1/eu-front-client-1.0.1-zip.zip)
+ - [Client](https://dl.bintray.com/mkl/eu/com/mkl/eu/front/eu-front-client/1.0.2/eu-front-client-1.0.2-zip.zip)
  - [Global](https://dl.bintray.com/mkl/eu/com/mkl/eu/)
 
 Download Snapshot (not stable version):
- - [Client](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/front/eu-front-client/1.0.1-SNAPSHOT)
+ - [Client](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/front/eu-front-client/1.0.3-SNAPSHOT)
  - [Global](https://oss.jfrog.org/artifactory/list/oss-snapshot-local/com/mkl/eu/)
