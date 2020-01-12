@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.mkl.eu.service</groupId>
         <artifactId>service</artifactId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.0.2</version>
     </parent>
     <groupId>com.mkl.eu.service</groupId>
     <artifactId>eu-service-service</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
     <name>eu-service-service</name>
     <url>http://maven.apache.org</url>
     <properties>
