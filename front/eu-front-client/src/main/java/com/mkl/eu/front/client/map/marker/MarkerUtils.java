@@ -199,7 +199,7 @@ public final class MarkerUtils {
             path.append(country).append("/")
                     .append(WordUtils.capitalize(type.toLowerCase()))
                     .append("_").append(country).append("_")
-                    .append(code).append(".png");
+                    .append(code.replaceAll(" ", "-")).append(".png");
         } else {
             if (country != null) {
                 path.append(country)
