@@ -233,79 +233,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <echo message=" - Creation of distribution folder ... "/>
-                                <mkdir dir="${project.build.directory}/${artifactId}-${project.version}"/>
-                                <move file="${project.build.directory}/${artifactId}-${project.version}.jar"
-                                      tofile="${project.build.directory}/${name}.jar"/>
-                                <echo message=" - Copy of client jar : ${name}.jar ... "/>
-                                <copy overwrite="true"
-                                      todir="${project.build.directory}/${artifactId}-${project.version}"
-                                      file="${project.build.directory}/${name}.jar"/>
-                                <move file="${project.build.directory}/${name}.jar"
-                                      tofile="${project.build.directory}/${artifactId}-${project.version}.jar"/>
-                                <copy overwrite="true"
-                                      todir="${project.build.directory}/${artifactId}-${project.version}"
-                                      filtering="true">
-                                    <fileset dir="${project.basedir}/config/">
-                                        <include name="**/*"/>
-                                    </fileset>
-                                    <filterset>
-                                        <filter token="artifactId" value="${artifactId}"/>
-                                        <filter token="version" value="${version}"/>
-                                        <filter token="name" value="${name}"/>
-                                    </filterset>
-                                </copy>
-                                <copy overwrite="true"
-                                      todir="${project.build.directory}/${artifactId}-${project.version}/data"
-                                      filtering="true">
-                                    <fileset dir="${project.basedir}/data/">
-                                        <include name="**/*"/>
-                                    </fileset>
-                                </copy>
-                                <echo message=" - Creation of zip with all the content of ${artifactId}-${project.version} ... "/>
-                                <zip destfile="${project.build.directory}/${artifactId}-${project.version}.zip"
-                                     basedir="${project.build.directory}/${artifactId}-${project.version}"
-                                     update="true"/>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-artifacts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>
-                                        ${project.build.directory}/${project.artifactId}-${project.version}.zip
-                                    </file>
-                                    <type>zip</type>
-                                    <classifier>zip</classifier>
-                                </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
@@ -317,4 +244,87 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>client-full</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message=" - Creation of distribution folder ... "/>
+                                        <mkdir dir="${project.build.directory}/${artifactId}-${project.version}"/>
+                                        <move file="${project.build.directory}/${artifactId}-${project.version}.jar"
+                                              tofile="${project.build.directory}/${name}.jar"/>
+                                        <echo message=" - Copy of client jar : ${name}.jar ... "/>
+                                        <copy overwrite="true"
+                                              todir="${project.build.directory}/${artifactId}-${project.version}"
+                                              file="${project.build.directory}/${name}.jar"/>
+                                        <move file="${project.build.directory}/${name}.jar"
+                                              tofile="${project.build.directory}/${artifactId}-${project.version}.jar"/>
+                                        <copy overwrite="true"
+                                              todir="${project.build.directory}/${artifactId}-${project.version}"
+                                              filtering="true">
+                                            <fileset dir="${project.basedir}/config/">
+                                                <include name="**/*"/>
+                                            </fileset>
+                                            <filterset>
+                                                <filter token="artifactId" value="${artifactId}"/>
+                                                <filter token="version" value="${version}"/>
+                                                <filter token="name" value="${name}"/>
+                                            </filterset>
+                                        </copy>
+                                        <copy overwrite="true"
+                                              todir="${project.build.directory}/${artifactId}-${project.version}/data"
+                                              filtering="true">
+                                            <fileset dir="${project.basedir}/data/">
+                                                <include name="**/*"/>
+                                            </fileset>
+                                        </copy>
+                                        <echo message=" - Creation of zip with all the content of ${artifactId}-${project.version} ... "/>
+                                        <zip destfile="${project.build.directory}/${artifactId}-${project.version}.zip"
+                                             basedir="${project.build.directory}/${artifactId}-${project.version}"
+                                             update="true"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-artifacts</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>
+                                                ${project.build.directory}/${project.artifactId}-${project.version}.zip
+                                            </file>
+                                            <type>zip</type>
+                                            <classifier>zip</classifier>
+                                        </artifact>
+                                    </artifacts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
