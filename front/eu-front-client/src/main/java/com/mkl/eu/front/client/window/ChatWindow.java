@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
+import static java.time.temporal.ChronoField.*;
 
 /**
  * Window containing all the chats between players.
@@ -56,6 +58,18 @@ import static com.mkl.eu.client.common.util.CommonUtil.findFirst;
 @Component
 @Scope(value = "prototype")
 public class ChatWindow extends AbstractDiffResponseListenerContainer implements IDiffListener {
+    public static final DateTimeFormatter MSG_DTF;
+
+    static {
+        MSG_DTF = new DateTimeFormatterBuilder()
+                .appendValue(HOUR_OF_DAY, 2)
+                .appendLiteral(':')
+                .appendValue(MINUTE_OF_HOUR, 2)
+                .optionalStart()
+                .appendLiteral(':')
+                .appendValue(SECOND_OF_MINUTE, 2)
+                .toFormatter();
+    }
     /** Chat service. */
     @Autowired
     private IChatService chatService;
@@ -540,8 +554,8 @@ public class ChatWindow extends AbstractDiffResponseListenerContainer implements
         protected void updateItem(Message item, boolean empty) {
             super.updateItem(item, empty);
             if (item != null) {
-                Label label = new Label(item.getDateSent().format(DateTimeFormatter.ISO_LOCAL_TIME) + " <" + item.getSender().getName() + "> " + item.getMessage());
-                Tooltip tooltip = new Tooltip(item.getDateSent().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                Label label = new Label(item.getDateSent().format(MSG_DTF) + " <" + item.getSender().getName() + "> " + item.getMessage());
+                Tooltip tooltip = new Tooltip(item.getDateSent().format(MSG_DTF));
                 setTooltip(tooltip);
                 setGraphic(label);
             } else {
