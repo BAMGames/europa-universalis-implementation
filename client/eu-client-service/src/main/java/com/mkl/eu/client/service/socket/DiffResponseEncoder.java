@@ -1,11 +1,13 @@
 package com.mkl.eu.client.service.socket;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 
 import javax.websocket.EncodeException;
 import javax.websocket.Encoder;
 import javax.websocket.EndpointConfig;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Encoder for DiffResponse in order to communicate throw web sockets.
@@ -13,8 +15,16 @@ import javax.websocket.EndpointConfig;
  * @author MKL.
  */
 public class DiffResponseEncoder implements Encoder.Text<DiffResponse> {
+    /** Java 8 Date Time serializer. */
+    public static final JsonSerializer<ZonedDateTime> ZDT_SERIALIZER = (zonedDateTime, type, jsonSerializationContext) -> new JsonPrimitive(DateTimeFormatter.ISO_DATE_TIME.format(zonedDateTime));
+    /** Java 8 Date Time deserializer. */
+    public static final JsonDeserializer<ZonedDateTime> ZDT_DESERIALIZER = (json, typeOfT, context) -> DateTimeFormatter.ISO_DATE_TIME.parse(json.getAsString(), ZonedDateTime::from);
+
     /** Configuration. */
-    private static Gson gson = new Gson();
+    private static Gson gson = new GsonBuilder()
+            .registerTypeAdapter(ZonedDateTime.class, ZDT_DESERIALIZER)
+            .registerTypeAdapter(ZonedDateTime.class, ZDT_SERIALIZER)
+            .create();
 
     /** {@inheritDoc} */
     @Override
