@@ -192,26 +192,28 @@ public final class UIUtil {
      */
     public static void patchTooltipUntilMigrationJava9(Tooltip tooltip) {
         // TODO TG-129 remove when migrating to java 9 or above
-        try {
-            Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
-            fieldBehavior.setAccessible(true);
-            Object objBehavior = fieldBehavior.get(tooltip);
+        if (System.getProperty("java.version").startsWith("1.8.")) {
+            try {
+                Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
+                fieldBehavior.setAccessible(true);
+                Object objBehavior = fieldBehavior.get(tooltip);
 
-            Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
-            fieldTimer.setAccessible(true);
-            Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
+                Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
+                fieldTimer.setAccessible(true);
+                Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
 
-            objTimer.getKeyFrames().clear();
-            objTimer.getKeyFrames().add(new KeyFrame(new Duration(250)));
+                objTimer.getKeyFrames().clear();
+                objTimer.getKeyFrames().add(new KeyFrame(new Duration(250)));
 
-            fieldTimer = objBehavior.getClass().getDeclaredField("hideTimer");
-            fieldTimer.setAccessible(true);
-            objTimer = (Timeline) fieldTimer.get(objBehavior);
+                fieldTimer = objBehavior.getClass().getDeclaredField("hideTimer");
+                fieldTimer.setAccessible(true);
+                objTimer = (Timeline) fieldTimer.get(objBehavior);
 
-            objTimer.getKeyFrames().clear();
-            objTimer.getKeyFrames().add(new KeyFrame(new Duration(60000)));
-        } catch (Exception e) {
-            e.printStackTrace();
+                objTimer.getKeyFrames().clear();
+                objTimer.getKeyFrames().add(new KeyFrame(new Duration(60000)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

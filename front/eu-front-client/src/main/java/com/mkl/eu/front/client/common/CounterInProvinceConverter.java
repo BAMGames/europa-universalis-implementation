@@ -15,6 +15,9 @@ public class CounterInProvinceConverter extends StringConverter<Counter> {
     /** {@inheritDoc} */
     @Override
     public String toString(Counter object) {
+        if (object == null) {
+            return null;
+        }
         StringBuilder label = new StringBuilder(GlobalConfiguration.getMessage(object.getType()));
         if (StringUtils.isNotEmpty(object.getCode())) {
             label.append(" '")

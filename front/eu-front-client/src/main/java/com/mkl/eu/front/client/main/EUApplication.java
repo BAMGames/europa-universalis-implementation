@@ -121,7 +121,6 @@ public class EUApplication extends Application {
 
         column = new TableColumn<>(GlobalConfiguration.getMessage("game.games.actions"));
         column.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-        column.setCellValueFactory(new PropertyValueFactory<>("NONE"));
         Callback<TableColumn<GameLight, String>, TableCell<GameLight, String>> cellFactory = new Callback<TableColumn<GameLight, String>, TableCell<GameLight, String>>() {
             @Override
             public TableCell<GameLight, String> call(TableColumn<GameLight, String> param) {

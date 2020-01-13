@@ -18,6 +18,9 @@ public class StackInProvinceConverter extends StringConverter<Stack> {
     /** {@inheritDoc} */
     @Override
     public String toString(Stack object) {
+        if (object == null) {
+            return null;
+        }
         return object.getCounters().stream()
                 .map(this::getCounterLabel)
                 .collect(Collectors.joining(", "))
