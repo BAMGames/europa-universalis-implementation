@@ -413,11 +413,12 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, provinceFrom.getName()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo.getName()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.MOVED)));
-        game.getStacks().stream()
+        List<CounterEntity> counters = game.getStacks().stream()
                 .filter(s -> StringUtils.equals(provinceFrom.getName(), s.getProvince()))
                 .flatMap(s -> s.getCounters().stream())
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.SIEGEWORK_MINUS || counter.getType() == CounterFaceTypeEnum.SIEGEWORK_PLUS)
-                .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
+                .collect(Collectors.toList());
+        counters.forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
 
         return createDiffs(diffs, gameDiffs, request);
     }
