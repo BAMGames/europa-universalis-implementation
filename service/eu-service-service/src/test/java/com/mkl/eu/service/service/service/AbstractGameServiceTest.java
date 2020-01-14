@@ -434,6 +434,7 @@ public abstract class AbstractGameServiceTest {
         return invocation -> {
             CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
             if (counter != null) {
+                counter.getOwner().getCounters().remove(counter);
                 return createDiff(counter.getOwner().getGame(), DiffTypeEnum.REMOVE, DiffTypeObjectEnum.COUNTER,
                         counter.getId());
             }

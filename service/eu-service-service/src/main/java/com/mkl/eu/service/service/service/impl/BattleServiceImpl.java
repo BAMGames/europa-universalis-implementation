@@ -1366,13 +1366,13 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .orElse(null);
         if (battle.getPhasing().getLosses().isGreaterThanSize(battle.getPhasing().getSize())) {
             battle.getCounters().stream()
-                    .filter(BattleCounterEntity::isPhasing)
+                    .filter(counter -> counter.isPhasing() && CounterUtil.isArmy(counter.getType()))
                     .map(toCounter)
                     .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
         if (battle.getNonPhasing().getLosses().isGreaterThanSize(battle.getNonPhasing().getSize())) {
             battle.getCounters().stream()
-                    .filter(BattleCounterEntity::isNotPhasing)
+                    .filter(counter -> counter.isNotPhasing() && CounterUtil.isArmy(counter.getType()))
                     .map(toCounter)
                     .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
@@ -1399,12 +1399,23 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
      */
     private List<DiffEntity> prepareRetreat(BattleEntity battle, List<DiffAttributesEntity> attributes) {
         List<DiffEntity> diffs = new ArrayList<>();
-        if (battle.getWinner() == BattleWinnerEnum.PHASING || battle.getPhasing().getLosses().isGreaterThanSize(battle.getPhasing().getSize())) {
+        GameEntity game = battle.getGame();
+        List<String> phasingFaction = oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive());
+        boolean phasingRemaining = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .anyMatch(counter -> CounterUtil.isMobile(counter.getType()) && phasingFaction.contains(counter.getCountry()));
+        if (battle.getWinner() == BattleWinnerEnum.PHASING || !phasingRemaining) {
             battle.getPhasing().setRetreatSelected(true);
         } else {
             battle.getPhasing().setRetreatSelected(false);
         }
-        if (battle.getWinner() == BattleWinnerEnum.NON_PHASING || battle.getNonPhasing().getLosses().isGreaterThanSize(battle.getNonPhasing().getSize())) {
+        List<String> notPhasingFaction = oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive());
+        boolean notPhasingRemaining = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .anyMatch(counter -> CounterUtil.isMobile(counter.getType()) && notPhasingFaction.contains(counter.getCountry()));
+        if (battle.getWinner() == BattleWinnerEnum.NON_PHASING || !notPhasingRemaining) {
             battle.getNonPhasing().setRetreatSelected(true);
         } else {
             battle.getNonPhasing().setRetreatSelected(false);

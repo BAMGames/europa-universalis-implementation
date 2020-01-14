@@ -2438,6 +2438,8 @@ public class BattleServiceTest extends AbstractGameServiceTest {
             when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
             when(testClass.oeUtil.getController(stackPhasing)).thenReturn(rotw ? nonPhasingCountry.getName() : phasingCountry.getName());
             when(testClass.oeUtil.getController(stackNotPhasing)).thenReturn(rotw ? phasingCountry.getName() : nonPhasingCountry.getName());
+            when(testClass.oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Collections.singletonList(phasingCountry.getName()));
+            when(testClass.oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
             DiffEntity endDiff = new DiffEntity();
             endDiff.setType(DiffTypeEnum.VALIDATE);
             endDiff.setTypeObject(DiffTypeObjectEnum.TURN_ORDER);
@@ -2562,9 +2564,6 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                 retreatRequest.getGame().setIdCountry(nonPhasingCountry.getId());
                 retreatRequest.setRequest(new ValidateRequest());
                 retreatRequest.getRequest().setValidate(nonPhasing.retreatFirstDayAttempt);
-
-                when(testClass.oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Collections.singletonList(phasingCountry.getName()));
-                when(testClass.oeUtil.getWarFaction(battle.getWar(), !battle.isPhasingOffensive())).thenReturn(Collections.singletonList(nonPhasingCountry.getName()));
 
                 militaryService.retreatFirstDay(retreatRequest);
 
@@ -2799,21 +2798,25 @@ public class BattleServiceTest extends AbstractGameServiceTest {
                                 Objects.equals(diff.getIdObject(), 1L))
                         .findAny()
                         .orElse(null);
-                Assert.assertNotNull(stackPhasingkMovePhase);
-                Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(stackPhasingkMovePhase, DiffAttributeTypeEnum.MOVE_PHASE));
-                if (rotw) {
-                    Assert.assertEquals("spain", getAttribute(stackPhasingkMovePhase, DiffAttributeTypeEnum.COUNTRY));
+                if (result.phasingAnnihilated) {
+                    Assert.assertNull(stackPhasingkMovePhase);
                 } else {
-                    Assert.assertFalse(stackPhasingkMovePhase.getAttributes().stream()
-                            .anyMatch(attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY));
+                    Assert.assertNotNull(stackPhasingkMovePhase);
+                    Assert.assertEquals(MovePhaseEnum.MOVED.name(), getAttribute(stackPhasingkMovePhase, DiffAttributeTypeEnum.MOVE_PHASE));
+                    if (rotw) {
+                        Assert.assertEquals("spain", getAttribute(stackPhasingkMovePhase, DiffAttributeTypeEnum.COUNTRY));
+                    } else {
+                        Assert.assertFalse(stackPhasingkMovePhase.getAttributes().stream()
+                                .anyMatch(attr -> attr.getType() == DiffAttributeTypeEnum.COUNTRY));
+                    }
+                    diffsSize++;
                 }
-                diffsSize++;
                 DiffEntity stackNotPhasingkMovePhase = diffsLastDay.stream()
                         .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.STACK &&
                                 Objects.equals(diff.getIdObject(), 2L))
                         .findAny()
                         .orElse(null);
-                if (rotw) {
+                if (rotw && !result.nonPhasingAnnihilated) {
                     Assert.assertNotNull(stackNotPhasingkMovePhase);
                     Assert.assertFalse(stackNotPhasingkMovePhase.getAttributes().stream()
                             .anyMatch(attr -> attr.getType() == DiffAttributeTypeEnum.MOVE_PHASE));
@@ -3434,6 +3437,7 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         game.getCountries().add(spain);
         game.getBattles().add(new BattleEntity());
         BattleEntity battle = game.getBattles().get(0);
+        battle.setGame(game);
         battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
         battle.setProvince("idf");
         BattleCounterEntity bc = new BattleCounterEntity();
@@ -3473,7 +3477,9 @@ public class BattleServiceTest extends AbstractGameServiceTest {
         stack.setId(20L);
         stack.setGame(game);
         stack.setProvince(battle.getProvince());
-        stack.getCounters().add(createCounter(3l, "spain", CounterFaceTypeEnum.ARMY_PLUS, stack));
+        for (BattleCounterEntity battleCounter : battle.getCounters()) {
+            stack.getCounters().add(createCounter(battleCounter.getCounter(), battleCounter.getCountry(), battleCounter.getType(), stack));
+        }
         game.getStacks().add(stack);
 
         when(oeUtil.getWarFaction(battle.getWar(), battle.isPhasingOffensive())).thenReturn(Arrays.asList("spain", "austria"));
