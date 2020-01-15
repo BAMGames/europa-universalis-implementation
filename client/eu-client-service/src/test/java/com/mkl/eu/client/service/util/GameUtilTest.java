@@ -175,6 +175,30 @@ public class GameUtilTest {
         Assert.assertEquals(5, GameUtil.getRoundBox("B_MR_W5"));
         Assert.assertEquals(5, GameUtil.getRoundBox("B_MR_S5"));
         Assert.assertEquals(-1, GameUtil.getRoundBox("B_MR_End"));
+
+        Assert.assertEquals("B_MR_W0", GameUtil.getRoundBoxAdd("B_MR_W0", 0));
+        Assert.assertEquals("B_MR_S1", GameUtil.getRoundBoxAdd("B_MR_W0", 1));
+        Assert.assertEquals("B_MR_W1", GameUtil.getRoundBoxAdd("B_MR_W0", 2));
+        Assert.assertEquals("B_MR_S2", GameUtil.getRoundBoxAdd("B_MR_W0", 3));
+        Assert.assertEquals("B_MR_W2", GameUtil.getRoundBoxAdd("B_MR_W0", 4));
+        Assert.assertEquals("B_MR_S3", GameUtil.getRoundBoxAdd("B_MR_W0", 5));
+
+        Assert.assertEquals("B_MR_S1", GameUtil.getRoundBoxAdd("B_MR_S1", 0));
+        Assert.assertEquals("B_MR_W1", GameUtil.getRoundBoxAdd("B_MR_S1", 1));
+        Assert.assertEquals("B_MR_S2", GameUtil.getRoundBoxAdd("B_MR_S1", 2));
+        Assert.assertEquals("B_MR_W2", GameUtil.getRoundBoxAdd("B_MR_S1", 3));
+        Assert.assertEquals("B_MR_S3", GameUtil.getRoundBoxAdd("B_MR_S1", 4));
+        Assert.assertEquals("B_MR_W3", GameUtil.getRoundBoxAdd("B_MR_S1", 5));
+
+        Assert.assertEquals("B_MR_W5", GameUtil.getRoundBoxAdd("B_MR_W3", 4));
+        Assert.assertEquals(GameUtil.ROUND_END, GameUtil.getRoundBoxAdd("B_MR_W3", 5));
+        Assert.assertFalse(GameUtil.isLastRound(GameUtil.getRoundBoxAdd("B_MR_W3", 4)));
+        Assert.assertTrue(GameUtil.isLastRound(GameUtil.getRoundBoxAdd("B_MR_W3", 5)));
+
+        Assert.assertEquals("B_MR_W5", GameUtil.getRoundBoxAdd("B_MR_S4", 3));
+        Assert.assertEquals(GameUtil.ROUND_END, GameUtil.getRoundBoxAdd("B_MR_S4", 4));
+        Assert.assertFalse(GameUtil.isLastRound(GameUtil.getRoundBoxAdd("B_MR_S4", 3)));
+        Assert.assertTrue(GameUtil.isLastRound(GameUtil.getRoundBoxAdd("B_MR_S4", 4)));
     }
 
     @Test

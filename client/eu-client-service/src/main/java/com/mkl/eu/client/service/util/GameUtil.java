@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
  * @author MKL.
  */
 public final class GameUtil {
+    public static final String ROUND_END = "B_MR_End";
+
     /**
      * Constructor.
      */
@@ -248,6 +250,32 @@ public final class GameUtil {
         }
 
         return round;
+    }
+
+    /**
+     * @param provinceBox the initial round box.
+     * @param add         the number of round to add.
+     * @return the round box that is the result of the provinceBox given and a number of round to add.
+     */
+    public static String getRoundBoxAdd(String provinceBox, int add) {
+        int round = getRoundBox(provinceBox);
+        boolean winter = isWinterRoundBox(provinceBox);
+        int remain = add % 2;
+        round += add / 2 + ((winter && remain == 1) ? 1 : 0);
+        winter = winter && (remain == 0) || !winter && (remain == 1);
+        if (round >= 6) {
+            return ROUND_END;
+        } else {
+            return "B_MR_" + (winter ? "W" : "S") + round;
+        }
+    }
+
+    /**
+     * @param provinceBox the province where the round is.
+     * @return wether the round box is the last one.
+     */
+    public static boolean isLastRound(String provinceBox) {
+        return StringUtils.equals(provinceBox, ROUND_END);
     }
 
     /**
