@@ -97,6 +97,20 @@ public interface ICounterDomain {
     DiffEntity moveSpecialCounter(CounterFaceTypeEnum type, String country, String province, GameEntity game);
 
     /**
+     * Moves a counter to a special box.
+     * The province is the box where the counter should move.
+     * Each box has a unique stack which holds all counters of the box.
+     * This method creates a stack if needed, or move the counter to an existing stack. If former stack has no counter left,
+     * it will remove the former stack.
+     *
+     * @param counter  the counter to move.
+     * @param province where the counter will be.
+     * @param game     the game.
+     * @return the diffs related to the move to a special box.
+     */
+    DiffEntity moveToSpecialBox(CounterEntity counter, String province, GameEntity game);
+
+    /**
      * Moves a leader to a specific stack, or a province if no stack specified (and then creates a new stack).
      * The leader will lead the stack it is moved to if he is eligible.
      *

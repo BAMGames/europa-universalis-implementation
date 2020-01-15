@@ -574,6 +574,8 @@ public class GameMappingTest {
         counter.getCounter().setId(102L);
         counter.getCounter().setType(CounterFaceTypeEnum.LEADER);
         counter.getCounter().setCode("leader");
+        object.getPhasing().setLeaderCheck(5);
+        object.getPhasing().setLeaderWounds(3);
         counter.getCounter().setCountry("persia");
         object.getCounters().add(counter);
         object.getPhasing().setLeader("leader");
@@ -1090,6 +1092,8 @@ public class GameMappingTest {
         counter.setCountry("persia");
         object.getCounters().add(counter);
         object.getPhasing().setLeader("leader");
+        object.getPhasing().setLeaderCheck(5);
+        object.getPhasing().setLeaderWounds(3);
         object.getPhasing().setCountry("france");
         object.getPhasing().setSize(2d);
         object.getPhasing().setTech(Tech.ARQUEBUS);

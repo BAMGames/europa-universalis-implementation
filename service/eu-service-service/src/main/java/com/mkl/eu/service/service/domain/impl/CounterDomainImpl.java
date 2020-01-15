@@ -232,6 +232,13 @@ public class CounterDomainImpl extends AbstractBack implements ICounterDomain {
         CounterEntity counter = CommonUtil.findFirst(game.getStacks().stream().flatMap(s -> s.getCounters().stream()),
                 c -> StringUtils.equals(country, c.getCountry()) && c.getType() == type);
 
+        return moveToSpecialBox(counter, province, game);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffEntity moveToSpecialBox(CounterEntity counter, String province, GameEntity game) {
         if (counter == null) {
             return null;
         }

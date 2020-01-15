@@ -79,8 +79,16 @@ public enum DiffAttributeTypeEnum {
     NON_PHASING_READY,
     /** Leader of the phasing side. */
     PHASING_LEADER,
+    /** Unmodified die roll of the leader check test of the phasing side. */
+    PHASING_LEADER_CHECK,
+    /** Number of rounds of wounds for the leader of the phasing side. */
+    PHASING_LEADER_WOUNDS,
     /** Leader of the non phasing side. */
     NON_PHASING_LEADER,
+    /** Unmodified die roll of the leader check test of the non phasing side. */
+    NON_PHASING_LEADER_CHECK,
+    /** Number of rounds of wounds for the leader of the non phasing side. */
+    NON_PHASING_LEADER_WOUNDS,
     /** Country leading the phasing side. */
     PHASING_COUNTRY,
     /** Country leading the non phasing side. */

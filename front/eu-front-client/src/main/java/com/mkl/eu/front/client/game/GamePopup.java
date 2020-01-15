@@ -1675,6 +1675,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeEnum(diff, DiffAttributeTypeEnum.WINNER, battle::setWinner, BattleWinnerEnum.class);
 
         doIfAttribute(diff, DiffAttributeTypeEnum.PHASING_LEADER, value -> battle.getPhasing().setLeader(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.PHASING_LEADER_CHECK, value -> battle.getPhasing().setLeaderCheck(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS, value -> battle.getPhasing().setLeaderWounds(value));
         doIfAttribute(diff, DiffAttributeTypeEnum.PHASING_COUNTRY, value -> battle.getPhasing().setCountry(value));
         doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SIZE, value -> battle.getPhasing().setSize(value));
         doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_PHASING_TECH, value -> battle.getPhasing().setTech(value));
@@ -1698,6 +1700,8 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_PHASING_SECOND_DAY_SHOCK, value -> battle.getPhasing().getSecondDay().setShock(value));
 
         doIfAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_LEADER, value -> battle.getNonPhasing().setLeader(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.NON_PHASING_LEADER_CHECK, value -> battle.getNonPhasing().setLeaderCheck(value));
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS, value -> battle.getNonPhasing().setLeaderWounds(value));
         doIfAttribute(diff, DiffAttributeTypeEnum.NON_PHASING_COUNTRY, value -> battle.getNonPhasing().setCountry(value));
         doIfAttributeDouble(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_SIZE, value -> battle.getNonPhasing().setSize(value));
         doIfAttribute(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_TECH, value -> battle.getNonPhasing().setTech(value));

@@ -416,14 +416,22 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static DiffAttributesEntity getAttributeFull(DiffEntity diff, DiffAttributeTypeEnum type) {
-        return diff.getAttributes().stream()
+        return getAttributeFull(diff.getAttributes(), type);
+    }
+
+    public static DiffAttributesEntity getAttributeFull(List<DiffAttributesEntity> attributes, DiffAttributeTypeEnum type) {
+        return attributes.stream()
                 .filter(attribute -> attribute.getType() == type)
                 .findAny()
                 .orElse(null);
     }
 
     public static String getAttribute(DiffEntity diff, DiffAttributeTypeEnum type) {
-        DiffAttributesEntity attr = diff.getAttributes().stream()
+        return getAttribute(diff.getAttributes(), type);
+    }
+
+    public static String getAttribute(List<DiffAttributesEntity> attributes, DiffAttributeTypeEnum type) {
+        DiffAttributesEntity attr = attributes.stream()
                 .filter(attribute -> attribute.getType() == type)
                 .findAny()
                 .orElse(null);
@@ -457,6 +465,18 @@ public abstract class AbstractGameServiceTest {
     public static Answer<?> moveSpecialCounterAnswer() {
         return invocation -> createDiff(invocation.getArgumentAt(3, GameEntity.class), DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, invocation.getArgumentAt(2, String.class)));
+    }
+
+    public static Answer<?> moveToSpecialBoxAnswer() {
+        return invocation -> {
+            CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+            if (counter != null) {
+                return createDiff(invocation.getArgumentAt(2, GameEntity.class), DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, invocation.getArgumentAt(1, String.class)));
+            } else {
+                return null;
+            }
+        };
     }
 
     private static DiffEntity createDiff(GameEntity game, DiffTypeEnum type, DiffTypeObjectEnum typeObject, DiffAttributesEntity... attributes) {

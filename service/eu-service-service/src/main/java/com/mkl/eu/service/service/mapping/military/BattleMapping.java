@@ -164,6 +164,8 @@ public class BattleMapping extends AbstractMapping {
         target.setRetreat(source.getRetreat());
         target.setRetreatSelected(source.isRetreatSelected());
         target.setLossesSelected(source.isLossesSelected());
+        target.setLeaderCheck(source.getLeaderCheck());
+        target.setLeaderWounds(source.getLeaderWounds());
 
         return target;
     }

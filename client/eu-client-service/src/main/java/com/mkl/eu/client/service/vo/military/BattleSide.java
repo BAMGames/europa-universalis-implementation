@@ -42,6 +42,10 @@ public class BattleSide {
     private Integer sizeDiff;
     /** Unmodified die roll for the retreat. */
     private Integer retreat;
+    /** Unmodified die roll for the leader death test. */
+    private Integer leaderCheck;
+    /** Number of round wounded of the leader (-1 for death). */
+    private Integer leaderWounds;
 
     /** @return the forces. */
     public Boolean isForces() {
@@ -220,5 +224,25 @@ public class BattleSide {
     /** @param retreatSelected the retreatSelected to set. */
     public void setRetreatSelected(Boolean retreatSelected) {
         this.retreatSelected = retreatSelected;
+    }
+
+    /** @return the leaderCheck. */
+    public Integer getLeaderCheck() {
+        return leaderCheck;
+    }
+
+    /** @param leaderCheck the leaderCheck to set. */
+    public void setLeaderCheck(Integer leaderCheck) {
+        this.leaderCheck = leaderCheck;
+    }
+
+    /** @return the leaderWounds. */
+    public Integer getLeaderWounds() {
+        return leaderWounds;
+    }
+
+    /** @param leaderWounds the leaderWounds to set. */
+    public void setLeaderWounds(Integer leaderWounds) {
+        this.leaderWounds = leaderWounds;
     }
 }

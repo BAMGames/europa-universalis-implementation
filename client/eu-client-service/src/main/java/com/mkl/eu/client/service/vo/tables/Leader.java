@@ -2,6 +2,7 @@ package com.mkl.eu.client.service.vo.tables;
 
 import com.mkl.eu.client.service.vo.EuObject;
 import com.mkl.eu.client.service.vo.enumeration.LeaderTypeEnum;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.Predicate;
 
@@ -29,6 +30,9 @@ public class Leader extends EuObject {
     /** Conditions for a leader to be eligible to lead in a rotw sea. */
     public static final Predicate<Leader> navalRotw = leader -> leader.getType() == LeaderTypeEnum.EXPLORER ||
             (leader.getType() == LeaderTypeEnum.ADMIRAL && leader.isRotw());
+    /** Conditions for leader that will die more easily in battles. */
+    public static final Predicate<Leader> leaderFragility = leader -> (leader.getFire() == 6 || leader.getShock() == 6) &&
+            !StringUtils.equals("Friedrich II", leader.getCode()) && !StringUtils.equals("Marlborough", leader.getCode());
     /** Country of the replacement leader for natives. */
     public static final String REPLACEMENT_NATIVES = "natives";
     /** Country of the replacement leader for minor countries. */

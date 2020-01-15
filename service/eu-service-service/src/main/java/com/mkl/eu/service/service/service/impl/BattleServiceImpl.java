@@ -10,6 +10,7 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -580,11 +581,9 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 battle.setWinner(BattleWinnerEnum.NONE);
 
                 List<DiffEntity> newDiffs = new ArrayList<>();
-                DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE),
+                List<DiffAttributesEntity> attributes = Arrays.asList(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.END, BattleEndEnum.WITHDRAW_BEFORE_BATTLE),
                         DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.WINNER, BattleWinnerEnum.NONE));
-                newDiffs.add(diff);
                 Consumer<StackEntity> retreatStack = stack -> {
                     boolean besieged = StringUtils.equals(battle.getProvince(), provinceTo);
                     newDiffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, stack.getId(),
@@ -600,7 +599,10 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
-                newDiffs.addAll(cleanUpBattle(battle));
+                newDiffs.addAll(cleanUpBattle(battle, attributes));
+                DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
+                        attributes.toArray(new DiffAttributesEntity[attributes.size()]));
+                newDiffs.add(diff);
 
                 return createDiffs(newDiffs, gameDiffs, request);
             }
@@ -1425,7 +1427,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            diffs.addAll(cleanUpBattle(battle));
+            diffs.addAll(cleanUpBattle(battle, attributes));
         } else {
             battle.setStatus(BattleStatusEnum.RETREAT);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.RETREAT));
@@ -1439,13 +1441,16 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
      * Clean up a battle when it is finished.
      *
      * @param battle to clean up.
+     * @param attributes the diff attributes of the battle modify diff event.
      * @return eventual other diffs.
      */
-    private List<DiffEntity> cleanUpBattle(BattleEntity battle) {
+    private List<DiffEntity> cleanUpBattle(BattleEntity battle, List<DiffAttributesEntity> attributes) {
         List<DiffEntity> diffs = new ArrayList<>();
         GameEntity game = battle.getGame();
         AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
         String controller = oeUtil.getController(province, game);
+        diffs.addAll(checkLeaderDeaths(battle, true, province, attributes));
+        diffs.addAll(checkLeaderDeaths(battle, false, province, attributes));
 
         List<Long> countersId = battle.getCounters().stream()
                 .map(BattleCounterEntity::getCounter)
@@ -1496,6 +1501,67 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         }
 
         diffs.addAll(statusWorkflowDomain.endMilitaryPhase(game));
+        return diffs;
+    }
+
+    /**
+     * Check if a specific side of a battle needs to check for leader death and then do it.
+     *
+     * @param battle     the battle.
+     * @param phasing    the side we want to check.
+     * @param province   the province where the battle is.
+     * @param attributes the diff attributes of the battle modify diff event.
+     * @return the diffs involved.
+     */
+    protected List<DiffEntity> checkLeaderDeaths(BattleEntity battle, boolean phasing, AbstractProvinceEntity province, List<DiffAttributesEntity> attributes) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        GameEntity game = battle.getGame();
+        BattleSideEntity side = phasing ? battle.getPhasing() : battle.getNonPhasing();
+        CounterEntity counterLeader = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> StringUtils.equals(counter.getCode(), side.getLeader()))
+                .findAny()
+                .orElse(null);
+        boolean needCheck = counterLeader != null;
+        if (province instanceof EuropeanProvinceEntity) {
+            needCheck &= (phasing ? battle.getNonPhasing().getSize() : battle.getPhasing().getSize()) >= 3;
+        }
+
+        if (needCheck) {
+            int die = oeUtil.rollDie(game, side.getCountry());
+            side.setLeaderCheck(die);
+            attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_LEADER_CHECK : DiffAttributeTypeEnum.NON_PHASING_LEADER_CHECK, side.getLeaderCheck()));
+            int modifier = 0;
+            if (phasing && battle.getWinner() != BattleWinnerEnum.PHASING || !phasing && battle.getWinner() != BattleWinnerEnum.NON_PHASING) {
+                modifier -= 1;
+            }
+            if (side.getLosses().isGreaterThanSize(side.getSize())) {
+                modifier -= 5;
+            }
+            Leader leader = getTables().getLeader(side.getLeader());
+            if (Leader.leaderFragility.test(leader)) {
+                modifier -= 1;
+            }
+
+            int result = die + modifier;
+            if (result <= 1) {
+                int dieWound = oeUtil.rollDie(game, side.getCountry());
+                if (dieWound % 2 == 1) {
+                    side.setLeaderWounds(-1);
+                    diffs.add(counterDomain.removeCounter(counterLeader));
+                } else {
+                    int nbWounds = dieWound / 2;
+                    side.setLeaderWounds(nbWounds);
+                    String roundBox = GameUtil.getRoundBoxAdd(oeUtil.getRoundBox(game), nbWounds);
+                    diffs.add(counterDomain.moveToSpecialBox(counterLeader, roundBox, game));
+                }
+                attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS : DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS, side.getLeaderWounds()));
+
+                // The stack that was led by this leader will change leader in the cleanUp phase.
+            }
+        }
+
         return diffs;
     }
 
@@ -1917,7 +1983,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            newDiffs.addAll(cleanUpBattle(battle));
+            newDiffs.addAll(cleanUpBattle(battle, attributes));
         } else {
             attributes.add(DiffUtil.createDiffAttributes(type, true));
         }
