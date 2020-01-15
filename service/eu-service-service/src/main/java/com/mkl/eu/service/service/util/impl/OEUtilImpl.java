@@ -1196,6 +1196,19 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
+    public String getRoundBox(GameEntity game) {
+        return game.getStacks().stream().filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> counter.getType() == CounterFaceTypeEnum.GOOD_WEATHER || counter.getType() == CounterFaceTypeEnum.BAD_WEATHER)
+                .map(counter -> counter.getOwner().getProvince())
+                .findAny()
+                .orElse(null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getMinimalInflation(int inflation, String country, Tables tables, GameEntity game) {
         Period PI = tables.getPeriods().stream()
                 .filter(period -> StringUtils.equals(Period.PERIOD_I, period.getName()))

@@ -487,15 +487,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             }
             diffs.addAll(initNewRound(round, game));
         } else {
-            String round = game.getStacks().stream()
-                    .filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
-                    .flatMap(stack -> stack.getCounters().stream())
-                    .filter(counter -> counter.getType() == CounterFaceTypeEnum.GOOD_WEATHER || counter.getType() == CounterFaceTypeEnum.BAD_WEATHER)
-                    .map(counter -> counter.getOwner().getProvince())
-                    .findFirst()
-                    .orElse(null);
-
-
+            String round = oeUtil.getRoundBox(game);
             int addRound;
             if (GameUtil.isWinterRoundBox(round)) {
                 if (die <= 7) {

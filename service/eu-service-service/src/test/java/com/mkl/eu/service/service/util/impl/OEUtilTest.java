@@ -3555,6 +3555,33 @@ public class OEUtilTest {
     }
 
     @Test
+    public void testGetRoundBox() {
+        GameEntity game = new GameEntity();
+        StackEntity stack = new StackEntity();
+        stack.setProvince("idf");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("B_MR_W6");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "france", CounterFaceTypeEnum.LEADER, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("B_MR_W5");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "null", CounterFaceTypeEnum.GOOD_WEATHER, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("B_MR_End");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "espagne", CounterFaceTypeEnum.LEADER, stack));
+        game.getStacks().add(stack);
+        stack = new StackEntity();
+        stack.setProvince("pecs");
+        stack.getCounters().add(AbstractGameServiceTest.createCounter(1L, "france", CounterFaceTypeEnum.CONTROL, stack));
+        game.getStacks().add(stack);
+
+        Assert.assertEquals("B_MR_W5", oeUtil.getRoundBox(game));
+    }
+
+    @Test
     public void testGetStackController() {
         StackControllerBuilder.create()
                 .whenGetController(oeUtil)

@@ -1049,6 +1049,7 @@ public class StatusWorkflowDomainTest {
 
     private void checkNextRound(GameEntity game, String roundBefore, int die, boolean init, DiffEntity roundMove, boolean end) {
         game.getStacks().get(0).setProvince(roundBefore);
+        when(oeUtil.getRoundBox(game)).thenReturn(roundBefore);
         when(oeUtil.rollDie(game, (PlayableCountryEntity) null)).thenReturn(die);
 
         List<DiffEntity> diffs = statusWorkflowDomain.nextRound(game, init);
