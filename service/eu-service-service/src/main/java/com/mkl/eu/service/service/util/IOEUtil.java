@@ -348,9 +348,15 @@ public interface IOEUtil {
 
     /**
      * @param game the game.
-     * @return the province box where the inflation box is.
+     * @return the province box where the inflation counter is.
      */
     String getInflationBox(GameEntity game);
+
+    /**
+     * @param game the game.
+     * @return the province box where the round counter is.
+     */
+    String getRoundBox(GameEntity game);
 
     /**
      * @param inflation the actual inflation.
