@@ -495,32 +495,28 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                     .findFirst()
                     .orElse(null);
 
-            int roundNumber = GameUtil.getRoundBox(round);
-            String nextRound;
+
+            int addRound;
             if (GameUtil.isWinterRoundBox(round)) {
                 if (die <= 7) {
-                    nextRound = "B_MR_S" + (roundNumber + 1);
+                    addRound = 1;
                 } else if (die == 8) {
-                    nextRound = "B_MR_W" + (roundNumber + 1);
+                    addRound = 2;
                 } else {
-                    nextRound = "B_MR_S" + (roundNumber + 2);
+                    addRound = 3;
                 }
             } else {
                 if (die <= 5) {
-                    nextRound = "B_MR_W" + roundNumber;
+                    addRound = 1;
                 } else {
-                    nextRound = "B_MR_S" + (roundNumber + 1);
+                    addRound = 2;
                 }
             }
-            switch (nextRound) {
-                case "B_MR_S6":
-                case "B_MR_W6":
-                case "B_MR_S7":
-                    diffs.addAll(endRound(game));
-                    break;
-                default:
-                    diffs.addAll(initNewRound(nextRound, game));
-                    break;
+            String nextRound = GameUtil.getRoundBoxAdd(round, addRound);
+            if (GameUtil.isLastRound(nextRound)) {
+                diffs.addAll(endRound(game));
+            } else {
+                diffs.addAll(initNewRound(nextRound, game));
             }
         }
 
@@ -559,7 +555,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     protected List<DiffEntity> endRound(GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
 
-        diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, "B_MR_End", game));
+        diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, GameUtil.ROUND_END, game));
         game.setStatus(GameStatusEnum.REDEPLOYMENT);
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.REDEPLOYMENT)));
