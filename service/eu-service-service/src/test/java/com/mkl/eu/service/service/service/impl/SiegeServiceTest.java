@@ -14,6 +14,7 @@ import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
+import com.mkl.eu.service.service.persistence.oe.AbstractWithLossEntity;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
@@ -21,6 +22,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
+import com.mkl.eu.service.service.persistence.oe.military.BattleLossesEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeCounterEntity;
 import com.mkl.eu.service.service.persistence.oe.military.SiegeEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.*;
@@ -4069,5 +4071,370 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         Assert.assertEquals(1L, faces.stream()
                 .filter(s -> StringUtils.equals(s, CounterFaceTypeEnum.ARMY_MINUS.name()))
                 .count());
+    }
+
+    @Test
+    public void testCheckLeader() {
+        // All replacement leaders -> no diffs.
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().replacementLeader())
+                .notPhasing(CheckLeaderSideBuilder.create().replacementLeader())
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create());
+
+        // Phasing wounded, not phasing replacement leader
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").checkDie(1).woundDie(8))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).replacementLeader())
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .phasingWound(4).phasingBox("S5"));
+
+        // Phasing replacement leader, not phasing killed
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").replacementLeader())
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(1).woundDie(1))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .notPhasingWound(-1).notPhasingLeaderDead());
+
+        // Both leaders wounded
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").checkDie(2).woundDie(2))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(1).woundDie(4))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .phasingWound(1).phasingBox("W3")
+                        .notPhasingWound(2).notPhasingBox("S4"));
+
+        // Phasing leader wounded, not phasing no check because won the battle
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").checkDie(2).woundDie(6))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(2))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .phasingWound(3).phasingBox("W4"));
+
+        // Phasing leader no check because won the battle, not phasing leader wounded
+        CheckLeaderBuilder.create().fortressFalls().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").checkDie(2))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(1).woundDie(10))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .notPhasingWound(5).notPhasingBox("W5"));
+
+        // Phasing leader killed because stack annihilated
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).annihilated().leaderStats("A 555").checkDie(7).woundDie(3))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(2))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .phasingWound(-1).phasingLeaderDead());
+
+        // Phasing leader survived despite total annihilation
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).annihilated().leaderStats("A 555").checkDie(8))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(2))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create());
+
+        // Phasing leader always check even if enemy has less than 3LD in Europe
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").checkDie(3))
+                .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333").checkDie(2))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create());
+
+        // Non phasing leader no check because enemy has less than 3LD in Europe
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(2).leaderStats("A 555").checkDie(3))
+                .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333"))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create());
+
+        // Non phasing leader check despite enemy has less than 3 LD because it is in Rotw
+        CheckLeaderBuilder.create().roundBox("S3").roundBox("S3").rotw()
+                .phasing(CheckLeaderSideBuilder.create().size(2).annihilated().leaderStats("A 555").checkDie(7).woundDie(9))
+                .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333").checkDie(2))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .phasingWound(-1).phasingLeaderDead());
+    }
+
+    static class CheckLeaderBuilder {
+        boolean rotw;
+        CheckLeaderSideBuilder phasing;
+        CheckLeaderSideBuilder notPhasing;
+        boolean fortressFalls;
+        String roundBox;
+        SiegeEntity siege;
+        List<DiffEntity> diffs;
+        List<DiffAttributesEntity> attributes;
+
+        static CheckLeaderBuilder create() {
+            return new CheckLeaderBuilder();
+        }
+
+        CheckLeaderBuilder rotw() {
+            this.rotw = true;
+            return this;
+        }
+
+        CheckLeaderBuilder phasing(CheckLeaderSideBuilder phasing) {
+            this.phasing = phasing;
+            return this;
+        }
+
+        CheckLeaderBuilder notPhasing(CheckLeaderSideBuilder notPhasing) {
+            this.notPhasing = notPhasing;
+            return this;
+        }
+
+        CheckLeaderBuilder fortressFalls() {
+            this.fortressFalls = true;
+            return this;
+        }
+
+        CheckLeaderBuilder roundBox(String roundBox) {
+            this.roundBox = roundBox;
+            return this;
+        }
+
+        CheckLeaderBuilder whenCheckLeader(SiegeServiceImpl siegeService, SiegeServiceTest testClass) {
+            GameEntity game = new GameEntity();
+            AbstractBack.TABLES = new Tables();
+            siege = new SiegeEntity();
+            siege.setId(25L);
+            siege.setProvince("pecs");
+            siege.setGame(game);
+            siege.setFortressFalls(fortressFalls);
+
+            siege.getPhasing().setCountry("france");
+            siege.getPhasing().setLeader("phasingLeader");
+            siege.getPhasing().setSize(phasing.size);
+            if (phasing.annihilated) {
+                siege.getPhasing().setLosses(new BattleLossesEntity().add(AbstractWithLossEntity.create((int) (3 * phasing.size))));
+            }
+
+            siege.getNonPhasing().setCountry("espagne");
+            siege.getNonPhasing().setLeader("notPhasingLeader");
+            siege.getNonPhasing().setSize(notPhasing.size);
+            if (notPhasing.annihilated) {
+                siege.getNonPhasing().setLosses(new BattleLossesEntity().add(AbstractWithLossEntity.create((int) (3 * notPhasing.size))));
+            }
+
+            StackEntity stack = new StackEntity();
+            stack.setGame(game);
+            stack.setProvince(siege.getProvince());
+            game.getStacks().add(stack);
+            if (!phasing.replacementLeader) {
+                stack.getCounters().add(createLeader(1L, "france", CounterFaceTypeEnum.LEADER, "phasingLeader", LeaderTypeEnum.GENERAL, phasing.leaderStats, AbstractBack.TABLES, stack));
+            }
+            if (!notPhasing.replacementLeader) {
+                stack.getCounters().add(createLeader(2L, "espagne", CounterFaceTypeEnum.LEADER, "notPhasingLeader", LeaderTypeEnum.GENERAL, notPhasing.leaderStats, AbstractBack.TABLES, stack));
+            }
+
+            AbstractProvinceEntity province;
+            if (rotw) {
+                province = new RotwProvinceEntity();
+            } else {
+                province = new EuropeanProvinceEntity();
+            }
+            if (phasing.checkDie != null) {
+                OngoingStubbing<Integer> dice = when(testClass.oeUtil.rollDie(game, siege.getPhasing().getCountry()));
+                dice = dice.thenReturn(phasing.checkDie);
+                if (phasing.woundDie != null) {
+                    dice.thenReturn(phasing.woundDie);
+                }
+            }
+            if (notPhasing.checkDie != null) {
+                OngoingStubbing<Integer> dice = when(testClass.oeUtil.rollDie(game, siege.getNonPhasing().getCountry()));
+                dice = dice.thenReturn(notPhasing.checkDie);
+                if (notPhasing.woundDie != null) {
+                    dice.thenReturn(notPhasing.woundDie);
+                }
+            }
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
+            when(testClass.counterDomain.moveToSpecialBox(any(), any(), any())).thenAnswer(moveToSpecialBoxAnswer());
+            when(testClass.oeUtil.getRoundBox(game)).thenReturn("B_MR_" + roundBox);
+
+            diffs = new ArrayList<>();
+            attributes = new ArrayList<>();
+            diffs.addAll(siegeService.checkLeaderDeaths(siege, true, province, attributes));
+            diffs.addAll(siegeService.checkLeaderDeaths(siege, false, province, attributes));
+
+            return this;
+        }
+
+        CheckLeaderBuilder thenExpect(CheckLeaderResultBuilder result) {
+            int nbDiffs = 0;
+            boolean noChange = phasing.checkDie == null && notPhasing.checkDie == null;
+            if (noChange) {
+                Assert.assertEquals("No check was needed on leaders, so no modify battle diff is needed.", 0, attributes.size());
+            } else {
+                if (phasing.checkDie != null) {
+                    Assert.assertEquals("The phasing leader check die is incorrect in the modify battle diff.", phasing.checkDie.toString(), getAttribute(attributes, DiffAttributeTypeEnum.PHASING_LEADER_CHECK));
+                } else {
+                    Assert.assertNull("The phasing leader check die attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.PHASING_LEADER_CHECK));
+                }
+                if (phasing.woundDie != null) {
+                    Assert.assertEquals("The phasing leader wound is incorrect in the modify battle diff.", result.phasingWound.toString(), getAttribute(attributes, DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS));
+                } else {
+                    Assert.assertNull("The phasing leader wound attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS));
+                }
+
+                if (notPhasing.checkDie != null) {
+                    Assert.assertEquals("The not phasing leader check die is incorrect in the modify battle diff.", notPhasing.checkDie.toString(), getAttribute(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_CHECK));
+                } else {
+                    Assert.assertNull("The not phasing leader check die attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_CHECK));
+                }
+                if (notPhasing.woundDie != null) {
+                    Assert.assertEquals("The not phasing leader wound is incorrect in the modify battle diff.", result.notPhasingWound.toString(), getAttribute(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS));
+                } else {
+                    Assert.assertNull("The not phasing leader wound attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS));
+                }
+
+                Assert.assertEquals("The phasing leader check die is incorrect in the battle.", phasing.checkDie, siege.getPhasing().getLeaderCheck());
+                Assert.assertEquals("The phasing leader wound is incorrect in the battle.", result.phasingWound, siege.getPhasing().getLeaderWounds());
+                Assert.assertEquals("The not phasing leader check die is incorrect in the battle.", notPhasing.checkDie, siege.getNonPhasing().getLeaderCheck());
+                Assert.assertEquals("The not phasing leader wound is incorrect in the battle.", result.notPhasingWound, siege.getNonPhasing().getLeaderWounds());
+            }
+            DiffEntity diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(d.getIdObject(), 1L))
+                    .findAny()
+                    .orElse(null);
+            if (result.phasingLeaderDead) {
+                Assert.assertNotNull("The remove counter diff was not sent for phasing leader death.", diff);
+                nbDiffs++;
+            } else {
+                Assert.assertNull("The phasing leader was not dead, no remove counter is needed.", diff);
+            }
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(d.getIdObject(), 2L))
+                    .findAny()
+                    .orElse(null);
+            if (result.notPhasingLeaderDead) {
+                Assert.assertNotNull("The remove counter diff was not sent for not phasing leader death.", diff);
+                nbDiffs++;
+            } else {
+                Assert.assertNull("The not phasing leader was not dead, no remove counter is needed.", diff);
+            }
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(d.getIdObject(), 1L))
+                    .findAny()
+                    .orElse(null);
+            if (result.phasingWound != null && result.phasingWound != -1) {
+                Assert.assertNotNull("The move counter diff was not sent for phasing leader wound.", diff);
+                Assert.assertEquals("The phasing leader was sent on the wrong round box.", "B_MR_" + result.phasingBox, getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+                nbDiffs++;
+            } else {
+                Assert.assertNull("The phasing leader was not wounded, no move counter is needed.", diff);
+            }
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            Objects.equals(d.getIdObject(), 2L))
+                    .findAny()
+                    .orElse(null);
+            if (result.notPhasingWound != null && result.notPhasingWound != -1) {
+                Assert.assertNotNull("The move counter diff was not sent for not phasing leader wound.", diff);
+                Assert.assertEquals("The not phasing leader was sent on the wrong round box.", "B_MR_" + result.notPhasingBox, getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+                nbDiffs++;
+            } else {
+                Assert.assertNull("The not phasing leader was not wounded, no move counter is needed.", diff);
+            }
+
+            Assert.assertEquals("Number of diffs received is incorrect.", nbDiffs, diffs.size());
+
+            return this;
+        }
+    }
+
+    static class CheckLeaderResultBuilder {
+        boolean phasingLeaderDead;
+        boolean notPhasingLeaderDead;
+        Integer phasingWound;
+        Integer notPhasingWound;
+        String phasingBox;
+        String notPhasingBox;
+
+        static CheckLeaderResultBuilder create() {
+            return new CheckLeaderResultBuilder();
+        }
+
+        CheckLeaderResultBuilder phasingLeaderDead() {
+            this.phasingLeaderDead = true;
+            return this;
+        }
+
+        CheckLeaderResultBuilder notPhasingLeaderDead() {
+            this.notPhasingLeaderDead = true;
+            return this;
+        }
+
+        CheckLeaderResultBuilder phasingWound(Integer phasingWound) {
+            this.phasingWound = phasingWound;
+            return this;
+        }
+
+        CheckLeaderResultBuilder notPhasingWound(Integer notPhasingWound) {
+            this.notPhasingWound = notPhasingWound;
+            return this;
+        }
+
+        CheckLeaderResultBuilder phasingBox(String phasingBox) {
+            this.phasingBox = phasingBox;
+            return this;
+        }
+
+        CheckLeaderResultBuilder notPhasingBox(String notPhasingBox) {
+            this.notPhasingBox = notPhasingBox;
+            return this;
+        }
+    }
+
+    static class CheckLeaderSideBuilder {
+        double size;
+        boolean annihilated;
+        boolean replacementLeader;
+        String leaderStats;
+        Integer checkDie;
+        Integer woundDie;
+
+        static CheckLeaderSideBuilder create() {
+            return new CheckLeaderSideBuilder();
+        }
+
+        CheckLeaderSideBuilder size(double size) {
+            this.size = size;
+            return this;
+        }
+
+        CheckLeaderSideBuilder annihilated() {
+            this.annihilated = true;
+            return this;
+        }
+
+        CheckLeaderSideBuilder replacementLeader() {
+            this.replacementLeader = true;
+            return this;
+        }
+
+        CheckLeaderSideBuilder leaderStats(String leaderStats) {
+            this.leaderStats = leaderStats;
+            return this;
+        }
+
+        CheckLeaderSideBuilder checkDie(Integer checkDie) {
+            this.checkDie = checkDie;
+            return this;
+        }
+
+        CheckLeaderSideBuilder woundDie(Integer woundDie) {
+            this.woundDie = woundDie;
+            return this;
+        }
     }
 }

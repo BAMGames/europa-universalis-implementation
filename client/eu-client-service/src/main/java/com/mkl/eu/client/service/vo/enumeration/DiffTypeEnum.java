@@ -260,6 +260,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#END the cause of ending of this battle.</li>
      * <li>DiffAttributeTypeEnum#WINNER the winner of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER the leader of the phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER_CHECK the check death die roll of the phasing leader.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER_WOUNDS the number of rounds the phasing leader will be wounded.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_COUNTRY the country of the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the phasing forces of this battle.</li>
@@ -282,6 +284,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK_MOD the shock modifier of the phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SECOND_DAY_SHOCK the shock unmodified die roll of the phasing forces in the second day of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER the leader of the non phasing forces of this battle.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER_CHECK the check death die roll of the non phasing leader.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER_WOUNDS the number of rounds the non phasing leader will be wounded.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_COUNTRY the country of the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the non phasing forces of this battle.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the non phasing forces of this battle.</li>
@@ -319,6 +323,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#SIEGE_FORTRESS_FALLS if the fortress fell due to this siege.</li>
      * <li>DiffAttributeTypeEnum#SIEGE_BREACH if a breach was just done.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER the leader of the besieger forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER_CHECK the check death die roll of the phasing leader.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_PHASING_LEADER_WOUNDS the number of rounds the phasing leader will be wounded.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_COUNTRY the country of the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_SIZE the size of the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_TECH the tech of the besieger forces of this siege.</li>
@@ -331,6 +337,8 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_THIRD_LOSS the third losses taken by the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_PHASING_MORALE_LOSS the morale losses taken by the besieger forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER the leader of the besieged forces of this siege.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER_CHECK the check death die roll of the besieged leader.</li>
+     * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_LEADER_WOUNDS the number of rounds the besieged leader will be wounded.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_COUNTRY the country of the besieged forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_SIZE the size of the besieged forces of this siege.</li>
      * <li>DiffAttributeTypeEnum#BATTLE_NON_PHASING_TECH the tech of the besieged forces of this siege.</li>

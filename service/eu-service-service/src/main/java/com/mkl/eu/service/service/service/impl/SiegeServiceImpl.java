@@ -10,6 +10,7 @@ import com.mkl.eu.client.service.service.ISiegeService;
 import com.mkl.eu.client.service.service.common.RedeployRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -1180,6 +1181,8 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             siege.getPhasing().getLosses().roundToClosestInteger();
             siege.getNonPhasing().getLosses().roundToClosestInteger();
         }
+        diffs.addAll(checkLeaderDeaths(siege, true, province, attributes));
+        diffs.addAll(checkLeaderDeaths(siege, false, province, attributes));
         boolean besiegerDestroyed = siege.getPhasing().getLosses().isGreaterThanSize(siege.getPhasing().getSize());
 
         if (!besiegerDestroyed && (fortressRouted || fortressDestroyed)) {
@@ -1188,6 +1191,67 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             diffs.addAll(areLossesAuto(siege, country, attributes));
         }
         attributes.addAll(getLossesAttributes(siege));
+
+        return diffs;
+    }
+
+    /**
+     * Check if a specific side of a siege needs to check for leader death and then do it.
+     *
+     * @param siege     the siege.
+     * @param phasing    the side we want to check.
+     * @param province   the province where the battle is.
+     * @param attributes the diff attributes of the battle modify diff event.
+     * @return the diffs involved.
+     */
+    protected List<DiffEntity> checkLeaderDeaths(SiegeEntity siege, boolean phasing, AbstractProvinceEntity province, List<DiffAttributesEntity> attributes) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        GameEntity game = siege.getGame();
+        SiegeSideEntity side = phasing ? siege.getPhasing() : siege.getNonPhasing();
+        CounterEntity counterLeader = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> StringUtils.equals(counter.getCode(), side.getLeader()))
+                .findAny()
+                .orElse(null);
+        boolean needCheck = counterLeader != null;
+        if (!phasing && province instanceof EuropeanProvinceEntity) {
+            needCheck &= siege.getPhasing().getSize() >= 3;
+        }
+
+        if (needCheck) {
+            int die = oeUtil.rollDie(game, side.getCountry());
+            side.setLeaderCheck(die);
+            attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_LEADER_CHECK : DiffAttributeTypeEnum.NON_PHASING_LEADER_CHECK, side.getLeaderCheck()));
+            int modifier = 0;
+            if (phasing && !siege.isFortressFalls() || !phasing && siege.isFortressFalls()) {
+                modifier -= 1;
+            }
+            if (phasing && side.getLosses().isGreaterThanSize(side.getSize())) {
+                modifier -= 5;
+            }
+            Leader leader = getTables().getLeader(side.getLeader());
+            if (Leader.leaderFragility.test(leader)) {
+                modifier -= 1;
+            }
+
+            int result = die + modifier;
+            if (result <= 1) {
+                int dieWound = oeUtil.rollDie(game, side.getCountry());
+                if (dieWound % 2 == 1) {
+                    side.setLeaderWounds(-1);
+                    diffs.add(counterDomain.removeCounter(counterLeader));
+                } else {
+                    int nbWounds = dieWound / 2;
+                    side.setLeaderWounds(nbWounds);
+                    String roundBox = GameUtil.getRoundBoxAdd(oeUtil.getRoundBox(game), nbWounds);
+                    diffs.add(counterDomain.moveToSpecialBox(counterLeader, roundBox, game));
+                }
+                attributes.add(DiffUtil.createDiffAttributes(phasing ? DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS : DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS, side.getLeaderWounds()));
+
+                // The stack that was led by this leader will change leader in the cleanUp phase.
+            }
+        }
 
         return diffs;
     }

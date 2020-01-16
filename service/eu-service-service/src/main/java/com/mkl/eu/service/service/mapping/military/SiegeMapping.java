@@ -160,6 +160,8 @@ public class SiegeMapping extends AbstractMapping {
         target.setLossesSelected(source.isLossesSelected());
         target.setLeader(source.getLeader());
         target.setCountry(source.getCountry());
+        target.setLeaderCheck(source.getLeaderCheck());
+        target.setLeaderWounds(source.getLeaderWounds());
 
         return target;
     }

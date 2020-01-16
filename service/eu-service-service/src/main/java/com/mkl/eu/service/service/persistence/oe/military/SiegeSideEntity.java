@@ -25,6 +25,10 @@ public class SiegeSideEntity {
     private BattleDayEntity modifiers = new BattleDayEntity();
     /** Losses. */
     private BattleLossesEntity losses = new BattleLossesEntity();
+    /** Unmodified die roll for the leader death test. */
+    private Integer leaderCheck;
+    /** Number of round wounded of the leader (-1 for death). */
+    private Integer leaderWounds;
 
 
     /** @return the size. */
@@ -105,5 +109,25 @@ public class SiegeSideEntity {
     /** @param country the country to set. */
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    /** @return the leaderCheck. */
+    public Integer getLeaderCheck() {
+        return leaderCheck;
+    }
+
+    /** @param leaderCheck the leaderCheck to set. */
+    public void setLeaderCheck(Integer leaderCheck) {
+        this.leaderCheck = leaderCheck;
+    }
+
+    /** @return the leaderWounds. */
+    public Integer getLeaderWounds() {
+        return leaderWounds;
+    }
+
+    /** @param leaderWounds the leaderWounds to set. */
+    public void setLeaderWounds(Integer leaderWounds) {
+        this.leaderWounds = leaderWounds;
     }
 }
