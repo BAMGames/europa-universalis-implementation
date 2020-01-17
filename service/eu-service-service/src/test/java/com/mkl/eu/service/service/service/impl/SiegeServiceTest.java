@@ -4138,21 +4138,14 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 .whenCheckLeader(siegeService, this)
                 .thenExpect(CheckLeaderResultBuilder.create());
 
-        // Phasing leader always check even if enemy has less than 3LD in Europe
+        // Always check even if enemy has less than 3LD in Europe
         CheckLeaderBuilder.create().roundBox("S3")
-                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("A 555").checkDie(3))
+                .phasing(CheckLeaderSideBuilder.create().size(2).leaderStats("A 555").checkDie(3))
                 .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333").checkDie(2))
                 .whenCheckLeader(siegeService, this)
                 .thenExpect(CheckLeaderResultBuilder.create());
 
-        // Non phasing leader no check because enemy has less than 3LD in Europe
-        CheckLeaderBuilder.create().roundBox("S3")
-                .phasing(CheckLeaderSideBuilder.create().size(2).leaderStats("A 555").checkDie(3))
-                .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333"))
-                .whenCheckLeader(siegeService, this)
-                .thenExpect(CheckLeaderResultBuilder.create());
-
-        // Non phasing leader check despite enemy has less than 3 LD because it is in Rotw
+        // Always check even if enemy has less than 3LD in Rotw
         CheckLeaderBuilder.create().roundBox("S3").roundBox("S3").rotw()
                 .phasing(CheckLeaderSideBuilder.create().size(2).annihilated().leaderStats("A 555").checkDie(7).woundDie(9))
                 .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333").checkDie(2))

@@ -1215,9 +1215,6 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .findAny()
                 .orElse(null);
         boolean needCheck = counterLeader != null;
-        if (!phasing && province instanceof EuropeanProvinceEntity) {
-            needCheck &= siege.getPhasing().getSize() >= 3;
-        }
 
         if (needCheck) {
             int die = oeUtil.rollDie(game, side.getCountry());
@@ -1227,6 +1224,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             if (phasing && !siege.isFortressFalls() || !phasing && siege.isFortressFalls()) {
                 modifier -= 1;
             }
+            // only besieger can have the stack annihilated modifier
             if (phasing && side.getLosses().isGreaterThanSize(side.getSize())) {
                 modifier -= 5;
             }
