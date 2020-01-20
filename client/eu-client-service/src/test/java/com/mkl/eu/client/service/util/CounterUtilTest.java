@@ -929,7 +929,7 @@ public class CounterUtilTest {
 
     @Test
     public void testGetLeaderType() {
-        Assert.assertEquals(CounterFaceTypeEnum.LEADER, CounterUtil.getLeaderType(null));
+        Assert.assertEquals(CounterFaceTypeEnum.LEADER, CounterUtil.getLeaderType((Leader) null));
         Leader leader = new Leader();
         Assert.assertEquals(CounterFaceTypeEnum.LEADER, CounterUtil.getLeaderType(leader));
         leader.setType(LeaderTypeEnum.GENERAL);
@@ -951,5 +951,15 @@ public class CounterUtilTest {
         Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_CONQUISTADOR_INDIA));
         Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_EXPLORER));
         Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_GOVERNOR));
+
+        Assert.assertEquals(null, CounterUtil.getLeaderType((LimitTypeEnum) null));
+        Assert.assertEquals(null, CounterUtil.getLeaderType(LimitTypeEnum.ACTION_COL));
+        Assert.assertEquals(LeaderTypeEnum.GENERAL, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_GENERAL));
+        Assert.assertEquals(LeaderTypeEnum.GENERAL, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_GENERAL_AMERICA));
+        Assert.assertEquals(LeaderTypeEnum.ADMIRAL, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_ADMIRAL));
+        Assert.assertEquals(LeaderTypeEnum.CONQUISTADOR, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_CONQUISTADOR));
+        Assert.assertEquals(LeaderTypeEnum.CONQUISTADOR, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_CONQUISTADOR_INDIA));
+        Assert.assertEquals(LeaderTypeEnum.EXPLORER, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_EXPLORER));
+        Assert.assertEquals(LeaderTypeEnum.GOVERNOR, CounterUtil.getLeaderType(LimitTypeEnum.LEADER_GOVERNOR));
     }
 }
