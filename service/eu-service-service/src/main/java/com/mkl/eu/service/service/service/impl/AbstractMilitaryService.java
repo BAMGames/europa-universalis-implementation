@@ -39,7 +39,7 @@ public class AbstractMilitaryService extends AbstractService {
 
         // TODO TG-10 admiral for naval battle
         String code = leaderCountry + "-general-" + die;
-        Leader leader = getTables().getLeader(code);
+        Leader leader = getTables().getLeader(code, countryName);
         return leader.getCode();
     }
 }

@@ -361,9 +361,8 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
                 .setParams(METHOD_SELECT_FORCES, alliedCounters.size(), armySize));
 
-        List<String> leaders = counters.stream()
+        List<CounterEntity> leaders = counters.stream()
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER)
-                .map(CounterEntity::getCode)
                 .collect(Collectors.toList());
 
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
@@ -371,7 +370,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_MANY_LEADERS)
                 .setMsgFormat("{1}: {0} Impossible to select forces in this siege because there are too many leaders selected : {2}.")
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
-                .setParams(METHOD_SELECT_FORCES, leaders));
+                .setParams(METHOD_SELECT_FORCES, leaders.stream().map(CounterEntity::getCode).collect(Collectors.joining(","))));
 
         List<String> countries = oeUtil.getLeadingCountries(counters);
         String selectedCountry = StringUtils.isEmpty(request.getRequest().getCountry()) && countries.size() == 1
@@ -391,12 +390,12 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER &&
                         StringUtils.equals(counter.getCountry(), selectedCountry))
-                .map(counter -> getTables().getLeader(counter.getCode()))
+                .map(counter -> getTables().getLeader(counter.getCode(), counter.getCountry()))
                 .filter(conditions)
                 .collect(Collectors.toList());
         String selectedLeader = null;
         if (leaders.size() == 1) {
-            Leader leader = getTables().getLeader(leaders.get(0));
+            Leader leader = getTables().getLeader(leaders.get(0).getCode(), leaders.get(0).getCountry());
             selectedLeader = leader.getCode();
             availableLeaders.removeIf(lead -> leader.getRank().compareTo(lead.getRank()) <= 0);
 
@@ -492,7 +491,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
                 .filter(stack -> StringUtils.equals(stack.getProvince(), siege.getProvince()))
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> CounterUtil.isLeader(counter.getType()) && allies.contains(counter.getCountry()))
-                .map(counter -> getTables().getLeader(counter.getCode()))
+                .map(counter -> getTables().getLeader(counter.getCode(), counter.getCountry()))
                 .map(Leader::getSiege)
                 .max(Comparator.<Integer>naturalOrder())
                 .orElse(0);
@@ -1228,7 +1227,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             if (phasing && side.getLosses().isGreaterThanSize(side.getSize())) {
                 modifier -= 5;
             }
-            Leader leader = getTables().getLeader(side.getLeader());
+            Leader leader = getTables().getLeader(side.getLeader(), side.getCountry());
             if (Leader.leaderFragility.test(leader)) {
                 modifier -= 1;
             }
@@ -1348,8 +1347,8 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
             siege.getNonPhasing().setLeader(getReplacementLeader(siege.getNonPhasing().getCountry(), siege.getGame()));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, siege.getNonPhasing().getLeader()));
         }
-        Leader phasingLeader = getTables().getLeader(siege.getPhasing().getLeader());
-        Leader notPhasingLeader = getTables().getLeader(siege.getNonPhasing().getLeader());
+        Leader phasingLeader = getTables().getLeader(siege.getPhasing().getLeader(), siege.getPhasing().getCountry());
+        Leader notPhasingLeader = getTables().getLeader(siege.getNonPhasing().getLeader(), siege.getNonPhasing().getCountry());
         int fireMod = phasingLeader.getFire() - notPhasingLeader.getFire();
         int shockMod = phasingLeader.getShock() - notPhasingLeader.getShock();
         siege.getPhasing().getModifiers().addFire(fireMod);

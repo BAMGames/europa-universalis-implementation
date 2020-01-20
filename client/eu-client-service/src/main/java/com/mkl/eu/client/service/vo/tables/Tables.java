@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class containing all tables described in the appendix.
@@ -213,11 +214,20 @@ public class Tables {
 
     /**
      * @param leaderCode code of the leader.
-     * @return the leader whose code is leaderCode.
+     * @param country    of the leader in case of anonymous leader.
+     * @return the leader whose code is leaderCode and belongs to the country.
      */
-    public Leader getLeader(String leaderCode) {
-        return getLeaders().stream()
+    public Leader getLeader(String leaderCode, String country) {
+        List<Leader> leaders = getLeaders().stream()
                 .filter(leader -> StringUtils.equals(leader.getCode(), leaderCode))
+                .collect(Collectors.toList());
+        if (leaders.size() > 1) {
+            // if the code is not enough to fully identify the leader, then we add the country filter
+            leaders = leaders.stream()
+                    .filter(leader -> StringUtils.equals(leader.getCountry(), country))
+                    .collect(Collectors.toList());
+        }
+        return leaders.stream()
                 .findAny()
                 .orElse(null);
     }

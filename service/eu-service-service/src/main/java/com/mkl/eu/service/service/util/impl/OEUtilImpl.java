@@ -1311,7 +1311,7 @@ public final class OEUtilImpl implements IOEUtil {
 
         if (leaders.size() != 1) {
             List<Leader> previousLeaders = counters.stream()
-                    .map(counter -> tables.getLeader(counter.getOwner().getLeader()))
+                    .map(counter -> tables.getLeader(counter.getOwner().getLeader(), counter.getOwner().getCountry()))
                     .filter(leader -> leader != null)
                     .distinct()
                     .collect(Collectors.toList());

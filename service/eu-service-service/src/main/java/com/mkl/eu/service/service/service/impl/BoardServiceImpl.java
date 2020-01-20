@@ -313,7 +313,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         Long idLeader = request.getRequest().getIdLeader();
         Leader leader = stack.getCounters().stream()
                 .filter(counter -> Objects.equals(counter.getId(), idLeader))
-                .map(counter -> getTables().getLeader(counter.getCode()))
+                .map(counter -> getTables().getLeader(counter.getCode(), counter.getCountry()))
                 .filter(Objects::nonNull)
                 .findAny()
                 .orElse(null);
@@ -854,7 +854,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                     .setName(PARAMETER_CREATE_COUNTER, PARAMETER_REQUEST, PARAMETER_CODE)
                     .setParams(METHOD_CREATE_COUNTER));
 
-            Leader leader = getTables().getLeader(request.getRequest().getCode());
+            Leader leader = getTables().getLeader(request.getRequest().getCode(), request.getRequest().getCountry());
 
             failIfNull(new CheckForThrow<>()
                     .setTest(leader)

@@ -403,7 +403,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         if (StringUtils.isNotEmpty(side.getLeader())) {
             Label leaderLabel = new Label("   " + GlobalConfiguration.getMessage("military.battle.leader", GlobalConfiguration.getMessage(side.getLeader())));
             hBox.getChildren().add(leaderLabel);
-            Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader());
+            Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader(), side.getCountry());
             if (leader != null) {
                 try {
                     ImageView leaderTooltip = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));
@@ -902,7 +902,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         if (StringUtils.isNotEmpty(side.getLeader())) {
             Label leaderLabel = new Label("   " + GlobalConfiguration.getMessage("military.battle.leader", GlobalConfiguration.getMessage(side.getLeader())));
             hBox.getChildren().add(leaderLabel);
-            Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader());
+            Leader leader = GlobalConfiguration.getTables().getLeader(side.getLeader(), side.getCountry());
             if (leader != null) {
                 try {
                     ImageView leaderTooltip = new ImageView(new Image(new FileInputStream(new File("data/img/help.png"))));

@@ -391,9 +391,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
                 .setParams(METHOD_SELECT_FORCES, alliedCounters.size(), armySize));
 
-        List<String> leaders = counters.stream()
+        List<CounterEntity> leaders = counters.stream()
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER)
-                .map(CounterEntity::getCode)
                 .collect(Collectors.toList());
 
         failIfTrue(new AbstractService.CheckForThrow<Boolean>()
@@ -401,7 +400,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .setCodeError(IConstantsServiceException.BATTLE_FORCES_TOO_MANY_LEADERS)
                 .setMsgFormat("{1}: {0} Impossible to select forces in this battle because there are too many leaders selected : {2}.")
                 .setName(PARAMETER_SELECT_FORCES, PARAMETER_REQUEST, PARAMETER_FORCES)
-                .setParams(METHOD_SELECT_FORCES, leaders));
+                .setParams(METHOD_SELECT_FORCES, leaders.stream().map(CounterEntity::getCode).collect(Collectors.joining(","))));
 
         List<String> countries = oeUtil.getLeadingCountries(counters);
         String selectedCountry = StringUtils.isEmpty(request.getRequest().getCountry()) && countries.size() == 1
@@ -421,12 +420,12 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> counter.getType() == CounterFaceTypeEnum.LEADER &&
                         StringUtils.equals(counter.getCountry(), selectedCountry))
-                .map(counter -> getTables().getLeader(counter.getCode()))
+                .map(counter -> getTables().getLeader(counter.getCode(), selectedCountry))
                 .filter(conditions)
                 .collect(Collectors.toList());
         String selectedLeader = null;
         if (leaders.size() == 1) {
-            Leader leader = getTables().getLeader(leaders.get(0));
+            Leader leader = getTables().getLeader(leaders.get(0).getCode(), leaders.get(0).getCountry());
             selectedLeader = leader.getCode();
             availableLeaders.removeIf(lead -> leader.getRank().compareTo(lead.getRank()) <= 0);
 
@@ -566,8 +565,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
             if (!success) {
                 int die = oeUtil.rollDie(game, country);
 
-                Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader());
-                Leader nonPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader());
+                Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader(), battle.getPhasing().getCountry());
+                Leader nonPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader(), battle.getNonPhasing().getCountry());
                 int mod = Math.max(0, Optional.ofNullable(nonPhasingLeader).map(Leader::getManoeuvre).orElse(0)
                         - Optional.ofNullable(phasingLeader).map(Leader::getManoeuvre).orElse(0));
                 if (die + mod >= 8) {
@@ -727,8 +726,8 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
             battle.getNonPhasing().setLeader(getReplacementLeader(battle.getNonPhasing().getCountry(), battle.getGame()));
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.NON_PHASING_LEADER, battle.getNonPhasing().getLeader()));
         }
-        Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader());
-        Leader notPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader());
+        Leader phasingLeader = getTables().getLeader(battle.getPhasing().getLeader(), battle.getPhasing().getCountry());
+        Leader notPhasingLeader = getTables().getLeader(battle.getNonPhasing().getLeader(), battle.getNonPhasing().getCountry());
         int fireMod = phasingLeader.getFire() - notPhasingLeader.getFire();
         int shockMod = phasingLeader.getShock() - notPhasingLeader.getShock();
         battle.getPhasing().getFirstDay().addFire(fireMod);
@@ -937,7 +936,12 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         if (request.getRequest().isValidate()) {
             int die = oeUtil.rollDie(game);
 
-            Leader leader = getTables().getLeader(phasing ? battle.getPhasing().getLeader() : battle.getNonPhasing().getLeader());
+            Leader leader;
+            if (phasing) {
+                leader = getTables().getLeader(battle.getPhasing().getLeader(), battle.getPhasing().getCountry());
+            } else {
+                leader = getTables().getLeader(battle.getNonPhasing().getLeader(), battle.getNonPhasing().getCountry());
+            }
             boolean success = die <= leader.getManoeuvre() + remainingMoral;
 
             if (success) {
@@ -1539,7 +1543,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
             if (side.getLosses().isGreaterThanSize(side.getSize())) {
                 modifier -= 5;
             }
-            Leader leader = getTables().getLeader(side.getLeader());
+            Leader leader = getTables().getLeader(side.getLeader(), side.getCountry());
             if (Leader.leaderFragility.test(leader)) {
                 modifier -= 1;
             }
@@ -1576,7 +1580,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         if (!winner) {
             int retreat = dieSupplier.get();
             if (CommonUtil.subtract(side.getMoral(), side.getLosses().getMoraleLoss()) > 0) {
-                Leader leader = getTables().getLeader(side.getLeader());
+                Leader leader = getTables().getLeader(side.getLeader(), side.getCountry());
                 retreat -= leader.getManoeuvre();
             }
             side.setRetreat(retreat);
