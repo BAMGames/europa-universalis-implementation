@@ -1441,4 +1441,28 @@ public final class CounterUtil {
 
         return type;
     }
+
+    /**
+     * @param type of the limit.
+     * @return if the type of the country limit affects a leader.
+     */
+    public static boolean isLeaderType(LimitTypeEnum type) {
+        boolean leader = false;
+
+        if (type != null) {
+            switch (type) {
+                case LEADER_GENERAL:
+                case LEADER_GENERAL_AMERICA:
+                case LEADER_ADMIRAL:
+                case LEADER_CONQUISTADOR:
+                case LEADER_CONQUISTADOR_INDIA:
+                case LEADER_EXPLORER:
+                case LEADER_GOVERNOR:
+                    leader = true;
+                    break;
+            }
+        }
+
+        return leader;
+    }
 }

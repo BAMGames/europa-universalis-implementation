@@ -941,5 +941,15 @@ public class CounterUtilTest {
         Assert.assertEquals(CounterFaceTypeEnum.PACHA_2, CounterUtil.getLeaderType(leader));
         leader.setSize(3);
         Assert.assertEquals(CounterFaceTypeEnum.PACHA_3, CounterUtil.getLeaderType(leader));
+
+        Assert.assertFalse(CounterUtil.isLeaderType(null));
+        Assert.assertFalse(CounterUtil.isLeaderType(LimitTypeEnum.ACTION_COL));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_GENERAL));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_GENERAL_AMERICA));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_ADMIRAL));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_CONQUISTADOR));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_CONQUISTADOR_INDIA));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_EXPLORER));
+        Assert.assertTrue(CounterUtil.isLeaderType(LimitTypeEnum.LEADER_GOVERNOR));
     }
 }
