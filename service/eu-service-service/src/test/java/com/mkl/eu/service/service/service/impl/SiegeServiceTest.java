@@ -507,11 +507,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         request.getRequest().setCountry("france");
         Tables tables = new Tables();
         AbstractBack.TABLES = tables;
-        stack.getCounters().add(createLeader(21L, "france", CounterFaceTypeEnum.LEADER, "Napo", LeaderTypeEnum.GENERAL, "A 666 -1", tables, stack));
-        stack.getCounters().add(createLeader(22L, "france", CounterFaceTypeEnum.LEADER, "Nabo", LeaderTypeEnum.GENERAL, "Z 111", tables, stack));
-        stack.getCounters().add(createLeader(23L, "espagne", CounterFaceTypeEnum.LEADER, "Infante", LeaderTypeEnum.GENERAL, "B 333", tables, stack));
-        stack.getCounters().add(createLeader(24L, "pologne", CounterFaceTypeEnum.LEADER, "Sibierski", LeaderTypeEnum.GENERAL, "D 434", tables, stack));
-        stack.getCounters().add(createLeader(25L, "pologne", CounterFaceTypeEnum.LEADER, "Sibierluge", LeaderTypeEnum.ADMIRAL, "C 122", tables, stack));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(21L).country("france").code("Napo").type(LeaderTypeEnum.GENERAL).stats("A 666 -1"), tables, stack));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(22L).country("france").code("Nabo").type(LeaderTypeEnum.GENERAL).stats("Z 111"), tables, stack));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(23L).country("espagne").code("Infante").type(LeaderTypeEnum.GENERAL).stats("B 333"), tables, stack));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(24L).country("pologne").code("Sibierski").type(LeaderTypeEnum.GENERAL).stats("D 434"), tables, stack));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(25L).country("pologne").code("Sibierluge").type(LeaderTypeEnum.ADMIRAL).stats("C 122"), tables, stack));
 
         try {
             siegeService.selectForces(request);
@@ -627,7 +627,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         Tables tables = new Tables();
         StackEntity stack = game.getStacks().get(0);
-        stack.getCounters().add(createLeader(9L, country.getName(), CounterFaceTypeEnum.LEADER, "Napo", LeaderTypeEnum.GENERAL, "A 666 -1", tables, stack));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(9L).country(country.getName()).code("Napo").type(LeaderTypeEnum.GENERAL).stats("A 666 -1"), tables, stack));
         request.getRequest().getForces().add(9L);
         when(oeUtil.getLeadingCountries(any())).thenReturn(Collections.singletonList("france"));
         AbstractBack.TABLES = tables;
@@ -4221,10 +4221,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             stack.setProvince(siege.getProvince());
             game.getStacks().add(stack);
             if (!phasing.replacementLeader) {
-                stack.getCounters().add(createLeader(1L, "france", CounterFaceTypeEnum.LEADER, "phasingLeader", LeaderTypeEnum.GENERAL, phasing.leaderStats, AbstractBack.TABLES, stack));
+                stack.getCounters().add(createLeader(LeaderBuilder.create().id(1L).country("france").code("phasingLeader").type(LeaderTypeEnum.GENERAL).stats(phasing.leaderStats), AbstractBack.TABLES, stack));
             }
             if (!notPhasing.replacementLeader) {
-                stack.getCounters().add(createLeader(2L, "espagne", CounterFaceTypeEnum.LEADER, "notPhasingLeader", LeaderTypeEnum.GENERAL, notPhasing.leaderStats, AbstractBack.TABLES, stack));
+                stack.getCounters().add(createLeader(LeaderBuilder.create().id(2L).country("espagne").code("notPhasingLeader").type(LeaderTypeEnum.GENERAL).stats(notPhasing.leaderStats), AbstractBack.TABLES, stack));
             }
 
             AbstractProvinceEntity province;

@@ -6,6 +6,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
+import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.BattleTech;
@@ -393,14 +394,20 @@ public abstract class AbstractGameServiceTest {
         return createCounter(id, country, type, (Long) null);
     }
 
-    public static CounterEntity createLeader(Long id, String country, CounterFaceTypeEnum type, String code, LeaderTypeEnum leaderType, String stats, Tables tables, StackEntity stack) {
-        CounterEntity counter = createCounter(id, country, type, stack);
-        counter.setCode(code);
-        Matcher m = Pattern.compile("([A-Z]) ?(\\d)(\\d)(\\d) ?\\-?(\\d)?").matcher(stats);
+    public static CounterEntity createLeader(LeaderBuilder leaderBuilder, Tables tables, StackEntity stack) {
+        Leader leader = createLeaderTable(leaderBuilder, tables);
+        CounterEntity counter = createCounter(leaderBuilder.id, leaderBuilder.country, CounterUtil.getLeaderType(leader), stack);
+        counter.setCode(leaderBuilder.code);
+        return counter;
+    }
+
+    public static Leader createLeaderTable(LeaderBuilder leaderBuilder, Tables tables) {
+        Matcher m = Pattern.compile("([A-Z]) ?(\\d)(\\d)(\\d) ?\\-?(\\d)?").matcher(leaderBuilder.stats);
         Leader leader = new Leader();
-        leader.setCode(code);
-        leader.setCountry(country);
-        leader.setType(leaderType);
+        leader.setCode(leaderBuilder.code);
+        leader.setCountry(leaderBuilder.country);
+        leader.setType(leaderBuilder.type);
+        leader.setAnonymous(leaderBuilder.anonymous);
         if (m.matches()) {
             leader.setRank(m.group(1));
             leader.setManoeuvre(Integer.parseInt(m.group(2)));
@@ -412,7 +419,7 @@ public abstract class AbstractGameServiceTest {
             }
         }
         tables.getLeaders().add(leader);
-        return counter;
+        return leader;
     }
 
     public static DiffAttributesEntity getAttributeFull(DiffEntity diff, DiffAttributeTypeEnum type) {
@@ -479,6 +486,19 @@ public abstract class AbstractGameServiceTest {
         };
     }
 
+    public static Answer<?> createLeaderAnswer() {
+        return invocation -> {
+            GameEntity game = invocation.getArgumentAt(5, GameEntity.class);
+            if (game != null) {
+                return createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER,
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.CODE, invocation.getArgumentAt(1, String.class)),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, invocation.getArgumentAt(2, String.class)),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, invocation.getArgumentAt(4, String.class)));
+            }
+            return null;
+        };
+    }
+
     private static DiffEntity createDiff(GameEntity game, DiffTypeEnum type, DiffTypeObjectEnum typeObject, DiffAttributesEntity... attributes) {
         return createDiff(game, type, typeObject, null, attributes);
     }
@@ -488,5 +508,48 @@ public abstract class AbstractGameServiceTest {
             return DiffUtil.createDiff(game, type, typeObject, idObject, attributes);
         }
         return null;
+    }
+
+    public static class LeaderBuilder {
+        public Long id;
+        public String code;
+        public String country;
+        public LeaderTypeEnum type;
+        public String stats;
+        public boolean anonymous;
+
+        public static LeaderBuilder create() {
+            return new LeaderBuilder();
+        }
+
+        public LeaderBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public LeaderBuilder code(String code) {
+            this.code = code;
+            return this;
+        }
+
+        public LeaderBuilder country(String country) {
+            this.country = country;
+            return this;
+        }
+
+        public LeaderBuilder type(LeaderTypeEnum type) {
+            this.type = type;
+            return this;
+        }
+
+        public LeaderBuilder stats(String stats) {
+            this.stats = stats;
+            return this;
+        }
+
+        public LeaderBuilder anonymous() {
+            this.anonymous = true;
+            return this;
+        }
     }
 }
