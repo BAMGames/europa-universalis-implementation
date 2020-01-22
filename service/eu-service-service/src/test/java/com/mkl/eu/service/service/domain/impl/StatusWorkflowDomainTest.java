@@ -30,6 +30,7 @@ import com.mkl.eu.service.service.service.impl.AbstractBack;
 import com.mkl.eu.service.service.service.impl.EconomicServiceImpl;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -2834,5 +2835,266 @@ public class StatusWorkflowDomainTest {
         Assert.assertEquals(18, sheetEntity.getTpIncome().longValue());
         Assert.assertEquals(8, sheetEntity.getExoResIncome().longValue());
         Assert.assertEquals(48, sheetEntity.getRotwIncome().longValue());
+    }
+
+    @Test
+    public void testDeployLeaders() {
+        // No leader, no limit, nothing to do
+        DeployLeadersBuilder.create()
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create());
+
+        // France has no leader, but one general in its limit => add one anonymous leader
+        // While spain has one anonymous general but no limit => remove one anonymous leader
+        DeployLeadersBuilder.create()
+                .addActiveCountry("france").addActiveCountry("spain")
+                .addExistingLeader(LeaderBuilder.create().id(1L).code("Legion-1").country("spain").type(LeaderTypeEnum.GENERAL).stats("C 333").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Nabo").country("france").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addLimit("france", LimitTypeEnum.LEADER_GENERAL, 1)
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create()
+                        .removeLeader(1L)
+                        .addLeader(LeaderMatch.create().matchCodes("Nabo").country("france")));
+
+        // If France was not an active country, then no anonymous leader for him
+        // If spain existing leader was not anonymous, then no removing
+        DeployLeadersBuilder.create()
+                .addInactiveCountry("france").addActiveCountry("spain")
+                .addExistingLeader(LeaderBuilder.create().id(1L).code("Legion-1").country("spain").type(LeaderTypeEnum.GENERAL).stats("C 333"))
+                .addTableLeader(LeaderBuilder.create().code("Nabo").country("france").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addLimit("france", LimitTypeEnum.LEADER_GENERAL, 1)
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create());
+
+        // France has no admiral and limit is 2 -> 2 of the 3 anonymous admirals are picked
+        // England has 3 conquistadores, 2 of them anonymous and limit is 2 -> lowest rank anonymous conquistador is removed
+        DeployLeadersBuilder.create()
+                .addActiveCountry("france").addActiveCountry("england")
+                .addExistingLeader(LeaderBuilder.create().id(1L).code("Legion-1").country("england").type(LeaderTypeEnum.GENERAL).stats("C 333").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(2L).code("Legion-2").country("england").type(LeaderTypeEnum.GENERAL).stats("D 111").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(3L).code("Cornwell").country("england").type(LeaderTypeEnum.GENERAL).stats("E 434"))
+                .addTableLeader(LeaderBuilder.create().code("Legion-1").country("france").type(LeaderTypeEnum.ADMIRAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-2").country("france").type(LeaderTypeEnum.ADMIRAL).stats("C 222").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-3").country("france").type(LeaderTypeEnum.ADMIRAL).stats("D 333").anonymous())
+                .addLimit("france", LimitTypeEnum.LEADER_ADMIRAL, 2)
+                .addLimit("england", LimitTypeEnum.LEADER_GENERAL, 2)
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create()
+                        .removeLeader(2L)
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-1", "Legion-2", "Legion-3").country("france"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-1", "Legion-2", "Legion-3").country("france")));
+
+        // France has no admiral and limit is 4 -> only 3 anonymous admirals are picked because only 3 different anonymous admirals
+        // England has 3 conquistadores, 2 of them anonymous and limit is 2 -> lowest rank anonymous conquistador is removed (rank exchange with previous test)
+        DeployLeadersBuilder.create()
+                .addActiveCountry("france").addActiveCountry("england")
+                .addExistingLeader(LeaderBuilder.create().id(1L).code("Legion-1").country("england").type(LeaderTypeEnum.GENERAL).stats("D 333").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(2L).code("Legion-2").country("england").type(LeaderTypeEnum.GENERAL).stats("C 111").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(3L).code("Cornwell").country("england").type(LeaderTypeEnum.GENERAL).stats("E 434"))
+                .addTableLeader(LeaderBuilder.create().code("Legion-1").country("france").type(LeaderTypeEnum.ADMIRAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-2").country("france").type(LeaderTypeEnum.ADMIRAL).stats("C 222").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-3").country("france").type(LeaderTypeEnum.ADMIRAL).stats("D 333").anonymous())
+                .addLimit("france", LimitTypeEnum.LEADER_ADMIRAL, 4)
+                .addLimit("england", LimitTypeEnum.LEADER_GENERAL, 2)
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create()
+                        .removeLeader(1L)
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-1").country("france"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-2").country("france"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-3").country("france")));
+
+        // France has 1 anonymous general, has a pool of 3 anonymous generals and a limit of 3 -> the other 2 generals are picked
+        // France has 1 anonymous admiral, and 1 names admiral spawn this turn, with a limit of 1 admiral -> the named admiral is created and the anonymous admiral is removed
+        // France has 3 explorers, 2 of them anonymous, with a limit of 0 -> the 2 anonymous explorers are removed
+        // England has no general, a pool of 4 anonymous generals and a limit of 1 -> 1 anonymous general is picked
+        // Spain has 2 anonymous generals, a pool of 4 anonymous generals and a limit of 2 general and 1 general america -> 1 anonymous general is created
+        DeployLeadersBuilder.create()
+                .addActiveCountry("france").addActiveCountry("england").addActiveCountry("spain")
+                .addExistingLeader(LeaderBuilder.create().id(1L).code("Legion-G1").country("france").type(LeaderTypeEnum.GENERAL).stats("D 333").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(2L).code("Legion-A2").country("france").type(LeaderTypeEnum.ADMIRAL).stats("C 111").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(3L).code("Cabot").country("france").type(LeaderTypeEnum.EXPLORER).stats("E 434"))
+                .addExistingLeader(LeaderBuilder.create().id(4L).code("Legion-E1").country("france").type(LeaderTypeEnum.EXPLORER).stats("E 434").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(5L).code("Legion-E2").country("france").type(LeaderTypeEnum.EXPLORER).stats("E 111").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(6L).code("Legion-G1").country("spain").type(LeaderTypeEnum.GENERAL).stats("D 333").anonymous())
+                .addExistingLeader(LeaderBuilder.create().id(7L).code("Legion-G2").country("spain").type(LeaderTypeEnum.GENERAL).stats("C 212").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("france").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G2").country("france").type(LeaderTypeEnum.GENERAL).stats("C 222").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G3").country("france").type(LeaderTypeEnum.GENERAL).stats("D 333").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Turbot").country("france").type(LeaderTypeEnum.ADMIRAL).begin(5).stats("B 512"))
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("england").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G2").country("england").type(LeaderTypeEnum.GENERAL).stats("C 222").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G3").country("england").type(LeaderTypeEnum.GENERAL).stats("D 333").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G4").country("england").type(LeaderTypeEnum.GENERAL).stats("C 121").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("spain").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G2").country("spain").type(LeaderTypeEnum.GENERAL).stats("C 222").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G3").country("spain").type(LeaderTypeEnum.GENERAL).stats("D 333").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G4").country("spain").type(LeaderTypeEnum.GENERAL).stats("C 121").anonymous())
+                .addLimit("france", LimitTypeEnum.LEADER_GENERAL, 3)
+                .addLimit("france", LimitTypeEnum.LEADER_ADMIRAL, 1)
+                .addLimit("england", LimitTypeEnum.LEADER_GENERAL, 1)
+                .addLimit("spain", LimitTypeEnum.LEADER_GENERAL, 2)
+                .addLimit("spain", LimitTypeEnum.LEADER_GENERAL_AMERICA, 1)
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create()
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G2").country("france"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G3").country("france"))
+                        .addLeader(LeaderMatch.create().matchCodes("Turbot").country("france"))
+                        .removeLeader(2L)
+                        .removeLeader(4L)
+                        .removeLeader(5L)
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G1", "Legion-G2", "Legion-G3", "Legion-G4").country("england"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G3", "Legion-G4").country("spain")));
+    }
+
+    static class DeployLeadersBuilder {
+        List<PlayableCountryEntity> countries = new ArrayList<>();
+        List<LeaderBuilder> existingLeaders = new ArrayList<>();
+        List<LeaderBuilder> tableLeaders = new ArrayList<>();
+        List<Limit> limits = new ArrayList<>();
+        List<DiffEntity> diffs;
+
+        static DeployLeadersBuilder create() {
+            return new DeployLeadersBuilder();
+        }
+
+        DeployLeadersBuilder addActiveCountry(String name) {
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            country.setName(name);
+            country.setUsername(name);
+            countries.add(country);
+            return this;
+        }
+
+        DeployLeadersBuilder addInactiveCountry(String name) {
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            country.setName(name);
+            countries.add(country);
+            return this;
+        }
+
+        DeployLeadersBuilder addExistingLeader(LeaderBuilder leader) {
+            this.existingLeaders.add(leader);
+            return this;
+        }
+
+        DeployLeadersBuilder addTableLeader(LeaderBuilder leader) {
+            this.tableLeaders.add(leader);
+            return this;
+        }
+
+        DeployLeadersBuilder addLimit(String country, LimitTypeEnum type, Integer number) {
+            Limit limit = new Limit();
+            limit.setCountry(country);
+            limit.setType(type);
+            limit.setNumber(number);
+            limits.add(limit);
+            return this;
+        }
+
+        DeployLeadersBuilder whenDeployLeaders(StatusWorkflowDomainImpl statusWorkflowDomain, StatusWorkflowDomainTest testClass) {
+            GameEntity game = new GameEntity();
+            Tables tables = new Tables();
+            AbstractBack.TABLES = tables;
+            game.setTurn(5);
+            game.getCountries().addAll(countries);
+
+            Period period = new Period();
+            period.setBegin(1);
+            period.setEnd(6);
+            tables.getPeriods().add(period);
+            limits.forEach(limit -> limit.setPeriod(period));
+            tables.getLimits().addAll(limits);
+
+            StackEntity stack = new StackEntity();
+            stack.setId(1L);
+            stack.setGame(game);
+            stack.setProvince("idf");
+            game.getStacks().add(stack);
+
+            existingLeaders.forEach(leader -> stack.getCounters().add(createLeader(leader, tables, stack)));
+            tableLeaders.forEach(leader -> createLeaderTable(leader, tables));
+
+            when(testClass.counterDomain.createLeader(any(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {
+                CounterEntity counter = createCounter(666L, invocation.getArgumentAt(2, String.class), CounterFaceTypeEnum.LEADER);
+                counter.setCode(invocation.getArgumentAt(1, String.class));
+                stack.getCounters().add(counter);
+
+                return createLeaderAnswer().answer(invocation);
+            });
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
+            when(testClass.oeUtil.rollDie(any(), (String) any(), anyInt())).thenReturn(1);
+
+            diffs = statusWorkflowDomain.deployLeaders(game);
+
+            return this;
+        }
+
+        DeployLeadersBuilder thenExpect(DeployLeadersResultBuilder result) {
+            int nbDiff = 0;
+            for (Long id : result.removedLeaders) {
+                DiffEntity diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                                Objects.equals(d.getIdObject(), id))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull("The remove counter " + id + " was not sent.", diff);
+                nbDiff++;
+            }
+
+            for (LeaderMatch leaderMatch : result.addedLeaders) {
+                DiffEntity diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                                StringUtils.equals(leaderMatch.country, getAttribute(d, DiffAttributeTypeEnum.COUNTRY)) &&
+                                leaderMatch.codes.contains(getAttribute(d, DiffAttributeTypeEnum.CODE)))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull("The add counter for codes " + leaderMatch.codes + " and country " + leaderMatch.country + " was not sent.", diff);
+                Assert.assertEquals("The add counter for codes " + leaderMatch.codes + " and country " + leaderMatch.country + " has the wrong province attribute.",
+                        GameUtil.getTurnBox(5), getAttribute(diff, DiffAttributeTypeEnum.PROVINCE));
+                nbDiff++;
+            }
+
+            Assert.assertEquals("The number of diffs sent is wrong.", nbDiff, diffs.size());
+
+            return this;
+        }
+    }
+
+    static class DeployLeadersResultBuilder {
+        List<Long> removedLeaders = new ArrayList<>();
+        List<LeaderMatch> addedLeaders = new ArrayList<>();
+
+        static DeployLeadersResultBuilder create() {
+            return new DeployLeadersResultBuilder();
+        }
+
+        DeployLeadersResultBuilder removeLeader(Long id) {
+            removedLeaders.add(id);
+            return this;
+        }
+
+        DeployLeadersResultBuilder addLeader(LeaderMatch leader) {
+            addedLeaders.add(leader);
+            return this;
+        }
+    }
+
+    static class LeaderMatch {
+        List<String> codes = new ArrayList<>();
+        String country;
+
+        static LeaderMatch create() {
+            return new LeaderMatch();
+        }
+
+        LeaderMatch matchCodes(String... codes) {
+            this.codes.addAll(Arrays.asList(codes));
+            return this;
+        }
+
+        LeaderMatch country(String country) {
+            this.country = country;
+            return this;
+        }
     }
 }

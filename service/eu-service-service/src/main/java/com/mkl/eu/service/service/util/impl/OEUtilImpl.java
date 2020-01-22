@@ -199,7 +199,7 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public int rollDie(GameEntity game) {
-        return rollDie(game, (PlayableCountryEntity) null);
+        return rollDie(game, (PlayableCountryEntity) null, 10);
     }
 
     /**
@@ -207,8 +207,7 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public int rollDie(GameEntity game, String country) {
-        PlayableCountryEntity countryEntity = CommonUtil.findFirst(game.getCountries(), c -> StringUtils.equals(country, c.getName()));
-        return rollDie(game, countryEntity);
+        return rollDie(game, country, 10);
     }
 
     /**
@@ -216,6 +215,26 @@ public final class OEUtilImpl implements IOEUtil {
      */
     @Override
     public int rollDie(GameEntity game, PlayableCountryEntity country) {
+        return rollDie(game, country, 10);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int rollDie(GameEntity game, String country, int dieBase) {
+        PlayableCountryEntity countryEntity = game.getCountries().stream()
+                .filter(c -> StringUtils.equals(country, c.getName()))
+                .findAny()
+                .orElse(null);
+        return rollDie(game, countryEntity, dieBase);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int rollDie(GameEntity game, PlayableCountryEntity country, int dieBase) {
         /**
          * For the moment, only one seed is stored in tha game.
          * But it will be easy to switch to a seed per player basis later on.
@@ -224,7 +243,7 @@ public final class OEUtilImpl implements IOEUtil {
 
         SavableRandom rand = new SavableRandom();
         rand.setSeed(seed);
-        int die = rand.nextInt(10) + 1;
+        int die = rand.nextInt(dieBase) + 1;
         game.setSeed(rand.getSeed());
 
         return die;

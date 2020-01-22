@@ -6,9 +6,7 @@ import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.tables.Exchequer;
-import com.mkl.eu.client.service.vo.tables.Result;
-import com.mkl.eu.client.service.vo.tables.TradeIncome;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.persistence.IGameDao;
@@ -1068,5 +1066,107 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
 
         return DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<DiffEntity> deployLeaders(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        Function<Leader, DiffEntity> createLeader = leader -> counterDomain.createLeader(CounterUtil.getLeaderType(leader), leader.getCode(), leader.getCountry(), null,
+                GameUtil.getTurnBox(game.getTurn()), game);
+
+        diffs.addAll(getTables().getLeaders().stream()
+                .filter(leader -> Objects.equals(leader.getBegin(), game.getTurn()))
+                .map(createLeader)
+                .collect(Collectors.toList()));
+
+        for (PlayableCountryEntity country : game.getCountries()) {
+            if (StringUtils.isEmpty(country.getUsername())) {
+                continue;
+            }
+            diffs.addAll(deployLeadersForCountry(country.getName(), game));
+        }
+
+        return diffs;
+    }
+
+    /**
+     * Deploy the leaders for a specific country.
+     *
+     * @param countryName name of the country.
+     * @param game        the game.
+     * @return the diffs related to the creation or removal of leaders.
+     */
+    private List<DiffEntity> deployLeadersForCountry(String countryName, GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        Function<Leader, DiffEntity> createLeader = leader -> counterDomain.createLeader(CounterUtil.getLeaderType(leader), leader.getCode(), leader.getCountry(), null,
+                GameUtil.getTurnBox(game.getTurn()), game);
+
+        List<Leader> leaders = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> StringUtils.equals(counter.getCountry(), countryName) &&
+                        StringUtils.isNotEmpty(counter.getCode()))
+                .map(counter -> getTables().getLeader(counter.getCode(), counter.getCountry()))
+                .collect(Collectors.toList());
+        Period period = getTables().getPeriod(game.getTurn());
+
+        List<Limit> limits = getTables().getLimits().stream()
+                .filter(limit -> StringUtils.equals(limit.getCountry(), countryName) &&
+                        limit.getPeriod() == period &&
+                        CounterUtil.isLeaderType(limit.getType()))
+                .collect(Collectors.toList());
+
+        for (LeaderTypeEnum leaderType : LeaderTypeEnum.values()) {
+            int limitNumber = limits.stream()
+                    .filter(l -> CounterUtil.getLeaderType(l.getType()) == leaderType)
+                    .collect(Collectors.summingInt(Limit::getNumber));
+            List<Leader> existingLeaders = leaders.stream()
+                    .filter(leader -> leader.getType() == leaderType)
+                    .collect(Collectors.toList());
+            int leaderToAdd = limitNumber - existingLeaders.size();
+            if (leaderToAdd > 0) {
+                while (leaderToAdd > 0) {
+                    leaderToAdd--;
+                    List<Leader> anonymousLeaders = getTables().getLeaders().stream()
+                            .filter(leader -> StringUtils.equals(leader.getCountry(), countryName) &&
+                                    leader.isAnonymous() && leader.getType() == leaderType &&
+                                    !existingLeaders.stream().anyMatch(existingLeader -> StringUtils.equals(existingLeader.getCode(), leader.getCode())))
+                            .collect(Collectors.toList());
+                    if (anonymousLeaders.isEmpty()) {
+                        continue;
+                    }
+
+                    int die = oeUtil.rollDie(game, countryName, anonymousLeaders.size()) - 1;
+                    Leader anonymous = anonymousLeaders.get(die);
+                    diffs.add(createLeader.apply(anonymous));
+                    existingLeaders.add(anonymous);
+                }
+            } else if (leaderToAdd < 0) {
+                while (leaderToAdd < 0) {
+                    leaderToAdd++;
+                    Leader leaderToRemove = existingLeaders.stream()
+                            .filter(Leader::isAnonymous)
+                            .sorted((o1, o2) -> o2.getRank().compareTo(o1.getRank()))
+                            .findFirst()
+                            .orElse(null);
+                    if (leaderToRemove == null) {
+                        continue;
+                    }
+
+                    CounterEntity counterToRemove = game.getStacks().stream()
+                            .flatMap(stack -> stack.getCounters().stream())
+                            .filter(counter -> StringUtils.equals(counter.getCountry(), countryName) &&
+                                    StringUtils.equals(counter.getCode(), leaderToRemove.getCode()))
+                            .findAny()
+                            .orElse(null);
+                    diffs.add(counterDomain.removeCounter(counterToRemove));
+                    existingLeaders.remove(leaderToRemove);
+                }
+            }
+        }
+        return diffs;
     }
 }

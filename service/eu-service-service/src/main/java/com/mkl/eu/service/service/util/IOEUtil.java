@@ -111,9 +111,29 @@ public interface IOEUtil {
      *
      * @param game    the game.
      * @param country the country rolling the die. Can be <code>null</code>.
+     * @param dieBase the number of face of the die.
+     * @return the result of a die dieBase. Faces go from 1 to dieBase.
+     */
+    int rollDie(GameEntity game, String country, int dieBase);
+
+    /**
+     * Rolls a die for a country in the given game. The country can ben <code>null</code> for general die roll.
+     *
+     * @param game    the game.
+     * @param country the country rolling the die. Can be <code>null</code>.
      * @return the result of a die 10.
      */
     int rollDie(GameEntity game, PlayableCountryEntity country);
+
+    /**
+     * Rolls a die for a country in the given game. The country can ben <code>null</code> for general die roll.
+     *
+     * @param game    the game.
+     * @param country the country rolling the die. Can be <code>null</code>.
+     * @param dieBase the number of face of the die.
+     * @return the result of a die dieBase. Faces go from 1 to dieBase.
+     */
+    int rollDie(GameEntity game, PlayableCountryEntity country, int dieBase);
 
     /**
      * Returns the stacks on the province for a given game.

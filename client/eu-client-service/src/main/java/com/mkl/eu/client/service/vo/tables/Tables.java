@@ -47,6 +47,37 @@ public class Tables {
     /** Leaders. */
     private List<Leader> leaders = new ArrayList<>();
 
+    /**
+     * @param turn of the game.
+     * @return the period given the turn.
+     */
+    public Period getPeriod(int turn) {
+        return periods.stream()
+                .filter(period -> period.getBegin() <= turn && period.getEnd() >= turn)
+                .findAny()
+                .orElse(null);
+    }
+
+    /**
+     * @param leaderCode code of the leader.
+     * @param country    of the leader in case of anonymous leader.
+     * @return the leader whose code is leaderCode and belongs to the country.
+     */
+    public Leader getLeader(String leaderCode, String country) {
+        List<Leader> leaders = getLeaders().stream()
+                .filter(leader -> StringUtils.equals(leader.getCode(), leaderCode))
+                .collect(Collectors.toList());
+        if (leaders.size() > 1) {
+            // if the code is not enough to fully identify the leader, then we add the country filter
+            leaders = leaders.stream()
+                    .filter(leader -> StringUtils.equals(leader.getCountry(), country))
+                    .collect(Collectors.toList());
+        }
+        return leaders.stream()
+                .findAny()
+                .orElse(null);
+    }
+
     /** @return the periods. */
     public List<Period> getPeriods() {
         return periods;
@@ -210,26 +241,6 @@ public class Tables {
     /** @return the leaders. */
     public List<Leader> getLeaders() {
         return leaders;
-    }
-
-    /**
-     * @param leaderCode code of the leader.
-     * @param country    of the leader in case of anonymous leader.
-     * @return the leader whose code is leaderCode and belongs to the country.
-     */
-    public Leader getLeader(String leaderCode, String country) {
-        List<Leader> leaders = getLeaders().stream()
-                .filter(leader -> StringUtils.equals(leader.getCode(), leaderCode))
-                .collect(Collectors.toList());
-        if (leaders.size() > 1) {
-            // if the code is not enough to fully identify the leader, then we add the country filter
-            leaders = leaders.stream()
-                    .filter(leader -> StringUtils.equals(leader.getCountry(), country))
-                    .collect(Collectors.toList());
-        }
-        return leaders.stream()
-                .findAny()
-                .orElse(null);
     }
 
     /** @param leaders the leaders to set. */

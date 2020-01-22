@@ -407,6 +407,7 @@ public abstract class AbstractGameServiceTest {
         leader.setCode(leaderBuilder.code);
         leader.setCountry(leaderBuilder.country);
         leader.setType(leaderBuilder.type);
+        leader.setBegin(leaderBuilder.begin);
         leader.setAnonymous(leaderBuilder.anonymous);
         if (m.matches()) {
             leader.setRank(m.group(1));
@@ -515,6 +516,7 @@ public abstract class AbstractGameServiceTest {
         public String code;
         public String country;
         public LeaderTypeEnum type;
+        public Integer begin;
         public String stats;
         public boolean anonymous;
 
@@ -539,6 +541,11 @@ public abstract class AbstractGameServiceTest {
 
         public LeaderBuilder type(LeaderTypeEnum type) {
             this.type = type;
+            return this;
+        }
+
+        public LeaderBuilder begin(Integer begin) {
+            this.begin = begin;
             return this;
         }
 
