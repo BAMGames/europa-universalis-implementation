@@ -4460,6 +4460,22 @@ public class EcoServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
             Assert.assertEquals("validateAdminActions.authent.username", e.getParams()[0]);
         }
+
+        request.getAuthent().setUsername("MKL");
+        request.getRequest().setValidate(true);
+        StackEntity stack = new StackEntity();
+        stack.setGame(game);
+        stack.setProvince(GameUtil.getTurnBox(game.getTurn()));
+        stack.getCounters().add(createLeader(LeaderBuilder.create().code("Napo").country("france").stats("A666"), new Tables(), stack));
+        game.getStacks().add(stack);
+
+        try {
+            economicService.validateAdminActions(request);
+            Assert.fail("Should break because some leaders should be deployed before validating");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.AWAITING_LEADERS, e.getCode());
+            Assert.assertEquals("validateAdminActions.request.validate", e.getParams()[0]);
+        }
     }
 
     @Test

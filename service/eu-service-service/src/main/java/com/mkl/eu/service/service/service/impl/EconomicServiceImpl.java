@@ -46,6 +46,7 @@ import com.mkl.eu.service.service.persistence.ref.ICountryDao;
 import com.mkl.eu.service.service.service.GameDiffsInfo;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -1619,6 +1620,21 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         failIfFalse(new CheckForThrow<Boolean>().setTest(StringUtils.equals(request.getAuthent().getUsername(), country.getUsername()))
                 .setCodeError(IConstantsCommonException.ACCESS_RIGHT)
                 .setMsgFormat(MSG_ACCESS_RIGHT).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_AUTHENT, PARAMETER_USERNAME).setParams(METHOD_VALIDATE_ADM_ACT, request.getAuthent().getUsername(), country.getUsername()));
+
+        if (request.getRequest().isValidate()) {
+            List<CounterEntity> awaitingLeaders = game.getStacks().stream()
+                    .filter(stack -> GameUtil.isTurnBox(stack.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) && StringUtils.isNotEmpty(counter.getCode()))
+                    .collect(Collectors.toList());
+
+            failIfTrue(new CheckForThrow<Boolean>()
+                    .setTest(CollectionUtils.isNotEmpty(awaitingLeaders))
+                    .setCodeError(IConstantsServiceException.AWAITING_LEADERS)
+                    .setMsgFormat("1}: {0} The leaders {2} are waiting to be placed. Going to next phase is not possible until it is done.")
+                    .setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                    .setParams(METHOD_VALIDATE_ADM_ACT, awaitingLeaders.stream().map(CounterEntity::getCode).collect(Collectors.joining(","))));
+        }
 
         List<DiffEntity> newDiffs = new ArrayList<>();
 

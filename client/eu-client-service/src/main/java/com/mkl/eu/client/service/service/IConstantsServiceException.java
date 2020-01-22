@@ -55,7 +55,6 @@ public interface IConstantsServiceException {
      */
     String INVALID_STATUS = "exception.eu.service.invalid_status";
 
-
     /**
      * <p>
      * Exception thrown when an action is impossible because it involved a besieged stack.
@@ -69,6 +68,20 @@ public interface IConstantsServiceException {
      * </p>
      */
     String STACK_BESIEGED = "exception.eu.service.stack_besieged";
+
+    /**
+     * <p>
+     * Exception thrown when an action is impossible because some leaders should be deployed before.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: list of leaders that should be deployed.</li>
+     * </ul>
+     * </p>
+     */
+    String AWAITING_LEADERS = "exception.eu.service.awaiting_leaders";
 
     /**********************************************************************/
     /**           ECONOMIC SERVICE EXCEPTION                              */
