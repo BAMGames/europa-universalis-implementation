@@ -178,7 +178,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_ADD_ADM_ACT, PARAMETER_ADD_ADM_ACT);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, null, METHOD_ADD_ADM_ACT, PARAMETER_ADD_ADM_ACT);
+        checkGameStatus(game, null, METHOD_ADD_ADM_ACT, PARAMETER_ADD_ADM_ACT, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getRequest()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_ADD_ADM_ACT, PARAMETER_REQUEST).setParams(METHOD_ADD_ADM_ACT));
@@ -1559,7 +1559,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_REMOVE_ADM_ACT, PARAMETER_REMOVE_ADM_ACT);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, null, METHOD_REMOVE_ADM_ACT, PARAMETER_REMOVE_ADM_ACT);
+        checkGameStatus(game, null, METHOD_REMOVE_ADM_ACT, PARAMETER_REMOVE_ADM_ACT, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_REMOVE_ADM_ACT, PARAMETER_AUTHENT).setParams(METHOD_REMOVE_ADM_ACT));
@@ -1601,7 +1601,7 @@ public class EconomicServiceImpl extends AbstractService implements IEconomicSer
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_ADM_ACT, PARAMETER_VALIDATE_ADM_ACT);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, null, METHOD_VALIDATE_ADM_ACT, PARAMETER_VALIDATE_ADM_ACT);
+        checkGameStatus(game, null, METHOD_VALIDATE_ADM_ACT, PARAMETER_VALIDATE_ADM_ACT, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         failIfNull(new AbstractService.CheckForThrow<>().setTest(request.getAuthent()).setCodeError(IConstantsCommonException.NULL_PARAMETER)
                 .setMsgFormat(MSG_MISSING_PARAMETER).setName(PARAMETER_VALIDATE_ADM_ACT, PARAMETER_AUTHENT).setParams(METHOD_VALIDATE_ADM_ACT));

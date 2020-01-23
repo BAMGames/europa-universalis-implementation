@@ -85,7 +85,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_MOVE_STACK, PARAMETER_MOVE_STACK, GameStatusEnum.MILITARY_MOVE);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -275,7 +275,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_TAKE_STACK_CONTROL, PARAMETER_TAKE_STACK_CONTROL, GameStatusEnum.MILITARY_MOVE);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -395,7 +395,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_END_MOVE_STACK, PARAMETER_END_MOVE_STACK, GameStatusEnum.MILITARY_MOVE);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -488,7 +488,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_MOVE_COUNTER, PARAMETER_MOVE_COUNTER, GameStatusEnum.MILITARY_MOVE);
 
         // TODO TG-2 Authorization
 
@@ -615,7 +615,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, null, METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER);
+        checkGameStatus(game, null, METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
 
         // TODO TG-2 Authorization
         failIfNull(new AbstractService.CheckForThrow<>()
@@ -742,7 +742,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_MOVE, request.getGame().getIdCountry(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_VALIDATE_MIL_ROUND, PARAMETER_VALIDATE_MIL_ROUND, GameStatusEnum.MILITARY_MOVE);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getAuthent())

@@ -81,7 +81,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_LAND_LOOTING, PARAMETER_LAND_LOOTING);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.REDEPLOYMENT, request.getGame().getIdCountry(), METHOD_LAND_LOOTING, PARAMETER_LAND_LOOTING);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_LAND_LOOTING, PARAMETER_LAND_LOOTING, GameStatusEnum.REDEPLOYMENT);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
@@ -323,7 +323,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_LAND_REDEPLOY, PARAMETER_LAND_REDEPLOY);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.REDEPLOYMENT, request.getGame().getIdCountry(), METHOD_LAND_REDEPLOY, PARAMETER_LAND_REDEPLOY);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_LAND_REDEPLOY, PARAMETER_LAND_REDEPLOY, GameStatusEnum.REDEPLOYMENT);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
@@ -435,7 +435,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_REDEPLOY, PARAMETER_VALIDATE_REDEPLOY);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.REDEPLOYMENT, request.getGame().getIdCountry(), METHOD_VALIDATE_REDEPLOY, PARAMETER_VALIDATE_REDEPLOY);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_VALIDATE_REDEPLOY, PARAMETER_VALIDATE_REDEPLOY, GameStatusEnum.REDEPLOYMENT);
 
         // TODO TG-2 Authorization
 
@@ -562,7 +562,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_EXCHEQUER_REPARTITION, PARAMETER_EXCHEQUER_REPARTITION);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.EXCHEQUER, null, METHOD_EXCHEQUER_REPARTITION, PARAMETER_EXCHEQUER_REPARTITION);
+        checkGameStatus(game, null, METHOD_EXCHEQUER_REPARTITION, PARAMETER_EXCHEQUER_REPARTITION, GameStatusEnum.EXCHEQUER);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())
@@ -624,7 +624,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_VALIDATE_EXCHEQUER, PARAMETER_VALIDATE_EXCHEQUER);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.EXCHEQUER, null, METHOD_VALIDATE_EXCHEQUER, PARAMETER_VALIDATE_EXCHEQUER);
+        checkGameStatus(game, null, METHOD_VALIDATE_EXCHEQUER, PARAMETER_VALIDATE_EXCHEQUER, GameStatusEnum.EXCHEQUER);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getAuthent())
@@ -697,7 +697,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_IMPROVE_STABILITY, PARAMETER_IMPROVE_STABILITY);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.STABILITY, null, METHOD_IMPROVE_STABILITY, PARAMETER_IMPROVE_STABILITY);
+        checkGameStatus(game, null, METHOD_IMPROVE_STABILITY, PARAMETER_IMPROVE_STABILITY, GameStatusEnum.STABILITY);
 
         failIfNull(new AbstractService.CheckForThrow<>()
                 .setTest(request.getRequest())

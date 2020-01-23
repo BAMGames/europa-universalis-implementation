@@ -7,41 +7,58 @@ package com.mkl.eu.client.service.vo.enumeration;
  */
 public enum GameStatusEnum {
     /** Economical event segment. */
-    ECONOMICAL_EVENT,
+    ECONOMICAL_EVENT(true),
     /** Political event segment. */
-    POLITICAL_EVENT,
+    POLITICAL_EVENT(true),
     /** Diplomacy segment. */
-    DIPLOMACY,
+    DIPLOMACY(true),
     /** Choice of administrative actions segment. */
-    ADMINISTRATIVE_ACTIONS_CHOICE,
+    ADMINISTRATIVE_ACTIONS_CHOICE(true),
 
 
     /*********************************************************************************************************
      *                                          Military phases                                              *
      *********************************************************************************************************/
     /** Hierarchy adjustment segment. */
-    MILITARY_HIERARCHY,
+    MILITARY_HIERARCHY(true),
     /** Choice of campaign. */
-    MILITARY_CAMPAIGN,
+    MILITARY_CAMPAIGN(false),
     /** Attrition caused by supply. */
-    MILITARY_SUPPLY,
+    MILITARY_SUPPLY(false),
     /** Movement and discovery. */
-    MILITARY_MOVE,
+    MILITARY_MOVE(false),
     /** Battles. */
-    MILITARY_BATTLES,
+    MILITARY_BATTLES(false),
     /** Sieges. */
-    MILITARY_SIEGES,
+    MILITARY_SIEGES(false),
     /** Fights against revolts, pirates and natives. */
-    MILITARY_NEUTRALS,
+    MILITARY_NEUTRALS(false),
     /*********************************************************************************************************
      *                                     End of military phases                                            *
      *********************************************************************************************************/
 
 
     /** Redeployment. */
-    REDEPLOYMENT,
+    REDEPLOYMENT(false),
     /** Exchequer repartition. */
-    EXCHEQUER,
+    EXCHEQUER(true),
     /** Stability improvement. */
-    STABILITY
+    STABILITY(true);
+
+    /** Flag saying if the phase is played simultaneous by all players or not. */
+    private boolean simultaneous;
+
+    private GameStatusEnum(boolean simultaneous) {
+        this.simultaneous = simultaneous;
+    }
+
+    /** @return the simultaneous. */
+    public boolean isSimultaneous() {
+        return simultaneous;
+    }
+
+    /** @return the opposite of simultaneous. */
+    public boolean isNotSimultaneous() {
+        return !simultaneous;
+    }
 }

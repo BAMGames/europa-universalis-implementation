@@ -78,7 +78,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_CHOOSE_SIEGE, PARAMETER_CHOOSE_SIEGE, GameStatusEnum.MILITARY_SIEGES);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
@@ -520,7 +520,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_CHOOSE_MODE, PARAMETER_CHOOSE_MODE, GameStatusEnum.MILITARY_SIEGES);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
@@ -955,7 +955,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_CHOOSE_MAN, PARAMETER_CHOOSE_MAN, GameStatusEnum.MILITARY_SIEGES);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
@@ -1071,7 +1071,7 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_SIEGES, request.getGame().getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_CHOOSE_BREACH, PARAMETER_CHOOSE_BREACH, GameStatusEnum.MILITARY_SIEGES);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()

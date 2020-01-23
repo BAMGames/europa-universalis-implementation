@@ -151,32 +151,25 @@ public abstract class AbstractService extends AbstractBack {
      * Check if game has the right status.
      *
      * @param game      game to check.
-     * @param status    status the game should have.
      * @param idCountry id of the country asking for an action (some status are country ordered).
      * @param method    calling this. For logging purpose.
      * @param param     name of the param holding the gameInfo. For logging purpose.
+     * @param status    status the game should have. If there is multiple values, then one of them must be true.
      * @throws FunctionalException functional exception.
      */
-    protected void checkGameStatus(GameEntity game, GameStatusEnum status, Long idCountry, String method, String param) throws FunctionalException {
-        checkSimpleStatus(game, status, method, param);
-        switch (status) {
-            case MILITARY_CAMPAIGN:
-            case MILITARY_SUPPLY:
-            case MILITARY_MOVE:
-            case MILITARY_BATTLES:
-            case MILITARY_SIEGES:
-            case MILITARY_NEUTRALS:
-            case REDEPLOYMENT:
-                failIfFalse(new AbstractService.CheckForThrow<Boolean>()
-                        .setTest(isPhasingPlayer(game, idCountry))
-                        .setCodeError(IConstantsServiceException.INVALID_STATUS)
-                        .setMsgFormat(MSG_INVALID_STATUS)
-                        .setName(param, PARAMETER_REQUEST)
-                        .setParams(method, game.getStatus().name(), status.name()));
-                break;
-            default:
-                break;
+    protected void checkGameStatus(GameEntity game, Long idCountry, String method, String param, GameStatusEnum... status) throws FunctionalException {
+        List<GameStatusEnum> statuses = Arrays.asList(status);
+        boolean ok = statuses.contains(game.getStatus());
+        if (ok && statuses.stream().anyMatch(GameStatusEnum::isNotSimultaneous)) {
+            ok = isPhasingPlayer(game, idCountry);
         }
+
+        failIfFalse(new AbstractService.CheckForThrow<Boolean>()
+                .setTest(ok)
+                .setCodeError(IConstantsServiceException.INVALID_STATUS)
+                .setMsgFormat(MSG_INVALID_STATUS)
+                .setName(param, PARAMETER_REQUEST)
+                .setParams(method, game.getStatus(), status));
     }
 
     /**

@@ -79,7 +79,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
         GameEntity game = gameDiffs.getGame();
 
-        checkGameStatus(game, GameStatusEnum.MILITARY_BATTLES, request.getGame().getIdCountry(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE);
+        checkGameStatus(game, request.getGame().getIdCountry(), METHOD_CHOOSE_BATTLE, PARAMETER_CHOOSE_BATTLE, GameStatusEnum.MILITARY_BATTLES);
 
         // TODO TG-2 Authorization
         PlayableCountryEntity country = game.getCountries().stream()
