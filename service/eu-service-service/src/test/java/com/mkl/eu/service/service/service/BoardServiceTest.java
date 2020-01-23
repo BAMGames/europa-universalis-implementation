@@ -1541,10 +1541,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         stack.getCounters().add(counter);
         stack.getCounters().add(createLeader(LeaderBuilder.create().id(14L).code("Infante").country("spain").type(LeaderTypeEnum.GENERAL).stats("A666"), AbstractBack.TABLES, stack));
         if (!lastLeaderOfCountry) {
-            stack.getCounters().add(createLeader(LeaderBuilder.create().id(15L).code("Nabo").country("france").type(LeaderTypeEnum.GENERAL).stats("E111"), AbstractBack.TABLES, stack));
+            stack.getCounters().add(createLeader(LeaderBuilder.create().id(15L).code("Nabo").country("genes").type(LeaderTypeEnum.GENERAL).stats("E111"), AbstractBack.TABLES, stack));
         }
 
         when(counterDao.getPatrons(counter.getCountry(), game.getId())).thenReturn(Arrays.asList("genes", france.getName()));
+        when(counterDao.getMinors(france.getName(), game.getId())).thenReturn(Collections.singletonList("genes"));
         when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("genes", france.getName()));
         AbstractProvinceEntity pecs = new EuropeanProvinceEntity();
         when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);

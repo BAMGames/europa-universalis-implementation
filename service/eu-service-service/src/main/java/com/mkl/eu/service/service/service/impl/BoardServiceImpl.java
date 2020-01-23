@@ -737,10 +737,12 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffs.addAll(counterDomain.moveLeader(counter, newStack, province, game));
 
         if (game.getStatus() == GameStatusEnum.MILITARY_HIERARCHY) {
+            List<String> minors = counterDao.getMinors(country.getName(), game.getId());
             if (!game.getStacks().stream()
                     .filter(stack -> GameUtil.isTurnBox(stack.getProvince()))
                     .flatMap(stack -> stack.getCounters().stream())
-                    .anyMatch(leader -> StringUtils.equals(leader.getCountry(), country.getName()) && StringUtils.isNotEmpty(leader.getCode()))) {
+                    .anyMatch(leader -> StringUtils.isNotEmpty(leader.getCode()) &&
+                            (StringUtils.equals(leader.getCountry(), country.getName()) || minors.contains(leader.getCountry())))) {
                 country.setReady(true);
 
                 long countriesNotReady = game.getCountries().stream()
