@@ -33,6 +33,7 @@ import org.mockito.stubbing.Answer;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -206,7 +207,7 @@ public abstract class AbstractGameServiceTest {
         return new ImmutablePair<>(request, game);
     }
 
-    protected <V> void testCheckStatus(GameEntity game, Request<V> request, IServiceWithCheckGame<V> service, String method, GameStatusEnum status) {
+    protected <V> void testCheckStatus(GameEntity game, Request<V> request, IServiceWithCheckGame<V> service, String method, GameStatusEnum... statuses) {
         try {
             service.run(request);
             Assert.fail("Should break because game.status is invalid");
@@ -215,9 +216,12 @@ public abstract class AbstractGameServiceTest {
             Assert.assertEquals(method + ".request", e.getParams()[0]);
         }
 
-        GameStatusEnum wrongStatus = GameStatusEnum.MILITARY_HIERARCHY;
-        if (status == GameStatusEnum.MILITARY_HIERARCHY) {
-            wrongStatus = GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE;
+        GameStatusEnum wrongStatus = null;
+        for (GameStatusEnum status : GameStatusEnum.values()) {
+            if (!Arrays.stream(statuses).anyMatch(stat -> stat == status)) {
+                wrongStatus = status;
+                break;
+            }
         }
         game.setStatus(wrongStatus);
 
@@ -229,47 +233,49 @@ public abstract class AbstractGameServiceTest {
             Assert.assertEquals(method + ".request", e.getParams()[0]);
         }
 
-        game.setStatus(status);
-        if (request.getGame().getIdCountry() != null) {
-            try {
-                service.run(request);
-                Assert.fail("Should break because game.status is invalid");
-            } catch (FunctionalException e) {
-                Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
-                Assert.assertEquals(method + ".request", e.getParams()[0]);
-            }
-
-            CountryOrderEntity order = new CountryOrderEntity();
-            order.setCountry(new PlayableCountryEntity());
-            order.getCountry().setId(request.getGame().getIdCountry() * 2);
-            order.setActive(true);
-            game.getOrders().add(order);
-            order = new CountryOrderEntity();
-            order.setCountry(new PlayableCountryEntity());
-            order.getCountry().setId(request.getGame().getIdCountry());
-            order.setActive(false);
-            game.getOrders().add(order);
-
-            try {
-                service.run(request);
-                Assert.fail("Should break because game.status is invalid");
-            } catch (FunctionalException e) {
-                Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
-                Assert.assertEquals(method + ".request", e.getParams()[0]);
-            }
-
-            order.setActive(true);
-            game.setStatus(wrongStatus);
-
-            try {
-                service.run(request);
-                Assert.fail("Should break because game.status is invalid");
-            } catch (FunctionalException e) {
-                Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
-                Assert.assertEquals(method + ".request", e.getParams()[0]);
-            }
-
+        for (GameStatusEnum status : statuses) {
             game.setStatus(status);
+            if (!status.isSimultaneous() && request.getGame().getIdCountry() != null) {
+                try {
+                    service.run(request);
+                    Assert.fail("Should break because game.status is invalid");
+                } catch (FunctionalException e) {
+                    Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
+                    Assert.assertEquals(method + ".request", e.getParams()[0]);
+                }
+
+                CountryOrderEntity order = new CountryOrderEntity();
+                order.setCountry(new PlayableCountryEntity());
+                order.getCountry().setId(request.getGame().getIdCountry() * 2);
+                order.setActive(true);
+                game.getOrders().add(order);
+                order = new CountryOrderEntity();
+                order.setCountry(new PlayableCountryEntity());
+                order.getCountry().setId(request.getGame().getIdCountry());
+                order.setActive(false);
+                game.getOrders().add(order);
+
+                try {
+                    service.run(request);
+                    Assert.fail("Should break because game.status is invalid");
+                } catch (FunctionalException e) {
+                    Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
+                    Assert.assertEquals(method + ".request", e.getParams()[0]);
+                }
+
+                order.setActive(true);
+                game.setStatus(wrongStatus);
+
+                try {
+                    service.run(request);
+                    Assert.fail("Should break because game.status is invalid");
+                } catch (FunctionalException e) {
+                    Assert.assertEquals(IConstantsServiceException.INVALID_STATUS, e.getCode());
+                    Assert.assertEquals(method + ".request", e.getParams()[0]);
+                }
+
+                game.setStatus(status);
+            }
         }
     }
 

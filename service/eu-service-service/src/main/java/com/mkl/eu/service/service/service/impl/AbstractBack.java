@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -287,6 +288,8 @@ public abstract class AbstractBack implements INameConstants {
             for (int i = 0; i < params.length; i++) {
                 if (params[i] instanceof Collection) {
                     params[i] = ((Collection<?>) params[i]).stream().map(Objects::toString).collect(Collectors.joining(","));
+                } else if (params[i] instanceof Object[]) {
+                    params[i] = Arrays.stream((Object[]) params[i]).map(Objects::toString).collect(Collectors.joining(","));
                 } else if (params[i] instanceof Enum) {
                     params[i] = ((Enum<?>) params[i]).name();
                 }

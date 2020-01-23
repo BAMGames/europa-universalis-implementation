@@ -160,7 +160,7 @@ public abstract class AbstractService extends AbstractBack {
     protected void checkGameStatus(GameEntity game, Long idCountry, String method, String param, GameStatusEnum... status) throws FunctionalException {
         List<GameStatusEnum> statuses = Arrays.asList(status);
         boolean ok = statuses.contains(game.getStatus());
-        if (ok && statuses.stream().anyMatch(GameStatusEnum::isNotSimultaneous)) {
+        if (ok && !game.getStatus().isSimultaneous()) {
             ok = isPhasingPlayer(game, idCountry);
         }
 
