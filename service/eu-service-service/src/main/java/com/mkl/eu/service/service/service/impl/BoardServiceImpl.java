@@ -10,6 +10,7 @@ import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Leader;
@@ -668,6 +669,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat("{1}: {0} Action is impossible because stack {2} is besieged.")
                 .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                 .setParams(METHOD_MOVE_LEADER, oldStack.getId()));
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(GameUtil.isRoundBox(oldStack.getProvince()))
+                .setCodeError(IConstantsServiceException.LEADER_WOUNDED)
+                .setMsgFormat("1}: {0} The leader {2} is wounded and cannot be deployed.")
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER, counter.getCode()));
 
         List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
         failIfFalse(new CheckForThrow<Boolean>()

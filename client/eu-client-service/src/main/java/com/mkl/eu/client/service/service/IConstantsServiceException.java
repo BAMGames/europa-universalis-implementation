@@ -83,6 +83,20 @@ public interface IConstantsServiceException {
      */
     String AWAITING_LEADERS = "exception.eu.service.awaiting_leaders";
 
+    /**
+     * <p>
+     * Exception thrown when an action is impossible because it involves a wounded leader.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: the wounded leader.</li>
+     * </ul>
+     * </p>
+     */
+    String LEADER_WOUNDED = "exception.eu.service.leader_wounded";
+
     /**********************************************************************/
     /**           ECONOMIC SERVICE EXCEPTION                              */
     /**********************************************************************/

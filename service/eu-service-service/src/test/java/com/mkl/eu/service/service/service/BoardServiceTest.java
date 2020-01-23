@@ -8,6 +8,7 @@ import com.mkl.eu.client.common.vo.Request;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
+import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Leader;
@@ -1312,6 +1313,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setId(1L);
         stack.setBesieged(true);
+        stack.setProvince(GameUtil.ROUND_END);
         game.getStacks().add(stack);
         CounterEntity counter = createCounter(13L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack);
         stack.getCounters().add(counter);
@@ -1335,6 +1337,16 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         stack.setBesieged(false);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because leader is wounded");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.LEADER_WOUNDED, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        stack.setProvince("idf");
         List<String> patrons = new ArrayList<>();
         patrons.add("genes");
         when(counterDao.getPatrons(counter.getCountry(), game.getId())).thenReturn(patrons);
