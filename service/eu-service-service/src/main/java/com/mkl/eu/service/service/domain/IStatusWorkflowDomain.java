@@ -33,6 +33,14 @@ public interface IStatusWorkflowDomain {
     List<DiffEntity> computeEndMinorLogistics(GameEntity game);
 
     /**
+     * Method to call at the end of the hierarchy phase.
+     *
+     * @param game the game.
+     * @return the diff corresponding to the switch of the next phase.
+     */
+    List<DiffEntity> endHierarchyPhase(GameEntity game);
+
+    /**
      * Method to call at the end of the military phase of a group of playing countries.
      * Or when battles are completed.
      * Or when sieges are finished.

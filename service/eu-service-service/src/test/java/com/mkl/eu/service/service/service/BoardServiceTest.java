@@ -1275,7 +1275,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Pair<Request<MoveLeaderRequest>, GameEntity> pair = testCheckGame(boardService::moveLeader, "moveLeader");
         Request<MoveLeaderRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
-        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, GameStatusEnum.MILITARY_HIERARCHY);
         request.getGame().setIdCountry(26L);
         PlayableCountryEntity country = new PlayableCountryEntity();
         country.setId(26L);
@@ -1347,6 +1347,17 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         }
 
         stack.setProvince("idf");
+        game.setStatus(GameStatusEnum.MILITARY_HIERARCHY);
+
+        try {
+            boardService.moveLeader(request);
+            Assert.fail("Should break because during military hierarchy, you can only placed leader on turn box");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.LEADER_WAS_NOT_WOUNDED, e.getCode());
+            Assert.assertEquals("moveLeader.request.idCounter", e.getParams()[0]);
+        }
+
+        game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         List<String> patrons = new ArrayList<>();
         patrons.add("genes");
         when(counterDao.getPatrons(counter.getCountry(), game.getId())).thenReturn(patrons);
@@ -1429,7 +1440,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         Pair<Request<MoveLeaderRequest>, GameEntity> pair = testCheckGame(boardService::moveLeader, "moveLeader");
         Request<MoveLeaderRequest> request = pair.getLeft();
         GameEntity game = pair.getRight();
-        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.MILITARY_HIERARCHY, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         request.getGame().setIdCountry(26L);
         request.setRequest(new MoveLeaderRequest());
         request.getRequest().setIdCounter(13L);
@@ -1472,6 +1483,113 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         List<DiffEntity> diffs = retrieveDiffsCreated();
 
         Assert.assertEquals(diffsMoveLeader, diffs);
+    }
+
+    @Test
+    public void testMoveLeaderHierarchy() throws FunctionalException {
+        testMoveLeaderHierarchy(false, false);
+    }
+
+    @Test
+    public void testMoveLeaderHierarchy2() throws FunctionalException {
+        testMoveLeaderHierarchy(false, true);
+    }
+
+    @Test
+    public void testMoveLeaderHierarchyLastLeader() throws FunctionalException {
+        testMoveLeaderHierarchy(true, false);
+    }
+
+    @Test
+    public void testMoveLeaderHierarchyLastLeaderLastCountry() throws FunctionalException {
+        testMoveLeaderHierarchy(true, true);
+    }
+
+    private void testMoveLeaderHierarchy(boolean lastLeaderOfCountry, boolean lastCountryReady) throws FunctionalException {
+        Pair<Request<MoveLeaderRequest>, GameEntity> pair = testCheckGame(boardService::moveLeader, "moveLeader");
+        Request<MoveLeaderRequest> request = pair.getLeft();
+        AbstractBack.TABLES = new Tables();
+        GameEntity game = pair.getRight();
+        game.setTurn(5);
+        testCheckStatus(pair.getRight(), request, boardService::moveLeader, "moveLeader", GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, GameStatusEnum.MILITARY_HIERARCHY);
+        request.getGame().setIdCountry(26L);
+        request.setRequest(new MoveLeaderRequest());
+        request.getRequest().setIdCounter(13L);
+        request.getRequest().setProvince("pecs");
+        PlayableCountryEntity france = new PlayableCountryEntity();
+        france.setId(26L);
+        france.setName("france");
+        france.setUsername("france");
+        game.getCountries().add(france);
+        PlayableCountryEntity spain = new PlayableCountryEntity();
+        spain.setId(27L);
+        spain.setName("spain");
+        spain.setUsername("spain");
+        if (lastCountryReady) {
+            spain.setReady(true);
+        }
+        game.getCountries().add(spain);
+        PlayableCountryEntity genes = new PlayableCountryEntity();
+        genes.setId(28L);
+        genes.setName("genes");
+        game.getCountries().add(genes);
+        StackEntity stack = new StackEntity();
+        stack.setId(1L);
+        stack.setProvince(GameUtil.getTurnBox(game.getTurn()));
+        game.getStacks().add(stack);
+        CounterEntity counter = createLeader(LeaderBuilder.create().id(13L).code("Napo").country("france").type(LeaderTypeEnum.GENERAL).stats("A666"), AbstractBack.TABLES, stack);
+        stack.getCounters().add(counter);
+        stack.getCounters().add(createLeader(LeaderBuilder.create().id(14L).code("Infante").country("spain").type(LeaderTypeEnum.GENERAL).stats("A666"), AbstractBack.TABLES, stack));
+        if (!lastLeaderOfCountry) {
+            stack.getCounters().add(createLeader(LeaderBuilder.create().id(15L).code("Nabo").country("france").type(LeaderTypeEnum.GENERAL).stats("E111"), AbstractBack.TABLES, stack));
+        }
+
+        when(counterDao.getPatrons(counter.getCountry(), game.getId())).thenReturn(Arrays.asList("genes", france.getName()));
+        when(oeUtil.getAllies(france, game)).thenReturn(Arrays.asList("genes", france.getName()));
+        AbstractProvinceEntity pecs = new EuropeanProvinceEntity();
+        when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
+        when(oeUtil.getController(pecs, game)).thenReturn("genes");
+        when(counterDomain.moveLeader(counter, null, "pecs", game)).thenAnswer(invocation -> {
+            stack.getCounters().remove(counter);
+            return Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.COUNTER, counter.getId()));
+        });
+        when(statusWorkflowDomain.endHierarchyPhase(any())).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STATUS)));
+
+        simulateDiff();
+
+        boardService.moveLeader(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(lastLeaderOfCountry ? 2 : 1, diffs.size());
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                        Objects.equals(d.getIdObject(), counter.getId()))
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.VALIDATE && d.getTypeObject() == DiffTypeObjectEnum.STATUS &&
+                        Objects.equals(d.getIdObject(), france.getId()))
+                .findAny()
+                .orElse(null);
+        if (lastLeaderOfCountry && !lastCountryReady) {
+            Assert.assertNotNull(diff);
+            Assert.assertEquals("26", getAttribute(diff, DiffAttributeTypeEnum.ID_COUNTRY));
+        } else {
+            Assert.assertNull(diff);
+        }
+
+        diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STATUS)
+                .findAny()
+                .orElse(null);
+        if (lastLeaderOfCountry && lastCountryReady) {
+            Assert.assertNotNull(diff);
+        } else {
+            Assert.assertNull(diff);
+        }
     }
 
     @Test

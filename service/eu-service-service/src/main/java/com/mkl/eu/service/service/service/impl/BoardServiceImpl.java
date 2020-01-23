@@ -615,7 +615,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER);
         GameEntity game = gameDiffs.getGame();
-        checkGameStatus(game, null, METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
+        checkGameStatus(game, null, METHOD_MOVE_LEADER, PARAMETER_MOVE_LEADER, GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE, GameStatusEnum.MILITARY_HIERARCHY);
 
         // TODO TG-2 Authorization
         failIfNull(new AbstractService.CheckForThrow<>()
@@ -677,6 +677,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
                 .setParams(METHOD_MOVE_LEADER, counter.getCode()));
 
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(game.getStatus() == GameStatusEnum.MILITARY_HIERARCHY && !GameUtil.isTurnBox(oldStack.getProvince()))
+                .setCodeError(IConstantsServiceException.LEADER_WAS_NOT_WOUNDED)
+                .setMsgFormat("1}: {0} The leader {2} wsa not wounded last round, he is in {3}.")
+                .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_ID_COUNTER)
+                .setParams(METHOD_MOVE_LEADER, counter.getCode(), oldStack.getProvince()));
+
         List<String> patrons = counterDao.getPatrons(counter.getCountry(), game.getId());
         failIfFalse(new CheckForThrow<Boolean>()
                 .setTest(patrons.contains(country.getName()))
@@ -726,7 +733,30 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_LEADER, PARAMETER_REQUEST, PARAMETER_PROVINCE)
                 .setParams(METHOD_MOVE_LEADER, country.getName(), controller));
 
-        List<DiffEntity> diffs = counterDomain.moveLeader(counter, newStack, province, game);
+        List<DiffEntity> diffs = new ArrayList<>();
+        diffs.addAll(counterDomain.moveLeader(counter, newStack, province, game));
+
+        if (game.getStatus() == GameStatusEnum.MILITARY_HIERARCHY) {
+            if (!game.getStacks().stream()
+                    .filter(stack -> GameUtil.isTurnBox(stack.getProvince()))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .anyMatch(leader -> StringUtils.equals(leader.getCountry(), country.getName()) && StringUtils.isNotEmpty(leader.getCode()))) {
+                country.setReady(true);
+
+                long countriesNotReady = game.getCountries().stream()
+                        .filter(c -> StringUtils.isNotEmpty(c.getUsername()) && !c.isReady())
+                        .count();
+
+                if (countriesNotReady == 0) {
+                    diffs.addAll(statusWorkflowDomain.endHierarchyPhase(game));
+                } else {
+                    DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.VALIDATE, DiffTypeObjectEnum.STATUS, country.getId(),
+                            DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ID_COUNTRY, country.getId()));
+                    diffs.add(diff);
+                }
+            }
+        }
+
         return createDiffs(diffs, gameDiffs, request);
     }
 

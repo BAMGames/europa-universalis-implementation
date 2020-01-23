@@ -57,6 +57,21 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
+     * Exception thrown when an action has already been done.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: Name of the action.</li>
+     * <li>2: Country or side that has already done this action.</li>
+     * </ul>
+     * </p>
+     */
+    String ACTION_ALREADY_DONE = "exception.eu.action_already_done";
+
+    /**
+     * <p>
      * Exception thrown when an action is impossible because it involved a besieged stack.
      * </p>
      * <p>
@@ -733,6 +748,22 @@ public interface IConstantsServiceException {
      */
     String STACK_CONTROL_LEADER_ISSUE = "exception.eu.board.stack_control_leader_issue";
 
+    /**
+     * <p>
+     * Exception thrown when trying to move a leader that was not wounded at new military round.
+     * </p>
+     * <p>
+     * Parameters:
+     * <ul>
+     * <li>0: Action being performed (or object being updated).</li>
+     * <li>1: id of the stack.</li>
+     * <li>2: leader trying to move.</li>
+     * <li>3: province where he currently is.</li>
+     * </ul>
+     * </p>
+     */
+    String LEADER_WAS_NOT_WOUNDED = "exception.eu.board.leader_was_not_wounded";
+
     /**********************************************************************/
     /**                BATTLE SERVICE EXCEPTION                           */
     /**********************************************************************/
@@ -878,7 +909,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_CANT_WITHDRAW = "exception.eu.board.battle_cant_withdraw";
+    String BATTLE_CANT_WITHDRAW = "exception.eu.military.battle_cant_withdraw";
 
     /**
      * <p>
@@ -891,22 +922,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW = "exception.eu.board.battle_only_non_phasing_can_withdraw";
-
-    /**
-     * <p>
-     * Exception thrown when an action has already been done.
-     * </p>
-     * <p>
-     * Parameters:
-     * <ul>
-     * <li>0: Action being performed (or object being updated).</li>
-     * <li>1: Name of the action.</li>
-     * <li>2: Country or side that has already done this action.</li>
-     * </ul>
-     * </p>
-     */
-    String ACTION_ALREADY_DONE = "exception.eu.board.action_already_done";
+    String BATTLE_ONLY_NON_PHASING_CAN_WITHDRAW = "exception.eu.military.battle_only_non_phasing_can_withdraw";
 
     /**
      * <p>
@@ -921,7 +937,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_LOSSES_MISMATCH = "exception.eu.board.battle_losses_mismatch";
+    String BATTLE_LOSSES_MISMATCH = "exception.eu.military.battle_losses_mismatch";
 
     /**
      * <p>
@@ -934,7 +950,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_LOSSES_NO_THIRD = "exception.eu.board.battle_losses_no_third";
+    String BATTLE_LOSSES_NO_THIRD = "exception.eu.military.battle_losses_no_third";
 
     /**
      * <p>
@@ -948,7 +964,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_LOSSES_INVALID_COUNTER = "exception.eu.board.battle_losses_invalid_counter";
+    String BATTLE_LOSSES_INVALID_COUNTER = "exception.eu.military.battle_losses_invalid_counter";
 
     /**
      * <p>
@@ -964,7 +980,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_LOSSES_TOO_BIG = "exception.eu.board.battle_losses_too_big";
+    String BATTLE_LOSSES_TOO_BIG = "exception.eu.military.battle_losses_too_big";
 
     /**
      * <p>
@@ -977,7 +993,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_LOSSES_TOO_MANY_THIRD = "exception.eu.board.battle_losses_too_many_third";
+    String BATTLE_LOSSES_TOO_MANY_THIRD = "exception.eu.military.battle_losses_too_many_third";
 
     /**
      * <p>
@@ -991,7 +1007,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_RETREAT_INVALID_COUNTER = "exception.eu.board.battle_retreat_invalid_counter";
+    String BATTLE_RETREAT_INVALID_COUNTER = "exception.eu.military.battle_retreat_invalid_counter";
 
     /**
      * <p>
@@ -1005,7 +1021,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_CANT_RETREAT = "exception.eu.board.battle_cant_retreat";
+    String BATTLE_CANT_RETREAT = "exception.eu.military.battle_cant_retreat";
 
     /**
      * <p>
@@ -1018,7 +1034,7 @@ public interface IConstantsServiceException {
      * </ul>
      * </p>
      */
-    String BATTLE_RETREAT_NEEDED = "exception.eu.board.battle_retreat_needed";
+    String BATTLE_RETREAT_NEEDED = "exception.eu.military.battle_retreat_needed";
 
     /**********************************************************************/
     /**                SIEGE SERVICE EXCEPTION                            */

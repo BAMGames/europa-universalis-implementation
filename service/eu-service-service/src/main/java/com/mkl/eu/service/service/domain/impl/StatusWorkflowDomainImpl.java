@@ -78,6 +78,12 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         return initMilitaryPhase(game);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<DiffEntity> endHierarchyPhase(GameEntity game) {
+        return null;
+    }
+
     /**
      * Initialize the military phase.
      *

@@ -56,9 +56,4 @@ public enum GameStatusEnum {
     public boolean isSimultaneous() {
         return simultaneous;
     }
-
-    /** @return the opposite of simultaneous. */
-    public boolean isNotSimultaneous() {
-        return !simultaneous;
-    }
 }
