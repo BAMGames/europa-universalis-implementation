@@ -41,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.mkl.eu.service.service.service.AbstractGameServiceTest.*;
 import static org.mockito.Matchers.*;
@@ -83,6 +84,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         game.getOrders().add(new CountryOrderEntity());
         game.getOrders().add(new CountryOrderEntity());
@@ -128,6 +130,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -199,6 +202,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -304,6 +308,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -435,6 +440,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -563,6 +569,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -703,6 +710,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -845,6 +853,7 @@ public class StatusWorkflowDomainTest {
         GameEntity game = new GameEntity();
         game.setId(12L);
         game.setVersion(5L);
+        game.setTurn(5);
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
         PlayableCountryEntity france = new PlayableCountryEntity();
         france.setName("france");
@@ -959,6 +968,7 @@ public class StatusWorkflowDomainTest {
     @Test
     public void testNextRound() {
         GameEntity game = new GameEntity();
+        game.setTurn(5);
         StackEntity roundStack = new StackEntity();
         roundStack.setProvince("B_MR_END");
         CounterEntity roundCounter = new CounterEntity();
@@ -3094,6 +3104,239 @@ public class StatusWorkflowDomainTest {
 
         LeaderMatch country(String country) {
             this.country = country;
+            return this;
+        }
+    }
+
+    @Test
+    public void testInitRound() {
+        InitRoundBuilder.create()
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_MOVE));
+
+        // Leader wounded until W3 but we go in S3, no leader return
+        InitRoundBuilder.create().nextRound("S3")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_MOVE));
+
+        // Leader wounded until W3 and we go in W3, leader returns but since france is not active country, no deploy
+        InitRoundBuilder.create().nextRound("W3")
+                .addInactiveCountry("france")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_MOVE)
+                        .addLeaderHealed(1L));
+
+        // Leader wounded until W3 and we go in W3, leader returns and since france is active country, next phase will be hierarchy
+        InitRoundBuilder.create().nextRound("W3")
+                .addActiveCountry("france")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_HIERARCHY)
+                        .addLeaderHealed(1L)
+                        .addCountryNotReady("france"));
+
+        // France needs to deploy its leader, but not genes which is not active
+        InitRoundBuilder.create().nextRound("W3")
+                .addActiveCountry("france").addActiveCountry("spain")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .addLeader("S3", LeaderBuilder.create().id(2L).code("Doria").country("genes"))
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_HIERARCHY)
+                        .addLeaderHealed(1L).addLeaderHealed(2L)
+                        .addCountryNotReady("france"));
+
+        // France needs to deploy its leader, and spain has to deploy its minor (genes) leader
+        InitRoundBuilder.create().nextRound("W3")
+                .addActiveCountry("france").addActiveCountry("spain")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .addLeader("S3", LeaderBuilder.create().id(2L).code("Doria").country("genes"))
+                .addPatrons("genes", "spain")
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_HIERARCHY)
+                        .addLeaderHealed(1L).addLeaderHealed(2L)
+                        .addCountryNotReady("france").addCountryNotReady("spain"));
+
+        // France needs to deploy its leader, and spain has to deploy its minor (genes) leader
+        InitRoundBuilder.create().nextRound("W3")
+                .addActiveCountry("france").addActiveCountry("spain")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .addLeader("S3", LeaderBuilder.create().id(2L).code("Doria").country("genes"))
+                .addPatrons("genes", "spain", "france")
+                .whenInitRound(statusWorkflowDomain, this)
+                .thenExpect(InitRoundResultBuilder.create().status(GameStatusEnum.MILITARY_HIERARCHY)
+                        .addLeaderHealed(1L).addLeaderHealed(2L)
+                        .addCountryNotReady("france").addCountryNotReady("spain"));
+    }
+
+    static class InitRoundBuilder {
+        String nextRound;
+        List<PlayableCountryEntity> countries = new ArrayList<>();
+        Map<String, List<LeaderBuilder>> leaders = new HashMap<>();
+        Map<String, List<String>> patrons = new HashMap<>();
+        List<DiffEntity> diffs;
+        List<String> countriesNotReady;
+
+        static InitRoundBuilder create() {
+            return new InitRoundBuilder();
+        }
+
+        InitRoundBuilder nextRound(String nextRound) {
+            if (!nextRound.startsWith("B_MR_")) {
+                nextRound = "B_MR_" + nextRound;
+            }
+            this.nextRound = nextRound;
+            return this;
+        }
+
+        InitRoundBuilder addActiveCountry(String name) {
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            country.setName(name);
+            country.setUsername(name);
+            this.countries.add(country);
+            return this;
+        }
+
+        InitRoundBuilder addInactiveCountry(String name) {
+            PlayableCountryEntity country = new PlayableCountryEntity();
+            country.setName(name);
+            this.countries.add(country);
+            return this;
+        }
+
+        InitRoundBuilder addPatrons(String country, String... patrons) {
+            this.patrons.put(country, Arrays.asList(patrons));
+            return this;
+        }
+
+        InitRoundBuilder addLeader(String province, LeaderBuilder leader) {
+            if (!this.leaders.containsKey(province)) {
+                this.leaders.put(province, new ArrayList<>());
+            }
+            this.leaders.get(province).add(leader);
+            return this;
+        }
+
+        InitRoundBuilder whenInitRound(StatusWorkflowDomainImpl statusWorkflowDomain, StatusWorkflowDomainTest testClass) {
+            AbstractBack.TABLES = new Tables();
+            GameEntity game = new GameEntity();
+            game.setId(2L);
+            game.setTurn(5);
+            game.getCountries().addAll(countries);
+            for (String province : leaders.keySet()) {
+                String realProvince = province.startsWith("B_MR_") ? province : "B_MR_" + province;
+                StackEntity stack = new StackEntity();
+                stack.setGame(game);
+                stack.setProvince(realProvince);
+                game.getStacks().add(stack);
+                for (LeaderBuilder leader : leaders.get(province)) {
+                    stack.getCounters().add(createLeader(leader, AbstractBack.TABLES, stack));
+                }
+            }
+            leaders.values().stream()
+                    .flatMap(Collection::stream)
+                    .map(leader -> leader.country)
+                    .filter(country -> !patrons.containsKey(country))
+                    .forEach(country -> patrons.put(country, Collections.singletonList(country)));
+            for (String country : patrons.keySet()) {
+                when(testClass.counterDao.getPatrons(country, game.getId())).thenReturn(patrons.get(country));
+            }
+            when(testClass.counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenAnswer(moveSpecialCounterAnswer());
+            when(testClass.counterDomain.moveToSpecialBox(any(), any(), any())).thenAnswer(moveToSpecialBoxAnswer());
+
+            diffs = statusWorkflowDomain.initNewRound(nextRound, game);
+            countriesNotReady = game.getCountries().stream()
+                    .filter(country -> !country.isReady())
+                    .map(PlayableCountryEntity::getName)
+                    .collect(Collectors.toList());
+
+            return this;
+        }
+
+        InitRoundBuilder thenExpect(InitRoundResultBuilder result) {
+            int nbDiffs = 2;
+            DiffEntity diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull("The modify game for status change was not sent.", diff);
+            Assert.assertEquals("The new status in the modify game diff is wrong.", result.status.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+            DiffEntity difModifyTurnOrder = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.TURN_ORDER)
+                    .findAny()
+                    .orElse(null);
+            DiffEntity diffModifyStacks = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK)
+                    .findAny()
+                    .orElse(null);
+            if (result.status == GameStatusEnum.MILITARY_HIERARCHY) {
+                Assert.assertEquals("The active attribute in the modify game diff was not sent.", "false", getAttribute(diff, DiffAttributeTypeEnum.ACTIVE));
+                Assert.assertNull("The modify turn order was sent but was not supposed to.", difModifyTurnOrder);
+                Assert.assertNull("The modify stacks was sent but was not supposed to.", diffModifyStacks);
+            } else {
+                Assert.assertNull("The active attribute in the modify game diff was sent but should not had.", getAttributeFull(diff, DiffAttributeTypeEnum.ACTIVE));
+                Assert.assertNotNull("The modify turn order was not sent but was supposed to.", difModifyTurnOrder);
+                Assert.assertEquals("The active attribute of the modify turn order diff is wrong", "0", getAttribute(difModifyTurnOrder, DiffAttributeTypeEnum.ACTIVE));
+                Assert.assertNotNull("The modify stacks was not sent but was supposed to.", diffModifyStacks);
+                Assert.assertEquals("The move phase attribute of the modify stacks diff is wrong", MovePhaseEnum.NOT_MOVED.name(), getAttribute(diffModifyStacks, DiffAttributeTypeEnum.MOVE_PHASE));
+                nbDiffs += 2;
+            }
+
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                            d.getIdObject() == null)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull("The move round counter diff was not sent.", diff);
+            Assert.assertEquals("The next round province attribute is wrong.", nextRound, getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+
+            for (Long leader : result.leaderHealed) {
+                diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                                Objects.equals(d.getIdObject(), leader))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull("The move leader diff was not sent.", diff);
+                Assert.assertEquals("The province attribute of the move leader diff is wrong.", GameUtil.getTurnBox(5), getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+                nbDiffs++;
+            }
+
+            if (result.status == GameStatusEnum.MILITARY_HIERARCHY) {
+                for (String country : result.countriesNotReady) {
+                    Assert.assertTrue("Country " + country + " should have some leader to deploy but is already ready.", countriesNotReady.contains(country));
+                }
+
+                Assert.assertEquals("Some countries were not expected to have some leader to deploy.", result.countriesNotReady.size(), countriesNotReady.size());
+            }
+
+            Assert.assertEquals("The number of diffs received is wrong.", nbDiffs, diffs.size());
+
+            return this;
+        }
+    }
+
+    static class InitRoundResultBuilder {
+        GameStatusEnum status;
+        List<Long> leaderHealed = new ArrayList<>();
+        List<String> countriesNotReady = new ArrayList<>();
+
+        static InitRoundResultBuilder create() {
+            return new InitRoundResultBuilder();
+        }
+
+        InitRoundResultBuilder status(GameStatusEnum status) {
+            this.status = status;
+            return this;
+        }
+
+        InitRoundResultBuilder addLeaderHealed(Long leader) {
+            this.leaderHealed.add(leader);
+            return this;
+        }
+
+        InitRoundResultBuilder addCountryNotReady(String country) {
+            this.countriesNotReady.add(country);
             return this;
         }
     }

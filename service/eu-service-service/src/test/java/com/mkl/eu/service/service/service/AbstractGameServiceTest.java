@@ -408,21 +408,23 @@ public abstract class AbstractGameServiceTest {
     }
 
     public static Leader createLeaderTable(LeaderBuilder leaderBuilder, Tables tables) {
-        Matcher m = Pattern.compile("([A-Z]) ?(\\d)(\\d)(\\d) ?\\-?(\\d)?").matcher(leaderBuilder.stats);
         Leader leader = new Leader();
         leader.setCode(leaderBuilder.code);
         leader.setCountry(leaderBuilder.country);
         leader.setType(leaderBuilder.type);
         leader.setBegin(leaderBuilder.begin);
         leader.setAnonymous(leaderBuilder.anonymous);
-        if (m.matches()) {
-            leader.setRank(m.group(1));
-            leader.setManoeuvre(Integer.parseInt(m.group(2)));
-            leader.setFire(Integer.parseInt(m.group(3)));
-            leader.setShock(Integer.parseInt(m.group(4)));
-            String siege = m.group(5);
-            if (StringUtils.isNotEmpty(siege)) {
-                leader.setSiege(Integer.parseInt(siege));
+        if (leaderBuilder.stats != null) {
+            Matcher m = Pattern.compile("([A-Z]) ?(\\d)(\\d)(\\d) ?\\-?(\\d)?").matcher(leaderBuilder.stats);
+            if (m.matches()) {
+                leader.setRank(m.group(1));
+                leader.setManoeuvre(Integer.parseInt(m.group(2)));
+                leader.setFire(Integer.parseInt(m.group(3)));
+                leader.setShock(Integer.parseInt(m.group(4)));
+                String siege = m.group(5);
+                if (StringUtils.isNotEmpty(siege)) {
+                    leader.setSiege(Integer.parseInt(siege));
+                }
             }
         }
         tables.getLeaders().add(leader);

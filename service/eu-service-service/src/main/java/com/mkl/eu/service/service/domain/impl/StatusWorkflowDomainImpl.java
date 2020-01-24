@@ -81,7 +81,16 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     /** {@inheritDoc} */
     @Override
     public List<DiffEntity> endHierarchyPhase(GameEntity game) {
-        return null;
+        List<DiffEntity> diffs = new ArrayList<>();
+        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+
+        // set the order of position 0 active
+        diffs.addAll(changeActivePlayers(0, game));
+
+        return diffs;
     }
 
     /**
@@ -526,19 +535,42 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
      * @param game      the game.
      * @return the diffs created.
      */
-    private List<DiffEntity> initNewRound(String nextRound, GameEntity game) {
+    protected List<DiffEntity> initNewRound(String nextRound, GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.GOOD_WEATHER, null, nextRound, game));
 
-        // TODO TG-58 when hierarchy implemented, it will be MILITARY_HIERARCHY phase
-        game.setStatus(GameStatusEnum.MILITARY_MOVE);
+        String turnBox = GameUtil.getTurnBox(game.getTurn());
+        List<CounterEntity> healedLeaders = game.getStacks().stream()
+                .filter(stack -> GameUtil.compareRoundBoxes(stack.getProvince(), nextRound) <= 0)
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> CounterUtil.isLeader(counter.getType()))
+                .collect(Collectors.toList());
 
-        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
-                // TODO TG-58 when hierarchy implemented, it will be MILITARY_HIERARCHY phase
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+        diffs.addAll(healedLeaders.stream()
+                .map(leader -> counterDomain.moveToSpecialBox(leader, turnBox, game))
+                .collect(Collectors.toList()));
+        List<String> countries = healedLeaders.stream()
+                .flatMap(leader -> counterDao.getPatrons(leader.getCountry(), game.getId()).stream())
+                .distinct()
+                .collect(Collectors.toList());
 
-        // set the order of position 0 active
-        diffs.addAll(changeActivePlayers(0, game));
+        game.getCountries().stream()
+                .forEach(country -> country.setReady(!countries.contains(country.getName())));
+
+        if (game.getCountries().stream()
+                .anyMatch(country -> StringUtils.isNotEmpty(country.getUsername()) && !country.isReady())) {
+            game.setStatus(GameStatusEnum.MILITARY_HIERARCHY);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_HIERARCHY),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.ACTIVE, false)));
+        } else {
+            game.setStatus(GameStatusEnum.MILITARY_MOVE);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.MILITARY_MOVE)));
+            // set the order of position 0 active
+            diffs.addAll(changeActivePlayers(0, game));
+        }
+
         return diffs;
     }
 
