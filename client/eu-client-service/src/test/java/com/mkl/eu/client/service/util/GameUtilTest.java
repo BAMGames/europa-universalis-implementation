@@ -199,6 +199,63 @@ public class GameUtilTest {
         Assert.assertEquals(GameUtil.ROUND_END, GameUtil.getRoundBoxAdd("B_MR_S4", 4));
         Assert.assertFalse(GameUtil.isLastRound(GameUtil.getRoundBoxAdd("B_MR_S4", 3)));
         Assert.assertTrue(GameUtil.isLastRound(GameUtil.getRoundBoxAdd("B_MR_S4", 4)));
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_W0") == 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_S1") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_W1") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_S2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_W2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_S3") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W0", "B_MR_END") < 0);
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_W0") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_S1") == 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_W1") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_S2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_W2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_S3") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S1", "B_MR_END") < 0);
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_W0") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_S1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_W1") == 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_S2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_W2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_S3") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W1", "B_MR_END") < 0);
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_W0") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_S1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_W1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_S2") == 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_W2") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_S3") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S2", "B_MR_END") < 0);
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_W0") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_S1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_W1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_S2") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_W2") == 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_S3") < 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_W2", "B_MR_END") < 0);
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_W0") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_S1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_W1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_S2") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_W2") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_S3") == 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_S3", "B_MR_END") < 0);
+
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_W0") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_S1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_W1") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_S2") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_W2") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_S3") > 0);
+        Assert.assertTrue(GameUtil.compareRoundBoxes("B_MR_END", "B_MR_END") == 0);
+
     }
 
     @Test

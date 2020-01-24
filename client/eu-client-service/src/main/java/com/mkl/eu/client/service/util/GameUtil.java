@@ -253,6 +253,28 @@ public final class GameUtil {
     }
 
     /**
+     * Comparator for round box provinces.
+     *
+     * @param roundBox1 the first round box.
+     * @param roundBox2 the second round box.
+     * @return a positive value if first province is temporally after second province, negative if it is before, and 0 if it is the same province.
+     */
+    public static int compareRoundBoxes(String roundBox1, String roundBox2) {
+        int round1 = getRoundBox(roundBox1);
+        int round2 = getRoundBox(roundBox2);
+        int diff = round1 - round2;
+        if (round1 == -1 || round2 == -1) {
+            return -diff;
+        }
+        if (diff == 0) {
+            boolean isWinter1 = isWinterRoundBox(roundBox1);
+            boolean isWinter2 = isWinterRoundBox(roundBox2);
+            diff = (isWinter1 == isWinter2 ? 0 : isWinter1 ? 1 : -1);
+        }
+        return diff;
+    }
+
+    /**
      * @param provinceBox the initial round box.
      * @param add         the number of round to add.
      * @return the round box that is the result of the provinceBox given and a number of round to add.
