@@ -549,8 +549,11 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         diffs.addAll(healedLeaders.stream()
                 .map(leader -> counterDomain.moveToSpecialBox(leader, turnBox, game))
                 .collect(Collectors.toList()));
+        diffs.addAll(deployLeaders(game));
 
-        List<String> countries = healedLeaders.stream()
+        List<String> countries = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), turnBox))
+                .flatMap(stack -> stack.getCounters().stream())
                 .flatMap(leader -> counterDao.getPatrons(leader.getCountry(), game.getId()).stream())
                 .distinct()
                 .collect(Collectors.toList());

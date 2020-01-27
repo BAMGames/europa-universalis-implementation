@@ -33,6 +33,7 @@ import com.mkl.eu.service.service.util.IOEUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -78,6 +79,11 @@ public class StatusWorkflowDomainTest {
 
     /** Variable used to store something coming from a mock. */
     private EconomicalSheetEntity sheetEntity;
+
+    @Before
+    public void init() {
+        AbstractBack.TABLES = new Tables();
+    }
 
     @Test
     public void testComputeEndMinorLogisticsNoCountries() throws Exception {
@@ -3245,6 +3251,10 @@ public class StatusWorkflowDomainTest {
             game.setId(2L);
             game.setTurn(5);
             game.getCountries().addAll(countries);
+            StackEntity stackTurn = new StackEntity();
+            stackTurn.setGame(game);
+            stackTurn.setProvince(GameUtil.getTurnBox(game.getTurn()));
+            game.getStacks().add(stackTurn);
             for (String province : leaders.keySet()) {
                 String realProvince = province.startsWith("B_MR_") ? province : "B_MR_" + province;
                 StackEntity stack = new StackEntity();
@@ -3264,7 +3274,13 @@ public class StatusWorkflowDomainTest {
                 when(testClass.counterDao.getPatrons(country, game.getId())).thenReturn(patrons.get(country));
             }
             when(testClass.counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenAnswer(moveSpecialCounterAnswer());
-            when(testClass.counterDomain.moveToSpecialBox(any(), any(), any())).thenAnswer(moveToSpecialBoxAnswer());
+            when(testClass.counterDomain.moveToSpecialBox(any(), any(), any())).thenAnswer(invocation -> {
+                CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+                if (counter != null) {
+                    stackTurn.getCounters().add(counter);
+                }
+                return moveToSpecialBoxAnswer().answer(invocation);
+            });
 
             diffs = statusWorkflowDomain.initNewRound(nextRound, game);
             countriesNotReady = game.getCountries().stream()
