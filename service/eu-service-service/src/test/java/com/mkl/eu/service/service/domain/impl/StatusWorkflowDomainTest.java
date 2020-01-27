@@ -2954,6 +2954,27 @@ public class StatusWorkflowDomainTest {
                         .removeLeader(5L)
                         .addLeader(LeaderMatch.create().matchCodes("Legion-G1", "Legion-G2", "Legion-G3", "Legion-G4").country("england"))
                         .addLeader(LeaderMatch.create().matchCodes("Legion-G3", "Legion-G4").country("spain")));
+
+        // France has 1 general that will arrive this turn, a pool of 1 general and a limit of 1 general => the named general is picked
+        // Spain has 1 general that will arrive next turn, a pool of 1 general and a limit of 1 general => the anonymous general is picked
+        // England has 1 general that will arrive this turn, but already on map, a pool of 1 general and a limit of 1 general => no leader is picked
+        DeployLeadersBuilder.create()
+                .addActiveCountry("france").addActiveCountry("spain").addActiveCountry("england")
+                .addExistingLeader(LeaderBuilder.create().id(1L).code("Malborough").country("england").type(LeaderTypeEnum.GENERAL).stats("A 666"))
+                .addTableLeader(LeaderBuilder.create().code("Bayard").country("france").type(LeaderTypeEnum.GENERAL).stats("A 116").begin(5))
+                .addTableLeader(LeaderBuilder.create().code("Infante").country("spain").type(LeaderTypeEnum.GENERAL).stats("B 435").begin(6))
+                .addTableLeader(LeaderBuilder.create().code("Malborough").country("england").type(LeaderTypeEnum.GENERAL).stats("A 666").begin(5))
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("france").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("spain").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("england").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addLimit("france", LimitTypeEnum.LEADER_GENERAL, 1)
+                .addLimit("spain", LimitTypeEnum.LEADER_GENERAL, 1)
+                .addLimit("england", LimitTypeEnum.LEADER_GENERAL, 1)
+                .whenDeployLeaders(statusWorkflowDomain, this)
+                .thenExpect(DeployLeadersResultBuilder.create()
+                        .addLeader(LeaderMatch.create().matchCodes("Bayard").country("france"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G1").country("spain")));
+
     }
 
     static class DeployLeadersBuilder {

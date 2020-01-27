@@ -549,6 +549,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         diffs.addAll(healedLeaders.stream()
                 .map(leader -> counterDomain.moveToSpecialBox(leader, turnBox, game))
                 .collect(Collectors.toList()));
+
         List<String> countries = healedLeaders.stream()
                 .flatMap(leader -> counterDao.getPatrons(leader.getCountry(), game.getId()).stream())
                 .distinct()
@@ -1115,9 +1116,12 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
 
         Function<Leader, DiffEntity> createLeader = leader -> counterDomain.createLeader(CounterUtil.getLeaderType(leader), leader.getCode(), leader.getCountry(), null,
                 GameUtil.getTurnBox(game.getTurn()), game);
+        Predicate<Leader> leaderOnMap = leader -> game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .anyMatch(counter -> StringUtils.equals(counter.getCode(), leader.getCode()) && StringUtils.equals(counter.getCountry(), leader.getCountry()));
 
         diffs.addAll(getTables().getLeaders().stream()
-                .filter(leader -> Objects.equals(leader.getBegin(), game.getTurn()))
+                .filter(leader -> Objects.equals(leader.getBegin(), game.getTurn()) && !leaderOnMap.test(leader))
                 .map(createLeader)
                 .collect(Collectors.toList()));
 
