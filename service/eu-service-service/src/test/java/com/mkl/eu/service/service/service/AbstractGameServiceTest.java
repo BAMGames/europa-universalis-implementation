@@ -413,6 +413,7 @@ public abstract class AbstractGameServiceTest {
         leader.setCountry(leaderBuilder.country);
         leader.setType(leaderBuilder.type);
         leader.setBegin(leaderBuilder.begin);
+        leader.setEnd(leaderBuilder.end);
         leader.setAnonymous(leaderBuilder.anonymous);
         if (leaderBuilder.stats != null) {
             Matcher m = Pattern.compile("([A-Z]) ?(\\d)(\\d)(\\d) ?\\-?(\\d)?").matcher(leaderBuilder.stats);
@@ -525,6 +526,7 @@ public abstract class AbstractGameServiceTest {
         public String country;
         public LeaderTypeEnum type;
         public Integer begin;
+        public Integer end;
         public String stats;
         public boolean anonymous;
 
@@ -554,6 +556,11 @@ public abstract class AbstractGameServiceTest {
 
         public LeaderBuilder begin(Integer begin) {
             this.begin = begin;
+            return this;
+        }
+
+        public LeaderBuilder end(Integer end) {
+            this.end = end;
             return this;
         }
 

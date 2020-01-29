@@ -888,7 +888,6 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
      */
     private int getStabilityModifier(PlayableCountryEntity country, GameEntity game) {
         int modifier = oeUtil.getAdministrativeValue(country);
-        // TODO TG-18 wars
         List<String> enemies = oeUtil.getEnemies(country, game);
         // TODO TG-18 limited intervention
         boolean warWithMajor = game.getCountries().stream()
@@ -898,7 +897,6 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         } else if (!enemies.isEmpty()) {
             modifier -= 2;
         }
-        // TODO -5 if enemy army in owned national province
         if (!enemies.isEmpty()) {
             List<String> provinces = counterDao.getNationalTerritoriesUnderAttack(country.getName(), enemies, game.getId());
             if (!provinces.isEmpty()) {
@@ -938,7 +936,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
                 sheet.setRtPeace(CommonUtil.toInt(sheet.getRtAftExch()) - CommonUtil.toInt(sheet.getStab()));
 
                 int americanGold = counterDao.getGoldExploitedAmerica(country.getName(), game.getId());
-                // TODO TG-131 Turkey before reforms has big inglation
+                // TODO TG-131 Turkey before reforms has big inflation
                 int inflation = GameUtil.getInflation(inflationBox, americanGold > 0);
                 int computedInflation = (int) Math.ceil(((double) inflation * Math.abs(sheet.getRtPeace())) / 100);
                 int minInflation = oeUtil.getMinimalInflation(inflation, country.getName(), getTables(), game);
@@ -974,6 +972,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             }
         }
         game.setTurn(game.getTurn() + 1);
+        diffs.addAll(manageLeadersEndTurn(game));
         diffs.add(counterDomain.moveSpecialCounter(CounterFaceTypeEnum.TURN, null, GameUtil.getTurnBox(game.getTurn()), game));
         // TODO TG-13 events
         game.setStatus(GameStatusEnum.ADMINISTRATIVE_ACTIONS_CHOICE);
@@ -1108,6 +1107,51 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
 
         return DiffUtil.createDiff(game, DiffTypeEnum.INVALIDATE, DiffTypeObjectEnum.ECO_SHEET,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, game.getTurn()));
+    }
+
+    /**
+     * Remove leaders at the end of the turn :
+     * - all anonymous leaders
+     * - named leaders who die naturally
+     * <p>
+     * Creates necessary leaders : @see IStatusWorkflowDomain#deployLeaders
+     *
+     * @param game the game.
+     * @return the diffs involving the removal of leaders.
+     */
+    protected List<DiffEntity> manageLeadersEndTurn(GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        List<String> playingCountries = game.getCountries().stream()
+                .filter(country -> StringUtils.isNotEmpty(country.getUsername()))
+                .map(PlayableCountryEntity::getName)
+                .collect(Collectors.toList());
+        Predicate<CounterEntity> leaderLastTurn = counter -> {
+            Leader leader = getTables().getLeader(counter.getCode(), counter.getCountry());
+            return leader != null && ((leader.getEnd() != null && leader.getEnd() < game.getTurn()) || (leader.isAnonymous() && playingCountries.contains(leader.getCountry())));
+        };
+
+        List<CounterEntity> leadersToRemove = game.getStacks().stream()
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(leaderLastTurn)
+                .collect(Collectors.toList());
+        diffs.addAll(leadersToRemove.stream()
+                .map(counterDomain::removeCounter)
+                .collect(Collectors.toList()));
+
+        String turnBox = GameUtil.getTurnBox(game.getTurn());
+        List<CounterEntity> woundedLeaders = game.getStacks().stream()
+                .filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .filter(counter -> CounterUtil.isLeader(counter.getType()))
+                .collect(Collectors.toList());
+
+        diffs.addAll(woundedLeaders.stream()
+                .map(leader -> counterDomain.moveToSpecialBox(leader, turnBox, game))
+                .collect(Collectors.toList()));
+
+        diffs.addAll(deployLeaders(game));
+
+        return diffs;
     }
 
     /**

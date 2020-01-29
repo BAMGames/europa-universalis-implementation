@@ -92,9 +92,9 @@ public interface IStatusWorkflowDomain {
     DiffEntity computeEconomicalSheets(GameEntity game);
 
     /**
-     * Put the new leaders of the turn of playing countries on the turn box.
+     * Put the new leaders of the turn on the turn box.
      * Then, for each playing country, check if leader limit is not reach and then
-     * randomly put anonymous leaders on the turn box.
+     * randomly put anonymous leaders on the turn box (or remove anonymous if they are too many).
      *
      * @param game the game.
      * @return the diffs of the leaders change.

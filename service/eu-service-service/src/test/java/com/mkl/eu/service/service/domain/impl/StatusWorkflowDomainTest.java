@@ -3197,6 +3197,54 @@ public class StatusWorkflowDomainTest {
                         .addCountryNotReady("france").addCountryNotReady("spain"));
     }
 
+    @Test
+    public void manageLeaders() {
+        InitRoundBuilder.create()
+                .whenManageLeaders(statusWorkflowDomain, this)
+                .thenExpect(ManageLeaderResultBuilder.create());
+
+        // A named leader that is still is the round track will go on the turn track
+        InitRoundBuilder.create()
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france").end(5))
+                .whenManageLeaders(statusWorkflowDomain, this)
+                .thenExpect(ManageLeaderResultBuilder.create()
+                        .returnLeader(1L));
+
+        // But a named leader on the round track that die at this turn will just be removed
+        InitRoundBuilder.create()
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france").end(4))
+                .whenManageLeaders(statusWorkflowDomain, this)
+                .thenExpect(ManageLeaderResultBuilder.create()
+                        .removeLeader(1L));
+
+        // France has a named leader and an anonymous leader on the map, and a named leader in the round track => anonymous removed, round one moved
+        InitRoundBuilder.create()
+                .addActiveCountry("france")
+                .addLeader("W3", LeaderBuilder.create().id(1L).code("Napo").country("france"))
+                .addLeader("idf", LeaderBuilder.create().id(2L).code("Nabo").country("france"))
+                .addLeader("idf", LeaderBuilder.create().id(3L).code("Legion-G1").country("france").anonymous())
+                .whenManageLeaders(statusWorkflowDomain, this)
+                .thenExpect(ManageLeaderResultBuilder.create()
+                        .removeLeader(3L)
+                        .returnLeader(1L));
+
+        // France has a named leader on the map that will die, and an anonymous leader on the round track that will be removed
+        // Genes has an anonymous leader on the map and on the round track that will be moved, and a leader on the round track that will die
+        // England has an anonymous leader on the map that will be removed
+        InitRoundBuilder.create()
+                .addActiveCountry("france").addActiveCountry("england")
+                .addLeader("idf", LeaderBuilder.create().id(2L).code("Nabo").country("france").end(4))
+                .addLeader("W3", LeaderBuilder.create().id(3L).code("Legion-G1").country("france").anonymous())
+                .addLeader("genoa", LeaderBuilder.create().id(4L).code("Legion-G1").country("genes").anonymous())
+                .addLeader("S3", LeaderBuilder.create().id(5L).code("Legion-G2").country("genes").anonymous())
+                .addLeader("End", LeaderBuilder.create().id(6L).code("Doria").country("genes").end(4))
+                .addLeader("london", LeaderBuilder.create().id(7L).code("Legion-G1").country("england").anonymous())
+                .whenManageLeaders(statusWorkflowDomain, this)
+                .thenExpect(ManageLeaderResultBuilder.create()
+                        .removeLeader(3L).removeLeader(3L).removeLeader(6L).removeLeader(7L)
+                        .returnLeader(5L));
+    }
+
     static class InitRoundBuilder {
         String nextRound;
         List<PlayableCountryEntity> countries = new ArrayList<>();
@@ -3291,6 +3339,42 @@ public class StatusWorkflowDomainTest {
             return this;
         }
 
+        InitRoundBuilder whenManageLeaders(StatusWorkflowDomainImpl statusWorkflowDomain, StatusWorkflowDomainTest testClass) {
+            AbstractBack.TABLES = new Tables();
+            GameEntity game = new GameEntity();
+            game.setId(2L);
+            game.setTurn(5);
+            game.getCountries().addAll(countries);
+            StackEntity stackTurn = new StackEntity();
+            stackTurn.setGame(game);
+            stackTurn.setProvince(GameUtil.getTurnBox(game.getTurn()));
+            game.getStacks().add(stackTurn);
+            for (String province : leaders.keySet()) {
+                boolean provinceOk = province.startsWith("B_MR_") || (!province.startsWith("W") && !province.startsWith("S") && !province.startsWith("End"));
+                String realProvince = provinceOk ? province : "B_MR_" + province;
+                StackEntity stack = new StackEntity();
+                stack.setGame(game);
+                stack.setProvince(realProvince);
+                game.getStacks().add(stack);
+                for (LeaderBuilder leader : leaders.get(province)) {
+                    stack.getCounters().add(createLeader(leader, AbstractBack.TABLES, stack));
+                }
+            }
+            when(testClass.counterDomain.moveSpecialCounter(any(), any(), any(), any())).thenAnswer(moveSpecialCounterAnswer());
+            when(testClass.counterDomain.moveToSpecialBox(any(), any(), any())).thenAnswer(invocation -> {
+                CounterEntity counter = invocation.getArgumentAt(0, CounterEntity.class);
+                if (counter != null) {
+                    stackTurn.getCounters().add(counter);
+                }
+                return moveToSpecialBoxAnswer().answer(invocation);
+            });
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
+
+            diffs = statusWorkflowDomain.manageLeadersEndTurn(game);
+
+            return this;
+        }
+
         InitRoundBuilder thenExpect(InitRoundResultBuilder result) {
             int nbDiffs = 2;
             DiffEntity diff = diffs.stream()
@@ -3351,6 +3435,48 @@ public class StatusWorkflowDomainTest {
 
             return this;
         }
+
+        InitRoundBuilder thenExpect(ManageLeaderResultBuilder result) {
+            int nbDiffs = 0;
+
+            for (Long leader : result.removedLeaders) {
+                DiffEntity diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                                Objects.equals(d.getIdObject(), leader))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull("The remove leader diff was not sent.", diff);
+                nbDiffs++;
+            }
+
+            for (Long leader : result.returningLeaders) {
+                DiffEntity diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                                Objects.equals(d.getIdObject(), leader))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull("The move leader diff was not sent.", diff);
+                Assert.assertEquals("The province attribute of the move leader diff is wrong.", GameUtil.getTurnBox(5), getAttribute(diff, DiffAttributeTypeEnum.PROVINCE_TO));
+                nbDiffs++;
+            }
+
+            for (LeaderMatch leaderMatch : result.addedLeaders) {
+                DiffEntity diff = diffs.stream()
+                        .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER &&
+                                StringUtils.equals(leaderMatch.country, getAttribute(d, DiffAttributeTypeEnum.COUNTRY)) &&
+                                leaderMatch.codes.contains(getAttribute(d, DiffAttributeTypeEnum.CODE)))
+                        .findAny()
+                        .orElse(null);
+                Assert.assertNotNull("The add counter for codes " + leaderMatch.codes + " and country " + leaderMatch.country + " was not sent.", diff);
+                Assert.assertEquals("The add counter for codes " + leaderMatch.codes + " and country " + leaderMatch.country + " has the wrong province attribute.",
+                        GameUtil.getTurnBox(5), getAttribute(diff, DiffAttributeTypeEnum.PROVINCE));
+                nbDiffs++;
+            }
+
+            Assert.assertEquals("The number of diffs received is wrong.", nbDiffs, diffs.size());
+
+            return this;
+        }
     }
 
     static class InitRoundResultBuilder {
@@ -3374,6 +3500,31 @@ public class StatusWorkflowDomainTest {
 
         InitRoundResultBuilder addCountryNotReady(String country) {
             this.countriesNotReady.add(country);
+            return this;
+        }
+    }
+
+    static class ManageLeaderResultBuilder {
+        List<Long> removedLeaders = new ArrayList<>();
+        List<Long> returningLeaders = new ArrayList<>();
+        List<LeaderMatch> addedLeaders = new ArrayList<>();
+
+        static ManageLeaderResultBuilder create() {
+            return new ManageLeaderResultBuilder();
+        }
+
+        ManageLeaderResultBuilder removeLeader(Long id) {
+            this.removedLeaders.add(id);
+            return this;
+        }
+
+        ManageLeaderResultBuilder returnLeader(Long id) {
+            this.returningLeaders.add(id);
+            return this;
+        }
+
+        ManageLeaderResultBuilder addLeader(LeaderMatch leader) {
+            this.addedLeaders.add(leader);
             return this;
         }
     }
