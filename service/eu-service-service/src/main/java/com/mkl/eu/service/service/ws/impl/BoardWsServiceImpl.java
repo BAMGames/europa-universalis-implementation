@@ -72,4 +72,10 @@ public class BoardWsServiceImpl extends SpringBeanAutowiringSupport implements I
     public DiffResponse removeCounter(Request<RemoveCounterRequest> request) throws FunctionalException, TechnicalException {
         return boardService.removeCounter(request);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse initLeaders(Request<Void> request) throws FunctionalException, TechnicalException {
+        return boardService.initLeaders(request);
+    }
 }

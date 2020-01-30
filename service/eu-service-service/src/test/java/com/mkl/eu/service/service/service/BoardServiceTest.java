@@ -2114,4 +2114,31 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertNull(diff);
         }
     }
+
+    @Test
+    public void testInitLeaders() throws FunctionalException {
+        GameEntity game = createGameUsingMocks();
+        Request<Void> request = new Request<>();
+        request.setAuthent(new AuthentInfo());
+        request.getAuthent().setUsername("toto");
+        request.setGame(new GameInfo());
+        request.getGame().setIdGame(game.getId());
+        request.getGame().setVersionGame(game.getVersion());
+
+        when(statusWorkflowDomain.deployLeaders(game)).thenReturn(Collections.singletonList(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.COUNTER)));
+
+        simulateDiff();
+
+        boardService.initLeaders(request);
+
+        List<DiffEntity> diffs = retrieveDiffsCreated();
+
+        Assert.assertEquals(1, diffs.size());
+
+        DiffEntity diff = diffs.stream()
+                .filter(d -> d.getType() == DiffTypeEnum.ADD && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diff);
+    }
 }

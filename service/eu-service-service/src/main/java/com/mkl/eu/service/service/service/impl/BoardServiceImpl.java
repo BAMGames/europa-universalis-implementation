@@ -968,4 +968,24 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         return createDiffs(diffs, gameDiffs, request);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public DiffResponse initLeaders(Request<Void> request) throws FunctionalException, TechnicalException {
+        failIfNull(new AbstractService.CheckForThrow<>()
+                .setTest(request)
+                .setCodeError(IConstantsCommonException.NULL_PARAMETER)
+                .setMsgFormat(MSG_MISSING_PARAMETER)
+                .setName(PARAMETER_INIT_LEADERS)
+                .setParams(METHOD_INIT_LEADERS));
+
+        // TODO TG-2 Check admin rights
+        GameDiffsInfo gameDiffs = checkGameAndGetDiffsAsWriter(request.getGame(), METHOD_INIT_LEADERS, PARAMETER_INIT_LEADERS);
+
+        GameEntity game = gameDiffs.getGame();
+
+        List<DiffEntity> diffs = statusWorkflowDomain.deployLeaders(game);
+
+        return createDiffs(diffs, gameDiffs, request);
+    }
 }

@@ -42,6 +42,8 @@ public interface INameConstants {
     String PARAMETER_CREATE_COUNTER = "createCounter";
     /** Name of the parameter removeCounter. */
     String PARAMETER_REMOVE_COUNTER = "removeCounter";
+    /** Name of the parameter initLeaders. */
+    String PARAMETER_INIT_LEADERS = "initLeaders";
     /** Name of the parameter createRoom. */
     String PARAMETER_CREATE_ROOM = "createRoom";
     /** Name of the parameter createRoom. */
@@ -183,6 +185,8 @@ public interface INameConstants {
     String METHOD_MOVE_LEADER = "moveLeader";
     /** Name of the method createCounter. */
     String METHOD_CREATE_COUNTER = "createCounter";
+    /** Name of the method initLeaders. */
+    String METHOD_INIT_LEADERS = "initLeaders";
     /** Name of the method validateMilitaryRound. */
     String METHOD_VALIDATE_MIL_ROUND = "validateMilitaryRound";
     /** Name of the method updateGame. */

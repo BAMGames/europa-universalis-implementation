@@ -111,4 +111,15 @@ public interface IBoardService extends INameConstants {
      */
     @WebResult(name = RESPONSE)
     DiffResponse removeCounter(@WebParam(name = PARAMETER_REMOVE_COUNTER) Request<RemoveCounterRequest> request) throws FunctionalException, TechnicalException;
+
+    /**
+     * Initialize the leaders of this turn.
+     * Will add the named leaders that starts at the turn of the game and then, for each playable country, manage the anonymous leaders.
+     *
+     * @param request info about the game.
+     * @return the diffs involved by this service.
+     * @throws FunctionalException functional exception.
+     * @throws TechnicalException  technical exception.
+     */
+    DiffResponse initLeaders(@WebParam(name = PARAMETER_INIT_LEADERS) Request<Void> request) throws FunctionalException, TechnicalException;
 }
