@@ -24,7 +24,6 @@ import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
-import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
@@ -2083,7 +2082,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
         boolean stackChangeController = !StringUtils.equals(controllerBefore, controllerAfter) && !noStackAfter;
         boolean leaderChange = !StringUtils.equals(leaderBefore, leaderAfter) && !noStackAfter;
-        Assert.assertEquals(stackChangeController ? 2 : 1, diffs.size());
+        Assert.assertEquals(stackChangeController || leaderChange ? 2 : 1, diffs.size());
 
         DiffEntity diff = diffs.stream()
                 .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
@@ -2097,18 +2096,17 @@ public class BoardServiceTest extends AbstractGameServiceTest {
                         && Objects.equals(d.getIdObject(), stack.getId()))
                 .findAny()
                 .orElse(null);
-        if (stackChangeController) {
+        if (stackChangeController || leaderChange) {
             Assert.assertNotNull(diff);
-            Assert.assertEquals(controllerAfter, getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
-            DiffAttributesEntity attribute = diff.getAttributes().stream()
-                    .filter(attr -> attr.getType() == DiffAttributeTypeEnum.LEADER)
-                    .findAny()
-                    .orElse(null);
-            if (leaderChange) {
-                Assert.assertNotNull(attribute);
-                Assert.assertEquals(leaderAfter, attribute.getValue());
+            if (stackChangeController) {
+                Assert.assertEquals(controllerAfter, getAttribute(diff, DiffAttributeTypeEnum.COUNTRY));
             } else {
-                Assert.assertNull(attribute);
+                Assert.assertNull(getAttributeFull(diff, DiffAttributeTypeEnum.COUNTRY));
+            }
+            if (leaderChange) {
+                Assert.assertEquals(leaderAfter, getAttribute(diff, DiffAttributeTypeEnum.LEADER));
+            } else {
+                Assert.assertNull(getAttributeFull(diff, DiffAttributeTypeEnum.LEADER));
             }
         } else {
             Assert.assertNull(diff);

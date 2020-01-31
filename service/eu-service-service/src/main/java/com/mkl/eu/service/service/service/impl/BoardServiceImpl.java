@@ -956,11 +956,13 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         diffs.add(counterDomain.removeCounter(counter));
         if (stack.getGame() != null) {
             String newStackController = oeUtil.getController(stack);
-            if (!StringUtils.equals(newStackController, stack.getCountry())) {
-                String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
+            String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(stack.getProvince()));
+            boolean controllerChanged = !StringUtils.equals(newStackController, stack.getCountry());
+            boolean leaderChanged = !StringUtils.equals(newLeader, stack.getLeader());
+            if (controllerChanged || leaderChanged) {
                 diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, stack.getId(),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController),
-                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, !StringUtils.equals(newLeader, stack.getLeader()))));
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTRY, newStackController, controllerChanged),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.LEADER, newLeader, leaderChanged)));
                 stack.setCountry(newStackController);
                 stack.setLeader(newLeader);
             }
