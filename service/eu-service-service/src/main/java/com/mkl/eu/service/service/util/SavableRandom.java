@@ -25,6 +25,10 @@ public class SavableRandom extends Random {
         newSeed ^= (newSeed << 21);
         newSeed ^= (newSeed >>> 35);
         newSeed ^= (newSeed << 4);
+
+        // newSeed must have less than 48 bits
+        newSeed &= ((1L << 48) - 1);
+
         seed.set(newSeed);
 
         return (int) (newSeed >>> (48 - bits));
