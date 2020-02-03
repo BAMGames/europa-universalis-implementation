@@ -1160,8 +1160,13 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     @Override
     public List<DiffEntity> deployLeaders(GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
+        Long idStackTurn = game.getStacks().stream()
+                .filter(stack -> StringUtils.equals(stack.getProvince(), GameUtil.getTurnBox(game.getTurn())))
+                .map(StackEntity::getId)
+                .findAny()
+                .orElse(null);
 
-        Function<Leader, DiffEntity> createLeader = leader -> counterDomain.createLeader(CounterUtil.getLeaderType(leader), leader.getCode(), leader.getCountry(), null,
+        Function<Leader, DiffEntity> createLeader = leader -> counterDomain.createLeader(CounterUtil.getLeaderType(leader), leader.getCode(), leader.getCountry(), idStackTurn,
                 GameUtil.getTurnBox(game.getTurn()), game);
         Predicate<Leader> leaderOnMap = leader -> game.getStacks().stream()
                 .flatMap(stack -> stack.getCounters().stream())
@@ -1176,7 +1181,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
             if (StringUtils.isEmpty(country.getUsername())) {
                 continue;
             }
-            diffs.addAll(deployLeadersForCountry(country.getName(), game));
+            diffs.addAll(deployLeadersForCountry(country.getName(), createLeader, game));
         }
 
         return diffs;
@@ -1185,14 +1190,13 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
     /**
      * Deploy the leaders for a specific country.
      *
-     * @param countryName name of the country.
-     * @param game        the game.
+     * @param countryName  name of the country.
+     * @param createLeader creates the specified leader.
+     * @param game         the game.
      * @return the diffs related to the creation or removal of leaders.
      */
-    private List<DiffEntity> deployLeadersForCountry(String countryName, GameEntity game) {
+    private List<DiffEntity> deployLeadersForCountry(String countryName, Function<Leader, DiffEntity> createLeader, GameEntity game) {
         List<DiffEntity> diffs = new ArrayList<>();
-        Function<Leader, DiffEntity> createLeader = leader -> counterDomain.createLeader(CounterUtil.getLeaderType(leader), leader.getCode(), leader.getCountry(), null,
-                GameUtil.getTurnBox(game.getTurn()), game);
 
         List<Leader> leaders = game.getStacks().stream()
                 .flatMap(stack -> stack.getCounters().stream())

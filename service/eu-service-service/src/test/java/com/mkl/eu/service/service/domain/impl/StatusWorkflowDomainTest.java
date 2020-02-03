@@ -3300,12 +3300,14 @@ public class StatusWorkflowDomainTest {
             game.setTurn(5);
             game.getCountries().addAll(countries);
             StackEntity stackTurn = new StackEntity();
+            stackTurn.setId(666L);
             stackTurn.setGame(game);
             stackTurn.setProvince(GameUtil.getTurnBox(game.getTurn()));
             game.getStacks().add(stackTurn);
             for (String province : leaders.keySet()) {
                 String realProvince = province.startsWith("B_MR_") ? province : "B_MR_" + province;
                 StackEntity stack = new StackEntity();
+                stack.setId(2L);
                 stack.setGame(game);
                 stack.setProvince(realProvince);
                 game.getStacks().add(stack);
@@ -3346,6 +3348,7 @@ public class StatusWorkflowDomainTest {
             game.setTurn(5);
             game.getCountries().addAll(countries);
             StackEntity stackTurn = new StackEntity();
+            stackTurn.setId(666L);
             stackTurn.setGame(game);
             stackTurn.setProvince(GameUtil.getTurnBox(game.getTurn()));
             game.getStacks().add(stackTurn);
@@ -3353,6 +3356,7 @@ public class StatusWorkflowDomainTest {
                 boolean provinceOk = province.startsWith("B_MR_") || (!province.startsWith("W") && !province.startsWith("S") && !province.startsWith("End"));
                 String realProvince = provinceOk ? province : "B_MR_" + province;
                 StackEntity stack = new StackEntity();
+                stack.setId(1L);
                 stack.setGame(game);
                 stack.setProvince(realProvince);
                 game.getStacks().add(stack);
