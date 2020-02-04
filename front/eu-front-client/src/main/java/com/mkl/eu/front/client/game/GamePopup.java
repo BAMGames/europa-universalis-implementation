@@ -1373,15 +1373,17 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             try {
                 java.util.List<AdministrativeActionCountry> actions = economicService.loadAdminActions(request);
 
-                for (AdministrativeActionCountry action : actions) {
-                    PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> action.getIdCountry().equals(playableCountry.getId()));
-                    if (country != null) {
-                        int index = country.getAdministrativeActions().indexOf(
-                                CommonUtil.findFirst(country.getAdministrativeActions(), o -> o.getId().equals(action.getAction().getId())));
-                        if (index != -1) {
-                            country.getAdministrativeActions().set(index, action.getAction());
-                        } else {
-                            country.getAdministrativeActions().add(action.getAction());
+                if (CollectionUtils.isNotEmpty(actions)) {
+                    for (AdministrativeActionCountry action : actions) {
+                        PlayableCountry country = CommonUtil.findFirst(game.getCountries(), playableCountry -> action.getIdCountry().equals(playableCountry.getId()));
+                        if (country != null) {
+                            int index = country.getAdministrativeActions().indexOf(
+                                    CommonUtil.findFirst(country.getAdministrativeActions(), o -> o.getId().equals(action.getAction().getId())));
+                            if (index != -1) {
+                                country.getAdministrativeActions().set(index, action.getAction());
+                            } else {
+                                country.getAdministrativeActions().add(action.getAction());
+                            }
                         }
                     }
                 }
