@@ -598,7 +598,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                 game.getStacks().stream()
                         .filter(stack -> StringUtils.equals(battle.getProvince(), stack.getProvince()) && oeUtil.isMobile(stack) && allies.contains(stack.getCountry()))
                         .forEach(retreatStack);
-                newDiffs.addAll(cleanUpBattle(battle, attributes));
+                newDiffs.addAll(cleanUpBattle(battle));
                 DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.BATTLE, battle.getId(),
                         attributes.toArray(new DiffAttributesEntity[attributes.size()]));
                 newDiffs.add(diff);
@@ -1382,6 +1382,9 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     .map(toCounter)
                     .forEach(counter -> diffs.add(counterDomain.removeCounter(counter)));
         }
+        AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
+        diffs.addAll(checkLeaderDeaths(battle, true, province, attributes));
+        diffs.addAll(checkLeaderDeaths(battle, false, province, attributes));
 
         if (!phasingLossesAuto || !nonPhasingLossesAuto) {
             battle.setStatus(BattleStatusEnum.CHOOSE_LOSS);
@@ -1431,7 +1434,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            diffs.addAll(cleanUpBattle(battle, attributes));
+            diffs.addAll(cleanUpBattle(battle));
         } else {
             battle.setStatus(BattleStatusEnum.RETREAT);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.RETREAT));
@@ -1445,16 +1448,13 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
      * Clean up a battle when it is finished.
      *
      * @param battle to clean up.
-     * @param attributes the diff attributes of the battle modify diff event.
      * @return eventual other diffs.
      */
-    private List<DiffEntity> cleanUpBattle(BattleEntity battle, List<DiffAttributesEntity> attributes) {
+    private List<DiffEntity> cleanUpBattle(BattleEntity battle) {
         List<DiffEntity> diffs = new ArrayList<>();
         GameEntity game = battle.getGame();
         AbstractProvinceEntity province = provinceDao.getProvinceByName(battle.getProvince());
         String controller = oeUtil.getController(province, game);
-        diffs.addAll(checkLeaderDeaths(battle, true, province, attributes));
-        diffs.addAll(checkLeaderDeaths(battle, false, province, attributes));
 
         List<Long> countersId = battle.getCounters().stream()
                 .map(BattleCounterEntity::getCounter)
@@ -1987,7 +1987,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
         if (BooleanUtils.isTrue(battle.getPhasing().isRetreatSelected()) && BooleanUtils.isTrue(battle.getNonPhasing().isRetreatSelected())) {
             battle.setStatus(BattleStatusEnum.DONE);
             attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, BattleStatusEnum.DONE));
-            newDiffs.addAll(cleanUpBattle(battle, attributes));
+            newDiffs.addAll(cleanUpBattle(battle));
         } else {
             attributes.add(DiffUtil.createDiffAttributes(type, true));
         }
