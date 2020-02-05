@@ -2964,28 +2964,35 @@ public class StatusWorkflowDomainTest {
         // France has 1 general that will arrive this turn, a pool of 1 general and a limit of 1 general => the named general is picked
         // Spain has 1 general that will arrive next turn, a pool of 1 general and a limit of 1 general => the anonymous general is picked
         // England has 1 general that will arrive this turn, but already on map, a pool of 1 general and a limit of 1 general => no leader is picked
+        // Poland has 1 general on map and 1 general wounded, a pool of 2 general and a limit of 2 general => an anonymous general is picked
         DeployLeadersBuilder.create()
-                .addActiveCountry("france").addActiveCountry("spain").addActiveCountry("england")
+                .addActiveCountry("france").addActiveCountry("spain").addActiveCountry("england").addActiveCountry("poland")
                 .addExistingLeader(LeaderBuilder.create().id(1L).code("Malborough").country("england").type(LeaderTypeEnum.GENERAL).stats("A 666"))
+                .addExistingLeader(LeaderBuilder.create().id(2L).code("Sovietzky").country("poland").type(LeaderTypeEnum.GENERAL).stats("B 454"))
+                .addWoundedLeader(LeaderBuilder.create().id(3L).code("Kolkozky").country("poland").type(LeaderTypeEnum.GENERAL).stats("C 322"))
                 .addTableLeader(LeaderBuilder.create().code("Bayard").country("france").type(LeaderTypeEnum.GENERAL).stats("A 116").begin(5))
                 .addTableLeader(LeaderBuilder.create().code("Infante").country("spain").type(LeaderTypeEnum.GENERAL).stats("B 435").begin(6))
                 .addTableLeader(LeaderBuilder.create().code("Malborough").country("england").type(LeaderTypeEnum.GENERAL).stats("A 666").begin(5))
                 .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("france").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
                 .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("spain").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
                 .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("england").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G1").country("poland").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
+                .addTableLeader(LeaderBuilder.create().code("Legion-G2").country("poland").type(LeaderTypeEnum.GENERAL).stats("E 111").anonymous())
                 .addLimit("france", LimitTypeEnum.LEADER_GENERAL, 1)
                 .addLimit("spain", LimitTypeEnum.LEADER_GENERAL, 1)
                 .addLimit("england", LimitTypeEnum.LEADER_GENERAL, 1)
+                .addLimit("poland", LimitTypeEnum.LEADER_GENERAL, 2)
                 .whenDeployLeaders(statusWorkflowDomain, this)
                 .thenExpect(DeployLeadersResultBuilder.create()
                         .addLeader(LeaderMatch.create().matchCodes("Bayard").country("france"))
-                        .addLeader(LeaderMatch.create().matchCodes("Legion-G1").country("spain")));
-
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G1").country("spain"))
+                        .addLeader(LeaderMatch.create().matchCodes("Legion-G1", "Legion-G2").country("poland")));
     }
 
     static class DeployLeadersBuilder {
         List<PlayableCountryEntity> countries = new ArrayList<>();
         List<LeaderBuilder> existingLeaders = new ArrayList<>();
+        List<LeaderBuilder> woundedLeaders = new ArrayList<>();
         List<LeaderBuilder> tableLeaders = new ArrayList<>();
         List<Limit> limits = new ArrayList<>();
         List<DiffEntity> diffs;
@@ -3011,6 +3018,11 @@ public class StatusWorkflowDomainTest {
 
         DeployLeadersBuilder addExistingLeader(LeaderBuilder leader) {
             this.existingLeaders.add(leader);
+            return this;
+        }
+
+        DeployLeadersBuilder addWoundedLeader(LeaderBuilder leader) {
+            this.woundedLeaders.add(leader);
             return this;
         }
 
@@ -3047,8 +3059,15 @@ public class StatusWorkflowDomainTest {
             stack.setGame(game);
             stack.setProvince("idf");
             game.getStacks().add(stack);
-
             existingLeaders.forEach(leader -> stack.getCounters().add(createLeader(leader, tables, stack)));
+
+            StackEntity roundStack = new StackEntity();
+            roundStack.setId(2L);
+            roundStack.setGame(game);
+            roundStack.setProvince("B_MR_S2");
+            game.getStacks().add(roundStack);
+            woundedLeaders.forEach(leader -> roundStack.getCounters().add(createLeader(leader, tables, roundStack)));
+
             tableLeaders.forEach(leader -> createLeaderTable(leader, tables));
 
             when(testClass.counterDomain.createLeader(any(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {

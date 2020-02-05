@@ -1199,6 +1199,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         List<DiffEntity> diffs = new ArrayList<>();
 
         List<Leader> leaders = game.getStacks().stream()
+                .filter(stack -> !GameUtil.isRoundBox(stack.getProvince()))
                 .flatMap(stack -> stack.getCounters().stream())
                 .filter(counter -> StringUtils.equals(counter.getCountry(), countryName) &&
                         StringUtils.isNotEmpty(counter.getCode()))
