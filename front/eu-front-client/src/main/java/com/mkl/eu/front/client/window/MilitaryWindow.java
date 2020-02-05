@@ -4,12 +4,14 @@ import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.service.IBattleService;
 import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.ISiegeService;
+import com.mkl.eu.client.service.service.board.MoveLeaderRequest;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.board.Counter;
+import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.diff.Diff;
 import com.mkl.eu.client.service.vo.diplo.CountryOrder;
@@ -21,10 +23,7 @@ import com.mkl.eu.client.service.vo.tables.AssaultResult;
 import com.mkl.eu.client.service.vo.tables.CombatResult;
 import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.client.service.vo.tables.Tech;
-import com.mkl.eu.front.client.common.CounterCellFactory;
-import com.mkl.eu.front.client.common.CounterConverter;
-import com.mkl.eu.front.client.common.EnumConverter;
-import com.mkl.eu.front.client.common.RedeployLine;
+import com.mkl.eu.front.client.common.*;
 import com.mkl.eu.front.client.event.AbstractDiffResponseListenerContainer;
 import com.mkl.eu.front.client.event.IDiffListener;
 import com.mkl.eu.front.client.main.GameConfiguration;
@@ -33,6 +32,7 @@ import com.mkl.eu.front.client.main.UIUtil;
 import com.mkl.eu.front.client.map.marker.BorderMarker;
 import com.mkl.eu.front.client.map.marker.IMapMarker;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -77,8 +77,6 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     private ISiegeService siegeService;
     /** Game. */
     private Game game;
-    /** Name of the playing country. */
-    private String countryName;
     /** Markers of the loaded game. */
     private List<IMapMarker> markers;
     /** Global node. */
@@ -87,6 +85,12 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     /********************************************/
     /**         Nodes about military            */
     /********************************************/
+    /** The choose leader for deploy leader action. */
+    private ComboBox<Counter> leaderCountersChoice;
+    /** The choiceBox for stacks that contains at least an army counter of the country for deploy leader action. */
+    private ComboBox<Stack> leaderStackChoice;
+    /** The deploy leader button. */
+    private Button deployLeaderButton;
     /** The validate military phase button. */
     private Button validateMilitaryPhase;
     /** The invalidate military phase button. */
@@ -123,11 +127,6 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         super(gameConfig);
         this.game = game;
         this.markers = markers;
-        countryName = game.getCountries().stream()
-                .filter(country -> Objects.equals(country.getId(), gameConfig.getIdCountry()))
-                .map(PlayableCountry::getName)
-                .findAny()
-                .orElse(null);
     }
 
     /** @return the tabPane. */
@@ -141,7 +140,11 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     @PostConstruct
     public void init() {
         tabPane = new TabPane();
-        tabPane.getTabs().add(createInfoTab());
+        PlayableCountry country = game.getCountries().stream()
+                .filter(playableCountry -> Objects.equals(playableCountry.getId(), gameConfig.getIdCountry()))
+                .findAny()
+                .orElse(null);
+        tabPane.getTabs().add(createInfoTab(country));
         tabPane.getTabs().add(createBattles());
         tabPane.getTabs().add(createSieges());
 
@@ -160,13 +163,72 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     }
 
     /**
+     * @param country of the current player.
      * @return the info tab.
      */
-    private Tab createInfoTab() {
+    private Tab createInfoTab(PlayableCountry country) {
         Tab tab = new Tab(GlobalConfiguration.getMessage("military.info.title"));
         tab.setClosable(false);
         VBox vBox = new VBox();
         tab.setContent(vBox);
+
+        HBox hBox = new HBox();
+
+        leaderCountersChoice = new ComboBox<>();
+        leaderCountersChoice.setCellFactory(new CounterInProvinceCellFactory());
+        leaderCountersChoice.converterProperty().set(new CounterInProvinceConverter());
+
+        leaderStackChoice = new ComboBox<>();
+        leaderStackChoice.setCellFactory(new StackInProvinceCellFactory());
+        leaderStackChoice.converterProperty().set(new StackInProvinceConverter());
+
+        ChoiceBox<IMapMarker> provincesChoice = new ChoiceBox<>();
+        provincesChoice.converterProperty().set(new StringConverter<IMapMarker>() {
+            /** {@inheritDoc} */
+            @Override
+            public String toString(IMapMarker object) {
+                return object == null ? "" : GlobalConfiguration.getMessage(object.getId());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public IMapMarker fromString(String string) {
+                return null;
+            }
+        });
+        provincesChoice.setItems(FXCollections.observableArrayList(markers.stream()
+                .filter(marker -> StringUtils.equals(country.getName(), marker.getController())).collect(Collectors.toList())));
+        provincesChoice.getItems().add(0, null);
+
+        deployLeaderButton = new Button(GlobalConfiguration.getMessage("move"));
+
+        leaderStackChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+            provincesChoice.setDisable(newValue != null);
+            deployLeaderButton.setDisable(newValue == null && provincesChoice.getSelectionModel().getSelectedItem() == null);
+        });
+        provincesChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
+            deployLeaderButton.setDisable(newValue == null && provincesChoice.getSelectionModel().getSelectedItem() == null);
+        });
+
+        deployLeaderButton.setOnAction(event -> {
+            Counter counter = leaderCountersChoice.getSelectionModel().getSelectedItem();
+            Stack stack = leaderStackChoice.getSelectionModel().getSelectedItem();
+            IMapMarker province = provincesChoice.getSelectionModel().getSelectedItem();
+
+            MoveLeaderRequest request;
+            if (stack != null) {
+                request = new MoveLeaderRequest(counter.getId(), stack.getId());
+            } else {
+                request = new MoveLeaderRequest(counter.getId(), province.getId());
+            }
+            callService(boardService::moveLeader, () -> request, "Error when moving leader.");
+        });
+
+        Button adminDeployLeaders = new Button(GlobalConfiguration.getMessage("military.info.init_leaders"));
+        adminDeployLeaders.setOnAction(callServiceAsEvent(boardService::initLeaders, () -> null, "Error when initializing leaders."));
+
+        hBox.getChildren().addAll(leaderCountersChoice, leaderStackChoice, provincesChoice, deployLeaderButton, adminDeployLeaders);
+        vBox.getChildren().add(hBox);
 
         Function<Boolean, EventHandler<ActionEvent>> endMilitaryPhase = validate -> callServiceAsEvent(boardService::validateMilitaryRound, () -> new ValidateRequest(validate), "Error when validating the military round.");
 
@@ -174,7 +236,7 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         validateMilitaryPhase.setOnAction(endMilitaryPhase.apply(true));
         invalidateMilitaryPhase = new Button(GlobalConfiguration.getMessage("military.info.invalidate"));
         invalidateMilitaryPhase.setOnAction(endMilitaryPhase.apply(false));
-        HBox hBox = new HBox();
+        hBox = new HBox();
         hBox.getChildren().addAll(validateMilitaryPhase, invalidateMilitaryPhase);
         vBox.getChildren().add(hBox);
 
@@ -222,24 +284,48 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         hBox.getChildren().addAll(choiceSiege, chooseSiege);
         vBox.getChildren().add(hBox);
 
-        updateInfoPanel();
+        updateInfoPanel(country);
 
         return tab;
     }
 
     /**
      * Updates the info tab.
+     *
+     * @param country of the current player.
      */
-    private void updateInfoPanel() {
+    private void updateInfoPanel(PlayableCountry country) {
+        List<Counter> counters = game.getStacks().stream().flatMap(stack -> stack.getCounters().stream()
+                .filter(counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                        CounterUtil.isLeader(counter.getType())))
+                .sorted((c1, c2) -> c1.getCode().compareTo(c2.getCode()))
+                .collect(Collectors.toList());
+
+        ObservableList<Counter> counterList = FXCollections.observableArrayList(counters);
+        leaderCountersChoice.setItems(counterList);
+        leaderCountersChoice.getItems().add(0, null);
+
+        leaderStackChoice.setItems(FXCollections.observableList(game.getStacks().stream()
+                .filter(stack -> stack.getCounters().stream().anyMatch(
+                        counter -> StringUtils.equals(counter.getCountry(), country.getName()) &&
+                                CounterUtil.isArmy(counter.getType())))
+                .sorted((o1, o2) -> o1.getProvince().compareTo(o2.getProvince()))
+                .collect(Collectors.toList())));
+        leaderStackChoice.getItems().add(0, null);
+
         CountryOrder countryOrder = game.getOrders().stream()
                 .filter(order -> Objects.equals(order.getCountry().getId(), gameConfig.getIdCountry()))
                 .findAny()
                 .orElse(null);
+        deployLeaderButton.setDisable(true);
         validateMilitaryPhase.setDisable(true);
         invalidateMilitaryPhase.setDisable(true);
         chooseBattle.setDisable(true);
         chooseSiege.setDisable(true);
 
+        if (game.getStatus() == GameStatusEnum.MILITARY_HIERARCHY) {
+            deployLeaderButton.setDisable(false);
+        }
         if (countryOrder != null && countryOrder.isActive()) {
             if (game.getStatus() == GameStatusEnum.MILITARY_MOVE) {
                 validateMilitaryPhase.setDisable(countryOrder.isReady());
@@ -1203,11 +1289,11 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
         }
 
         List<Long> offensiveWars = game.getWars().stream()
-                .filter(war -> war.getCountries().stream().anyMatch(country -> country.isOffensive() && StringUtils.equals(country.getCountry().getName(), countryName)))
+                .filter(war -> war.getCountries().stream().anyMatch(country -> country.isOffensive() && StringUtils.equals(country.getCountry().getName(), gameConfig.getCountryName())))
                 .map(War::getId)
                 .collect(Collectors.toList());
         List<Long> defensiveWars = game.getWars().stream()
-                .filter(war -> war.getCountries().stream().anyMatch(country -> !country.isOffensive() && StringUtils.equals(country.getCountry().getName(), countryName)))
+                .filter(war -> war.getCountries().stream().anyMatch(country -> !country.isOffensive() && StringUtils.equals(country.getCountry().getName(), gameConfig.getCountryName())))
                 .map(War::getId)
                 .collect(Collectors.toList());
 
@@ -1221,11 +1307,17 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
     /** {@inheritDoc} */
     @Override
     public void update(Diff diff) {
+        PlayableCountry country = game.getCountries().stream()
+                .filter(playableCountry -> Objects.equals(playableCountry.getId(), gameConfig.getIdCountry()))
+                .findAny()
+                .orElse(null);
         switch (diff.getTypeObject()) {
             case GAME:
             case STATUS:
             case TURN_ORDER:
-                updateInfoPanel();
+            case COUNTER:
+            case STACK:
+                updateInfoPanel(country);
                 break;
             case BATTLE:
                 updateBattles();
