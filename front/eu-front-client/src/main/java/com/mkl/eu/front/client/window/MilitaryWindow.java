@@ -502,6 +502,13 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                     LOGGER.error("Cannot find help icon.");
                 }
             }
+            if (side.getLeaderWounds() != null) {
+                if (side.getLeaderWounds() == -1) {
+                    hBox.getChildren().add(new Label(GlobalConfiguration.getMessage("military.battle.leader.dead")));
+                } else {
+                    hBox.getChildren().add(new Label(GlobalConfiguration.getMessage("military.battle.leader.wounded", side.getLeaderWounds())));
+                }
+            }
         }
         return hBox;
     }
@@ -999,6 +1006,13 @@ public class MilitaryWindow extends AbstractDiffResponseListenerContainer implem
                     hBox.getChildren().add(leaderTooltip);
                 } catch (FileNotFoundException e) {
                     LOGGER.error("Cannot find help icon.");
+                }
+            }
+            if (side.getLeaderWounds() != null) {
+                if (side.getLeaderWounds() == -1) {
+                    hBox.getChildren().add(new Label(GlobalConfiguration.getMessage("military.battle.leader.dead")));
+                } else {
+                    hBox.getChildren().add(new Label(GlobalConfiguration.getMessage("military.battle.leader.wounded", side.getLeaderWounds())));
                 }
             }
         }
