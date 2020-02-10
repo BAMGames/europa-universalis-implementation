@@ -573,5 +573,10 @@ public abstract class AbstractGameServiceTest {
             this.anonymous = true;
             return this;
         }
+
+        public LeaderBuilder anonymous(boolean anonymous) {
+            this.anonymous = anonymous;
+            return this;
+        }
     }
 }

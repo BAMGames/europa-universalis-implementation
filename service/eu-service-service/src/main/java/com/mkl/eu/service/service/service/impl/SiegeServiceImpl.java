@@ -1234,7 +1234,10 @@ public class SiegeServiceImpl extends AbstractMilitaryService implements ISiegeS
 
             int result = die + modifier;
             if (result <= 1) {
-                int dieWound = oeUtil.rollDie(game, side.getCountry());
+                int dieWound = 1;
+                if (!leader.isAnonymous()) {
+                    dieWound = oeUtil.rollDie(game, side.getCountry());
+                }
                 if (dieWound % 2 == 1) {
                     side.setLeaderWounds(-1);
                     diffs.add(counterDomain.removeCounter(counterLeader));

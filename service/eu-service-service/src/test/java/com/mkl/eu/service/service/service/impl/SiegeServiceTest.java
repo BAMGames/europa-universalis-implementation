@@ -4146,9 +4146,17 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 .thenExpect(CheckLeaderResultBuilder.create());
 
         // Always check even if enemy has less than 3LD in Rotw
-        CheckLeaderBuilder.create().roundBox("S3").roundBox("S3").rotw()
+        CheckLeaderBuilder.create().roundBox("S3").rotw()
                 .phasing(CheckLeaderSideBuilder.create().size(2).annihilated().leaderStats("A 555").checkDie(7).woundDie(9))
                 .notPhasing(CheckLeaderSideBuilder.create().size(2).leaderStats("B 333").checkDie(2))
+                .whenCheckLeader(siegeService, this)
+                .thenExpect(CheckLeaderResultBuilder.create()
+                        .phasingWound(-1).phasingLeaderDead());
+
+        // Phasing leader anonymous is never wounded
+        CheckLeaderBuilder.create().roundBox("S3")
+                .phasing(CheckLeaderSideBuilder.create().size(3).leaderStats("C 431").anonymous().checkDie(1))
+                .notPhasing(CheckLeaderSideBuilder.create().size(3).leaderStats("B 333").checkDie(5))
                 .whenCheckLeader(siegeService, this)
                 .thenExpect(CheckLeaderResultBuilder.create()
                         .phasingWound(-1).phasingLeaderDead());
@@ -4221,10 +4229,10 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
             stack.setProvince(siege.getProvince());
             game.getStacks().add(stack);
             if (!phasing.replacementLeader) {
-                stack.getCounters().add(createLeader(LeaderBuilder.create().id(1L).country("france").code("phasingLeader").type(LeaderTypeEnum.GENERAL).stats(phasing.leaderStats), AbstractBack.TABLES, stack));
+                stack.getCounters().add(createLeader(LeaderBuilder.create().id(1L).country("france").code("phasingLeader").type(LeaderTypeEnum.GENERAL).stats(phasing.leaderStats).anonymous(phasing.anonymous), AbstractBack.TABLES, stack));
             }
             if (!notPhasing.replacementLeader) {
-                stack.getCounters().add(createLeader(LeaderBuilder.create().id(2L).country("espagne").code("notPhasingLeader").type(LeaderTypeEnum.GENERAL).stats(notPhasing.leaderStats), AbstractBack.TABLES, stack));
+                stack.getCounters().add(createLeader(LeaderBuilder.create().id(2L).country("espagne").code("notPhasingLeader").type(LeaderTypeEnum.GENERAL).stats(notPhasing.leaderStats).anonymous(notPhasing.anonymous), AbstractBack.TABLES, stack));
             }
 
             AbstractProvinceEntity province;
@@ -4239,6 +4247,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 if (phasing.woundDie != null) {
                     dice.thenReturn(phasing.woundDie);
                 }
+                dice.thenReturn(20);
             }
             if (notPhasing.checkDie != null) {
                 OngoingStubbing<Integer> dice = when(testClass.oeUtil.rollDie(game, siege.getNonPhasing().getCountry()));
@@ -4246,6 +4255,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 if (notPhasing.woundDie != null) {
                     dice.thenReturn(notPhasing.woundDie);
                 }
+                dice.thenReturn(20);
             }
             when(testClass.counterDomain.removeCounter(any())).thenAnswer(removeCounterAnswer());
             when(testClass.counterDomain.moveToSpecialBox(any(), any(), any())).thenAnswer(moveToSpecialBoxAnswer());
@@ -4270,7 +4280,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 } else {
                     Assert.assertNull("The phasing leader check die attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.PHASING_LEADER_CHECK));
                 }
-                if (phasing.woundDie != null) {
+                if (phasing.woundDie != null || (phasing.anonymous && result.phasingLeaderDead)) {
                     Assert.assertEquals("The phasing leader wound is incorrect in the modify battle diff.", result.phasingWound.toString(), getAttribute(attributes, DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS));
                 } else {
                     Assert.assertNull("The phasing leader wound attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.PHASING_LEADER_WOUNDS));
@@ -4281,7 +4291,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
                 } else {
                     Assert.assertNull("The not phasing leader check die attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_CHECK));
                 }
-                if (notPhasing.woundDie != null) {
+                if (notPhasing.woundDie != null || (notPhasing.anonymous && result.notPhasingLeaderDead)) {
                     Assert.assertEquals("The not phasing leader wound is incorrect in the modify battle diff.", result.notPhasingWound.toString(), getAttribute(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS));
                 } else {
                     Assert.assertNull("The not phasing leader wound attribute should not be sent.", getAttributeFull(attributes, DiffAttributeTypeEnum.NON_PHASING_LEADER_WOUNDS));
@@ -4392,6 +4402,7 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         double size;
         boolean annihilated;
         boolean replacementLeader;
+        boolean anonymous;
         String leaderStats;
         Integer checkDie;
         Integer woundDie;
@@ -4412,6 +4423,11 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
 
         CheckLeaderSideBuilder replacementLeader() {
             this.replacementLeader = true;
+            return this;
+        }
+
+        CheckLeaderSideBuilder anonymous() {
+            this.anonymous = true;
             return this;
         }
 
