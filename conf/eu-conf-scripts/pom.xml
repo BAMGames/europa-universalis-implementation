@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.mkl.eu.conf</groupId>
         <artifactId>conf</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4-SNAPSHOT</version>
     </parent>
     <groupId>com.mkl.eu.conf</groupId>
     <artifactId>eu-conf-scripts</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4-SNAPSHOT</version>
     <name>eu-conf-scripts</name>
     <url>http://maven.apache.org</url>
     <properties>

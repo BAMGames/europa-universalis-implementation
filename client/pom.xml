@@ -3,14 +3,14 @@
     <parent>
         <groupId>com.mkl.eu.parent</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4-SNAPSHOT</version>
         <relativePath>../parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mkl.eu.client</groupId>
     <artifactId>client</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.3</version>
+    <version>1.0.4-SNAPSHOT</version>
     <name>Pom parent des clients de EU</name>
     <url>http://maven.apache.org</url>
 
