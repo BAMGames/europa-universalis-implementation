@@ -4,12 +4,12 @@
         <groupId>com.mkl.eu.parent</groupId>
         <artifactId>parent</artifactId>
         <relativePath>./parent/pom.xml</relativePath>
-        <version>1.0.3-SNAPSHOT</version>
+        <version>1.0.3</version>
     </parent>
     <groupId>com.mkl.eu</groupId>
     <artifactId>eu</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <name>EU reactor</name>
     <url>http://maven.apache.org</url>
 
