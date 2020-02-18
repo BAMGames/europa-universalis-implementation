@@ -95,4 +95,19 @@ public interface ITablesDao extends IGenericDao<TradeIncomeEntity, Long> {
      * @return the leader tables.
      */
     List<LeaderEntity> getLeaders();
+
+    /**
+     * @return the discovery tables.
+     */
+    List<DiscoveryTableEntity> getDiscoveries();
+
+    /**
+     * @return the attrition land in Europe tables.
+     */
+    List<AttritionLandEuropeEntity> getAttritionLandEurope();
+
+    /**
+     * @return the attrition naval or rotw tables.
+     */
+    List<AttritionOtherEntity> getAttritionOther();
 }

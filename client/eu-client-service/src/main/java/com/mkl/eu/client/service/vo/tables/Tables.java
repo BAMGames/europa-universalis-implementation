@@ -46,6 +46,12 @@ public class Tables {
     private List<Exchequer> exchequers = new ArrayList<>();
     /** Leaders. */
     private List<Leader> leaders = new ArrayList<>();
+    /** Discoveries. */
+    private List<DiscoveryTable> discoveries = new ArrayList<>();
+    /** Attrition tables for land in Europe. */
+    private List<AttritionLandEurope> attritionsLandEurope = new ArrayList<>();
+    /** Attrition tables for other cases. */
+    private List<AttritionOther> attritionsOther = new ArrayList<>();
 
     /**
      * @param turn of the game.
@@ -246,5 +252,35 @@ public class Tables {
     /** @param leaders the leaders to set. */
     public void setLeaders(List<Leader> leaders) {
         this.leaders = leaders;
+    }
+
+    /** @return the discoveries. */
+    public List<DiscoveryTable> getDiscoveries() {
+        return discoveries;
+    }
+
+    /** @param discoveries the discoveries to set. */
+    public void setDiscoveries(List<DiscoveryTable> discoveries) {
+        this.discoveries = discoveries;
+    }
+
+    /** @return the attritionsLandEurope. */
+    public List<AttritionLandEurope> getAttritionsLandEurope() {
+        return attritionsLandEurope;
+    }
+
+    /** @param attritionsLandEurope the attritionsLandEurope to set. */
+    public void setAttritionsLandEurope(List<AttritionLandEurope> attritionsLandEurope) {
+        this.attritionsLandEurope = attritionsLandEurope;
+    }
+
+    /** @return the attritionsOther. */
+    public List<AttritionOther> getAttritionsOther() {
+        return attritionsOther;
+    }
+
+    /** @param attritionsOther the attritionsOther to set. */
+    public void setAttritionsOther(List<AttritionOther> attritionsOther) {
+        this.attritionsOther = attritionsOther;
     }
 }

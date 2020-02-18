@@ -156,7 +156,7 @@ public class TableDaoImplTest {
 
         Assert.assertNotNull(car74);
         Assert.assertEquals(false, car74.isLand());
-        Assert.assertEquals(null, car74.getColumnFire());
+        Assert.assertEquals("E", car74.getColumnFire());
         Assert.assertEquals("E", car74.getColumnShock());
         Assert.assertEquals(1, car74.getMoral());
         Assert.assertEquals(false, car74.isMoralBonusVeteran());
@@ -219,7 +219,7 @@ public class TableDaoImplTest {
         tablesService.refresh();
         Tables tables = tablesService.getTables();
 
-        Assert.assertEquals(133, tables.getArmyArtilleries().size());
+        Assert.assertEquals(112, tables.getArmyArtilleries().size());
 
         ArmyArtillery russieI = tables.getArmyArtilleries().stream()
                 .filter(ac -> StringUtils.equals(Period.PERIOD_I, ac.getPeriod()) && StringUtils.equals(PlayableCountry.RUSSIA, ac.getCountry()))
@@ -662,5 +662,200 @@ public class TableDaoImplTest {
         Assert.assertFalse(Leader.navalEurope.test(leader));
         Assert.assertFalse(Leader.navalEuropeMed.test(leader));
         Assert.assertFalse(Leader.navalRotw.test(leader));
+    }
+
+    @Test
+    public void testDiscoveries() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+        List<DiscoveryTable> discoveries = tables.getDiscoveries();
+
+        Assert.assertEquals(22, discoveries.size());
+        DiscoveryTable discovery = discoveries.stream()
+                .filter(disc -> disc.getDice() == 5 && !disc.isLand())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(discovery);
+        Assert.assertEquals(ResultEnum.SUCCESS, discovery.getResult());
+        Assert.assertEquals(false, discovery.isCheckLeader());
+        Assert.assertEquals(false, discovery.isCheckLeaderNoTroops());
+
+        discovery = discoveries.stream()
+                .filter(disc -> disc.getDice() == 9 && !disc.isLand())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(discovery);
+        Assert.assertEquals(ResultEnum.AVERAGE, discovery.getResult());
+        Assert.assertEquals(false, discovery.isCheckLeader());
+        Assert.assertEquals(false, discovery.isCheckLeaderNoTroops());
+
+        discovery = discoveries.stream()
+                .filter(disc -> disc.getDice() == 11 && !disc.isLand())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(discovery);
+        Assert.assertEquals(ResultEnum.FAILED, discovery.getResult());
+        Assert.assertEquals(false, discovery.isCheckLeader());
+        Assert.assertEquals(true, discovery.isCheckLeaderNoTroops());
+
+        discovery = discoveries.stream()
+                .filter(disc -> disc.getDice() == 5 && disc.isLand())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(discovery);
+        Assert.assertEquals(ResultEnum.SUCCESS, discovery.getResult());
+        Assert.assertEquals(false, discovery.isCheckLeader());
+        Assert.assertEquals(false, discovery.isCheckLeaderNoTroops());
+
+        discovery = discoveries.stream()
+                .filter(disc -> disc.getDice() == 9 && disc.isLand())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(discovery);
+        Assert.assertEquals(ResultEnum.AVERAGE, discovery.getResult());
+        Assert.assertEquals(false, discovery.isCheckLeader());
+        Assert.assertEquals(false, discovery.isCheckLeaderNoTroops());
+
+        discovery = discoveries.stream()
+                .filter(disc -> disc.getDice() == 11 && disc.isLand())
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(discovery);
+        Assert.assertEquals(ResultEnum.FAILED, discovery.getResult());
+        Assert.assertEquals(true, discovery.isCheckLeader());
+        Assert.assertEquals(false, discovery.isCheckLeaderNoTroops());
+    }
+
+    @Test
+    public void testAttritionNavalRotw() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+        List<AttritionOther> attritions = tables.getAttritionsOther();
+
+        Assert.assertEquals(11, attritions.size());
+        AttritionOther attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 5)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(0, attrition.getLossPercentage().intValue());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 9)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(40, attrition.getLossPercentage().intValue());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 13)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(80, attrition.getLossPercentage().intValue());
+    }
+
+    @Test
+    public void testAttritionLandEurope() {
+        tablesService.refresh();
+        Tables tables = tablesService.getTables();
+        List<AttritionLandEurope> attritions = tables.getAttritionsLandEurope();
+
+        Assert.assertEquals(44, attritions.size());
+        AttritionLandEurope attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 5 && attrit.getMinSize() == 1 && attrit.getMaxSize() == 2)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(false, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 9 && attrit.getMinSize() == 1 && attrit.getMaxSize() == 2)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(true, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 13 && attrit.getMinSize() == 1 && attrit.getMaxSize() == 2)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(true, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 5 && attrit.getMinSize() == 2 && attrit.getMaxSize() == 3)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(false, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 9 && attrit.getMinSize() == 2 && attrit.getMaxSize() == 3)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(true, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 13 && attrit.getMinSize() == 2 && attrit.getMaxSize() == 3)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(1, attrition.getLoss().intValue());
+        Assert.assertEquals(false, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 5 && attrit.getMinSize() == 3 && attrit.getMaxSize() == 6)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(false, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 9 && attrit.getMinSize() == 3 && attrit.getMaxSize() == 6)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(1, attrition.getLoss().intValue());
+        Assert.assertEquals(true, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 13 && attrit.getMinSize() == 3 && attrit.getMaxSize() == 6)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(1, attrition.getLoss().intValue());
+        Assert.assertEquals(true, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 5 && attrit.getMinSize() == 6 && attrit.getMaxSize() == null)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(null, attrition.getLoss());
+        Assert.assertEquals(false, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 9 && attrit.getMinSize() == 6 && attrit.getMaxSize() == null)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(2, attrition.getLoss().intValue());
+        Assert.assertEquals(true, attrition.isPillage());
+
+        attrition = attritions.stream()
+                .filter(attrit -> attrit.getDice() == 13 && attrit.getMinSize() == 6 && attrit.getMaxSize() == null)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(attrition);
+        Assert.assertEquals(2, attrition.getLoss().intValue());
+        Assert.assertEquals(true, attrition.isPillage());
     }
 }

@@ -173,4 +173,31 @@ public class TablesDaoImpl extends GenericDaoImpl<TradeIncomeEntity, Long> imple
         //noinspection unchecked
         return criteria.list();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DiscoveryTableEntity> getDiscoveries() {
+        Criteria criteria = getSession().createCriteria(DiscoveryTableEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<AttritionLandEuropeEntity> getAttritionLandEurope() {
+        Criteria criteria = getSession().createCriteria(AttritionLandEuropeEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<AttritionOtherEntity> getAttritionOther() {
+        Criteria criteria = getSession().createCriteria(AttritionOtherEntity.class);
+
+        //noinspection unchecked
+        return criteria.list();
+    }
 }

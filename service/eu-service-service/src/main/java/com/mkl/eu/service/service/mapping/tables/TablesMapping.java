@@ -632,4 +632,112 @@ public class TablesMapping extends AbstractMapping {
 
         return target;
     }
+
+    /**
+     * Fill the discovery tables.
+     *
+     * @param sources List of discoveries entity.
+     * @param tables  the target tables.
+     */
+    public void fillDiscoveriesTables(List<DiscoveryTableEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (DiscoveryTableEntity source : sources) {
+                tables.getDiscoveries().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public DiscoveryTable oeToVo(DiscoveryTableEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        DiscoveryTable target = new DiscoveryTable();
+
+        target.setId(source.getId());
+        target.setDice(source.getDice());
+        target.setLand(source.isLand());
+        target.setCheckLeader(source.isCheckLeader());
+        target.setCheckLeaderNoTroops(source.isCheckLeaderNoTroops());
+        target.setResult(source.getResult());
+
+        return target;
+    }
+
+    /**
+     * Fill the attrition land in Europe tables.
+     *
+     * @param sources List of attrition entity.
+     * @param tables  the target tables.
+     */
+    public void fillAttritionLandEuropeTables(List<AttritionLandEuropeEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (AttritionLandEuropeEntity source : sources) {
+                tables.getAttritionsLandEurope().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public AttritionLandEurope oeToVo(AttritionLandEuropeEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        AttritionLandEurope target = new AttritionLandEurope();
+
+        target.setId(source.getId());
+        target.setDice(source.getDice());
+        target.setMinSize(source.getMinSize());
+        target.setMaxSize(source.getMaxSize());
+        target.setLoss(source.getLoss());
+        target.setPillage(source.isPillage());
+
+        return target;
+    }
+
+    /**
+     * Fill the attrition naval or rotw tables.
+     *
+     * @param sources List of attrition entity.
+     * @param tables  the target tables.
+     */
+    public void fillAttritionOtherTables(List<AttritionOtherEntity> sources, Tables tables) {
+        if (tables != null && sources != null) {
+            for (AttritionOtherEntity source : sources) {
+                tables.getAttritionsOther().add(oeToVo(source));
+            }
+        }
+    }
+
+    /**
+     * OE to VO.
+     *
+     * @param source object source.
+     * @return object mapped.
+     */
+    public AttritionOther oeToVo(AttritionOtherEntity source) {
+        if (source == null) {
+            return null;
+        }
+
+        AttritionOther target = new AttritionOther();
+
+        target.setId(source.getId());
+        target.setDice(source.getDice());
+        target.setLossPercentage(source.getLossPercentage());
+
+        return target;
+    }
 }

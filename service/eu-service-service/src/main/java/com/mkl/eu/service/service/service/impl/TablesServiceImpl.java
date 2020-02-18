@@ -111,7 +111,12 @@ public class TablesServiceImpl extends AbstractService implements ITablesService
         tablesMapping.fillExchequerTables(exchequers, TABLES);
         List<LeaderEntity> leaders = tablesDao.getLeaders();
         tablesMapping.fillLeadersTables(leaders, TABLES);
-
+        List<DiscoveryTableEntity> discoveries = tablesDao.getDiscoveries();
+        tablesMapping.fillDiscoveriesTables(discoveries, TABLES);
+        List<AttritionLandEuropeEntity> attritionLandEurope = tablesDao.getAttritionLandEurope();
+        tablesMapping.fillAttritionLandEuropeTables(attritionLandEurope, TABLES);
+        List<AttritionOtherEntity> attritionOther = tablesDao.getAttritionOther();
+        tablesMapping.fillAttritionOtherTables(attritionOther, TABLES);
     }
 
     /**
