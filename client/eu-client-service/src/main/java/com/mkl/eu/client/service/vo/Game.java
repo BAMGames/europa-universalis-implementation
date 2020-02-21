@@ -1,5 +1,6 @@
 package com.mkl.eu.client.service.vo;
 
+import com.mkl.eu.client.service.vo.attrition.Attrition;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.chat.Chat;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
@@ -39,6 +40,8 @@ public class Game extends EuObject {
     private List<Battle> battles = new ArrayList<>();
     /** Sieges of the game. */
     private List<Siege> sieges = new ArrayList<>();
+    /** Attritions of the game. */
+    private List<Attrition> attritions = new ArrayList<>();
     /** All the chat-related stuff. */
     private Chat chat;
     /** Turn of the game. */
@@ -136,6 +139,16 @@ public class Game extends EuObject {
     /** @param sieges the sieges to set. */
     public void setSieges(List<Siege> sieges) {
         this.sieges = sieges;
+    }
+
+    /** @return the attritions. */
+    public List<Attrition> getAttritions() {
+        return attritions;
+    }
+
+    /** @param attritions the attritions to set. */
+    public void setAttritions(List<Attrition> attritions) {
+        this.attritions = attritions;
     }
 
     /** @return the chat. */

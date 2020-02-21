@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.persistence.oe;
 
 import com.mkl.eu.client.service.vo.enumeration.CultureEnum;
 import com.mkl.eu.client.service.vo.enumeration.GameStatusEnum;
+import com.mkl.eu.service.service.persistence.oe.attrition.AttritionEntity;
 import com.mkl.eu.service.service.persistence.oe.board.OtherForcesEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
@@ -51,6 +52,8 @@ public class GameEntity implements IEntity, Serializable {
     private List<BattleEntity> battles = new ArrayList<>();
     /** Sieges of the game. */
     private List<SiegeEntity> sieges = new ArrayList<>();
+    /** Attritions of the game. */
+    private List<AttritionEntity> attritions = new ArrayList<>();
     /** Turn of the game. */
     private Integer turn;
     /** Status of the game. */
@@ -201,6 +204,17 @@ public class GameEntity implements IEntity, Serializable {
     /** @param sieges the sieges to set. */
     public void setSieges(List<SiegeEntity> sieges) {
         this.sieges = sieges;
+    }
+
+    /** @return the attritions. */
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<AttritionEntity> getAttritions() {
+        return attritions;
+    }
+
+    /** @param attritions the attritions to set. */
+    public void setAttritions(List<AttritionEntity> attritions) {
+        this.attritions = attritions;
     }
 
     /** @return the turn. */

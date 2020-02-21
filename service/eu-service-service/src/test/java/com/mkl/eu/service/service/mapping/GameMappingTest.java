@@ -5,6 +5,7 @@ import com.mkl.eu.client.service.service.eco.EconomicalSheetCountry;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
+import com.mkl.eu.client.service.vo.attrition.Attrition;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.country.Monarch;
@@ -22,6 +23,8 @@ import com.mkl.eu.client.service.vo.tables.Tech;
 import com.mkl.eu.service.service.mapping.eco.AdministrativeActionMapping;
 import com.mkl.eu.service.service.mapping.eco.EconomicalSheetMapping;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.attrition.AttritionCounterEntity;
+import com.mkl.eu.service.service.persistence.oe.attrition.AttritionEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.MonarchEntity;
@@ -43,6 +46,7 @@ import org.unitils.reflectionassert.ReflectionAssert;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -123,6 +127,8 @@ public class GameMappingTest {
         // Sets are not sorted and we do not care how it is sorted, except in this test case. So we sort it.
         Collections.sort(vo.getBattles().get(0).getCounters(), (o1, o2) -> o1.getCounter().getId().compareTo(o2.getCounter().getId()));
         Collections.sort(vo.getSieges().get(0).getCounters(), (o1, o2) -> o1.getCounter().getId().compareTo(o2.getCounter().getId()));
+        Collections.sort(vo.getAttritions().get(0).getCounters(), (o1, o2) -> o1.getId().compareTo(o2.getId()));
+        Collections.sort(vo.getAttritions().get(0).getProvinces(), Comparator.naturalOrder());
 
         ReflectionAssert.assertReflectionEquals(createGameVo(), vo);
 
@@ -192,6 +198,8 @@ public class GameMappingTest {
         object.setBattles(createBattlesVos(war));
 
         object.setSieges(createSiegesVos(war));
+
+        object.setAttritions(createAttritionsVos());
 
         return object;
     }
@@ -687,6 +695,36 @@ public class GameMappingTest {
         return objects;
     }
 
+    private List<Attrition> createAttritionsVos() {
+        List<Attrition> objects = new ArrayList<>();
+
+        Attrition object = new Attrition();
+        object.setId(13L);
+        object.setTurn(14);
+        object.setType(AttritionTypeEnum.MOVEMENT);
+        object.setStatus(AttritionStatusEnum.CHOOSE_LOSS);
+        object.setSize(2d);
+        object.setTech(Tech.MEDIEVAL);
+        object.setBonus(6);
+        object.setDie(3);
+        object.getProvinces().add("idf");
+        object.getProvinces().add("pecs");
+        Counter counter = new Counter();
+        counter.setId(101L);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setCountry("france");
+        object.getCounters().add(counter);
+        counter = new Counter();
+        counter.setId(102L);
+        counter.setType(CounterFaceTypeEnum.LEADER);
+        counter.setCode("leader");
+        objects.add(object);
+        object = new Attrition();
+        objects.add(object);
+
+        return objects;
+    }
+
     private GameEntity createGameEntity() {
         GameEntity object = new GameEntity();
 
@@ -718,6 +756,8 @@ public class GameMappingTest {
         object.setBattles(createBattlesEntities(object.getWars().get(0)));
 
         object.setSieges(createSiegesEntities(object.getWars().get(0)));
+
+        object.setAttritions(createAttritionsEntities());
 
         return object;
     }
@@ -1197,6 +1237,36 @@ public class GameMappingTest {
         object.setNonPhasing(new SiegeSideEntity());
         object.getNonPhasing().setLosses(new BattleLossesEntity());
         object.getNonPhasing().setModifiers(new BattleDayEntity());
+        objects.add(object);
+
+        return objects;
+    }
+
+    private List<AttritionEntity> createAttritionsEntities() {
+        List<AttritionEntity> objects = new ArrayList<>();
+
+        AttritionEntity object = new AttritionEntity();
+        object.setId(13L);
+        object.setTurn(14);
+        object.setType(AttritionTypeEnum.MOVEMENT);
+        object.setStatus(AttritionStatusEnum.CHOOSE_LOSS);
+        object.setSize(2d);
+        object.setTech(Tech.MEDIEVAL);
+        object.setBonus(6);
+        object.setDie(3);
+        object.getProvinces().add("idf");
+        object.getProvinces().add("pecs");
+        AttritionCounterEntity counter = new AttritionCounterEntity();
+        counter.setCounter(101L);
+        counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+        counter.setCountry("france");
+        object.getCounters().add(counter);
+        counter = new AttritionCounterEntity();
+        counter.setCounter(102L);
+        counter.setType(CounterFaceTypeEnum.LEADER);
+        counter.setCode("leader");
+        objects.add(object);
+        object = new AttritionEntity();
         objects.add(object);
 
         return objects;

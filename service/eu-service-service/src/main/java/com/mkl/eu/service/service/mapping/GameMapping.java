@@ -2,6 +2,7 @@ package com.mkl.eu.service.service.mapping;
 
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.GameLight;
+import com.mkl.eu.service.service.mapping.attrition.AttritionMapping;
 import com.mkl.eu.service.service.mapping.board.StackMapping;
 import com.mkl.eu.service.service.mapping.country.PlayableCountryMapping;
 import com.mkl.eu.service.service.mapping.diplo.CountryOrderMapping;
@@ -52,6 +53,9 @@ public class GameMapping {
     /** Mapping for sieges. */
     @Autowired
     private SiegeMapping siegeMapping;
+    /** Mapping for attritions. */
+    @Autowired
+    private AttritionMapping attritionMapping;
 
     /**
      * OE to VO.
@@ -91,6 +95,8 @@ public class GameMapping {
         target.setBattles(battleMapping.oesToVos(source.getBattles(), objectsCreated));
 
         target.setSieges(siegeMapping.oesToVos(source.getSieges(), objectsCreated));
+
+        target.setAttritions(attritionMapping.oesToVos(source.getAttritions()));
 
         return target;
     }

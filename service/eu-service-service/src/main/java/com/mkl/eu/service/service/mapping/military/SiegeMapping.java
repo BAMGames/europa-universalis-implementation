@@ -81,7 +81,7 @@ public class SiegeMapping extends AbstractMapping {
         target.setFortressLevel(source.getFortressLevel());
         target.setUndermineDie(source.getUndermineDie());
         target.setUndermineResult(source.getUndermineResult());
-        target.setCounters(oesToVosCountries(source.getCounters(), objectsCreated));
+        target.setCounters(oesToVosCounters(source.getCounters(), objectsCreated));
         target.setPhasing(oeToVo(source.getPhasing()));
         target.setNonPhasing(oeToVo(source.getNonPhasing()));
         WarLight war = storeVo(WarLight.class, source.getWar(), objectsCreated, warMapping::oeToVoLight);
@@ -98,7 +98,7 @@ public class SiegeMapping extends AbstractMapping {
      * @param objectsCreated Objects created by the mappings (sort of caching).
      * @return object mapped.
      */
-    private List<SiegeCounter> oesToVosCountries(Set<SiegeCounterEntity> sources, Map<Class<?>, Map<Long, Object>> objectsCreated) {
+    private List<SiegeCounter> oesToVosCounters(Set<SiegeCounterEntity> sources, Map<Class<?>, Map<Long, Object>> objectsCreated) {
         if (sources == null) {
             return null;
         }
