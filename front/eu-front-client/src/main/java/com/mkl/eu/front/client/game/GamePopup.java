@@ -13,6 +13,7 @@ import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.vo.Game;
+import com.mkl.eu.client.service.vo.attrition.Attrition;
 import com.mkl.eu.client.service.vo.board.Counter;
 import com.mkl.eu.client.service.vo.board.Stack;
 import com.mkl.eu.client.service.vo.chat.Message;
@@ -449,6 +450,9 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
                         break;
                     case SIEGE:
                         updateSiege(game, diff);
+                        break;
+                    case ATTRITION:
+                        updateAttrition(game, diff);
                         break;
                     case REDEPLOY:
                         applyNotification(diff);
@@ -1879,6 +1883,66 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_FIRE, value -> siege.getNonPhasing().getModifiers().setFire(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK_MOD, value -> siege.getNonPhasing().getModifiers().setShockMod(value));
         doIfAttributeInteger(diff, DiffAttributeTypeEnum.BATTLE_NON_PHASING_FIRST_DAY_SHOCK, value -> siege.getNonPhasing().getModifiers().setShock(value));
+    }
+
+    /**
+     * Process a attrition diff event.
+     *
+     * @param game to update.
+     * @param diff involving a siege.
+     */
+    private void updateAttrition(Game game, Diff diff) {
+        switch (diff.getType()) {
+            case ADD:
+            case MODIFY:
+                createOrModifyAttrition(game, diff);
+                break;
+            default:
+                LOGGER.error("Unknown diff " + diff);
+                break;
+        }
+    }
+
+    /**
+     * Process the add or modify attrition diff event.
+     *
+     * @param game to update.
+     * @param diff involving a add or modify attrition.
+     */
+    private void createOrModifyAttrition(Game game, Diff diff) {
+        Attrition attrition = game.getAttritions().stream()
+                .filter(b -> Objects.equals(b.getId(), diff.getIdObject()))
+                .findAny()
+                .orElseGet(() -> {
+                    Attrition newAttrition = new Attrition();
+                    newAttrition.setId(diff.getIdObject());
+                    game.getAttritions().add(newAttrition);
+                    return newAttrition;
+                });
+
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.TURN, attrition::setTurn);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.STATUS, attrition::setStatus, AttritionStatusEnum.class);
+        doIfAttributeEnum(diff, DiffAttributeTypeEnum.TYPE, attrition::setType, AttritionTypeEnum.class);
+        doIfAttributeInteger(diff, DiffAttributeTypeEnum.SIZE, attrition::setSize);
+        Consumer<DiffAttributes> addCounter = attr -> {
+            Long idCounter = Long.parseLong(attr.getValue());
+            Counter counter = game.getStacks().stream()
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .filter(c -> Objects.equals(c.getId(), idCounter))
+                    .findAny()
+                    .orElse(null);
+            if (counter == null) {
+                LOGGER.error("Counter does not exist in add or modify attrition counter diff event.");
+            } else {
+                attrition.getCounters().add(counter);
+            }
+        };
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.COUNTER)
+                .forEach(addCounter);
+        diff.getAttributes().stream()
+                .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE)
+                .forEach(attr -> attrition.getProvinces().add(attr.getValue()));
     }
 
     /**

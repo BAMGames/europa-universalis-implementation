@@ -57,6 +57,8 @@ public enum DiffAttributeTypeEnum {
     STATUS,
     /** Number of veterans of a counter. */
     VETERANS,
+    /** Size of the object. */
+    SIZE,
     /** DTI of a country. */
     DTI,
     /** FTI of a country. */

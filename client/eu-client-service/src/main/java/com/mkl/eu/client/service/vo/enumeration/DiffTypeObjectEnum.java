@@ -28,6 +28,8 @@ public enum DiffTypeObjectEnum {
     BATTLE,
     /** Siege. */
     SIEGE,
+    /** Attrition. */
+    ATTRITION,
 
 
     /********************************************/

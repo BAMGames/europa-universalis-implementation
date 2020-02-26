@@ -75,6 +75,16 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_START for the royal treasure at start line.</li>
      * </ul>
      * </li>
+     * <li>DiffTypeObjectEnum#ATTRITION in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#TURN</li>
+     * <li>DiffAttributeTypeEnum#STATUS</li>
+     * <li>DiffAttributeTypeEnum#TYPE</li>
+     * <li>DiffAttributeTypeEnum#SIZE maximum size of the stack for the attrition.</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE a province where the attrition can also occurs (can be multiple).</li>
+     * <li>DiffAttributeTypeEnum#COUNTER a counter that is affected by the attrition (can be multiple).</li>
+     * </ul>
+     * </li>
      * </ul>
      */
     ADD,
@@ -378,6 +388,14 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_PEACE for the royal treasure at peace line.</li>
      * <li>DiffAttributeTypeEnum#INFLATION for the inflation line.</li>
      * <li>DiffAttributeTypeEnum#ROYAL_TREASURE_END for the royal treasure at end line.</li>
+     * </ul>
+     * </li>
+     * <li>DiffTypeObjectEnum#ATTRITION in which case it will use:
+     * <ul>
+     * <li>DiffAttributeTypeEnum#STATUS.</li>
+     * <li>DiffAttributeTypeEnum#SIZE maximum size of the stack for the attrition.</li>
+     * <li>DiffAttributeTypeEnum#PROVINCE a province where the attrition can also occurs (can be multiple).</li>
+     * <li>DiffAttributeTypeEnum#COUNTER a counter that is affected by the attrition (can be multiple).</li>
      * </ul>
      * </li>
      * </ul>

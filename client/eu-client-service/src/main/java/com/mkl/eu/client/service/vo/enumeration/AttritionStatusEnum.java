@@ -7,7 +7,7 @@ package com.mkl.eu.client.service.vo.enumeration;
  */
 public enum AttritionStatusEnum {
     /** When the attrition is going on. */
-    NEW,
+    ON_GOING,
     /** When attrition is done, and losses must be taken. */
     CHOOSE_LOSS,
     /** Attrition computed. */

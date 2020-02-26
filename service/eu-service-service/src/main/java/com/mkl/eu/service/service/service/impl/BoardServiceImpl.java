@@ -16,12 +16,16 @@ import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
+import com.mkl.eu.service.service.persistence.attrition.IAttritionDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.attrition.AttritionCounterEntity;
+import com.mkl.eu.service.service.persistence.oe.attrition.AttritionEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
@@ -69,6 +73,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
     /** Country DAO. */
     @Autowired
     private ICountryDao countryDao;
+    /** Attrition DAO. */
+    @Autowired
+    private IAttritionDao attritionDao;
     /** OeUtil. */
     @Autowired
     private IOEUtil oeUtil;
@@ -249,18 +256,87 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_MOVE_STACK, country.getName(), patrons));
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, idStack,
+        List<DiffEntity> diffs = new ArrayList<>();
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, idStack,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, stack.getProvince()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_POINTS, stack.getMove() + movePoints),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.IS_MOVING, firstMove));
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.IS_MOVING, firstMove)));
+
+        AttritionEntity attrition = game.getAttritions().stream()
+                .filter(attrit -> attrit.getStatus() == AttritionStatusEnum.ON_GOING)
+                .findAny()
+                .orElse(createAttrition(stack.getProvince(), stack.getCounters(), AttritionTypeEnum.MOVEMENT, game));
+        if (!attrition.getProvinces().contains(provinceTo)) {
+            attrition.getProvinces().add(provinceTo);
+            if (!firstMove) {
+                diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ATTRITION, attrition.getId(),
+                        DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, provinceTo)));
+            }
+        }
+        if (firstMove) {
+            List<DiffAttributesEntity> attributes = new ArrayList<>();
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TURN, attrition.getTurn()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TYPE, attrition.getType()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, attrition.getStatus()));
+            attributes.add(DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIZE, attrition.getSize()));
+
+            attributes.addAll(attrition.getProvinces().stream()
+                    .map(prov -> DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE, prov))
+                    .collect(Collectors.toList()));
+            attributes.addAll(attrition.getCounters().stream()
+                    .map(counter -> DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTER, counter.getCounter()))
+                    .collect(Collectors.toList()));
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.ADD, DiffTypeObjectEnum.ATTRITION, attrition.getId(),
+                    attributes.toArray(new DiffAttributesEntity[attributes.size()])));
+        }
 
         stack.setProvince(provinceTo);
         stack.setMove(stack.getMove() + movePoints);
         stack.setMovePhase(MovePhaseEnum.IS_MOVING);
         gameDao.update(game, false);
 
-        return createDiff(diff, gameDiffs, request);
+        return createDiffs(diffs, gameDiffs, request);
+    }
+
+    /**
+     * Creates an attrition in the given province with the given counters.
+     *
+     * @param province where the attrition occurs (or start for movement attrition).
+     * @param counters list of counters involved in the attrition.
+     * @param type     of the attrition (movement, supply, siege,...)
+     * @param game     the game.
+     * @return the persisted attrition.
+     */
+    private AttritionEntity createAttrition(String province, List<CounterEntity> counters, AttritionTypeEnum type, GameEntity game) {
+        AttritionEntity attrition = new AttritionEntity();
+        attrition.getProvinces().add(province);
+        attrition.setTurn(game.getTurn());
+        attrition.setStatus(AttritionStatusEnum.ON_GOING);
+        attrition.setType(type);
+        attrition.setSize(counters.stream()
+                .collect(Collectors.summingDouble(counter -> CounterUtil.getSizeFromType(counter.getType()))));
+        attrition.setGame(game);
+        counters.forEach(counter -> {
+            AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
+            attritionCounter.setCounter(counter.getId());
+            attritionCounter.setAttrition(attrition);
+            attritionCounter.setCountry(counter.getCountry());
+            attritionCounter.setType(counter.getType());
+            attritionCounter.setCode(counter.getCode());
+            attrition.getCounters().add(attritionCounter);
+        });
+
+        /*
+         Thanks Hibernate to have 7 years old bugs.
+         https://hibernate.atlassian.net/browse/HHH-6776
+         https://hibernate.atlassian.net/browse/HHH-7404
+          */
+        attritionDao.create(attrition);
+
+        game.getAttritions().add(attrition);
+
+        return attrition;
     }
 
     /** {@inheritDoc} */
@@ -811,6 +887,8 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setMsgFormat(MSG_ACCESS_RIGHT)
                 .setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_AUTHENT, PARAMETER_USERNAME)
                 .setParams(METHOD_VALIDATE_MIL_ROUND, request.getAuthent().getUsername(), country.getUsername()));
+
+        // TODO TG-6 check that no stack led by the country is currently moving
 
         CountryOrderEntity order = game.getOrders().stream()
                 .filter(o -> o.isActive() && o.getCountry().getId().equals(country.getId()))

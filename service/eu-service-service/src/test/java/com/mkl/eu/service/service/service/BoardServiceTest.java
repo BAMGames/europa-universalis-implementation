@@ -17,13 +17,16 @@ import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.mapping.GameMapping;
 import com.mkl.eu.service.service.mapping.chat.ChatMapping;
+import com.mkl.eu.service.service.persistence.attrition.IAttritionDao;
 import com.mkl.eu.service.service.persistence.board.ICounterDao;
 import com.mkl.eu.service.service.persistence.board.IStackDao;
 import com.mkl.eu.service.service.persistence.chat.IChatDao;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
+import com.mkl.eu.service.service.persistence.oe.attrition.AttritionEntity;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 import com.mkl.eu.service.service.persistence.oe.board.StackEntity;
 import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
+import com.mkl.eu.service.service.persistence.oe.diff.DiffAttributesEntity;
 import com.mkl.eu.service.service.persistence.oe.diff.DiffEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryOrderEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
@@ -47,6 +50,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -83,6 +87,9 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
     @Mock
     private IChatDao chatDao;
+
+    @Mock
+    private IAttritionDao attritionDao;
 
     @Mock
     private GameMapping gameMapping;
@@ -390,13 +397,20 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         pecs.setName("pecs");
 
         GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
+        game.setTurn(22);
         StackEntity stack = new StackEntity();
         stack.setProvince("pecs");
         if (!firstMove) {
             stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            AttritionEntity attrition = new AttritionEntity();
+            attrition.setId(666L);
+            attrition.setStatus(AttritionStatusEnum.ON_GOING);
+            attrition.getProvinces().add("pecs");
+            game.getAttritions().add(attrition);
         }
         stack.setId(13L);
         stack.setCountry("france");
+        stack.getCounters().add(createCounter(14L, "france", CounterFaceTypeEnum.ARMY_MINUS, stack));
         BorderEntity border = new BorderEntity();
         border.setProvinceFrom(pecs);
         border.setProvinceTo(idf);
@@ -409,50 +423,78 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("pecs")).thenReturn(pecs);
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
         when(oeUtil.isMobile(stack)).thenReturn(true);
-        when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(game.getCountries().get(0).getName()));
+        when(oeUtil.getAllies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(game.getCountries().get(0).getName()));
         when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
-        when(oeUtil.getMovePoints(pecs, idf, false)).thenReturn(4);
+        when(oeUtil.getMovePoints(pecs, idf, true)).thenReturn(4);
         when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
+        when(attritionDao.create(any())).thenAnswer(invocationOnMock -> {
+            AttritionEntity attrition = invocationOnMock.getArgumentAt(0, AttritionEntity.class);
+            if (attrition != null) {
+                attrition.setId(667L);
+            }
+            return attrition;
+        });
 
         simulateDiff();
 
-        DiffResponse response = boardService.moveStack(request);
+        boardService.moveStack(request);
 
-        DiffEntity diffEntity = retrieveDiffCreated();
+        List<DiffEntity> diffs = retrieveDiffsCreated();
 
-        InOrder inOrder = inOrder(gameDao, provinceDao, diffDao, diffMapping);
-
-        inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 26L, 1L);
-        inOrder.verify(provinceDao).getProvinceByName("IdF");
-        inOrder.verify(provinceDao).getProvinceByName("pecs");
-        inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(diffMapping).oesToVos(anyObject());
-
-        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MOVE, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
+        Assert.assertEquals(2, diffs.size());
+        DiffEntity diffMove = diffs.stream()
+                .filter(diff -> diff.getType() == DiffTypeEnum.MOVE && diff.getTypeObject() == DiffTypeObjectEnum.STACK)
+                .findAny()
+                .orElse(null);
+        Assert.assertNotNull(diffMove);
+        Assert.assertEquals(13L, diffMove.getIdObject().longValue());
         if (firstMove) {
-            Assert.assertEquals(4, diffEntity.getAttributes().size());
+            Assert.assertEquals(4, diffMove.getAttributes().size());
         } else {
-            Assert.assertEquals(3, diffEntity.getAttributes().size());
+            Assert.assertEquals(3, diffMove.getAttributes().size());
         }
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals(pecs.getName(), diffEntity.getAttributes().get(0).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(1).getType());
-        Assert.assertEquals(idf.getName(), diffEntity.getAttributes().get(1).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.MOVE_POINTS, diffEntity.getAttributes().get(2).getType());
-        Assert.assertEquals("4", diffEntity.getAttributes().get(2).getValue());
+        Assert.assertEquals(pecs.getName(), getAttribute(diffMove, DiffAttributeTypeEnum.PROVINCE_FROM));
+        Assert.assertEquals(idf.getName(), getAttribute(diffMove, DiffAttributeTypeEnum.PROVINCE_TO));
+        Assert.assertEquals("4", getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_POINTS));
         if (firstMove) {
-            Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(3).getType());
-            Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), diffEntity.getAttributes().get(3).getValue());
+            Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+        } else {
+            Assert.assertNull(getAttributeFull(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
         }
 
-        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(getDiffAfter(), response.getDiffs());
+        if (firstMove) {
+            DiffEntity diffAttrition = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.ADD && diff.getTypeObject() == DiffTypeObjectEnum.ATTRITION)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diffAttrition);
+            Assert.assertEquals(667L, diffAttrition.getIdObject().longValue());
+            Assert.assertEquals(game.getTurn().toString(), getAttribute(diffAttrition, DiffAttributeTypeEnum.TURN));
+            Assert.assertEquals(AttritionTypeEnum.MOVEMENT.name(), getAttribute(diffAttrition, DiffAttributeTypeEnum.TYPE));
+            Assert.assertEquals(AttritionStatusEnum.ON_GOING.name(), getAttribute(diffAttrition, DiffAttributeTypeEnum.STATUS));
+            Assert.assertEquals(Double.toString(2d), getAttribute(diffAttrition, DiffAttributeTypeEnum.SIZE));
+            Assert.assertEquals("14", getAttribute(diffAttrition, DiffAttributeTypeEnum.COUNTER));
+            List<String> provinces = diffAttrition.getAttributes().stream()
+                    .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE)
+                    .map(DiffAttributesEntity::getValue)
+                    .collect(Collectors.toList());
+            Assert.assertEquals(2, provinces.size());
+            Assert.assertTrue(provinces.contains(idf.getName()));
+            Assert.assertTrue(provinces.contains(pecs.getName()));
+        } else {
+            DiffEntity diffAttrition = diffs.stream()
+                    .filter(diff -> diff.getType() == DiffTypeEnum.MODIFY && diff.getTypeObject() == DiffTypeObjectEnum.ATTRITION)
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diffAttrition);
+            Assert.assertEquals(666L, diffAttrition.getIdObject().longValue());
+            List<String> provinces = diffAttrition.getAttributes().stream()
+                    .filter(attr -> attr.getType() == DiffAttributeTypeEnum.PROVINCE)
+                    .map(DiffAttributesEntity::getValue)
+                    .collect(Collectors.toList());
+            Assert.assertEquals(1, provinces.size());
+            Assert.assertTrue(provinces.contains(idf.getName()));
+        }
     }
 
     @Test
