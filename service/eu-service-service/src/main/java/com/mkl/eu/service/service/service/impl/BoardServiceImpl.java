@@ -680,17 +680,26 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .filter(attrition -> attrition.getType() == AttritionTypeEnum.MOVEMENT && attrition.getStatus() == AttritionStatusEnum.ON_GOING)
                 .findAny()
                 .orElse(null);
-        if (attritionMovement != null && stack.getMovePhase() == MovePhaseEnum.IS_MOVING &&
-                !attritionMovement.getCounters().stream().anyMatch(counterAttr -> Objects.equals(counterAttr.getCounter(), counter.getId()))) {
-            AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
-            attritionCounter.setCounter(counter.getId());
-            attritionCounter.setAttrition(attritionMovement);
-            attritionCounter.setCountry(counter.getCountry());
-            attritionCounter.setType(counter.getType());
-            attritionCounter.setCode(counter.getCode());
-            attritionMovement.getCounters().add(attritionCounter);
+        boolean attritionCounterAdd = attritionMovement != null && !attritionMovement.getCounters().stream().anyMatch(counterAttr -> Objects.equals(counterAttr.getCounter(), counter.getId()));
+        double newSize = stack.getCounters().stream()
+                .collect(Collectors.summingDouble(c -> CounterUtil.getSizeFromType(c.getType())));
+        boolean attritionSizeGrow = attritionMovement != null && newSize > attritionMovement.getSize();
+        if (stack.getMovePhase() == MovePhaseEnum.IS_MOVING && (attritionCounterAdd || attritionSizeGrow)) {
+            if (attritionCounterAdd) {
+                AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
+                attritionCounter.setCounter(counter.getId());
+                attritionCounter.setAttrition(attritionMovement);
+                attritionCounter.setCountry(counter.getCountry());
+                attritionCounter.setType(counter.getType());
+                attritionCounter.setCode(counter.getCode());
+                attritionMovement.getCounters().add(attritionCounter);
+            }
+            if (attritionSizeGrow) {
+                attritionMovement.setSize(newSize);
+            }
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ATTRITION, attritionMovement.getId(),
-                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTER, counter.getId())));
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTER, counter.getId(), attritionCounterAdd),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SIZE, newSize, attritionSizeGrow)));
         }
 
         return createDiffs(diffs, gameDiffs, request);

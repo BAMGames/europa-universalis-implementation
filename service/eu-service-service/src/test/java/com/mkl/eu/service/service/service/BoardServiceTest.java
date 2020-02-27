@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.vo.AuthentInfo;
 import com.mkl.eu.client.common.vo.GameInfo;
 import com.mkl.eu.client.common.vo.Request;
+import com.mkl.eu.client.service.service.IBoardService;
 import com.mkl.eu.client.service.service.IConstantsServiceException;
 import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
@@ -48,6 +49,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
@@ -1050,309 +1052,361 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testMoveCounterSuccess() throws Exception {
-        Request<MoveCounterRequest> request = new Request<>();
-        request.setRequest(new MoveCounterRequest());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
-        request.getGame().setIdCountry(666L);
-        request.getRequest().setIdCounter(13L);
-        request.getRequest().setIdStack(8L);
-
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 666L);
-
-        StackEntity stackTo = new StackEntity();
-        stackTo.setProvince("IdF");
-        stackTo.setId(8L);
-        stackTo.setCountry("france");
-        stackTo.setMovePhase(MovePhaseEnum.IS_MOVING);
-        game.getStacks().add(stackTo);
-
-        StackEntity stack = new StackEntity();
-        stack.setProvince("IdF");
-        stack.setId(9L);
-        stack.setCountry("genes");
-        CounterEntity counter = new CounterEntity();
-        counter.setId(13L);
-        counter.setOwner(stack);
-        counter.setCountry("genes");
-        stack.getCounters().add(counter);
-        stack.getCounters().add(new CounterEntity());
-        game.getStacks().add(stack);
-        PlayableCountryEntity country = new PlayableCountryEntity();
-        country.setName("france");
-        country.setUsername("toto");
-        country.setId(666L);
-        game.getCountries().add(country);
-
-        AttritionEntity attrition = new AttritionEntity();
-        attrition.setId(15L);
-        attrition.setStatus(AttritionStatusEnum.ON_GOING);
-        attrition.setType(AttritionTypeEnum.MOVEMENT);
-        AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
-        attritionCounter.setAttrition(attrition);
-        attritionCounter.setCounter(counter.getId());
-        attrition.getCounters().add(attritionCounter);
-        game.getAttritions().add(attrition);
-
-        List<String> patrons = new ArrayList<>();
-        patrons.add("france");
-
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 666L, 1L)).thenReturn(diffBefore);
-
-        when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
-
-        when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
-        when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
-        when(oeUtil.getController(stack)).thenReturn("genes");
-        when(oeUtil.getController(stackTo)).thenReturn("france");
-        when(provinceDao.getProvinceByName(any())).thenReturn(new EuropeanProvinceEntity());
-
-        simulateDiff();
-
-        boardService.moveCounter(request);
-
-        List<DiffEntity> diffs = retrieveDiffsCreated();
-        Assert.assertEquals(1, diffs.size());
-        DiffEntity diffEntity = diffs.get(0);
-
-        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MOVE, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals("9", diffEntity.getAttributes().get(0).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diffEntity.getAttributes().get(1).getType());
-        Assert.assertEquals("8", diffEntity.getAttributes().get(1).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diffEntity.getAttributes().get(2).getType());
-        Assert.assertEquals("IdF", diffEntity.getAttributes().get(2).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(3).getType());
-        Assert.assertEquals("IdF", diffEntity.getAttributes().get(3).getValue());
-
-        Assert.assertEquals("genes", stack.getCountry());
-        Assert.assertEquals("france", stackTo.getCountry());
-    }
-
-    @Test
-    public void testMoveCounterSuccessSwitchingControllers() throws Exception {
-        Request<MoveCounterRequest> request = new Request<>();
-        request.setRequest(new MoveCounterRequest());
-        request.setGame(new GameInfo());
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
-        request.getGame().setIdCountry(666L);
-        request.getRequest().setIdCounter(13L);
-        request.getRequest().setIdStack(8L);
-
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 666L);
-
-        StackEntity stackTo = new StackEntity();
-        stackTo.setProvince("IdF");
-        stackTo.setId(8L);
-        stackTo.setCountry("france");
-        stackTo.setMovePhase(MovePhaseEnum.IS_MOVING);
-        game.getStacks().add(stackTo);
-
-        StackEntity stack = new StackEntity();
-        stack.setProvince("IdF");
-        stack.setId(9L);
-        stack.setCountry("genes");
-        CounterEntity counter = new CounterEntity();
-        counter.setId(13L);
-        counter.setOwner(stack);
-        counter.setCountry("genes");
-        stack.getCounters().add(counter);
-        stack.getCounters().add(new CounterEntity());
-        game.getStacks().add(stack);
-        PlayableCountryEntity country = new PlayableCountryEntity();
-        country.setName("france");
-        country.setUsername("toto");
-        country.setId(666L);
-        game.getCountries().add(country);
-
-        AttritionEntity attrition = new AttritionEntity();
-        attrition.setId(15L);
-        attrition.setStatus(AttritionStatusEnum.ON_GOING);
-        attrition.setType(AttritionTypeEnum.MOVEMENT);
-        AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
-        attritionCounter.setAttrition(attrition);
-        attritionCounter.setCounter(666L);
-        attrition.getCounters().add(attritionCounter);
-        game.getAttritions().add(attrition);
-
-        EuropeanProvinceEntity idf = new EuropeanProvinceEntity();
-        idf.setName("IdF");
-        when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
-
-        List<String> patrons = new ArrayList<>();
-        patrons.add("france");
-
-        List<DiffEntity> diffBefore = new ArrayList<>();
-        diffBefore.add(new DiffEntity());
-        diffBefore.add(new DiffEntity());
-
-        when(diffDao.getDiffsSince(12L, 666L, 1L)).thenReturn(diffBefore);
-
-        when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
-
-        when(counterDao.getPatrons("genes", 12L)).thenReturn(patrons);
-        when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
-        when(oeUtil.getController(stack)).thenReturn("france");
-        when(oeUtil.getController(stackTo)).thenReturn("genes");
-        when(oeUtil.getLeader(any(), any(), any())).thenReturn("leader");
-
-        simulateDiff();
-
-        boardService.moveCounter(request);
-
-        List<DiffEntity> diffs = retrieveDiffsCreated();
-        Assert.assertEquals(4, diffs.size());
-
-        DiffEntity diffEntity = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER)
-                .findAny()
-                .orElse(null);
-        Assert.assertNotNull(diffEntity);
-        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MOVE, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.COUNTER, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(4, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK_FROM, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals("9", diffEntity.getAttributes().get(0).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.STACK_TO, diffEntity.getAttributes().get(1).getType());
-        Assert.assertEquals("8", diffEntity.getAttributes().get(1).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_FROM, diffEntity.getAttributes().get(2).getType());
-        Assert.assertEquals("IdF", diffEntity.getAttributes().get(2).getValue());
-        Assert.assertEquals(DiffAttributeTypeEnum.PROVINCE_TO, diffEntity.getAttributes().get(3).getType());
-        Assert.assertEquals("IdF", diffEntity.getAttributes().get(3).getValue());
-
-        diffEntity = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
-                        && Objects.equals(d.getIdObject(), stack.getId()))
-                .findAny()
-                .orElse(null);
-        Assert.assertNotNull(diffEntity);
-        Assert.assertEquals("france", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
-        Assert.assertEquals("leader", getAttribute(diffEntity, DiffAttributeTypeEnum.LEADER));
-
-        diffEntity = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
-                        && Objects.equals(d.getIdObject(), stackTo.getId()))
-                .findAny()
-                .orElse(null);
-        Assert.assertNotNull(diffEntity);
-        Assert.assertEquals("genes", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
-        Assert.assertEquals("leader", getAttribute(diffEntity, DiffAttributeTypeEnum.LEADER));
-
-        diffEntity = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ATTRITION
-                        && Objects.equals(d.getIdObject(), attrition.getId()))
-                .findAny()
-                .orElse(null);
-        Assert.assertNotNull(diffEntity);
-        Assert.assertEquals(counter.getId().toString(), getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTER));
-
-        Assert.assertEquals("france", stack.getCountry());
-        Assert.assertEquals("leader", stack.getLeader());
-        Assert.assertEquals("genes", stackTo.getCountry());
-        Assert.assertEquals("leader", stackTo.getLeader());
-    }
-
-    @Test
     public void testMoveCounterInNewStackSuccess() throws Exception {
-        Request<MoveCounterRequest> request = new Request<>();
-        request.setRequest(new MoveCounterRequest());
-        request.setAuthent(new AuthentInfo());
-        request.getAuthent().setUsername("toto");
-        request.setGame(new GameInfo());
-        request.getGame().setIdCountry(26L);
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
-        request.getRequest().setIdCounter(13L);
+        MoveCounterBuilder.create()
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create());
+        MoveCounterBuilder.create()
+                .inNewStack().oldStackDelete()
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create());
+        MoveCounterBuilder.create()
+                .stackFrom(MoveCounterStackBuilder.create().controllerBefore("france").controllerAfter("genes"))
+                .stackTo(MoveCounterStackBuilder.create().controllerBefore("genes").controllerAfter("france"))
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().stackFromChangeController().stackToChangeController());
+        MoveCounterBuilder.create()
+                .stackFrom(MoveCounterStackBuilder.create().leaderBefore("Napo").leaderAfter("Doria"))
+                .stackTo(MoveCounterStackBuilder.create().leaderBefore("anon1").leaderAfter("anon2"))
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().stackFromChangeLeader().stackToChangeLeader());
+        MoveCounterBuilder.create()
+                .stackFrom(MoveCounterStackBuilder.create().controllerBefore("france").controllerAfter("genes")
+                        .leaderBefore("Napo").leaderAfter("Doria"))
+                .stackTo(MoveCounterStackBuilder.create().controllerBefore("genes").controllerAfter("france")
+                        .leaderBefore("anon1").leaderAfter("anon2"))
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().stackFromChangeController().stackFromChangeLeader()
+                        .stackToChangeController().stackToChangeLeader());
+        MoveCounterBuilder.create()
+                .attritionOnGoing().counterAlreadyInAttrition()
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create());
+        MoveCounterBuilder.create()
+                .attritionOnGoing()
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().attritionCounterAdd());
+        MoveCounterBuilder.create()
+                .attritionOnGoing().counterAlreadyInAttrition().attritionSizeWillGrow()
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().attritionChangeSize());
+        MoveCounterBuilder.create()
+                .attritionOnGoing().attritionSizeWillGrow()
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().attritionCounterAdd().attritionChangeSize());
+        MoveCounterBuilder.create()
+                .attritionOnGoing()
+                .stackFrom(MoveCounterStackBuilder.create().controllerBefore("france").controllerAfter("france")
+                        .leaderBefore("Nabo").leaderAfter("Napo"))
+                .stackTo(MoveCounterStackBuilder.create().controllerBefore("genes").controllerAfter("france")
+                        .leaderBefore("anon1").leaderAfter("anon1"))
+                .whenMoveCounter(this, boardService)
+                .thenExpect(MoveCounterResultBuilder.create().stackFromChangeLeader().stackToChangeController()
+                        .attritionCounterAdd());
+    }
 
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
+    static class MoveCounterBuilder {
+        MoveCounterStackBuilder stackFrom = MoveCounterStackBuilder.create();
+        MoveCounterStackBuilder stackTo = MoveCounterStackBuilder.create();
+        boolean inNewStack;
+        boolean oldStackDelete;
+        boolean attritionOnGoing;
+        boolean counterAlreadyInAttrition;
+        boolean attritionSizeWillGrow;
+        List<DiffEntity> diffs;
 
-        StackEntity stack = new StackEntity();
-        stack.setProvince("IdF");
-        stack.setId(9L);
-        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
-        CounterEntity counter = new CounterEntity();
-        counter.setId(13L);
-        counter.setCountry("france");
-        counter.setOwner(stack);
-        stack.getCounters().add(counter);
-        game.getStacks().add(stack);
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setId(26L);
-        game.getCountries().get(0).setName("france");
+        static MoveCounterBuilder create() {
+            return new MoveCounterBuilder();
+        }
 
-        AttritionEntity attrition = new AttritionEntity();
-        attrition.setId(15L);
-        attrition.setStatus(AttritionStatusEnum.ON_GOING);
-        attrition.setType(AttritionTypeEnum.SIEGE);
-        AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
-        attritionCounter.setAttrition(attrition);
-        attritionCounter.setCounter(666L);
-        attrition.getCounters().add(attritionCounter);
-        game.getAttritions().add(attrition);
+        MoveCounterBuilder stackFrom(MoveCounterStackBuilder stackFrom) {
+            this.stackFrom = stackFrom;
+            return this;
+        }
 
-        when(counterDao.getCounter(13L, 12L)).thenReturn(counter);
+        MoveCounterBuilder stackTo(MoveCounterStackBuilder stackTo) {
+            this.stackTo = stackTo;
+            return this;
+        }
 
-        StackEntity newStack = new StackEntity();
-        newStack.setProvince("IdF");
-        newStack.setId(25L);
-        when(counterDomain.createStack(any(), any(), any())).thenReturn(newStack);
-        when(counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
-        when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
-        when(provinceDao.getProvinceByName(any())).thenReturn(new EuropeanProvinceEntity());
+        MoveCounterBuilder inNewStack() {
+            this.inNewStack = true;
+            return this;
+        }
 
-        simulateDiff();
+        MoveCounterBuilder oldStackDelete() {
+            this.oldStackDelete = true;
+            return this;
+        }
 
-        DiffResponse response = boardService.moveCounter(request);
+        MoveCounterBuilder attritionOnGoing() {
+            this.attritionOnGoing = true;
+            return this;
+        }
 
-        List<DiffEntity> diffs = retrieveDiffsCreated();
+        MoveCounterBuilder counterAlreadyInAttrition() {
+            this.counterAlreadyInAttrition = true;
+            return this;
+        }
 
-        InOrder inOrder = inOrder(gameDao, diffDao, counterDao, stackDao, diffMapping);
+        MoveCounterBuilder attritionSizeWillGrow() {
+            this.attritionSizeWillGrow = true;
+            return this;
+        }
 
-        inOrder.verify(gameDao).lock(12L);
-        inOrder.verify(diffDao).getDiffsSince(12L, 26L, 1L);
-        inOrder.verify(counterDao).getCounter(13L, 12L);
-        inOrder.verify(diffDao).create(anyObject());
-        inOrder.verify(diffMapping).oesToVos(anyObject());
+        MoveCounterBuilder whenMoveCounter(BoardServiceTest testClass, IBoardService boardService) throws FunctionalException {
+            Request<MoveCounterRequest> request = new Request<>();
+            request.setRequest(new MoveCounterRequest());
+            request.setAuthent(new AuthentInfo());
+            request.getAuthent().setUsername("toto");
+            request.setGame(new GameInfo());
+            request.getGame().setIdCountry(26L);
+            request.getGame().setIdGame(12L);
+            request.getGame().setVersionGame(1L);
+            request.getRequest().setIdCounter(13L);
 
-        DiffEntity diffEntity = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
-                        && Objects.equals(d.getIdObject(), counter.getId()))
-                .findAny()
-                .orElse(null);
-        Assert.assertNotNull(diffEntity);
-        Assert.assertEquals(5, diffEntity.getAttributes().size());
-        Assert.assertEquals("9", getAttribute(diffEntity, DiffAttributeTypeEnum.STACK_FROM));
-        Assert.assertEquals("25", getAttribute(diffEntity, DiffAttributeTypeEnum.STACK_TO));
-        Assert.assertEquals("IdF", getAttribute(diffEntity, DiffAttributeTypeEnum.PROVINCE_FROM));
-        Assert.assertEquals("IdF", getAttribute(diffEntity, DiffAttributeTypeEnum.PROVINCE_TO));
-        Assert.assertEquals("9", getAttribute(diffEntity, DiffAttributeTypeEnum.STACK_DEL));
+            GameEntity game = testClass.createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
 
-        diffEntity = diffs.stream()
-                .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ATTRITION
-                        && Objects.equals(d.getIdObject(), attrition.getId()))
-                .findAny()
-                .orElse(null);
-        Assert.assertNull(diffEntity);
+            StackEntity oldStack = new StackEntity();
+            oldStack.setCountry(stackFrom.controllerBefore);
+            oldStack.setLeader(stackFrom.leaderBefore);
+            oldStack.setProvince("IdF");
+            oldStack.setId(9L);
+            oldStack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            CounterEntity counter = new CounterEntity();
+            counter.setId(13L);
+            counter.setCountry("france");
+            counter.setType(CounterFaceTypeEnum.ARMY_MINUS);
+            counter.setOwner(oldStack);
+            oldStack.getCounters().add(counter);
+            if (!oldStackDelete) {
+                oldStack.getCounters().add(new CounterEntity());
+            }
+            game.getStacks().add(oldStack);
+            game.getCountries().add(new PlayableCountryEntity());
+            game.getCountries().get(0).setId(26L);
+            game.getCountries().get(0).setName("france");
 
-        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(getDiffAfter(), response.getDiffs());
+            StackEntity newStack = new StackEntity();
+            newStack.setCountry(stackTo.controllerBefore);
+            newStack.setLeader(stackTo.leaderBefore);
+            newStack.setProvince("IdF");
+            newStack.setId(25L);
+            newStack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            if (!inNewStack) {
+                game.getStacks().add(newStack);
+                request.getRequest().setIdStack(newStack.getId());
+            }
+
+            AttritionEntity attrition = new AttritionEntity();
+            attrition.setId(15L);
+            if (attritionOnGoing) {
+                attrition.setStatus(AttritionStatusEnum.ON_GOING);
+            } else {
+                attrition.setStatus(AttritionStatusEnum.DONE);
+            }
+            attrition.setType(AttritionTypeEnum.MOVEMENT);
+            AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
+            attritionCounter.setAttrition(attrition);
+            attritionCounter.setCounter(666L);
+            attrition.getCounters().add(attritionCounter);
+            if (counterAlreadyInAttrition) {
+                attritionCounter = new AttritionCounterEntity();
+                attritionCounter.setAttrition(attrition);
+                attritionCounter.setCounter(counter.getId());
+                attrition.getCounters().add(attritionCounter);
+            }
+            game.getAttritions().add(attrition);
+            if (attritionSizeWillGrow) {
+                attrition.setSize(0d);
+            } else {
+                attrition.setSize(8d);
+            }
+
+            Mockito.reset(testClass.counterDomain);
+            when(testClass.counterDao.getCounter(13L, 12L)).thenReturn(counter);
+            if (inNewStack) {
+                when(testClass.counterDomain.createStack(any(), any(), any())).thenReturn(newStack);
+            }
+            when(testClass.oeUtil.getController(oldStack)).thenReturn(stackFrom.controllerAfter);
+            when(testClass.oeUtil.getController(newStack)).thenReturn(stackTo.controllerAfter);
+            when(testClass.oeUtil.getLeader(any(), any(), any())).thenReturn(stackFrom.leaderAfter, stackTo.leaderAfter);
+            when(testClass.counterDomain.changeCounterOwner(any(), any(), any())).thenCallRealMethod();
+            when(testClass.counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
+            when(testClass.provinceDao.getProvinceByName(any())).thenReturn(new EuropeanProvinceEntity());
+
+            testClass.simulateDiff();
+
+            boardService.moveCounter(request);
+
+            diffs = testClass.retrieveDiffsCreated();
+
+            return this;
+        }
+
+        MoveCounterBuilder thenExpect(MoveCounterResultBuilder result) {
+            int nbDiffs = 1;
+            DiffEntity diffEntity = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                            && Objects.equals(d.getIdObject(), 13L))
+                    .findAny()
+                    .orElse(null);
+            Assert.assertNotNull(diffEntity);
+            Assert.assertEquals(4 + (oldStackDelete ? 1 : 0), diffEntity.getAttributes().size());
+            Assert.assertEquals("9", getAttribute(diffEntity, DiffAttributeTypeEnum.STACK_FROM));
+            Assert.assertEquals("25", getAttribute(diffEntity, DiffAttributeTypeEnum.STACK_TO));
+            Assert.assertEquals("IdF", getAttribute(diffEntity, DiffAttributeTypeEnum.PROVINCE_FROM));
+            Assert.assertEquals("IdF", getAttribute(diffEntity, DiffAttributeTypeEnum.PROVINCE_TO));
+            if (oldStackDelete) {
+                Assert.assertEquals("9", getAttribute(diffEntity, DiffAttributeTypeEnum.STACK_DEL));
+            } else {
+                Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.STACK_DEL));
+            }
+
+            diffEntity = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
+                            && Objects.equals(d.getIdObject(), 9L))
+                    .findAny()
+                    .orElse(null);
+            if (result.stackFromChangeController || result.stackFromChangeLeader) {
+                Assert.assertNotNull(diffEntity);
+                if (result.stackFromChangeController) {
+                    Assert.assertEquals(stackFrom.controllerAfter, getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+                } else {
+                    Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+                }
+                if (result.stackFromChangeLeader) {
+                    Assert.assertEquals(stackFrom.leaderAfter, getAttribute(diffEntity, DiffAttributeTypeEnum.LEADER));
+                } else {
+                    Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.LEADER));
+                }
+                nbDiffs++;
+            } else {
+                Assert.assertNull(diffEntity);
+            }
+
+            diffEntity = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
+                            && Objects.equals(d.getIdObject(), 25L))
+                    .findAny()
+                    .orElse(null);
+            if (result.stackToChangeController || result.stackToChangeLeader) {
+                Assert.assertNotNull(diffEntity);
+                if (result.stackToChangeController) {
+                    Assert.assertEquals(stackTo.controllerAfter, getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+                } else {
+                    Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.COUNTRY));
+                }
+                if (result.stackToChangeLeader) {
+                    Assert.assertEquals(stackTo.leaderAfter, getAttribute(diffEntity, DiffAttributeTypeEnum.LEADER));
+                } else {
+                    Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.LEADER));
+                }
+                nbDiffs++;
+            } else {
+                Assert.assertNull(diffEntity);
+            }
+
+            diffEntity = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ATTRITION
+                            && Objects.equals(d.getIdObject(), 15L))
+                    .findAny()
+                    .orElse(null);
+            if (result.attritionCounterAdd || result.attritionChangeSize) {
+                Assert.assertNotNull(diffEntity);
+                if (result.attritionCounterAdd) {
+                    Assert.assertEquals("13", getAttribute(diffEntity, DiffAttributeTypeEnum.COUNTER));
+                } else {
+                    Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.COUNTER));
+                }
+                if (result.attritionChangeSize) {
+                    Assert.assertEquals(Double.toString(2d), getAttribute(diffEntity, DiffAttributeTypeEnum.SIZE));
+                } else {
+                    Assert.assertNull(getAttributeFull(diffEntity, DiffAttributeTypeEnum.SIZE));
+                }
+                nbDiffs++;
+            } else {
+                Assert.assertNull(diffEntity);
+            }
+
+            Assert.assertEquals(nbDiffs, diffs.size());
+
+            return this;
+        }
+    }
+
+    static class MoveCounterStackBuilder {
+        String controllerBefore;
+        String controllerAfter;
+        String leaderBefore;
+        String leaderAfter;
+
+        static MoveCounterStackBuilder create() {
+            return new MoveCounterStackBuilder();
+        }
+
+        MoveCounterStackBuilder controllerBefore(String controllerBefore) {
+            this.controllerBefore = controllerBefore;
+            return this;
+        }
+
+        MoveCounterStackBuilder controllerAfter(String controllerAfter) {
+            this.controllerAfter = controllerAfter;
+            return this;
+        }
+
+        MoveCounterStackBuilder leaderBefore(String leaderBefore) {
+            this.leaderBefore = leaderBefore;
+            return this;
+        }
+
+        MoveCounterStackBuilder leaderAfter(String leaderAfter) {
+            this.leaderAfter = leaderAfter;
+            return this;
+        }
+    }
+
+    static class MoveCounterResultBuilder {
+        boolean stackFromChangeController;
+        boolean stackFromChangeLeader;
+        boolean stackToChangeController;
+        boolean stackToChangeLeader;
+        boolean attritionCounterAdd;
+        boolean attritionChangeSize;
+
+        static MoveCounterResultBuilder create() {
+            return new MoveCounterResultBuilder();
+        }
+
+        MoveCounterResultBuilder stackFromChangeController() {
+            this.stackFromChangeController = true;
+            return this;
+        }
+
+        MoveCounterResultBuilder stackFromChangeLeader() {
+            this.stackFromChangeLeader = true;
+            return this;
+        }
+
+        MoveCounterResultBuilder stackToChangeController() {
+            this.stackToChangeController = true;
+            return this;
+        }
+
+        MoveCounterResultBuilder stackToChangeLeader() {
+            this.stackToChangeLeader = true;
+            return this;
+        }
+
+        MoveCounterResultBuilder attritionCounterAdd() {
+            this.attritionCounterAdd = true;
+            return this;
+        }
+
+        MoveCounterResultBuilder attritionChangeSize() {
+            this.attritionChangeSize = true;
+            return this;
+        }
     }
 
     @Test
