@@ -676,6 +676,22 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             stack.setCountry(newController);
             stack.setLeader(newLeader);
         }
+        AttritionEntity attritionMovement = game.getAttritions().stream()
+                .filter(attrition -> attrition.getType() == AttritionTypeEnum.MOVEMENT && attrition.getStatus() == AttritionStatusEnum.ON_GOING)
+                .findAny()
+                .orElse(null);
+        if (attritionMovement != null && stack.getMovePhase() == MovePhaseEnum.IS_MOVING &&
+                !attritionMovement.getCounters().stream().anyMatch(counterAttr -> Objects.equals(counterAttr.getCounter(), counter.getId()))) {
+            AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
+            attritionCounter.setCounter(counter.getId());
+            attritionCounter.setAttrition(attritionMovement);
+            attritionCounter.setCountry(counter.getCountry());
+            attritionCounter.setType(counter.getType());
+            attritionCounter.setCode(counter.getCode());
+            attritionMovement.getCounters().add(attritionCounter);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ATTRITION, attritionMovement.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.COUNTER, counter.getId())));
+        }
 
         return createDiffs(diffs, gameDiffs, request);
     }
