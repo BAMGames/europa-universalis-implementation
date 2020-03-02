@@ -160,9 +160,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             failIfFalse(new CheckForThrow<Boolean>()
                     .setTest(idsStacks.isEmpty())
                     .setCodeError(IConstantsServiceException.OTHER_STACK_MOVING)
-                    .setMsgFormat("{1}: {0} {2} can''t move because stacks {3} are currently moving.")
+                    .setMsgFormat("{1}: {0} Action impossible because {2} are currently moving.")
                     .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
-                    .setParams(METHOD_MOVE_STACK, idStack, idsStacks));
+                    .setParams(METHOD_MOVE_STACK, idsStacks));
 
             firstMove = true;
         }
@@ -913,7 +913,17 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_AUTHENT, PARAMETER_USERNAME)
                 .setParams(METHOD_VALIDATE_MIL_ROUND, request.getAuthent().getUsername(), country.getUsername()));
 
-        // TODO TG-6 check that no stack led by the country is currently moving
+        List<Long> stackMoving = game.getStacks().stream()
+                .filter(stack -> stack.getMovePhase() == MovePhaseEnum.IS_MOVING)
+                .map(StackEntity::getId)
+                .collect(Collectors.toList());
+
+        failIfTrue(new CheckForThrow<Boolean>()
+                .setTest(CollectionUtils.isNotEmpty(stackMoving))
+                .setCodeError(IConstantsServiceException.OTHER_STACK_MOVING)
+                .setMsgFormat("{1}: {0} Action impossible because {2} are currently moving.")
+                .setName(PARAMETER_VALIDATE_MIL_ROUND, PARAMETER_REQUEST, PARAMETER_VALIDATE)
+                .setParams(METHOD_VALIDATE_MIL_ROUND, stackMoving));
 
         CountryOrderEntity order = game.getOrders().stream()
                 .filter(o -> o.isActive() && o.getCountry().getId().equals(country.getId()))

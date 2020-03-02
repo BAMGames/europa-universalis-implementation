@@ -594,14 +594,13 @@ public interface IConstantsServiceException {
 
     /**
      * <p>
-     * Exception thrown when trying to move a stack while another one is moving.
+     * Exception thrown when trying to perform an action which is impossible because a stack is moving.
      * </p>
      * <p>
      * Parameters:
      * <ul>
      * <li>0: Action being performed (or object being updated).</li>
-     * <li>1: id of the stack trying to move.</li>
-     * <li>2: ids of the stack currently moving.</li>
+     * <li>1: ids of the stack currently moving.</li>
      * </ul>
      * </p>
      */

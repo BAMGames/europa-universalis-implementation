@@ -1785,6 +1785,20 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             Assert.assertEquals(IConstantsCommonException.ACCESS_RIGHT, e.getCode());
             Assert.assertEquals("validateMilitaryRound.authent.username", e.getParams()[0]);
         }
+
+        request.getAuthent().setUsername("MKL");
+        StackEntity stack = new StackEntity();
+        stack.setId(29L);
+        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+        game.getStacks().add(stack);
+
+        try {
+            boardService.validateMilitaryRound(request);
+            Assert.fail("Should break because a stack is still moving");
+        } catch (FunctionalException e) {
+            Assert.assertEquals(IConstantsServiceException.OTHER_STACK_MOVING, e.getCode());
+            Assert.assertEquals("validateMilitaryRound.request.validate", e.getParams()[0]);
+        }
     }
 
     @Test
