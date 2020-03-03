@@ -379,6 +379,12 @@ public interface IOEUtil {
     String getRoundBox(GameEntity game);
 
     /**
+     * @param game the game.
+     * @return if there is bad weather during the current military round.
+     */
+    boolean isBadWeather(GameEntity game);
+
+    /**
      * @param inflation the actual inflation.
      * @param country   the country.
      * @param tables    the tables.

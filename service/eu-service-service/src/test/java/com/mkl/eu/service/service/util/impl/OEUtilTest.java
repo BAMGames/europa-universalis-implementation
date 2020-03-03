@@ -3582,6 +3582,25 @@ public class OEUtilTest {
     }
 
     @Test
+    public void testIsBadWeather() {
+        GameEntity game = new GameEntity();
+
+        Assert.assertFalse(oeUtil.isBadWeather(game));
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince("B_MR_W5");
+        CounterEntity counter = AbstractGameServiceTest.createCounter(1L, null, CounterFaceTypeEnum.GOOD_WEATHER, stack);
+        stack.getCounters().add(counter);
+        game.getStacks().add(stack);
+
+        Assert.assertFalse(oeUtil.isBadWeather(game));
+
+        counter.setType(CounterFaceTypeEnum.BAD_WEATHER);
+
+        Assert.assertTrue(oeUtil.isBadWeather(game));
+    }
+
+    @Test
     public void testGetStackController() {
         StackControllerBuilder.create()
                 .whenGetController(oeUtil)

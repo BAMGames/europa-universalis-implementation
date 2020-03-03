@@ -1224,6 +1224,17 @@ public final class OEUtilImpl implements IOEUtil {
                 .orElse(null);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isBadWeather(GameEntity game) {
+        return game.getStacks().stream().filter(stack -> GameUtil.isRoundBox(stack.getProvince()))
+                .flatMap(stack -> stack.getCounters().stream())
+                .anyMatch(counter -> counter.getType() == CounterFaceTypeEnum.BAD_WEATHER);
+    }
+
     /**
      * {@inheritDoc}
      */
