@@ -186,4 +186,35 @@ public class CounterDaoImplTest {
         // governor is in this region but not in this game
         Assert.assertFalse(counterDao.isGovernorInSameRegion("Azteca", "espagne", 2L));
     }
+
+    @Test
+    public void testGetColdAreaPenaltyRotw() {
+        // region with cold area 0
+        Assert.assertEquals(0, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rSiberie~W"), "france", 1L));
+        // region with cold area null
+        Assert.assertEquals(0, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rInca~C"), "france", 1L));
+        // region with cold area 1
+        Assert.assertEquals(1, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rLena~NE"), "france", 1L));
+        // region with cold area 2
+        Assert.assertEquals(2, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rKamchatka~I"), "france", 1L));
+        // region with cold area 2 and another with cold area null
+        Assert.assertEquals(2, counterDao.getColdAreaPenaltyRotw(Arrays.asList("rKamchatka~I", "rInca~C"), "france", 1L));
+        // region with cold area 2 and another with cold area 1
+        Assert.assertEquals(3, counterDao.getColdAreaPenaltyRotw(Arrays.asList("rKamchatka~I", "rLena~NE"), "france", 1L));
+        // region with cold area 2 but with a fort
+        Assert.assertEquals(0, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rKamchatka~I"), "russie", 1L));
+        // region with cold area 2 with a russian fort and a spanish control
+        Assert.assertEquals(2, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rAlaska~E"), "russie", 1L));
+        Assert.assertEquals(0, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rAlaska~E"), "espagne", 1L));
+        Assert.assertEquals(2, counterDao.getColdAreaPenaltyRotw(Collections.singletonList("rAlaska~E"), "france", 1L));
+        // rAlaska~W : cold area 2 with russian TP-
+        // rLena~E : cold area 1 with russian TP+
+        // rLena~SW : cold area 1 with russian COL-
+        // rLena~N : cold area 1 with russian COL+
+        // rLena~NW : cold area 1 with turkish fort
+        Assert.assertEquals(1, counterDao.getColdAreaPenaltyRotw(Arrays.asList("rAlaska~W", "rLena~E", "rLena~SW", "rLena~N", "rLena~NW"), "russie", 1L));
+        Assert.assertEquals(5, counterDao.getColdAreaPenaltyRotw(Arrays.asList("rAlaska~W", "rLena~E", "rLena~SW", "rLena~N", "rLena~NW"), "turquie", 1L));
+        Assert.assertEquals(6, counterDao.getColdAreaPenaltyRotw(Arrays.asList("rAlaska~W", "rLena~E", "rLena~SW", "rLena~N", "rLena~NW"), "espagne", 1L));
+        Assert.assertEquals(6, counterDao.getColdAreaPenaltyRotw(Arrays.asList("rAlaska~W", "rLena~E", "rLena~SW", "rLena~N", "rLena~NW"), "russie", 2L));
+    }
 }

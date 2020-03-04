@@ -437,4 +437,23 @@
 			WHERE province.NAME = ':province' AND geoGroup.NAME IS NOT NULL;
 		]]>
 	</entry>
+	<entry key="province.rotw_cold_area_penalty">
+		<![CDATA[
+			SELECT IFNULL(SUM(region.COLD_AREA), 0) FROM R_PROVINCE prov
+				INNER JOIN R_PROVINCE_ROTW provRotw ON provRotw.ID = prov.ID
+				INNER JOIN R_REGION region ON region.NAME = provRotw.REGION
+			WHERE prov.NAME IN :provinces AND prov.NAME NOT IN (
+				SELECT stack.R_PROVINCE FROM COUNTER counter
+					INNER JOIN STACK stack ON stack.ID = counter.ID_STACK
+				WHERE (counter.TYPE = 'COLONY_MINUS' OR counter.TYPE = 'COLONY_PLUS' OR counter.TYPE = 'TRADING_POST_MINUS'
+					OR counter.TYPE = 'TRADING_POST_PLUS' OR counter.TYPE = 'FORT' OR counter.TYPE = 'CONTROL')
+					AND counter.R_COUNTRY = ':country' AND stack.ID_GAME = :idGame
+					AND NOT EXISTS (
+						SELECT stack2.ID FROM COUNTER counter2
+							INNER JOIN STACK stack2 ON stack2.ID = counter2.ID_STACK
+						WHERE stack2.R_PROVINCE = stack.R_PROVINCE AND counter2.TYPE = 'CONTROL' AND counter2.R_COUNTRY != ':country' and stack2.ID_GAME = :idGame
+					)
+				);
+		]]>
+	</entry>
 </properties>

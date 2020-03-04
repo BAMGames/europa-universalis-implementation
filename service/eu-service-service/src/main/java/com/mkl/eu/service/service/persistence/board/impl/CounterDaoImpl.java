@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -210,5 +207,18 @@ public class CounterDaoImpl extends GenericDaoImpl<CounterEntity, Long> implemen
         sql = sql.replace(":region", region);
 
         return jdbcTemplate.queryForObject(sql, Boolean.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getColdAreaPenaltyRotw(Collection<String> provinces, String country, Long idGame) {
+        String sql = queryProps.getProperty("province.rotw_cold_area_penalty");
+
+        sql = sql.replace(":idGame", Long.toString(idGame));
+        String provinceNames = provinces.stream().collect(Collectors.joining("','", "('", "')"));
+        sql = sql.replace(":provinces", provinceNames);
+        sql = sql.replace(":country", country);
+
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 }

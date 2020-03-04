@@ -3,6 +3,7 @@ package com.mkl.eu.service.service.persistence.board;
 import com.mkl.eu.service.service.persistence.IGenericDao;
 import com.mkl.eu.service.service.persistence.oe.board.CounterEntity;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -83,4 +84,12 @@ public interface ICounterDao extends IGenericDao<CounterEntity, Long> {
      * @return if there is a governor of the country in the region.
      */
     boolean isGovernorInSameRegion(String region, String country, Long idGame);
+
+    /**
+     * @param provinces the list of provinces.
+     * @param country   the country.
+     * @param idGame    id of the game.
+     * @return the sum of the rotw cold area penalty of all provinces for the given country.
+     */
+    int getColdAreaPenaltyRotw(Collection<String> provinces, String country, Long idGame);
 }
