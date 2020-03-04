@@ -420,4 +420,11 @@ public interface IOEUtil {
      * @return the leader that will naturally lead this counters (if tie, all eligible leaders are returned).
      */
     List<Leader> getLeaders(List<CounterEntity> counters, Tables tables, Predicate<Leader> conditions);
+
+    /**
+     * @param province name of the province.
+     * @param game     the game.
+     * @return if a province is european or rotw (reminder : a rotw province with a level 6 colony is considered european).
+     */
+    boolean isRotwProvince(String province, GameEntity game);
 }

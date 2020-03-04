@@ -19,6 +19,7 @@ import com.mkl.eu.service.service.persistence.oe.country.PlayableCountryEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.CountryInWarEntity;
 import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EconomicalSheetEntity;
+import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.country.CountryEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.BorderEntity;
@@ -4044,5 +4045,47 @@ public class OEUtilTest {
                 return leader;
             }
         }
+    }
+
+    @Test
+    public void testIsProvinceRotw() {
+        GameEntity game = new GameEntity();
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
+        Assert.assertEquals(false, oeUtil.isRotwProvince("eIdf", game));
+
+        StackEntity stack = new StackEntity();
+        stack.setProvince("rAzteca");
+        game.getStacks().add(stack);
+        CounterEntity counter = new CounterEntity();
+        counter.setType(CounterFaceTypeEnum.COLONY_PLUS);
+        stack.getCounters().add(counter);
+
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
+
+        counter.setEstablishment(new EstablishmentEntity());
+
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
+
+        counter.getEstablishment().setLevel(6);
+
+        Assert.assertEquals(false, oeUtil.isRotwProvince("rAzteca", game));
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rInca", game));
+
+        counter.getEstablishment().setLevel(5);
+
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
+
+        counter.getEstablishment().setLevel(6);
+        counter.setType(CounterFaceTypeEnum.COLONY_MINUS);
+
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
+
+        counter.setType(CounterFaceTypeEnum.TRADING_POST_PLUS);
+
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
+
+        counter.setType(CounterFaceTypeEnum.TRADING_POST_MINUS);
+
+        Assert.assertEquals(true, oeUtil.isRotwProvince("rAzteca", game));
     }
 }

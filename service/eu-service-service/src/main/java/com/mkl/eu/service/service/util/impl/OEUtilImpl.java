@@ -1352,4 +1352,22 @@ public final class OEUtilImpl implements IOEUtil {
 
         return leaders;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isRotwProvince(String province, GameEntity game) {
+        boolean rotw = province.startsWith("r");
+
+        if (rotw) {
+            rotw = !game.getStacks().stream()
+                    .filter(stack -> StringUtils.equals(stack.getProvince(), province))
+                    .flatMap(stack -> stack.getCounters().stream())
+                    .anyMatch(counter -> counter.getType() == CounterFaceTypeEnum.COLONY_PLUS &&
+                            counter.getEstablishment() != null && Objects.equals(6, counter.getEstablishment().getLevel()));
+        }
+
+        return rotw;
+    }
 }
