@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.board;
 
+import com.mkl.eu.client.service.vo.board.ICounter;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
 import com.mkl.eu.service.service.persistence.oe.eco.EstablishmentEntity;
@@ -15,7 +16,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "COUNTER")
-public class CounterEntity implements IEntity, Serializable {
+public class CounterEntity implements ICounter, IEntity, Serializable {
     /** Id. */
     private Long id;
     /** Name of the country owning of the counter. */

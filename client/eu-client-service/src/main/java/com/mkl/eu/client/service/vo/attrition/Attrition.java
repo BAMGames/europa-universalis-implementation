@@ -32,6 +32,8 @@ public class Attrition extends EuObject {
     private Integer bonus;
     /** Unmodified die roll of the attrition. */
     private Integer die;
+    /** Unmodified secondary die roll of the attrition. */
+    private Integer secondaryDie;
 
     /** @return the turn. */
     public Integer getTurn() {
@@ -121,5 +123,15 @@ public class Attrition extends EuObject {
     /** @param die the die to set. */
     public void setDie(Integer die) {
         this.die = die;
+    }
+
+    /** @return the secondaryDie. */
+    public Integer getSecondaryDie() {
+        return secondaryDie;
+    }
+
+    /** @param secondaryDie the secondaryDie to set. */
+    public void setSecondaryDie(Integer secondaryDie) {
+        this.secondaryDie = secondaryDie;
     }
 }

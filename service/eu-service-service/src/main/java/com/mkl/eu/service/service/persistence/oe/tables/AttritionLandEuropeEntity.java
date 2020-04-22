@@ -18,9 +18,9 @@ public class AttritionLandEuropeEntity implements IEntity, Serializable {
     private Long id;
     /** Result of the modified dice. */
     private Integer dice;
-    /** Minimum number of LD of the stack for land attrition in Europe. */
+    /** Minimum number of LD (inclusive) of the stack for land attrition in Europe. */
     private Integer minSize;
-    /** Maximum number of LD of the stack for land attrition in Europe. */
+    /** Maximum number of LD (exclusive) of the stack for land attrition in Europe. */
     private Integer maxSize;
     /** LD loss in land europe attrition. */
     private Integer loss;

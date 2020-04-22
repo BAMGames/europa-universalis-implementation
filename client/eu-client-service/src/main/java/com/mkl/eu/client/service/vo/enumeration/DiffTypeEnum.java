@@ -396,6 +396,10 @@ public enum DiffTypeEnum {
      * <li>DiffAttributeTypeEnum#SIZE maximum size of the stack for the attrition.</li>
      * <li>DiffAttributeTypeEnum#PROVINCE a province where the attrition can also occurs (can be multiple).</li>
      * <li>DiffAttributeTypeEnum#COUNTER a counter that is affected by the attrition (can be multiple).</li>
+     * <li>DiffAttributeTypeEnum#BONUS the modifier to the die roll of the attrition.</li>
+     * <li>DiffAttributeTypeEnum#DIE the unmodified die roll of the attrition.</li>
+     * <li>DiffAttributeTypeEnum#SECONDARY_DIE the unmodified secondary die roll of the attrition.</li>
+     * <li>DiffAttributeTypeEnum#TECH_LAND the land tech of the attrition in Europe.</li>
      * </ul>
      * </li>
      * </ul>

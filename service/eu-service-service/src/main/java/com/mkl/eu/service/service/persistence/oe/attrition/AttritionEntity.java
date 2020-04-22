@@ -39,6 +39,8 @@ public class AttritionEntity implements IEntity, Serializable {
     private Integer bonus;
     /** Unmodified die roll of the attrition. */
     private Integer die;
+    /** Unmodified secondary die roll of the attrition. */
+    private Integer secondaryDie;
     /** Game in which the battle occurs. */
     private GameEntity game;
 
@@ -150,6 +152,16 @@ public class AttritionEntity implements IEntity, Serializable {
     /** @param die the die to set. */
     public void setDie(Integer die) {
         this.die = die;
+    }
+
+    /** @return the secondaryDie. */
+    public Integer getSecondaryDie() {
+        return secondaryDie;
+    }
+
+    /** @param secondaryDie the secondaryDie to set. */
+    public void setSecondaryDie(Integer secondaryDie) {
+        this.secondaryDie = secondaryDie;
     }
 
     /** @return the game. */

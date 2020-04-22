@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.attrition;
 
+import com.mkl.eu.client.service.vo.board.ICounter;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
 
 import javax.persistence.*;
@@ -15,7 +16,7 @@ import javax.persistence.*;
         @AssociationOverride(name = "id.attrition", joinColumns = @JoinColumn(name = "ID_ATTRITION")),
         @AssociationOverride(name = "id.counter", joinColumns = @JoinColumn(name = "ID_COUNTER"))
 })
-public class AttritionCounterEntity {
+public class AttritionCounterEntity implements ICounter {
     /** Composite id. */
     private AttritionCounterId id = new AttritionCounterId();
     /** The country of the counter. */

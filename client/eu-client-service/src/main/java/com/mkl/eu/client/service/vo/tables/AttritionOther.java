@@ -7,7 +7,7 @@ import com.mkl.eu.client.service.vo.EuObject;
  *
  * @author MKL.
  */
-public class AttritionOther extends EuObject {
+public class AttritionOther extends EuObject implements HasDice {
     /** Result of the modified dice. */
     private Integer dice;
     /** Loss percentage of naval or rotw attrition. */

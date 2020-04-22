@@ -11,8 +11,11 @@ import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.util.TablesUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
+import com.mkl.eu.client.service.vo.tables.AttritionLandEurope;
+import com.mkl.eu.client.service.vo.tables.AttritionOther;
 import com.mkl.eu.client.service.vo.tables.Leader;
 import com.mkl.eu.service.service.domain.ICounterDomain;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
@@ -45,7 +48,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static com.mkl.eu.client.common.util.CommonUtil.EPSILON;
 
 /**
  * Implementation of the Board Service.
@@ -545,12 +552,142 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         stack.setMovePhase(movePhase);
 
-        DiffEntity diff = DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase));
+        List<DiffEntity> diffs = new ArrayList<>();
+
+        AttritionEntity attrition = game.getAttritions().stream()
+                .filter(attrit -> attrit.getStatus() == AttritionStatusEnum.ON_GOING && attrit.getType() == AttritionTypeEnum.MOVEMENT)
+                .findAny()
+                .orElse(null);
+        if (attrition != null) {
+            diffs.addAll(checkAttrition(stack, attrition, game));
+        }
+
+        if (stack.getMovePhase() != null) {
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase)));
+        }
 
         gameDao.update(game, false);
 
-        return createDiff(diff, gameDiffs, request);
+        return createDiffs(diffs, gameDiffs, request);
+    }
+
+    private List<DiffEntity> checkAttrition(StackEntity stack, AttritionEntity attrition, GameEntity game) {
+        List<DiffEntity> diffs = new ArrayList<>();
+        int attritionCause = 0;
+        if (attrition.getSize() >= 6) {
+            attritionCause++;
+        }
+        if (stack.getMove() >= 6) {
+            attritionCause++;
+        }
+        if (oeUtil.isBadWeather(game) && stack.getMove() >= 3) {
+            attritionCause++;
+        }
+        // TODO TG-36 campaign without logistics
+        // TODO TG-9 naval move without ports
+        if (attritionCause == 0) {
+            attrition.setStatus(AttritionStatusEnum.DONE);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ATTRITION, attrition.getId(),
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, AttritionStatusEnum.DONE)));
+            return diffs;
+        }
+
+        int modifier = 2 * (attritionCause - 1);
+        Leader leader = getTables().getLeader(stack.getLeader(), stack.getCountry());
+        if (leader != null) {
+            modifier -= leader.getManoeuvre();
+        }
+        // TODO LoS
+        // TODO enter enemy territory
+        Function<CounterFaceTypeEnum, Integer> pillageRevoltModifier = counterFaceTypeEnum -> {
+            switch (counterFaceTypeEnum) {
+                case PILLAGE_MINUS:
+                case REVOLT_MINUS:
+                case REBEL_MINUS:
+                    return 1;
+                case PILLAGE_PLUS:
+                case REVOLT_PLUS:
+                case REBEL_PLUS:
+                    return 2;
+                default:
+                    return 0;
+            }
+        };
+        int pillageRevolts = game.getStacks().stream()
+                .filter(s -> attrition.getProvinces().contains(s.getProvince()))
+                .flatMap(s -> s.getCounters().stream())
+                .collect(Collectors.summingInt(counter -> pillageRevoltModifier.apply(counter.getType())));
+        modifier += pillageRevolts;
+        modifier += counterDao.getColdAreaPenaltyRotw(attrition.getProvinces(), stack.getCountry(), game.getId());
+
+        attrition.setBonus(modifier);
+        int die = oeUtil.rollDie(game, stack.getCountry());
+        attrition.setDie(die);
+
+        boolean rotw = attrition.getProvinces().stream()
+                .anyMatch(province -> oeUtil.isRotwProvince(province, game));
+        if (!rotw) {
+            String tech = oeUtil.getTechnology(attrition.getCounters(), true, getReferential(), getTables(), game);
+            attrition.setTech(tech);
+        }
+
+        if (rotw) {
+            AttritionOther result = TablesUtil.getResult(getTables().getAttritionsOther(), die + modifier);
+            Supplier<Boolean> additionalCasualty = () -> {
+                int secondaryDie = oeUtil.rollDie(game, stack.getCountry());
+                attrition.setSecondaryDie(secondaryDie);
+                return (secondaryDie % 2 == 0);
+            };
+            int losses = TablesUtil.getAttritionOtherCasualtiesInThird((int) (attrition.getSize() / CommonUtil.THIRD), result.getLossPercentage(), additionalCasualty);
+            if (Math.abs(3 * attrition.getSize() - losses) <= EPSILON) {
+                Function<AttritionCounterEntity, DiffEntity> deleteCounterIfExists = counterAttrition -> {
+                    CounterEntity counter = game.getStacks().stream()
+                            .flatMap(s -> s.getCounters().stream())
+                            .filter(c -> Objects.equals(c.getId(), counterAttrition.getCounter()))
+                            .findAny()
+                            .orElse(null);
+                    if (counter != null) {
+                        return counterDomain.removeCounter(counter);
+                    }
+                    return null;
+                };
+                diffs.addAll(attrition.getCounters().stream()
+                        .map(deleteCounterIfExists)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()));
+                attrition.setStatus(AttritionStatusEnum.DONE);
+                // hack in order not to send a modify stack event after its delete stack event.
+                stack.setMovePhase(null);
+            } else if (losses == 0) {
+                attrition.setStatus(AttritionStatusEnum.DONE);
+            } else {
+                attrition.setStatus(AttritionStatusEnum.CHOOSE_LOSS);
+            }
+        } else {
+            AttritionLandEurope result = TablesUtil.getResult(getTables().getAttritionsLandEurope(), die + modifier,
+                    item -> item.getMinSize() <= attrition.getSize() && item.getMaxSize() > attrition.getSize());
+            if (CommonUtil.toInt(result.getLoss()) == 0 && !result.isPillage()) {
+                attrition.setStatus(AttritionStatusEnum.DONE);
+            } else {
+                attrition.setStatus(AttritionStatusEnum.CHOOSE_LOSS);
+            }
+        }
+
+        diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.ATTRITION, attrition.getId(),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.BONUS, attrition.getBonus()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.DIE, attrition.getDie()),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.SECONDARY_DIE, attrition.getSecondaryDie(), attrition.getSecondaryDie() != null),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.TECH_LAND, attrition.getTech(), StringUtils.isNotEmpty(attrition.getTech())),
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, attrition.getStatus())));
+
+        if (attrition.getStatus() == AttritionStatusEnum.CHOOSE_LOSS) {
+            game.setStatus(GameStatusEnum.ATTRITION);
+            diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.GAME,
+                    DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.STATUS, GameStatusEnum.ATTRITION)));
+        }
+
+        return diffs;
     }
 
     /** {@inheritDoc} */

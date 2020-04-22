@@ -5,6 +5,7 @@ import com.mkl.eu.client.common.exception.TechnicalException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.vo.board.ICounter;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.Referential;
@@ -786,11 +787,11 @@ public final class OEUtilImpl implements IOEUtil {
      * {@inheritDoc}
      */
     @Override
-    public String getTechnology(List<CounterEntity> counters, boolean land, Referential referential, Tables tables, GameEntity game) {
+    public String getTechnology(Collection<? extends ICounter> counters, boolean land, Referential referential, Tables tables, GameEntity game) {
         Map<Tech, Double> technoBySize = new TreeMap<>(Comparator.<Tech>reverseOrder());
 
         BigDecimal totalSize = new BigDecimal("0");
-        for (CounterEntity counter : counters) {
+        for (ICounter counter : counters) {
             String tech = getTechnology(counter.getCountry(), land, referential, game);
             Tech technology = tables.getTechs().stream()
                     .filter(t -> StringUtils.equals(tech, t.getName()))

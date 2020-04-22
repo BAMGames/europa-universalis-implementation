@@ -2,17 +2,25 @@ package com.mkl.eu.client.service.vo.tables;
 
 import com.mkl.eu.client.service.vo.EuObject;
 
+import java.util.Arrays;
+
 /**
  * VO for the attrition land in Europe table.
  *
  * @author MKL.
  */
-public class AttritionLandEurope extends EuObject {
+public class AttritionLandEurope extends EuObject implements HasDice {
+    /** Technologies that takes a loss as well as a pilage on a pillage. */
+    public static String[] BAD_TECHS = new String[]{Tech.MEDIEVAL, Tech.RENAISSANCE, Tech.ARQUEBUS};
+
+    static {
+        Arrays.sort(BAD_TECHS);
+    }
     /** Result of the modified dice. */
     private Integer dice;
-    /** Minimum number of LD of the stack for land attrition in Europe. */
+    /** Minimum number of LD (inclusive) of the stack for land attrition in Europe. */
     private Integer minSize;
-    /** Maximum number of LD of the stack for land attrition in Europe. */
+    /** Maximum number of LD (exclusive) of the stack for land attrition in Europe. */
     private Integer maxSize;
     /** LD loss in land europe attrition. */
     private Integer loss;

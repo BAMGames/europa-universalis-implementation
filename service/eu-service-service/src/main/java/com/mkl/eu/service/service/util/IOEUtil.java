@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.util;
 
+import com.mkl.eu.client.service.vo.board.ICounter;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.enumeration.WarStatusEnum;
 import com.mkl.eu.client.service.vo.ref.Referential;
@@ -14,6 +15,7 @@ import com.mkl.eu.service.service.persistence.oe.diplo.WarEntity;
 import com.mkl.eu.service.service.persistence.oe.ref.province.AbstractProvinceEntity;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -264,7 +266,7 @@ public interface IOEUtil {
      * @param game        the game.
      * @return the technology of a List of counters.
      */
-    String getTechnology(List<CounterEntity> counters, boolean land, Referential referential, Tables tables, GameEntity game);
+    String getTechnology(Collection<? extends ICounter> counters, boolean land, Referential referential, Tables tables, GameEntity game);
 
     /**
      * @param counters    stack whom we want the artillery bonus.

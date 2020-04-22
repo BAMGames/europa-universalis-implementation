@@ -2117,19 +2117,6 @@ public class SiegeServiceTest extends AbstractGameServiceTest {
         }
     }
 
-    private enum Camp {
-        SELF("espagne"),
-        ALLY("austria"),
-        NEUTRAL("turquie"),
-        ENEMY("france");
-
-        String name;
-
-        Camp(String name) {
-            this.name = name;
-        }
-    }
-
     @Test
     public void testRedeployFail() {
         Pair<Request<RedeployRequest>, GameEntity> pair = testCheckGame(siegeService::redeploy, "redeploy");

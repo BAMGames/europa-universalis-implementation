@@ -12,8 +12,7 @@ import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.GameUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
-import com.mkl.eu.client.service.vo.tables.Leader;
-import com.mkl.eu.client.service.vo.tables.Tables;
+import com.mkl.eu.client.service.vo.tables.*;
 import com.mkl.eu.service.service.domain.IStatusWorkflowDomain;
 import com.mkl.eu.service.service.domain.impl.CounterDomainImpl;
 import com.mkl.eu.service.service.mapping.GameMapping;
@@ -41,6 +40,7 @@ import com.mkl.eu.service.service.service.impl.AbstractBack;
 import com.mkl.eu.service.service.service.impl.BoardServiceImpl;
 import com.mkl.eu.service.service.util.DiffUtil;
 import com.mkl.eu.service.service.util.IOEUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -55,8 +55,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
@@ -574,74 +573,567 @@ public class BoardServiceTest extends AbstractGameServiceTest {
     }
 
     @Test
-    public void testEndMoveStackSuccessMoved() throws Exception {
-        testEndMoveStackSuccess("angleterre", "venise", MovePhaseEnum.MOVED);
+    public void testEndMoveStack() throws FunctionalException {
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.SELF)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED));
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.ALLY)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED));
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED));
+
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.SELF).enemyUnitInProvince()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.FIGHTING));
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.ALLY).enemyUnitInProvince()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.FIGHTING));
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).enemyUnitInProvince()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.FIGHTING));
+
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.ENEMY)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.BESIEGING));
+
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.ENEMY).enemyUnitInProvince()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.FIGHTING));
+
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionNoCheck());
+
+        // No attrition cause
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(5)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionNoCheck());
+
+        // Various attrition causes
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(5).badWeather()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(0).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(0).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(5).attritionSize(6)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(0).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).badWeather()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(2).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).badWeather().attritionSize(6)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(4).attritionTech());
+
+        // Various modifiers
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).stackLeaderManoeuvre(2)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(-2).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionColdAreaPenalty(3)
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(3).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8)
+                .addProvince(EndMoveStackProvinceBuilder.create().name("pecs").addCounter(CounterFaceTypeEnum.PILLAGE_MINUS).inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(1).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8)
+                .addProvince(EndMoveStackProvinceBuilder.create().name("pecs").addCounter(CounterFaceTypeEnum.REVOLT_PLUS).inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(2).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8)
+                .addProvince(EndMoveStackProvinceBuilder.create().name("pecs").addCounter(CounterFaceTypeEnum.REVOLT_PLUS))
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(0).attritionTech());
+
+        // Every causes and modifiers
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).badWeather().attritionSize(6).stackLeaderManoeuvre(2).attritionColdAreaPenalty(3)
+                .addProvince(EndMoveStackProvinceBuilder.create().name("pecs").addCounter(CounterFaceTypeEnum.REVOLT_MINUS).inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().name("idf").addCounter(CounterFaceTypeEnum.REVOLT_PLUS))
+                .addProvince(EndMoveStackProvinceBuilder.create().name("hanovre").addCounter(CounterFaceTypeEnum.PILLAGE_PLUS).inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(8).attritionTech());
+
+        // Result of attrition in Land Europe
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionLossFlat(1)
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.CHOOSE_LOSS)
+                        .attritionBonus(0).attritionTech());
+
+        // Result of other attrition
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionSize(3).attritionLossPercentage(10)
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().rotw().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.CHOOSE_LOSS)
+                        .attritionBonus(0));
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionSize(1).attritionLossPercentage(10).additionalLoss()
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().rotw().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.CHOOSE_LOSS)
+                        .attritionBonus(0).secondaryDieNeeded());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionSize(1).attritionLossPercentage(10)
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().rotw().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE)
+                        .attritionBonus(0).secondaryDieNeeded());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionSize(1).attritionLossPercentage(80)
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().rotw().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.CHOOSE_LOSS)
+                        .attritionBonus(0).secondaryDieNeeded());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionSize(1).attritionLossPercentage(80).additionalLoss()
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().rotw().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE)
+                        .attritionBonus(0).secondaryDieNeeded().stackWiped());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).attritionSize(1).attritionLossPercentage(90)
+                .addProvince(EndMoveStackProvinceBuilder.create().inAttrition())
+                .addProvince(EndMoveStackProvinceBuilder.create().rotw().inAttrition())
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE)
+                        .attritionBonus(0).stackWiped());
+
     }
 
-    @Test
-    public void testEndMoveStackSuccessFighting() throws Exception {
-        testEndMoveStackSuccess("espagne", "espagne", MovePhaseEnum.FIGHTING);
+    static class EndMoveStackBuilder {
+        Camp provinceController;
+        boolean enemyUnitInProvince;
+        AttritionStatusEnum attritionStatus;
+        int attritionSize;
+        int stackMovePoints;
+        Integer stackLeaderManoeuvre;
+        boolean badWeather;
+        int attritionColdAreaPenalty;
+        int attritionLossPercentage;
+        int attritionLossFlat;
+        boolean additionalLoss;
+        List<EndMoveStackProvinceBuilder> provinces = new ArrayList<>();
+        List<DiffEntity> diffs;
+
+        static EndMoveStackBuilder create() {
+            return new EndMoveStackBuilder();
+        }
+
+        EndMoveStackBuilder provinceController(Camp provinceController) {
+            this.provinceController = provinceController;
+            return this;
+        }
+
+        EndMoveStackBuilder enemyUnitInProvince() {
+            this.enemyUnitInProvince = true;
+            return this;
+        }
+
+        EndMoveStackBuilder attritionStatus(AttritionStatusEnum attritionStatus) {
+            this.attritionStatus = attritionStatus;
+            return this;
+        }
+
+        EndMoveStackBuilder attritionSize(int attritionSize) {
+            this.attritionSize = attritionSize;
+            return this;
+        }
+
+        EndMoveStackBuilder stackMovePoints(int stackMovePoints) {
+            this.stackMovePoints = stackMovePoints;
+            return this;
+        }
+
+        EndMoveStackBuilder stackLeaderManoeuvre(Integer stackLeaderManoeuvre) {
+            this.stackLeaderManoeuvre = stackLeaderManoeuvre;
+            return this;
+        }
+
+        EndMoveStackBuilder attritionColdAreaPenalty(int attritionColdAreaPenalty) {
+            this.attritionColdAreaPenalty = attritionColdAreaPenalty;
+            return this;
+        }
+
+        EndMoveStackBuilder attritionLossPercentage(int attritionLossPercentage) {
+            this.attritionLossPercentage = attritionLossPercentage;
+            return this;
+        }
+
+        EndMoveStackBuilder attritionLossFlat(int attritionLossFlat) {
+            this.attritionLossFlat = attritionLossFlat;
+            return this;
+        }
+
+        EndMoveStackBuilder additionalLoss() {
+            this.additionalLoss = true;
+            return this;
+        }
+
+        EndMoveStackBuilder badWeather() {
+            this.badWeather = true;
+            return this;
+        }
+
+        EndMoveStackBuilder addProvince(EndMoveStackProvinceBuilder province) {
+            this.provinces.add(province);
+            return this;
+        }
+
+        EndMoveStackBuilder whenEndMovePhase(IBoardService boardService, BoardServiceTest testClass) throws FunctionalException {
+            Request<EndMoveStackRequest> request = new Request<>();
+            request.setRequest(new EndMoveStackRequest());
+            request.setAuthent(new AuthentInfo());
+            request.setGame(new GameInfo());
+            request.getGame().setIdCountry(26L);
+            request.getGame().setIdGame(12L);
+            request.getGame().setVersionGame(1L);
+            request.getRequest().setIdStack(13L);
+            Tables tables = new Tables();
+
+            GameEntity game = testClass.createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
+            StackEntity stack = new StackEntity();
+            stack.setProvince("pecs");
+            stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            stack.setCountry(Camp.SELF.name);
+            stack.setId(13L);
+            stack.getCounters().add(createCounter(21L, Camp.SELF.name, CounterFaceTypeEnum.ARMY_MINUS, stack));
+            stack.setMove(stackMovePoints);
+            if (stackLeaderManoeuvre != null) {
+                stack.setLeader("Napo");
+                stack.setCountry(Camp.SELF.name);
+                AbstractGameServiceTest.createLeader(LeaderBuilder.create().code("Napo").country(Camp.SELF.name).stats("A" + stackLeaderManoeuvre + "55"), tables, stack);
+            }
+            stack.setGame(game);
+            game.getStacks().add(stack);
+            StackEntity otherStack = new StackEntity();
+            otherStack.setProvince("pecs");
+            otherStack.setId(14L);
+            otherStack.getCounters().add(new CounterEntity());
+            otherStack.getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
+            if (enemyUnitInProvince) {
+                otherStack.setCountry(Camp.ENEMY.name);
+                otherStack.getCounters().get(0).setCountry(Camp.ENEMY.name);
+            } else {
+                otherStack.setCountry(Camp.NEUTRAL.name);
+                otherStack.getCounters().get(0).setCountry(Camp.NEUTRAL.name);
+            }
+            game.getStacks().add(otherStack);
+            game.getCountries().add(new PlayableCountryEntity());
+            game.getCountries().get(0).setId(26L);
+            game.getCountries().get(0).setName(Camp.SELF.name);
+
+            AttritionEntity noiseAttrition = new AttritionEntity();
+            noiseAttrition.setId(65L);
+            noiseAttrition.setType(AttritionTypeEnum.SIEGE);
+            noiseAttrition.setStatus(AttritionStatusEnum.ON_GOING);
+            game.getAttritions().add(noiseAttrition);
+
+            AttritionEntity attrition = new AttritionEntity();
+            attrition.setId(67L);
+            attrition.setType(AttritionTypeEnum.MOVEMENT);
+            attrition.setStatus(attritionStatus);
+            attrition.setSize(attritionSize);
+            AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
+            attritionCounter.setCounter(21L);
+            attrition.getCounters().add(attritionCounter);
+            attrition.getProvinces().addAll(provinces.stream()
+                    .filter(prov -> prov.inAttrition)
+                    .map(prov -> prov.name)
+                    .collect(Collectors.toSet()));
+            game.getAttritions().add(attrition);
+            provinces.stream()
+                    .filter(prov -> CollectionUtils.isNotEmpty(prov.counters))
+                    .forEach(prov -> {
+                        StackEntity loopStack = new StackEntity();
+                        loopStack.setProvince(prov.name);
+                        game.getStacks().add(loopStack);
+                        prov.counters.forEach(counter -> loopStack.getCounters().add(createCounter(null, null, counter, loopStack)));
+                    });
+
+            AttritionOther attritionOther = new AttritionOther();
+            attritionOther.setLossPercentage(attritionLossPercentage);
+            attritionOther.setDice(5);
+            tables.getAttritionsOther().add(attritionOther);
+            AttritionLandEurope attritionLandEurope = new AttritionLandEurope();
+            attritionLandEurope.setLoss(attritionLossFlat);
+            attritionLandEurope.setMinSize(0);
+            attritionLandEurope.setMaxSize(66);
+            attritionLandEurope.setDice(5);
+            tables.getAttritionsLandEurope().add(attritionLandEurope);
+            AbstractBack.TABLES = tables;
+
+            when(testClass.oeUtil.isBadWeather(game)).thenReturn(badWeather);
+            when(testClass.oeUtil.isMobile(stack)).thenReturn(true);
+            when(testClass.oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(Camp.ENEMY.name));
+            EuropeanProvinceEntity province = new EuropeanProvinceEntity();
+            when(testClass.provinceDao.getProvinceByName(stack.getProvince())).thenReturn(province);
+            when(testClass.oeUtil.getController(province, game)).thenReturn(provinceController.name);
+            when(testClass.counterDao.getPatrons(Camp.SELF.name, game.getId())).thenReturn(Collections.singletonList(Camp.SELF.name));
+            provinces.forEach(prov -> when(testClass.oeUtil.isRotwProvince(prov.name, game)).thenReturn(prov.rotw));
+            when(testClass.counterDao.getColdAreaPenaltyRotw(any(), any(), any())).thenReturn(attritionColdAreaPenalty);
+            when(testClass.oeUtil.getTechnology(any(), anyBoolean(), any(), any(), any())).thenReturn(Tech.RENAISSANCE);
+            when(testClass.counterDomain.removeCounter(any())).thenAnswer(AbstractGameServiceTest.removeCounterAnswer());
+            if (additionalLoss) {
+                when(testClass.oeUtil.rollDie(game, Camp.SELF.name)).thenReturn(5, 2);
+            } else {
+                when(testClass.oeUtil.rollDie(game, Camp.SELF.name)).thenReturn(5, 3);
+            }
+
+            testClass.simulateDiff();
+
+            boardService.endMoveStack(request);
+
+            diffs = testClass.retrieveDiffsCreated();
+
+            return this;
+        }
+
+        EndMoveStackBuilder thenExpect(EndMoveStackResultBuilder result) {
+            int nbDiffs = 0;
+            DiffEntity diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.STACK
+                            && Objects.equals(d.getIdObject(), 13L))
+                    .findAny()
+                    .orElse(null);
+            if (!result.stackWiped) {
+                Assert.assertNotNull("Modify stack diff not sent.", diff);
+
+                Assert.assertEquals("Incorrect number of attributes of modify stack diff.", 1, diff.getAttributes().size());
+                Assert.assertEquals("Move Phase attribute of the modify stack diff is wrong.",
+                        result.movePhase.name(), getAttribute(diff, DiffAttributeTypeEnum.MOVE_PHASE));
+                nbDiffs++;
+            } else {
+                Assert.assertNull("Modify stack diff sent while stack is wiped.", diff);
+            }
+
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.ATTRITION
+                            && Objects.equals(d.getIdObject(), 67L))
+                    .findAny()
+                    .orElse(null);
+            if (result.attritionModified) {
+                Assert.assertNotNull("Modify attrition diff not sent.", diff);
+                Assert.assertEquals("Status attribute of the modify attrition diff is wrong.",
+                        result.attritionStatus.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+
+                if (result.attritionNoCheck) {
+                    Assert.assertNull("Bonus attribute of the modify attrition diff should not be sent.",
+                            getAttributeFull(diff, DiffAttributeTypeEnum.BONUS));
+                    Assert.assertNull("Die attribute of the modify attrition diff should not be sent.",
+                            getAttributeFull(diff, DiffAttributeTypeEnum.DIE));
+                    Assert.assertNull("Secondary die attribute of the modify attrition diff should not be sent.",
+                            getAttributeFull(diff, DiffAttributeTypeEnum.SECONDARY_DIE));
+                    Assert.assertNull("Tech attribute of the modify attrition diff should not be sent.",
+                            getAttributeFull(diff, DiffAttributeTypeEnum.TECH_LAND));
+                } else {
+                    Assert.assertEquals("Bonus attribute of the modify attrition diff is wrong.",
+                            result.attritionBonus + "", getAttribute(diff, DiffAttributeTypeEnum.BONUS));
+                    Assert.assertEquals("Die attribute of the modify attrition diff is wrong.",
+                            "5", getAttribute(diff, DiffAttributeTypeEnum.DIE));
+                    if (result.secondaryDieNeeded) {
+                        Assert.assertEquals("Secondary die attribute of the modify attrition diff is wrong.",
+                                additionalLoss ? "2" : "3", getAttribute(diff, DiffAttributeTypeEnum.SECONDARY_DIE));
+                    } else {
+                        Assert.assertNull("Secondary die attribute of the modify attrition diff should not be sent.",
+                                getAttributeFull(diff, DiffAttributeTypeEnum.SECONDARY_DIE));
+                    }
+                    if (result.attritionTech) {
+                        Assert.assertEquals("Tech attribute of the modify attrition diff is wrong.",
+                                Tech.RENAISSANCE, getAttribute(diff, DiffAttributeTypeEnum.TECH_LAND));
+                    } else {
+                        Assert.assertNull("Tech attribute of the modify attrition diff should not be sent.",
+                                getAttributeFull(diff, DiffAttributeTypeEnum.TECH_LAND));
+                    }
+                }
+                nbDiffs++;
+            } else {
+                Assert.assertNull("Modify attrition diff should not be sent.", diff);
+            }
+
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.REMOVE && d.getTypeObject() == DiffTypeObjectEnum.COUNTER
+                            && Objects.equals(d.getIdObject(), 21L))
+                    .findAny()
+                    .orElse(null);
+            if (result.stackWiped) {
+                Assert.assertNotNull("Remove counter diff not sent.", diff);
+                nbDiffs++;
+            } else {
+                Assert.assertNull("Remove counter diff should not be sent.", diff);
+            }
+
+            diff = diffs.stream()
+                    .filter(d -> d.getType() == DiffTypeEnum.MODIFY && d.getTypeObject() == DiffTypeObjectEnum.GAME)
+                    .findAny()
+                    .orElse(null);
+            if (result.attritionStatus == AttritionStatusEnum.CHOOSE_LOSS) {
+                Assert.assertNotNull("Modify game diff not sent.", diff);
+                Assert.assertEquals("Status attribute of the modify game diff is wrong.", GameStatusEnum.ATTRITION.name(), getAttribute(diff, DiffAttributeTypeEnum.STATUS));
+                nbDiffs++;
+            } else {
+                Assert.assertNull("Modify game diff should not be sent", diff);
+            }
+
+            Assert.assertEquals("Number of diffs received if wrong.", nbDiffs, diffs.size());
+
+            return this;
+        }
     }
 
-    @Test
-    public void testEndMoveStackSuccessBesieging() throws Exception {
-        testEndMoveStackSuccess("turquie", "turquie", MovePhaseEnum.BESIEGING);
+    static class EndMoveStackProvinceBuilder {
+        String name;
+        boolean rotw;
+        boolean inAttrition;
+        List<CounterFaceTypeEnum> counters = new ArrayList<>();
+
+        static EndMoveStackProvinceBuilder create() {
+            return new EndMoveStackProvinceBuilder();
+        }
+
+        EndMoveStackProvinceBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        EndMoveStackProvinceBuilder rotw() {
+            this.rotw = true;
+            return this;
+        }
+
+        EndMoveStackProvinceBuilder inAttrition() {
+            this.inAttrition = true;
+            return this;
+        }
+
+        EndMoveStackProvinceBuilder addCounter(CounterFaceTypeEnum counter) {
+            this.counters.add(counter);
+            return this;
+        }
     }
 
-    private void testEndMoveStackSuccess(String enemy, String controller, MovePhaseEnum movePhase) throws Exception {
-        Request<EndMoveStackRequest> request = new Request<>();
-        request.setRequest(new EndMoveStackRequest());
-        request.setAuthent(new AuthentInfo());
-        request.setGame(new GameInfo());
-        request.getGame().setIdCountry(26L);
-        request.getGame().setIdGame(12L);
-        request.getGame().setVersionGame(1L);
-        request.getRequest().setIdStack(13L);
+    static class EndMoveStackResultBuilder {
+        MovePhaseEnum movePhase;
+        boolean attritionModified;
+        boolean attritionNoCheck;
+        int attritionBonus;
+        boolean attritionTech;
+        boolean secondaryDieNeeded;
+        AttritionStatusEnum attritionStatus;
+        boolean stackWiped;
 
-        GameEntity game = createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
-        StackEntity stack = new StackEntity();
-        stack.setProvince("pecs");
-        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
-        stack.setCountry("france");
-        stack.setId(13L);
-        game.getStacks().add(stack);
-        StackEntity otherStack = new StackEntity();
-        otherStack.setProvince("pecs");
-        otherStack.setCountry("espagne");
-        otherStack.setId(14L);
-        otherStack.getCounters().add(new CounterEntity());
-        otherStack.getCounters().get(0).setCountry("espagne");
-        otherStack.getCounters().get(0).setType(CounterFaceTypeEnum.ARMY_MINUS);
-        game.getStacks().add(otherStack);
-        game.getCountries().add(new PlayableCountryEntity());
-        game.getCountries().get(0).setId(26L);
-        game.getCountries().get(0).setName("france");
+        static EndMoveStackResultBuilder create() {
+            return new EndMoveStackResultBuilder();
+        }
 
-        when(oeUtil.isMobile(stack)).thenReturn(true);
-        when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(enemy));
-        EuropeanProvinceEntity province = new EuropeanProvinceEntity();
-        when(provinceDao.getProvinceByName(stack.getProvince())).thenReturn(province);
-        when(oeUtil.getController(province, game)).thenReturn(controller);
-        when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
+        EndMoveStackResultBuilder movePhase(MovePhaseEnum movePhase) {
+            this.movePhase = movePhase;
+            return this;
+        }
 
-        simulateDiff();
+        EndMoveStackResultBuilder attritionModified() {
+            this.attritionModified = true;
+            return this;
+        }
 
-        DiffResponse response = boardService.endMoveStack(request);
+        EndMoveStackResultBuilder attritionNoCheck() {
+            this.attritionNoCheck = true;
+            return this;
+        }
 
-        DiffEntity diffEntity = retrieveDiffCreated();
+        EndMoveStackResultBuilder attritionBonus(int attritionBonus) {
+            this.attritionBonus = attritionBonus;
+            return this;
+        }
 
-        Assert.assertEquals(13L, diffEntity.getIdObject().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(DiffTypeEnum.MODIFY, diffEntity.getType());
-        Assert.assertEquals(DiffTypeObjectEnum.STACK, diffEntity.getTypeObject());
-        Assert.assertEquals(12L, diffEntity.getIdGame().longValue());
-        Assert.assertEquals(game.getVersion(), diffEntity.getVersionGame().longValue());
-        Assert.assertEquals(1, diffEntity.getAttributes().size());
-        Assert.assertEquals(DiffAttributeTypeEnum.MOVE_PHASE, diffEntity.getAttributes().get(0).getType());
-        Assert.assertEquals(movePhase.name(), diffEntity.getAttributes().get(0).getValue());
+        EndMoveStackResultBuilder attritionTech() {
+            this.attritionTech = true;
+            return this;
+        }
 
-        Assert.assertEquals(game.getVersion(), response.getVersionGame().longValue());
-        Assert.assertEquals(getDiffAfter(), response.getDiffs());
+        EndMoveStackResultBuilder secondaryDieNeeded() {
+            this.secondaryDieNeeded = true;
+            return this;
+        }
+
+        EndMoveStackResultBuilder attritionStatus(AttritionStatusEnum attritionStatus) {
+            this.attritionStatus = attritionStatus;
+            return this;
+        }
+
+        EndMoveStackResultBuilder stackWiped() {
+            this.stackWiped = true;
+            return this;
+        }
     }
 
     @Test

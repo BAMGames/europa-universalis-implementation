@@ -64,6 +64,7 @@ public class AttritionMapping extends AbstractMapping {
         target.setTech(source.getTech());
         target.setBonus(source.getBonus());
         target.setDie(source.getDie());
+        target.setSecondaryDie(source.getSecondaryDie());
         target.setProvinces(source.getProvinces().stream()
                 .collect(Collectors.toList()));
         target.setCounters(oesToVosCounters(source.getCounters()));

@@ -707,6 +707,7 @@ public class GameMappingTest {
         object.setTech(Tech.MEDIEVAL);
         object.setBonus(6);
         object.setDie(3);
+        object.setSecondaryDie(8);
         object.getProvinces().add("idf");
         object.getProvinces().add("pecs");
         Counter counter = new Counter();
@@ -1254,6 +1255,7 @@ public class GameMappingTest {
         object.setTech(Tech.MEDIEVAL);
         object.setBonus(6);
         object.setDie(3);
+        object.setSecondaryDie(8);
         object.getProvinces().add("idf");
         object.getProvinces().add("pecs");
         AttritionCounterEntity counter = new AttritionCounterEntity();

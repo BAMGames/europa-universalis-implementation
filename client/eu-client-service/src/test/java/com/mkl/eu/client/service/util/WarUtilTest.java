@@ -14,7 +14,7 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import java.util.List;
 
 /**
- * Unit tests for GameUtil.
+ * Unit tests for WarUtil.
  *
  * @author MKL.
  */

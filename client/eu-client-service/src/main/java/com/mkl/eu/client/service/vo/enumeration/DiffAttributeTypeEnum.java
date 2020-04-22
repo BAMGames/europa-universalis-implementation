@@ -53,6 +53,10 @@ public enum DiffAttributeTypeEnum {
     COLUMN,
     /** Bonus of the action. */
     BONUS,
+    /** Unmodified die roll of the action. */
+    DIE,
+    /** Unmodified secondary die roll of the action. */
+    SECONDARY_DIE,
     /** Status of the object. */
     STATUS,
     /** Number of veterans of a counter. */

@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlTransient;
  *
  * @author MKL
  */
-public class Counter extends EuObject {
+public class Counter extends EuObject implements ICounter {
     /** Name of the country owning of the counter. */
     private String country;
     /** Stack owning the counter. */
@@ -22,7 +22,8 @@ public class Counter extends EuObject {
     /** Number of veterans in the counter. */
     private Double veterans;
 
-    /** @return the country. */
+    /** {@inheritDoc} */
+    @Override
     public String getCountry() {
         return country;
     }
@@ -43,7 +44,8 @@ public class Counter extends EuObject {
         this.owner = owner;
     }
 
-    /** @return the type. */
+    /** {@inheritDoc} */
+    @Override
     public CounterFaceTypeEnum getType() {
         return type;
     }
@@ -53,7 +55,8 @@ public class Counter extends EuObject {
         this.type = type;
     }
 
-    /** @return the code. */
+    /** {@inheritDoc} */
+    @Override
     public String getCode() {
         return code;
     }

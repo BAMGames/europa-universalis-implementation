@@ -33,6 +33,8 @@ public enum GameStatusEnum {
     MILITARY_SIEGES(false),
     /** Fights against revolts, pirates and natives. */
     MILITARY_NEUTRALS(false),
+    /** Attrition. */
+    ATTRITION(false),
     /*********************************************************************************************************
      *                                     End of military phases                                            *
      *********************************************************************************************************/

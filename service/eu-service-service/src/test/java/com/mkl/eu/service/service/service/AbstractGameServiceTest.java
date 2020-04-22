@@ -579,4 +579,17 @@ public abstract class AbstractGameServiceTest {
             return this;
         }
     }
+
+    public enum Camp {
+        SELF("espagne"),
+        ALLY("austria"),
+        NEUTRAL("turquie"),
+        ENEMY("france");
+
+        public String name;
+
+        Camp(String name) {
+            this.name = name;
+        }
+    }
 }
