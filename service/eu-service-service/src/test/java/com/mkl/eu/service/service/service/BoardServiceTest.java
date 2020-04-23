@@ -704,6 +704,12 @@ public class BoardServiceTest extends AbstractGameServiceTest {
                         .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(-2).attritionTech());
         EndMoveStackBuilder.create()
                 .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
+                .stackMovePoints(8).movedInEnemyTerritory()
+                .whenEndMovePhase(boardService, this)
+                .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(2).attritionTech());
+        EndMoveStackBuilder.create()
+                .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
                 .stackMovePoints(8).attritionColdAreaPenalty(3)
                 .whenEndMovePhase(boardService, this)
                 .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
@@ -733,13 +739,13 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         // Every causes and modifiers
         EndMoveStackBuilder.create()
                 .provinceController(Camp.NEUTRAL).attritionStatus(AttritionStatusEnum.ON_GOING)
-                .stackMovePoints(8).badWeather().attritionSize(6).stackLeaderManoeuvre(2).attritionColdAreaPenalty(3)
+                .stackMovePoints(8).badWeather().attritionSize(6).stackLeaderManoeuvre(2).movedInEnemyTerritory().attritionColdAreaPenalty(3)
                 .addProvince(EndMoveStackProvinceBuilder.create().name("pecs").addCounter(CounterFaceTypeEnum.REVOLT_MINUS).inAttrition())
                 .addProvince(EndMoveStackProvinceBuilder.create().name("idf").addCounter(CounterFaceTypeEnum.REVOLT_PLUS))
                 .addProvince(EndMoveStackProvinceBuilder.create().name("hanovre").addCounter(CounterFaceTypeEnum.PILLAGE_PLUS).inAttrition())
                 .whenEndMovePhase(boardService, this)
                 .thenExpect(EndMoveStackResultBuilder.create().movePhase(MovePhaseEnum.MOVED)
-                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(8).attritionTech());
+                        .attritionModified().attritionStatus(AttritionStatusEnum.DONE).attritionBonus(10).attritionTech());
 
         // Result of attrition in Land Europe
         EndMoveStackBuilder.create()
@@ -817,6 +823,7 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         int stackMovePoints;
         Integer stackLeaderManoeuvre;
         boolean badWeather;
+        boolean movedInEnemyTerritory;
         int attritionColdAreaPenalty;
         int attritionLossPercentage;
         int attritionLossFlat;
@@ -883,6 +890,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             return this;
         }
 
+        EndMoveStackBuilder movedInEnemyTerritory() {
+            this.movedInEnemyTerritory = true;
+            return this;
+        }
+
         EndMoveStackBuilder addProvince(EndMoveStackProvinceBuilder province) {
             this.provinces.add(province);
             return this;
@@ -902,7 +914,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
             GameEntity game = testClass.createGameUsingMocks(GameStatusEnum.MILITARY_MOVE, 26L);
             StackEntity stack = new StackEntity();
             stack.setProvince("pecs");
-            stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            if (movedInEnemyTerritory) {
+                stack.setMovePhase(MovePhaseEnum.IS_MOVING_AGGRESSIVE);
+            } else {
+                stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            }
             stack.setCountry(Camp.SELF.name);
             stack.setId(13L);
             stack.getCounters().add(createCounter(21L, Camp.SELF.name, CounterFaceTypeEnum.ARMY_MINUS, stack));

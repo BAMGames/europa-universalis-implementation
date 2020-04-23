@@ -520,7 +520,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_END_MOVE_STACK, idStack));
 
         failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(stack.getMovePhase() == MovePhaseEnum.IS_MOVING)
+                .setTest(stack.getMovePhase() == MovePhaseEnum.IS_MOVING || stack.getMovePhase() == MovePhaseEnum.IS_MOVING_AGGRESSIVE)
                 .setCodeError(IConstantsServiceException.STACK_NOT_MOVING)
                 .setMsgFormat("{1}: {0} {2} Stack is not moving.")
                 .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
@@ -555,8 +555,6 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             movePhase = MovePhaseEnum.MOVED;
         }
 
-        stack.setMovePhase(movePhase);
-
         List<DiffEntity> diffs = new ArrayList<>();
 
         AttritionEntity attrition = game.getAttritions().stream()
@@ -568,6 +566,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         }
 
         if (stack.getMovePhase() != null) {
+            stack.setMovePhase(movePhase);
             diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK, idStack,
                     DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase)));
         }
@@ -604,7 +603,9 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
             modifier -= leader.getManoeuvre();
         }
         // TODO LoS
-        // TODO enter enemy territory
+        if (stack.getMovePhase() == MovePhaseEnum.IS_MOVING_AGGRESSIVE) {
+            modifier += 2;
+        }
         Function<CounterFaceTypeEnum, Integer> pillageRevoltModifier = counterFaceTypeEnum -> {
             switch (counterFaceTypeEnum) {
                 case PILLAGE_MINUS:
