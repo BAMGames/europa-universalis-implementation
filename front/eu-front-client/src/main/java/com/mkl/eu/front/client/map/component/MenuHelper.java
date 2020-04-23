@@ -4,6 +4,7 @@ import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.military.ChooseProvinceRequest;
 import com.mkl.eu.client.service.service.military.LandLootingRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.vo.diff.DiffAttributes;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.ref.country.CountryReferential;
@@ -64,12 +65,12 @@ public final class MenuHelper {
         }
         menu.addMenuItem(neighbours);
         if (container.getGame().getStatus() == GameStatusEnum.MILITARY_BATTLES && province.getStacks().stream()
-                .anyMatch(stack -> stack.getStack().getMovePhase() == MovePhaseEnum.FIGHTING)) {
+                .anyMatch(stack -> StackUtil.isFighting(stack.getStack()))) {
             menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.province.choose_battle"),
                     container.callServiceAsEvent(container.getBattleService()::chooseBattle, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing battle.")));
         }
         if (container.getGame().getStatus() == GameStatusEnum.MILITARY_SIEGES && province.getStacks().stream()
-                .anyMatch(stack -> stack.getStack().getMovePhase().isBesieging())) {
+                .anyMatch(stack -> StackUtil.isBesieging(stack.getStack()))) {
             menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.province.choose_siege"),
                     container.callServiceAsEvent(container.getSiegeService()::chooseSiege, () -> new ChooseProvinceRequest(province.getId()), "Error when choosing siege.")));
         }
@@ -176,12 +177,12 @@ public final class MenuHelper {
             move.addMenuItem(ContextualMenuItem.createMenuItem(label.toString(), container.callServiceAsEvent(container.getBoardService()::moveStack, () -> new MoveStackRequest(stack.getId(), border.getProvince().getId()), "Error when moving stack.")));
         }
         menu.addMenuItem(move);
-        if (container.getGame().getStatus() == GameStatusEnum.MILITARY_MOVE && stack.getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
+        if (container.getGame().getStatus() == GameStatusEnum.MILITARY_MOVE && StackUtil.isMoving(stack.getStack())) {
             menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.stack.end_move"),
                     container.callServiceAsEvent(container.getBoardService()::endMoveStack, () -> new EndMoveStackRequest(stack.getId()), "Error when ending movement of stack.")));
         }
         if (container.getGame().getStatus() == GameStatusEnum.REDEPLOYMENT) {
-            if (stack.getStack().getMovePhase() != MovePhaseEnum.LOOTING && stack.getStack().getMovePhase() != MovePhaseEnum.LOOTING_BESIEGING) {
+            if (StackUtil.isLooting(stack.getStack())) {
                 menu.addMenuItem(ContextualMenuItem.createMenuItem(GlobalConfiguration.getMessage("map.menu.stack.loot"),
                         container.callServiceAsEvent(container.getInterPhaseService()::landLooting, () -> new LandLootingRequest(stack.getId(), LandLootTypeEnum.PILLAGE), "Error when looting the province with stack.")));
                 if (stack.getProvince().getStacks().stream().flatMap(s -> s.getCounters().stream())

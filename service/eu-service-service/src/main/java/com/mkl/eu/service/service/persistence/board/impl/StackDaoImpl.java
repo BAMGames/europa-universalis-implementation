@@ -29,7 +29,8 @@ public class StackDaoImpl extends GenericDaoImpl<StackEntity, Long> implements I
         Criteria criteria = getSession().createCriteria(StackEntity.class);
 
         criteria.add(Restrictions.eq("game.id", idGame));
-        criteria.add(Restrictions.eq("movePhase", MovePhaseEnum.IS_MOVING));
+        criteria.add(Restrictions.or(Restrictions.eq("movePhase", MovePhaseEnum.IS_MOVING),
+                Restrictions.eq("movePhase", MovePhaseEnum.IS_MOVING_AGGRESSIVE)));
 
         //noinspection unchecked
         return criteria.list();

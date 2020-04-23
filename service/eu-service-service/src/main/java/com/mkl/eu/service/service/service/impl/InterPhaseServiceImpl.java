@@ -15,6 +15,7 @@ import com.mkl.eu.client.service.service.military.LandRedeployRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.EconomicUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.service.service.domain.ICounterDomain;
@@ -128,7 +129,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         AbstractProvinceEntity province = provinceDao.getProvinceByName(stack.getProvince());
 
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(stack.getMovePhase() == MovePhaseEnum.LOOTING || stack.getMovePhase() == MovePhaseEnum.LOOTING_BESIEGING)
+                .setTest(StackUtil.isLooting(stack))
                 .setCodeError(IConstantsServiceException.LAND_LOOTING_TWICE)
                 .setMsgFormat("{1}: {0} The stack of id {2} has already looted.")
                 .setName(PARAMETER_LAND_LOOTING, PARAMETER_REQUEST, PARAMETER_ID_STACK)
@@ -477,7 +478,7 @@ public class InterPhaseServiceImpl extends AbstractService implements IInterPhas
         minorsAndSelf.add(country.getName());
 
         List<String> besiegingProvinces = game.getStacks().stream()
-                .filter(stack -> stack.getMovePhase() != null && stack.getMovePhase().isBesieging()
+                .filter(stack -> StackUtil.isBesieging(stack)
                         && minorsAndSelf.contains(stack.getCountry()))
                 .map(StackEntity::getProvince)
                 .distinct()

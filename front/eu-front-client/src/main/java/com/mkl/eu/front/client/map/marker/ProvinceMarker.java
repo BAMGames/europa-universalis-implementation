@@ -2,8 +2,8 @@ package com.mkl.eu.front.client.map.marker;
 
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.vo.enumeration.CounterFaceTypeEnum;
-import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.client.service.vo.enumeration.TerrainEnum;
 import com.mkl.eu.client.service.vo.enumeration.TradeZoneTypeEnum;
 import com.mkl.eu.front.client.map.MapConfiguration;
@@ -174,17 +174,17 @@ public class ProvinceMarker extends SimplePolygonMarker implements IMapMarker {
                 boolean borderColored = false;
                 if (stacks.get(i).getStack().getMovePhase() == null) {
 
-                } else if (stacks.get(i).getStack().getMovePhase() == MovePhaseEnum.IS_MOVING) {
+                } else if (StackUtil.isMoving(stacks.get(i).getStack())) {
                     pg.stroke(0, 255, 0);
                     borderColored = true;
 
                 } else if (stacksSelected.contains(stacks.get(i))) {
                     pg.stroke(255, 255, 0);
                     borderColored = true;
-                } else if (MapConfiguration.isStacksMovePhase() && stacks.get(i).getStack().getMovePhase().isMoved()) {
+                } else if (MapConfiguration.isStacksMovePhase() && StackUtil.hasMoved(stacks.get(i).getStack())) {
                     pg.stroke(255, 0, 0);
                     borderColored = true;
-                } else if (MapConfiguration.isStacksMovePhase() && !stacks.get(i).getStack().getMovePhase().isMoved()) {
+                } else if (MapConfiguration.isStacksMovePhase() && !StackUtil.hasMoved(stacks.get(i).getStack())) {
                     pg.stroke(0, 0, 255);
                     borderColored = true;
                 }

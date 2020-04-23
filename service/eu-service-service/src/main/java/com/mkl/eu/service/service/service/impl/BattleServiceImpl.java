@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.service.military.*;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.vo.AbstractWithLoss;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -1471,7 +1472,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
                     boolean changeController = !StringUtils.equals(newStackController, stack.getCountry());
                     String newLeader = oeUtil.getLeader(stack, getTables(), getLeaderConditions(province));
                     MovePhaseEnum movePhase = stack.getMovePhase();
-                    if (stack.getMovePhase() == MovePhaseEnum.FIGHTING) {
+                    if (StackUtil.isFighting(stack)) {
                         List<String> enemies = oeUtil.getEnemies(stack.getCountry(), game);
                         if (enemies.contains(controller)) {
                             movePhase = MovePhaseEnum.BESIEGING;
@@ -1493,7 +1494,7 @@ public class BattleServiceImpl extends AbstractMilitaryService implements IBattl
 
         if (!game.getStacks().stream()
                 .anyMatch(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()) &&
-                        (stack.getMovePhase() == MovePhaseEnum.BESIEGING || stack.getMovePhase() == MovePhaseEnum.STILL_BESIEGING))) {
+                        StackUtil.isBesieging(stack))) {
             List<CounterEntity> siegeworks = game.getStacks().stream()
                     .filter(stack -> StringUtils.equals(stack.getProvince(), battle.getProvince()))
                     .flatMap(stack -> stack.getCounters().stream())

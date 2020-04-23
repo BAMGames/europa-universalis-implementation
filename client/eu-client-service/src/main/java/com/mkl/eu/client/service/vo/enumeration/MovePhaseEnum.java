@@ -7,46 +7,21 @@ package com.mkl.eu.client.service.vo.enumeration;
  */
 public enum MovePhaseEnum {
     /** Has not moved in the round yet. */
-    NOT_MOVED(false, false),
+    NOT_MOVED,
     /** Is currently moving in the round. */
-    IS_MOVING(false, false),
+    IS_MOVING,
     /** Is currently moving in the round and has entered at least once enemy territory. */
-    IS_MOVING_AGGRESSIVE(false, false),
+    IS_MOVING_AGGRESSIVE,
     /** Has moved in the round yet. */
-    MOVED(true, false),
+    MOVED,
     /** Has moved and will fight at the end of the round. */
-    FIGHTING(true, false),
+    FIGHTING,
     /** Has moved and will siege at the end of the round. */
-    BESIEGING(true, true),
+    BESIEGING,
     /** Has not moved and will siege at the end of the round. */
-    STILL_BESIEGING(false, true),
+    STILL_BESIEGING,
     /** Is looting during the interphase. */
-    LOOTING(false, false),
+    LOOTING,
     /** Is looting and still besieging during the interphase. */
-    LOOTING_BESIEGING(false, true);
-
-    /** Flag to say if it has finished moving. */
-    private boolean moved;
-    /** Flag to say if it is besieging. */
-    private boolean besieging;
-
-    /**
-     * Constructor.
-     *
-     * @param moved the moved to set.
-     */
-    MovePhaseEnum(boolean moved, boolean besieging) {
-        this.moved = moved;
-        this.besieging = besieging;
-    }
-
-    /** @return the moved. */
-    public boolean isMoved() {
-        return moved;
-    }
-
-    /** @return the besieging. */
-    public boolean isBesieging() {
-        return besieging;
-    }
+    LOOTING_BESIEGING
 }

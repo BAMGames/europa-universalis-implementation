@@ -11,6 +11,7 @@ import com.mkl.eu.client.service.service.board.*;
 import com.mkl.eu.client.service.service.common.ValidateRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.util.TablesUtil;
 import com.mkl.eu.client.service.vo.diff.DiffResponse;
 import com.mkl.eu.client.service.vo.enumeration.*;
@@ -153,14 +154,14 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_MOVE_STACK, idStack));
 
         failIfTrue(new CheckForThrow<Boolean>()
-                .setTest(stack.getMovePhase() != null && stack.getMovePhase().isMoved())
+                .setTest(StackUtil.hasMoved(stack))
                 .setCodeError(IConstantsServiceException.STACK_ALREADY_MOVED)
                 .setMsgFormat("{1}: {0} {2} Stack has already moved.")
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
                 .setParams(METHOD_MOVE_STACK, idStack));
 
         boolean firstMove = false;
-        if (stack.getMovePhase() != MovePhaseEnum.IS_MOVING && stack.getMovePhase() != MovePhaseEnum.IS_MOVING_AGGRESSIVE) {
+        if (!StackUtil.isMoving(stack)) {
             List<StackEntity> stacks = stackDao.getMovingStacks(game.getId());
             List<Long> idsStacks = stacks.stream().map(StackEntity::getId).collect(Collectors.toList());
 
@@ -520,7 +521,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_END_MOVE_STACK, idStack));
 
         failIfFalse(new CheckForThrow<Boolean>()
-                .setTest(stack.getMovePhase() == MovePhaseEnum.IS_MOVING || stack.getMovePhase() == MovePhaseEnum.IS_MOVING_AGGRESSIVE)
+                .setTest(StackUtil.isMoving(stack))
                 .setCodeError(IConstantsServiceException.STACK_NOT_MOVING)
                 .setMsgFormat("{1}: {0} {2} Stack is not moving.")
                 .setName(PARAMETER_END_MOVE_STACK, PARAMETER_REQUEST, PARAMETER_ID_STACK)
@@ -827,7 +828,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
         double newSize = stack.getCounters().stream()
                 .collect(Collectors.summingDouble(c -> CounterUtil.getSizeFromType(c.getType())));
         boolean attritionSizeGrow = attritionMovement != null && newSize > attritionMovement.getSize();
-        if (stack.getMovePhase() == MovePhaseEnum.IS_MOVING && (attritionCounterAdd || attritionSizeGrow)) {
+        if (StackUtil.isMoving(stack) && (attritionCounterAdd || attritionSizeGrow)) {
             if (attritionCounterAdd) {
                 AttritionCounterEntity attritionCounter = new AttritionCounterEntity();
                 attritionCounter.setCounter(counter.getId());
@@ -1057,7 +1058,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_VALIDATE_MIL_ROUND, request.getAuthent().getUsername(), country.getUsername()));
 
         List<Long> stackMoving = game.getStacks().stream()
-                .filter(stack -> stack.getMovePhase() == MovePhaseEnum.IS_MOVING)
+                .filter(StackUtil::isMoving)
                 .map(StackEntity::getId)
                 .collect(Collectors.toList());
 

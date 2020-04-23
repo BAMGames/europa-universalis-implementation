@@ -86,4 +86,83 @@ public class StackUtilTest {
             return this;
         }
     }
+
+    @Test
+    public void testMovePhase() {
+        for (MovePhaseEnum movePhase : MovePhaseEnum.values()) {
+            switch (movePhase) {
+                case NOT_MOVED:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case IS_MOVING:
+                    Assert.assertEquals(true, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case IS_MOVING_AGGRESSIVE:
+                    Assert.assertEquals(true, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case MOVED:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case FIGHTING:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case BESIEGING:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case STILL_BESIEGING:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case LOOTING:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                case LOOTING_BESIEGING:
+                    Assert.assertEquals(false, StackUtil.isMoving(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.hasMoved(createStack(movePhase)));
+                    Assert.assertEquals(false, StackUtil.isFighting(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.isBesieging(createStack(movePhase)));
+                    Assert.assertEquals(true, StackUtil.isLooting(createStack(movePhase)));
+                    break;
+                default:
+                    Assert.fail("The move Phase " + movePhase + " is not handled by StackUtilTest. Have you changed StackUtil after adding this new movePhase ?");
+            }
+        }
+    }
+
+    private static IStack createStack(MovePhaseEnum movePhase) {
+        IStack stack = new Stack();
+        stack.setMovePhase(movePhase);
+        return stack;
+    }
 }
