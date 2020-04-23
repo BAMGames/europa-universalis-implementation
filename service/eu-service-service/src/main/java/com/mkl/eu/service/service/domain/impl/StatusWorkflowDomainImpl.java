@@ -4,6 +4,7 @@ import com.mkl.eu.client.common.exception.IConstantsCommonException;
 import com.mkl.eu.client.common.util.CommonUtil;
 import com.mkl.eu.client.service.util.CounterUtil;
 import com.mkl.eu.client.service.util.GameUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.vo.country.PlayableCountry;
 import com.mkl.eu.client.service.vo.enumeration.*;
 import com.mkl.eu.client.service.vo.tables.*;
@@ -397,14 +398,7 @@ public class StatusWorkflowDomainImpl extends AbstractBack implements IStatusWor
         // Stacks move phase reset
         game.getStacks().stream()
                 .filter(stack -> stack.getMovePhase() != null)
-                .forEach(stack -> {
-                    stack.setMove(0);
-                    if (stack.getMovePhase().isBesieging()) {
-                        stack.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
-                    } else {
-                        stack.setMovePhase(MovePhaseEnum.NOT_MOVED);
-                    }
-                });
+                .forEach(StackUtil::resetStack);
 
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MODIFY, DiffTypeObjectEnum.STACK,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.NOT_MOVED)));

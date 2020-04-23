@@ -1,5 +1,6 @@
 package com.mkl.eu.service.service.persistence.oe.board;
 
+import com.mkl.eu.client.service.vo.board.IStack;
 import com.mkl.eu.client.service.vo.enumeration.MovePhaseEnum;
 import com.mkl.eu.service.service.persistence.oe.GameEntity;
 import com.mkl.eu.service.service.persistence.oe.IEntity;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "STACK")
-public class StackEntity implements IEntity, Serializable {
+public class StackEntity implements IEntity, IStack, Serializable {
     /** Id. */
     private Long id;
     /** Name of the province where the stack is located. */

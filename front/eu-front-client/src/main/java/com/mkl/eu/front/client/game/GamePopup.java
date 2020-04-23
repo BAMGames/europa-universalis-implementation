@@ -12,6 +12,7 @@ import com.mkl.eu.client.service.service.eco.*;
 import com.mkl.eu.client.service.service.game.LoadGameRequest;
 import com.mkl.eu.client.service.service.game.LoadTurnOrderRequest;
 import com.mkl.eu.client.service.util.CounterUtil;
+import com.mkl.eu.client.service.util.StackUtil;
 import com.mkl.eu.client.service.vo.Game;
 import com.mkl.eu.client.service.vo.attrition.Attrition;
 import com.mkl.eu.client.service.vo.board.Counter;
@@ -967,14 +968,7 @@ public class GamePopup implements IDiffResponseListener, ApplicationContextAware
             // If no stack set and new move phase is NOT_MOVED, then it is the reset of each round of MOVED stacks.
             game.getStacks().stream()
                     .filter(stack1 -> stack1.getMovePhase() != null)
-                    .forEach(stack1 -> {
-                        stack1.setMove(0);
-                        if (stack1.getMovePhase().isBesieging()) {
-                            stack1.setMovePhase(MovePhaseEnum.STILL_BESIEGING);
-                        } else {
-                            stack1.setMovePhase(MovePhaseEnum.NOT_MOVED);
-                        }
-                    });
+                    .forEach(StackUtil::resetStack);
         }
     }
 

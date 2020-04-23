@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author MKL
  */
-public class Stack extends EuObject {
+public class Stack extends EuObject implements IStack {
     /** Province where the stack is located. */
     private String province;
     /** Phase of the move the stack is (has moved, is moving,..). */
@@ -28,67 +28,80 @@ public class Stack extends EuObject {
     /** Counters of the stack. */
     private List<Counter> counters = new ArrayList<>();
 
-    /** @return the province. */
+    /** {@inheritDoc} */
+    @Override
     public String getProvince() {
         return province;
     }
 
-    /** @param province the province to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setProvince(String province) {
         this.province = province;
     }
 
-    /** @return the movePhase. */
+    /** {@inheritDoc} */
+    @Override
     public MovePhaseEnum getMovePhase() {
         return movePhase;
     }
 
-    /** @param movePhase the movePhase to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setMovePhase(MovePhaseEnum movePhase) {
         this.movePhase = movePhase;
     }
 
-    /** @return the besieged. */
+    /** {@inheritDoc} */
+    @Override
     public boolean isBesieged() {
         return besieged;
     }
 
-    /** @param besieged the besieged to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setBesieged(boolean besieged) {
         this.besieged = besieged;
     }
 
-    /** @return the leader. */
+    /** {@inheritDoc} */
+    @Override
     public String getLeader() {
         return leader;
     }
 
-    /** @param leader the leader to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setLeader(String leader) {
         this.leader = leader;
     }
 
-    /** @return the country. */
+    /** {@inheritDoc} */
+    @Override
     public String getCountry() {
         return country;
     }
 
-    /** @param country the country to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setCountry(String country) {
         this.country = country;
     }
 
-    /** @return the move. */
+    /** {@inheritDoc} */
+    @Override
     public int getMove() {
         return move;
     }
 
-    /** @param move the move to set. */
+    /** {@inheritDoc} */
+    @Override
     public void setMove(int move) {
         this.move = move;
     }
 
-    /** @return the counters. */
+    /** {@inheritDoc} */
+    @Override
     public List<Counter> getCounters() {
         return counters;
     }
