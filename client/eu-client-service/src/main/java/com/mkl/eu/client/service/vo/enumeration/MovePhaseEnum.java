@@ -10,6 +10,8 @@ public enum MovePhaseEnum {
     NOT_MOVED(false, false),
     /** Is currently moving in the round. */
     IS_MOVING(false, false),
+    /** Is currently moving in the round and has entered at least once enemy territory. */
+    IS_MOVING_AGGRESSIVE(false, false),
     /** Has moved in the round yet. */
     MOVED(true, false),
     /** Has moved and will fight at the end of the round. */

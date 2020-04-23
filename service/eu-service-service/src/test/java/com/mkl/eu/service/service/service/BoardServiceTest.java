@@ -371,15 +371,35 @@ public class BoardServiceTest extends AbstractGameServiceTest {
 
     @Test
     public void testMoveStackSuccess() throws Exception {
-        testMoveStackSuccess(true);
+        testMoveStackSuccess(true, false, false);
     }
 
     @Test
-    public void testMoveAgainStackSuccess() throws Exception {
-        testMoveStackSuccess(false);
+    public void testMoveAggressiveStackSuccess() throws Exception {
+        testMoveStackSuccess(true, true, false);
     }
 
-    private void testMoveStackSuccess(boolean firstMove) throws Exception {
+    @Test
+    public void testMoveAgainFriendlyStackSuccess() throws Exception {
+        testMoveStackSuccess(false, false, false);
+    }
+
+    @Test
+    public void testMoveAgainInEnemyStackSuccess() throws Exception {
+        testMoveStackSuccess(false, true, false);
+    }
+
+    @Test
+    public void testMoveAgainFromEnemyStackSuccess() throws Exception {
+        testMoveStackSuccess(false, false, true);
+    }
+
+    @Test
+    public void testMoveAgainVeryAggressiveStackSuccess() throws Exception {
+        testMoveStackSuccess(false, true, true);
+    }
+
+    private void testMoveStackSuccess(boolean firstMove, boolean inEnemyTerritory, boolean wasAggressive) throws Exception {
         Request<MoveStackRequest> request = new Request<>();
         request.setRequest(new MoveStackRequest());
         request.setAuthent(new AuthentInfo());
@@ -403,7 +423,11 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         StackEntity stack = new StackEntity();
         stack.setProvince("pecs");
         if (!firstMove) {
-            stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            if (wasAggressive) {
+                stack.setMovePhase(MovePhaseEnum.IS_MOVING_AGGRESSIVE);
+            } else {
+                stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+            }
             AttritionEntity attrition = new AttritionEntity();
             attrition.setId(666L);
             attrition.setStatus(AttritionStatusEnum.ON_GOING);
@@ -426,8 +450,14 @@ public class BoardServiceTest extends AbstractGameServiceTest {
         when(provinceDao.getProvinceByName("IdF")).thenReturn(idf);
         when(oeUtil.isMobile(stack)).thenReturn(true);
         when(oeUtil.getAllies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList(game.getCountries().get(0).getName()));
-        when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
+        when(oeUtil.getEnemies(game.getCountries().get(0), game)).thenReturn(Collections.singletonList("espagne"));
+        if (inEnemyTerritory) {
+            when(oeUtil.getController(idf, game)).thenReturn("espagne");
+        } else {
+            when(oeUtil.getController(idf, game)).thenReturn(game.getCountries().get(0).getName());
+        }
         when(oeUtil.getMovePoints(pecs, idf, true)).thenReturn(4);
+        when(oeUtil.getMovePoints(pecs, idf, false)).thenReturn(6);
         when(counterDao.getPatrons("france", game.getId())).thenReturn(Collections.singletonList("france"));
         when(attritionDao.create(any())).thenAnswer(invocationOnMock -> {
             AttritionEntity attrition = invocationOnMock.getArgumentAt(0, AttritionEntity.class);
@@ -450,18 +480,27 @@ public class BoardServiceTest extends AbstractGameServiceTest {
                 .orElse(null);
         Assert.assertNotNull(diffMove);
         Assert.assertEquals(13L, diffMove.getIdObject().longValue());
-        if (firstMove) {
+        boolean movePhaseChanged = firstMove || !wasAggressive && inEnemyTerritory;
+        if (movePhaseChanged) {
             Assert.assertEquals(4, diffMove.getAttributes().size());
         } else {
             Assert.assertEquals(3, diffMove.getAttributes().size());
         }
         Assert.assertEquals(pecs.getName(), getAttribute(diffMove, DiffAttributeTypeEnum.PROVINCE_FROM));
         Assert.assertEquals(idf.getName(), getAttribute(diffMove, DiffAttributeTypeEnum.PROVINCE_TO));
-        Assert.assertEquals("4", getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_POINTS));
+        Assert.assertEquals(inEnemyTerritory ? "6" : "4", getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_POINTS));
         if (firstMove) {
-            Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+            if (inEnemyTerritory) {
+                Assert.assertEquals(MovePhaseEnum.IS_MOVING_AGGRESSIVE.name(), getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+            } else {
+                Assert.assertEquals(MovePhaseEnum.IS_MOVING.name(), getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+            }
         } else {
-            Assert.assertNull(getAttributeFull(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+            if (!wasAggressive && inEnemyTerritory) {
+                Assert.assertEquals(MovePhaseEnum.IS_MOVING_AGGRESSIVE.name(), getAttribute(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+            } else {
+                Assert.assertNull(getAttributeFull(diffMove, DiffAttributeTypeEnum.MOVE_PHASE));
+            }
         }
 
         if (firstMove) {

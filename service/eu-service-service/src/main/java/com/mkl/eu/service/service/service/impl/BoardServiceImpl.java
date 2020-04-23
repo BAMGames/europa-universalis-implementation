@@ -160,7 +160,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setParams(METHOD_MOVE_STACK, idStack));
 
         boolean firstMove = false;
-        if (stack.getMovePhase() != MovePhaseEnum.IS_MOVING) {
+        if (stack.getMovePhase() != MovePhaseEnum.IS_MOVING && stack.getMovePhase() != MovePhaseEnum.IS_MOVING_AGGRESSIVE) {
             List<StackEntity> stacks = stackDao.getMovingStacks(game.getId());
             List<Long> idsStacks = stacks.stream().map(StackEntity::getId).collect(Collectors.toList());
 
@@ -263,12 +263,17 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
                 .setName(PARAMETER_MOVE_STACK, PARAMETER_ID_COUNTRY)
                 .setParams(METHOD_MOVE_STACK, country.getName(), patrons));
 
+        MovePhaseEnum movePhase = MovePhaseEnum.IS_MOVING;
+        if (stack.getMovePhase() == MovePhaseEnum.IS_MOVING_AGGRESSIVE || enemies.contains(controller)) {
+            movePhase = MovePhaseEnum.IS_MOVING_AGGRESSIVE;
+        }
+
         List<DiffEntity> diffs = new ArrayList<>();
         diffs.add(DiffUtil.createDiff(game, DiffTypeEnum.MOVE, DiffTypeObjectEnum.STACK, idStack,
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_FROM, stack.getProvince()),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.PROVINCE_TO, provinceTo),
                 DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_POINTS, stack.getMove() + movePoints),
-                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, MovePhaseEnum.IS_MOVING, firstMove)));
+                DiffUtil.createDiffAttributes(DiffAttributeTypeEnum.MOVE_PHASE, movePhase, movePhase != stack.getMovePhase())));
 
         AttritionEntity attrition = game.getAttritions().stream()
                 .filter(attrit -> attrit.getStatus() == AttritionStatusEnum.ON_GOING)
@@ -300,7 +305,7 @@ public class BoardServiceImpl extends AbstractService implements IBoardService {
 
         stack.setProvince(provinceTo);
         stack.setMove(stack.getMove() + movePoints);
-        stack.setMovePhase(MovePhaseEnum.IS_MOVING);
+        stack.setMovePhase(movePhase);
         gameDao.update(game, false);
 
         return createDiffs(diffs, gameDiffs, request);
