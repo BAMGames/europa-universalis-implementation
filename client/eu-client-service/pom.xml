@@ -84,6 +84,12 @@
             <artifactId>gson</artifactId>
         </dependency>
 
+        <!-- Java 11 stopped including these libraries in the JDK -->
+        <dependency>
+            <groupId>javax.jws</groupId>
+            <artifactId>javax.jws-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
