@@ -16,7 +16,7 @@
         <spring-security.version>5.1.10.RELEASE</spring-security.version>
         <tiles.version>3.0.1</tiles.version>
         <jackson.version>2.10.3</jackson.version>
-        <hibernate.version>5.4.0.Final</hibernate.version>
+        <hibernate.version>5.4.24.Final</hibernate.version>
         <maven-surfire-plugin.version>2.13</maven-surfire-plugin.version>
         <maven-failsafe-plugin.version>2.13</maven-failsafe-plugin.version>
         <aspectj.version>1.7.1</aspectj.version>
