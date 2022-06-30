@@ -35,7 +35,7 @@
         <commons.collections.version>3.2.2</commons.collections.version>
         <guava.version>24.1.1-jre</guava.version>
         <itex.version>2.1.7</itex.version>
-        <itextpdf.version>5.4.2</itextpdf.version>
+        <itextpdf.version>5.5.12</itextpdf.version>
         <flyway.version>3.1</flyway.version>
         <funcito.version>1.3.0</funcito.version>
         <sencha.cmd.version>4.0.2.67</sencha.cmd.version>
